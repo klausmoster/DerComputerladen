@@ -1,0 +1,4 @@
+- [[Intel 80386]]
+- [[Intel 80486]]
+- Intel Pentium
+    - [[Intel Pentium 60, 60MHz]]
