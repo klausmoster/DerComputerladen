@@ -115,8 +115,27 @@ Speichern/Laden des Datums (→ 11-01), Zeitzonen.
 
 ## + Schritte
 
-Retrospektiv dokumentiert — das Feature war vor Einführung dieses Prozesses
-bereits gebaut.
+Gebaut wurde das Feature vor Einführung dieses Prozesses; die Dokumentation
+entstand retrospektiv. Offen ist eine Aufräumrunde aus den Punkten 1, 3 und 4
+der offenen Fragen — **erledigt am 13.08.2026**:
+
+1. `[K]` `duplicate_date()`, `compare()`, `is_same_day()` aus `game_date.gd`
+   entfernen.
+2. `[K]` Headless laufen lassen — muss weiterhin sauber durchgehen.
+3. `[K]` `advance_days()` aus `game_clock.gd` entfernen.
+4. `[K]` `@export` bei `days_per_second` entfernen (Autoloads haben keine Szene,
+   in der sich die Property vorbelegen ließe — das Attribut verspricht etwas,
+   das es nicht gibt).
+5. `[K]` Headless laufen lassen.
+6. `[C]` Review gegen die Akzeptanzkriterien, Entscheidungen und Lernnotizen
+   ins Dokument schreiben.
+
+**Entfallen:** Das Signal `season_changed` sollte ursprünglich in
+`holiday_season_changed` umbenannt werden. Stattdessen fällt es später ganz weg —
+Jahreszeiten und Weihnachtsgeschäft werden zu Ereignissen in der Timeline
+(→ 01-06). Deshalb hier nicht anfassen.
+
+Aufteilung ist ein Vorschlag — Schritte wandern im Gespräch.
 
 ## + Akzeptanzkriterien
 
@@ -132,6 +151,10 @@ bereits gebaut.
 - Projekt startet fehlerfrei:
   `Godot --headless --path src res://scenes/timeline_demo.tscn --quit-after 60`
   → keine Ausgabe, Exit 0. (Geprüft mit Godot 4.6.3.)
+- Die Testsuite läuft durch:
+  `Godot --headless --path src -s res://addons/gut/gut_cmdln.gd`
+  → alle Tests grün. Achtung: Diese Tests decken bisher die Ereignis-Datenbank
+  ab, nicht den Kalender selbst — siehe Offene Fragen.
 
 ## + Entscheidungen
 
@@ -152,11 +175,24 @@ kennen müssen. Nachteil siehe Offene Fragen.
 **Akkumulator statt Timer-Node.** `_process(delta)` mit Akkumulator macht das
 Tempo stufenlos einstellbar und entkoppelt die Spielzeit von der Framerate.
 
+**Ungenutzte Methoden gelöscht statt aufgehoben** (Aufräumrunde 08/2026).
+`duplicate_date()`, `compare()`, `is_same_day()` und `advance_days()` wurden
+nirgends aufgerufen. Alternative wäre gewesen, sie „für später" stehen zu lassen.
+Dagegen sprach: Ungenutzter Code wird nie ausgeführt und damit nie geprüft — er
+ist Behauptung, nicht Wahrheit. `compare()` war dafür das Beispiel: Der Name
+verspricht einen Vergleich (−1/0/1), zurück kam die Tagesdifferenz. Wiederholen
+lässt sich das über `git log -S` in Minuten.
+
+**`@export` bei `days_per_second` entfernt.** `@export` blendet eine Property im
+Inspector ein — für einen Node in einer Szene. `GameClock` wird als Autoload
+direkt aus dem Skript erzeugt (`GameClock="*res://core/game_clock.gd"`), hat also
+keine Szene, in der sich ein Wert vorbelegen ließe. Das Attribut versprach eine
+Einstellmöglichkeit, die es nicht gab. Wäre der Wert wirklich zur Entwurfszeit
+einstellbar gewesen, hätte man das Autoload als `.tscn` registrieren müssen —
+Aufwand ohne Ertrag für einen Wert, den die UI zur Laufzeit setzt.
+
 ## + Offene Fragen
 
-- **Toter Code:** `duplicate_date()`, `compare()`, `is_same_day()` und
-  `advance_days()` sind definiert, werden aber nirgends aufgerufen. Entweder es
-  gibt bald einen Nutzer dafür, oder sie sollten weg.
 - **Kein anderer Spielstart als 1985-01-01 möglich.** `START_YEAR/MONTH/DAY` sind
   `const`. Gleichzeitig gibt es `Timeline.fast_forward_to()`, das genau dafür
   gedacht ist, den Markt auf einen späteren Stand zu bringen. Beides passt noch
@@ -164,13 +200,33 @@ Tempo stufenlos einstellbar und entkoppelt die Spielzeit von der Framerate.
   ein Startdatum gesetzt werden können.
 - **`season_changed` heißt irreführend.** Es gibt vier Jahreszeiten
   (`season()`), aber das Signal meldet nur den Wechsel des Weihnachtsgeschäfts.
-  Entweder umbenennen (`holiday_season_changed`) oder auf echte Jahreszeiten
-  erweitern.
-- **`@export` auf einem Autoload** ist im Inspector nicht sinnvoll editierbar,
-  weil Autoloads keine Szenendarstellung haben. Funktioniert, ist aber ein
-  Geruch — als normale Variable mit Setter wäre es ehrlicher.
+  Wird sich mit 01-06 erledigen: Dann fällt das Signal ganz weg, weil
+  Jahreszeiten und Weihnachtsgeschäft zu Ereignissen in der Timeline werden.
 - **Kein Speichern/Laden** von `_day_index` → gehört zu 11-01.
+- **Für `GameDate` gibt es noch keine Tests.** Die Testabdeckung liegt bisher auf
+  der Ereignis-Datenbank. Schaltjahre, `from_day_index()`/`to_day_index()` im
+  Kreis und die Monatsgrenzen bei `advance_one_month()` sind alle prüfbar und
+  bisher ungeprüft — die Akzeptanzkriterien oben stehen als Behauptung da, nicht
+  als Test.
 
 ## + Lernnotizen
 
-Retrospektiv angelegt — keine Notizen aus der Bauzeit.
+Aus der Aufräumrunde (erste eigene Godot-Sitzung):
+
+- **Der Godot-Projektordner ist `src/`**, nicht das Repo-Root. Im Project Manager
+  über *Import* die Datei `src/project.godot` öffnen.
+- **`F5` startet das Projekt** (oder der ▶-Knopf oben rechts). Fehler landen
+  unten im Panel *Ausgabe*.
+- **„Headless"** heißt: dasselbe Programm ohne Fenster, vom Terminal gestartet.
+  Braucht man für automatische Prüfungen, im Alltag reicht `F5`.
+- **Autoloads stehen in `project.godot`** unter `[autoload]`. Der Stern in
+  `GameClock="*res://core/game_clock.gd"` heißt „aktiviert".
+- **`@export` wirkt nur bei Nodes in einer Szene.** Bei einem Autoload, das direkt
+  aus einem Skript erzeugt wird, bewirkt es nichts.
+- **Ein Addon muss aktiviert werden**, nicht nur heruntergeladen:
+  Projekt → Projekteinstellungen → Reiter *Plugins*. Vorher taucht kein Panel auf.
+- **GUT hat zwei getrennte Konfigurationen.** Das Panel im Editor führt seine
+  eigene (außerhalb des Projekts, in Godots Benutzerdaten), der
+  Kommandozeilen-Lauf liest `res://.gutconfig.json`. Was man im Panel einträgt,
+  gilt nicht fürs Terminal und umgekehrt.
+- **Testordner im Panel:** Abschnitt *Test Directories*, erstes Feld `res://test`.

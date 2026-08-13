@@ -64,19 +64,6 @@ static func from_day_index(index: int) -> GameDate:
 	return GameDate.new(y, m, remaining + 1)
 
 
-func duplicate_date() -> GameDate:
-	return GameDate.new(year, month, day)
-
-
-## < 0 wenn dieses Datum vor `other` liegt, 0 bei Gleichheit, > 0 danach.
-func compare(other: GameDate) -> int:
-	return to_day_index() - other.to_day_index()
-
-
-func is_same_day(other: GameDate) -> bool:
-	return year == other.year and month == other.month and day == other.day
-
-
 ## Weihnachtsgeschäft (November/Dezember) – Hauptumsatzzeit.
 func is_holiday_season() -> bool:
 	return month == 11 or month == 12

@@ -18,7 +18,7 @@ const START_DAY := 1
 const END_YEAR := 1999
 
 ## Tage pro Echtzeit-Sekunde, wenn die Uhr läuft.
-@export var days_per_second: float = 2.0
+var days_per_second: float = 2.0
 var paused: bool = true
 
 var date: GameDate
@@ -63,13 +63,6 @@ func advance_day() -> void:
 		_ended = true
 		paused = true
 		reached_end.emit()
-
-
-func advance_days(count: int) -> void:
-	for _i in count:
-		if _ended:
-			return
-		advance_day()
 
 
 ## Bis zum Ersten des nächsten Monats springen.
