@@ -122,7 +122,20 @@ Im GDD als Genre gesetzt, aber nirgends ausgearbeitet — hier ist am meisten of
   werden? Dann verschieben sich Nummern.
 - **09 Adventure-Layer ist unterspezifiziert.** Das GDD nennt das Genre
   „Point-and-Click Adventure", aber Dialogsystem und Verkaufsvorgang stehen unter
-  „Offene Fragen". Solange das nicht geklärt ist, lassen sich 09-02 und 09-03
-  nicht sinnvoll spezifizieren.
+  „Offene Fragen". Die Kernfrage: **Wie läuft ein einzelner Verkauf ab?**
+  - *Als Dialog* (wie Das Amt, Monkey Island): Kunde kommt, sagt was er braucht,
+    man berät ihn über Antwortmöglichkeiten, er kauft oder geht. Charaktervoll,
+    aber es sind höchstens ein paar Kunden pro Spieltag zu schaffen.
+  - *Als Bildschirmmaske* (wie Pizza Connection, Der Patrizier): Preise und
+    Sortiment festlegen, der Laden läuft; abends steht da „14 Kunden, 4 Verkäufe,
+    6.800 DM". Skaliert über 15 Spieljahre, hat aber keine Persönlichkeit.
+
+  Das entscheidet mit, wie schnell die Spieluhr überhaupt laufen darf
+  (`GameClock.days_per_second` geht bis 60 — mit Dialogverkäufen unmöglich),
+  wie viel Text geschrieben werden muss und wie 03-03 (Kundentypen) aussieht.
+  Wahrscheinlichster Weg ist die Mischung: Tagesgeschäft simuliert, einzelne
+  Kunden als handgeschriebene Szene — dafür gibt es in `timeline_event.gd`
+  bereits die Kategorien `KUNDE` und `REKLAMATION`. Solange das offen ist,
+  lassen sich 09-02 und 09-03 nicht sinnvoll spezifizieren.
 - **Reihenfolge:** Fast alles hängt an 02-01 und 03-01. Die beiden zuerst zu
   bauen macht die meisten anderen Features überhaupt erst spezifizierbar.
