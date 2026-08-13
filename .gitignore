@@ -1,0 +1,7 @@
+# macOS
+.DS_Store
+
+# Obsidian: geteilte Vault-Einstellungen bleiben versioniert (app.json,
+# appearance.json, core-plugins.json, graph.json) — nur der persönliche
+# Fenster-/Tab-Zustand nicht.
+docs/game_bible/.obsidian/workspace.json

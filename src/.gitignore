@@ -1,0 +1,8 @@
+# Godot 4+ specific ignores
+# Caches, importierte Assets und Editor-Zustand – jederzeit neu erzeugbar.
+.godot/
+
+# Achtung: NICHT ignorieren, auch wenn sie wie Cache aussehen –
+#   *.uid      stabile Resource-IDs, sonst brechen Szenen-Referenzen
+#   *.import   Import-Einstellungen (Filter, Kompression) pro Asset
+# Kein /android/ – das Projekt ist Desktop-only (siehe CLAUDE.md).

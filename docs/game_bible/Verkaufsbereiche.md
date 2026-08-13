@@ -1,4 +1,4 @@
 - [[Komplettsysteme]]
-- [[Hardware ]]
+- [[Hardware]]
 - Software
 - Kaffee
