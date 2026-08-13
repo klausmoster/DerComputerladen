@@ -33,6 +33,9 @@ eine Aufteilung vorschlagen und nachfragen.
 Alles, was Claude an Code erzeugt, sieht Klaus sich **vorher** an. Es ist
 Lern- und Vorlagenmaterial, kein Ergebnis, das ungesehen ins Projekt wandert.
 
+**Git:** Claude committet, **Klaus pusht.** Nicht versuchen zu pushen — auf
+diesem Rechner liegen keine GitHub-Zugangsdaten.
+
 Erklären statt nur liefern: warum diese Node-Struktur, warum Signal statt
 direktem Zugriff, was ein Autoload/Resource tut — an der konkreten Stelle im
 Projekt, kein Tutorial-Vortrag. Kleine, überprüfbare Schritte.

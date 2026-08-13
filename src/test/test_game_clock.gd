@@ -1,0 +1,195 @@
+extends GutTest
+
+## Prüft das Fortschreiten der Spieluhr: Tageswechsel, Monats- und Jahressprünge,
+## die Signale und das Ende der Zeitleiste.
+##
+## Wichtig: Diese Tests arbeiten NICHT mit dem Autoload `GameClock`, sondern
+## bauen sich für jeden Test eine eigene Uhr. Sonst würde ein Test die Zeit für
+## alle folgenden verstellen — und die echte Uhr hängt am Autoload `Timeline`,
+## das dann ebenfalls Ereignisse feuern würde.
+
+const UHR := preload("res://core/game_clock.gd")
+
+var _clock: Node
+
+
+func before_each() -> void:
+	_clock = UHR.new()
+	# add_child_autofree hängt den Knoten in den Baum (damit _ready() läuft) und
+	# räumt ihn nach dem Test wieder weg.
+	add_child_autofree(_clock)
+
+
+# --- Ausgangszustand ------------------------------------------------------
+
+func test_startet_am_ersten_januar_1985() -> void:
+	assert_eq(_clock.date.year, 1985)
+	assert_eq(_clock.date.month, 1)
+	assert_eq(_clock.date.day, 1)
+
+
+func test_startet_angehalten() -> void:
+	assert_true(_clock.paused, "Die Uhr muss angehalten starten, sonst läuft die Zeit sofort los.")
+	assert_false(_clock.is_finished(), "Am Anfang darf die Zeitleiste nicht zu Ende sein.")
+
+
+# --- Tageswechsel ---------------------------------------------------------
+
+func test_ein_tag_weiter() -> void:
+	# Act
+	_clock.advance_day()
+
+	# Assert
+	assert_eq(_clock.date.day, 2)
+	assert_eq(_clock.date.month, 1)
+
+
+func test_wechsel_ueber_die_monatsgrenze() -> void:
+	# Arrange
+	_vorspulen_bis(1993, 1, 31)
+
+	# Act
+	_clock.advance_day()
+
+	# Assert
+	assert_eq(_clock.date.day, 1, "Nach dem 31. Januar kommt der 1. Februar.")
+	assert_eq(_clock.date.month, 2)
+
+
+func test_schalttag_wird_nicht_uebersprungen() -> void:
+	# Arrange
+	_vorspulen_bis(1988, 2, 28)
+
+	# Act
+	_clock.advance_day()
+
+	# Assert
+	assert_eq(_clock.date.day, 29, "1988 ist ein Schaltjahr, der 29. Februar muss existieren.")
+	assert_eq(_clock.date.month, 2)
+
+
+func test_jahreswechsel() -> void:
+	# Arrange
+	_vorspulen_bis(1993, 12, 31)
+
+	# Act
+	_clock.advance_day()
+
+	# Assert
+	assert_eq(_clock.date.year, 1994)
+	assert_eq(_clock.date.month, 1)
+	assert_eq(_clock.date.day, 1)
+
+
+# --- Sprünge --------------------------------------------------------------
+
+func test_monatssprung_landet_auf_dem_ersten() -> void:
+	# Arrange — der Sprung geht bis zum Ersten des Folgemonats, nicht um
+	# 30 Tage weiter.
+	_vorspulen_bis(1993, 3, 15)
+
+	# Act
+	_clock.advance_one_month()
+
+	# Assert
+	assert_eq(_clock.date.month, 4)
+	assert_eq(_clock.date.day, 1, "Der Sprung muss auf dem Ersten landen, nicht auf dem 15.")
+
+
+func test_jahressprung_landet_auf_dem_ersten_januar() -> void:
+	# Arrange
+	_vorspulen_bis(1993, 7, 20)
+
+	# Act
+	_clock.advance_one_year()
+
+	# Assert
+	assert_eq(_clock.date.year, 1994)
+	assert_eq(_clock.date.month, 1)
+	assert_eq(_clock.date.day, 1)
+
+
+# --- Signale --------------------------------------------------------------
+
+func test_tageswechsel_meldet_sich() -> void:
+	# Arrange
+	watch_signals(_clock)
+
+	# Act
+	_clock.advance_day()
+
+	# Assert
+	assert_signal_emitted(_clock, "day_passed", "Jeder Tageswechsel muss gemeldet werden.")
+
+
+func test_monatswechsel_meldet_sich_nur_beim_monatswechsel() -> void:
+	# Arrange
+	watch_signals(_clock)
+
+	# Act — vom 1. auf den 2. Januar, also kein Monatswechsel
+	_clock.advance_day()
+
+	# Assert
+	assert_signal_not_emitted(_clock, "month_passed",
+		"Innerhalb eines Monats darf month_passed nicht feuern.")
+
+
+func test_weihnachtsgeschaeft_meldet_sich_am_ersten_november() -> void:
+	# Arrange
+	_vorspulen_bis(1993, 10, 31)
+	watch_signals(_clock)
+
+	# Act
+	_clock.advance_day()
+
+	# Assert
+	assert_signal_emitted(_clock, "season_changed",
+		"Der Beginn des Weihnachtsgeschäfts muss gemeldet werden.")
+
+
+# --- Ende der Zeitleiste --------------------------------------------------
+
+func test_uhr_endet_nach_1999() -> void:
+	# Arrange
+	_vorspulen_bis(1999, 12, 31)
+	watch_signals(_clock)
+
+	# Act
+	_clock.advance_day()
+
+	# Assert
+	assert_true(_clock.is_finished(), "Nach dem 31.12.1999 muss die Zeitleiste zu Ende sein.")
+	assert_true(_clock.paused, "Am Ende muss die Uhr angehalten sein.")
+	assert_signal_emit_count(_clock, "reached_end", 1, "reached_end darf genau einmal feuern.")
+	# Festgehalten, weil es überrascht: Das Datum steht danach auf dem
+	# 01.01.2000 — die Uhr merkt das Ende erst, nachdem sie darüber hinaus ist.
+	assert_eq(_clock.date.year, 2000, "Das Enddatum liegt einen Tag hinter dem Spielende.")
+
+
+func test_nach_dem_ende_bewegt_sich_nichts_mehr() -> void:
+	# Arrange
+	_vorspulen_bis(1999, 12, 31)
+	_clock.advance_day()
+	# Typ ausdrücklich angeben: _clock ist nur als Node bekannt (game_clock.gd
+	# hat kein class_name), deshalb kann ":=" den Typ hier nicht ableiten.
+	var enddatum: int = _clock.date.to_day_index()
+
+	# Act
+	_clock.advance_day()
+	_clock.advance_one_month()
+	_clock.advance_one_year()
+
+	# Assert
+	assert_eq(_clock.date.to_day_index(), enddatum,
+		"Nach dem Ende darf kein Aufruf die Zeit noch weiterschieben.")
+
+
+# --- Helfer ---------------------------------------------------------------
+
+## Schiebt die Uhr Tag für Tag bis zum Zieldatum. Umständlich, aber es gibt
+## bisher keine Möglichkeit, die Uhr auf ein Datum zu setzen — siehe die offene
+## Frage zum Spielstart in 01-01.
+func _vorspulen_bis(jahr: int, monat: int, tag: int) -> void:
+	var ziel := GameDate.new(jahr, monat, tag).to_day_index()
+	while _clock.date.to_day_index() < ziel and not _clock.is_finished():
+		_clock.advance_day()

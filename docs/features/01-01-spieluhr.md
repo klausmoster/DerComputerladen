@@ -153,8 +153,8 @@ Aufteilung ist ein Vorschlag — Schritte wandern im Gespräch.
   → keine Ausgabe, Exit 0. (Geprüft mit Godot 4.6.3.)
 - Die Testsuite läuft durch:
   `Godot --headless --path src -s res://addons/gut/gut_cmdln.gd`
-  → alle Tests grün. Achtung: Diese Tests decken bisher die Ereignis-Datenbank
-  ab, nicht den Kalender selbst — siehe Offene Fragen.
+  → alle Tests grün. Die Punkte oben sind in `test/test_game_date.gd` und
+  `test/test_game_clock.gd` als Tests hinterlegt, nicht nur als Behauptung.
 
 ## + Entscheidungen
 
@@ -203,11 +203,14 @@ Aufwand ohne Ertrag für einen Wert, den die UI zur Laufzeit setzt.
   Wird sich mit 01-06 erledigen: Dann fällt das Signal ganz weg, weil
   Jahreszeiten und Weihnachtsgeschäft zu Ereignissen in der Timeline werden.
 - **Kein Speichern/Laden** von `_day_index` → gehört zu 11-01.
-- **Für `GameDate` gibt es noch keine Tests.** Die Testabdeckung liegt bisher auf
-  der Ereignis-Datenbank. Schaltjahre, `from_day_index()`/`to_day_index()` im
-  Kreis und die Monatsgrenzen bei `advance_one_month()` sind alle prüfbar und
-  bisher ungeprüft — die Akzeptanzkriterien oben stehen als Behauptung da, nicht
-  als Test.
+- **Das Enddatum liegt einen Tag hinter dem Spielende.** Die Uhr merkt das Ende
+  erst, nachdem sie darüber hinaus ist: `date` steht danach auf dem 01.01.2000,
+  nicht auf dem 31.12.1999. Für die Anzeige eines Schlussbildschirms wäre das
+  irritierend. In `test_uhr_endet_nach_1999` festgehalten, damit es nicht
+  unbemerkt bleibt.
+- **Die Testhilfe `_vorspulen_bis()` schiebt Tag für Tag.** Für die Tests
+  unproblematisch (Millisekunden), aber sie existiert nur, weil sich die Uhr
+  nicht auf ein Datum setzen lässt. Erledigt sich mit 01-05.
 
 ## + Lernnotizen
 
