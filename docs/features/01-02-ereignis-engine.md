@@ -139,7 +139,7 @@ ein Lookup nötig ist.
 **`src/data/event_database.gd`** — `class_name EventDatabase extends RefCounted`
 
 ```gdscript
-static func build_fixed_events() -> Array[TimelineEvent]     # 18 Ereignisse
+static func build_fixed_events() -> Array[TimelineEvent]     # 19 Ereignisse
 static func build_variable_events() -> Array[TimelineEvent]  #  6 Ereignisse
 ```
 
@@ -154,7 +154,7 @@ bereits gebaut.
 
 ## + Akzeptanzkriterien
 
-- Beim Start sind 18 fixe und 6 variable Ereignisse registriert.
+- Beim Start sind 19 fixe und 6 variable Ereignisse registriert.
 - Am 22.03.1993 feuert `intel_pentium` und meldet sofort `PREIS cpu_486 -30 %`.
 - Der verzögerte Effekt desselben Ereignisses (`NACHFRAGE ram +20 %`,
   `delay_days: 14`) wird am 05.04.1993 gemeldet, nicht vorher.
@@ -180,11 +180,11 @@ nicht fest, weil sie aus der game_bible kommen. Bewusst in Kauf genommene
 Unschärfe; Preis siehe Offene Fragen.
 
 **Fixe Ereignisse in einem Dictionary nach Tagesindex.** Alternative wäre, jeden
-Tag über alle Ereignisse zu laufen. Bei 18 Ereignissen egal, aber die Datenbank
+Tag über alle Ereignisse zu laufen. Bei 19 Ereignissen egal, aber die Datenbank
 soll wachsen, und `GameClock` kann bis 60 Tage/Sekunde ticken.
 
 **Ereignisse in GDScript statt in `.tres`-Dateien.** `TimelineEvent` ist eine
-`Resource`, könnte also im Inspector angelegt werden. In Code sind 24 Ereignisse
+`Resource`, könnte also im Inspector angelegt werden. In Code sind 25 Ereignisse
 in einer Datei überblickbar, diffbar und ohne Editor änderbar. Bei mehreren
 hundert kippt das — dann wird es ein Fall für 02-01.
 
@@ -214,6 +214,33 @@ hundert kippt das — dann wird es ein Fall für 02-01.
   `month_passed` hängen und das erst beim Wechsel auf Februar feuert.
 - **`history` wächst unbegrenzt** und wird nirgends gelesen. Gedacht für Rückblick
   und Speicherstand (→ 11-01).
+- **`can_occur()` kennt nur den Kalender, nicht den Spielzustand.** Übergeben
+  werden Datum, bisherige Auslösungen, letzter Auslösetag und der heutige Tag —
+  mehr nicht. Damit trifft eine Reklamationswelle mit 3 % pro Monat, egal ob der
+  Spieler Markenware oder Schrott vom windigen Händler verkauft hat, und der
+  Großkunde meldet sich unabhängig vom Ruf des Ladens. Zufall ohne Ursache.
+  Damit sich das Spiel ursächlich anfühlt, müssen variable Ereignisse den
+  Spielzustand sehen können — Reputation, Warenqualität, Standort. Wird spätestens
+  bei 08-02 (Reklamationen) gebraucht, wo genau diese Rückkopplung den Kern des
+  Features ausmacht.
+- **Die Wahrscheinlichkeit lässt sich zur Laufzeit zwar ändern, aber nicht
+  sauber.** `monthly_chance` ist eine gewöhnliche Variable auf einem lebenden
+  Objekt, und `_roll_variable_events()` liest sie bei jeder Würfelrunde neu —
+  ein Zuweisen wirkt also sofort. Was fehlt, ist alles drumherum:
+  - **Kein Zugriff von außen.** `_find_event()` ist privat; es gibt kein
+    öffentliches `Timeline.get_event(id)`. Wer die Chance ändern will, müsste
+    selbst durch `Timeline.variable_events` suchen.
+  - **Kein Weg zurück.** Wer den Grundwert überschreibt, verliert ihn. Es gibt
+    keinen Begriff von „Zuschlag mit Ursache und Dauer", also auch keine
+    Möglichkeit, eine Erhöhung wieder zurückzunehmen oder dem Spieler zu
+    erklären, warum etwas gerade wahrscheinlicher ist.
+  - **Wird nicht gespeichert.** Die Ereignisse werden bei jedem Start frisch aus
+    `EventDatabase` gebaut. Ein geänderter Wert fällt beim Laden still auf den
+    Ausgangswert zurück (→ 11-01).
+
+  Naheliegende Lösung: Grundwert unangetastet lassen und die wirksame Chance aus
+  Grundwert plus benannten Zuschlägen berechnen. Dann ist nachvollziehbar,
+  woher eine Änderung kommt, und sie lässt sich einzeln wieder entfernen.
 
 ## + Lernnotizen
 
