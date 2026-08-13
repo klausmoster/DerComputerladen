@@ -16,19 +16,48 @@ Android, iOS, Mobile, Touch oder Web. Das ist dauerhaft entschieden, nicht
   GLES-Beschränkungen.
 - Android-Build-Templates werden nie installiert.
 
-**Godot-Code entsteht im Co-Op.** Der Godot-Teil (`src/`) wird *gemeinsam mit
-dem Entwickler* gebaut, nicht von Claude allein durchgezogen — er lernt dabei
-Godot und GDScript. Konkret:
-- Bei Godot-Aufgaben nicht losimplementieren, sondern erst Ansatz und
-  Aufteilung klären: was macht er, was Claude.
-- Erklären statt nur liefern — warum diese Node-Struktur, warum Signal statt
-  direktem Zugriff, was ein Autoload/Resource tut. An der konkreten Stelle im
-  Projekt, kein Tutorial-Vortrag.
-- Kleine, überprüfbare Schritte statt fertiger Feature-Blöcke.
-- Schreibt er selbst, ist Claudes Rolle Review/Sparringspartner.
+**Rollenverteilung.** Gearbeitet wird featureweise: „wir arbeiten jetzt an
+Feature xy", und darüber wird geredet. Dabei gilt:
 
-Ausgenommen: die Daten in `docs/game_bible/` und die Skills dürfen
-selbstständig befüllt werden.
+- **Claude** schreibt Specs, beschafft Informationen (Recherche, Godot-Doku,
+  Fachquellen), bereitet den Weg vor, erklärt Konzepte, gibt Review und
+  erstellt auf Wunsch Beispielcode zum Lernen.
+- **Klaus** arbeitet in Godot — Szenen, Nodes, GDScript. Das ist ausdrücklich
+  seine Arbeit und wird ihm nicht abgenommen; er will Godot dabei lernen.
+
+Die Grenze ist fließend: einzelne Tasks gehen im Gespräch an Claude über, das
+ist der Normalfall. Aber **nicht eigenmächtig implementieren** — ein
+Feature-Dokument ist eine Beschreibung, keine Beauftragung. Bei unklarer Lage
+eine Aufteilung vorschlagen und nachfragen.
+
+Alles, was Claude an Code erzeugt, sieht Klaus sich **vorher** an. Es ist
+Lern- und Vorlagenmaterial, kein Ergebnis, das ungesehen ins Projekt wandert.
+
+Erklären statt nur liefern: warum diese Node-Struktur, warum Signal statt
+direktem Zugriff, was ein Autoload/Resource tut — an der konkreten Stelle im
+Projekt, kein Tutorial-Vortrag. Kleine, überprüfbare Schritte.
+
+Ausgenommen von alldem: die Daten in `docs/game_bible/`, die Feature-Docs und
+die Skills dürfen selbstständig befüllt werden.
+
+## Featureweise arbeiten
+
+Feature-Dokumente liegen in `docs/features/`, ein Dokument pro Feature, angelegt
+und weitergeschoben mit `/dcl-feature`. `TEMPLATE_FEATURE.md` ist die Autorität
+für Struktur und Felder.
+
+- `Features.md` — Systemliste 01–11 und Index der vorhandenen Feature-Docs
+- `Feature_Ideas.md` — unverbindlicher Backlog; IDs dort sind reserviert, nicht
+  vergeben
+- IDs sind `SS-NN` (System, laufende Nummer) und stabil — Wikilinks, Branches
+  (`feature/02-01-bible-importer`) und Commits verweisen darauf
+- Drei Phasen: `spec` (was und woran erkennbar fertig) → `plan` (technischer
+  Vertrag, Schritte) → `tasks` (Umsetzung, Entscheidungen, Lernnotizen).
+  Das Dokument wächst mit, es wird nicht auf einmal geschrieben.
+- In `## + Schritte` trägt jeder Schritt einen Besitzer: `[K]` Klaus, `[C]` Claude.
+
+Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
+`docs/features/` der Bauplan (*wie*), `docs/game_bible/` der Spielinhalt.
 
 ## Aufbau
 

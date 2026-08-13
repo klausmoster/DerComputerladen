@@ -1,0 +1,128 @@
+# Feature-Ideen
+
+Vormerkungen. Alles hier ist **unverbindlich** — noch nicht spezifiziert, noch
+nicht entschieden, Reihenfolge offen. Sobald an einem Punkt wirklich gearbeitet
+wird, entsteht daraus ein eigenes Dokument nach `TEMPLATE_FEATURE.md` und der
+Eintrag wandert in die Tabelle in [[Features]].
+
+Die IDs sind **reserviert, nicht vergeben** — sie können sich noch verschieben.
+Abgeleitet aus `docs/game_design.md`, ergänzt um das, was beim Bauen der
+Zeitleiste aufgefallen ist.
+
+---
+
+## 01 Zeitleiste
+
+Weitgehend gebaut ([[01-01-spieluhr]], [[01-02-ereignis-engine]]).
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 01-03 | Ereignis-Historie nutzbar machen — `Timeline.history` wird gefüllt, aber nie gelesen. Rückblick „was ist passiert" | 01-02 |
+| 01-04 | Ereignisse datengetrieben statt in GDScript — sobald die Datenbank über ~50 Einträge wächst | 02-01 |
+| 01-05 | Spielstart zu einem späteren Datum — `fast_forward_to()` ist dafür da, die Uhr kann es aber nicht | 01-01 |
+
+## 02 Produktdatenbank
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 02-01 | game_bible-Importer — **spezifiziert**, siehe [[02-01-bible-importer]] | — |
+| 02-02 | Warengruppen — die `target`-Strings der Timeline (`"cpu_486"`, `"ram"`) auf echte Produkte abbilden | 02-01 |
+| 02-03 | Produktlebenszyklus — Verfügbarkeit aus `grunddaten_einführung_de` / `marktende_de` | 02-01 |
+| 02-04 | Kompatibilitätsregeln — der `kompatibilität`-Block der game_bible als prüfbare Bedingungen („braucht ISA-Slot") | 02-01 |
+| 02-05 | Qualitätsfaktor pro Produkt — Grundlage für Ausfallraten | 02-01 |
+
+## 03 Wirtschaftsmodell
+
+Das größte unbearbeitete System. Hier hängen die meisten Timeline-Effekte in der Luft.
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 03-01 | Preiskurven — zwischen den Stützmonaten der game_bible interpolieren; erster echter Abnehmer für `PREIS`-Effekte | 02-01 |
+| 03-02 | Nachfrage-Simulation — Abnehmer für `NACHFRAGE`-Effekte | 03-01 |
+| 03-03 | Kundentypen — Privatkundschaft, Gamer, Geschäftskunden, Bastler mit je eigenem Verhalten | 03-02 |
+| 03-04 | Kaufkraft-Faktoren — Standort, Jahreszeit, Wirtschaftslage, Reputation; Abnehmer für `KUNDENSTROM` | 03-02 |
+| 03-05 | Reputation — Abnehmer für `REPUTATION`-Effekte | 03-02 |
+| 03-06 | Finanzen — Konto, Kredit, laufende Kosten, Gewinn/Verlust *(siehe Frage unten)* | — |
+
+## 04 Informationssystem
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 04-01 | Magazin-Abos — Hardware-, Software-, Branchenmagazin; Abnehmer für `PRESSE`-Effekte | 01-02 |
+| 04-02 | Wissensvorsprung — wer früh informiert ist, deckt sich günstiger ein | 04-01, 07-01 |
+
+## 05 Standortsystem
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 05-01 | Standortwahl zu Spielbeginn — Miete, Fläche, Laufkundschaft, Sichtbarkeit | 03-04 |
+| 05-02 | Ladenausbau — Fläche, Werkstatt, Schaufenster, Lager erweitern | 05-01 |
+
+## 06 Marketingsystem
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 06-01 | Werbekanäle — Zeitungsanzeigen, Flyer, Schaufenster | 03-02 |
+| 06-02 | Mundpropaganda — ergibt sich aus Reputation, nicht kaufbar | 03-05 |
+| 06-03 | Eigene Webseite — erst ab ca. 1995–1997 freigeschaltet | 06-01 |
+
+## 07 Handelsnetzwerk
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 07-01 | Lager & Bestellung — Bestand, Wertverlust (der `lager`-Block der game_bible ist dafür schon da) | 02-01 |
+| 07-02 | Bezugsquellen — seriöser Großhändler, Messe, Restposten, windiger Händler | 07-01, 02-05 |
+| 07-03 | Einkaufskonditionen — Mindestbestellmengen, Lieferzeiten, Abnehmer für `LIEFERUNG`-Effekte | 07-02 |
+
+## 08 Qualität & Risiko
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 08-01 | Ausfallraten & Gewährleistung — würfeln beim Verkauf | 02-05 |
+| 08-02 | Reklamationen — Abnehmer für `REKLAMATION`-Ereignisse, Rückwirkung auf Reputation | 08-01, 03-05 |
+| 08-03 | Gegenmaßnahmen — Qualitätsprüfung, Versicherung, Garantieverlängerung | 08-01 |
+
+## 09 Adventure-Layer
+
+Im GDD als Genre gesetzt, aber nirgends ausgearbeitet — hier ist am meisten offen.
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 09-01 | Orte & Navigation — Laden, Großhändler, Messe, Bank, Kiosk, Konkurrenz, Post | 10-02 |
+| 09-02 | Dialogsystem — im GDD ausdrücklich als offene Frage markiert | 09-01 |
+| 09-03 | Kundenberatung — der eigentliche Verkaufsvorgang als Dialog | 09-02, 03-03 |
+
+## 10 Präsentation & UI
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 10-01 | Demo-UI ablösen — `timeline_demo.tscn` ist ein Testgerüst mit per Code gebauter UI | — |
+| 10-02 | Laden-Bildschirm — der Hauptschauplatz | 10-03 |
+| 10-03 | Pixel-Art-Pipeline — Zielauflösung, Skalierung, Import-Einstellungen festlegen | — |
+| 10-04 | Ereignis-Anzeige im Spiel — Timeline-Ereignisse als Zeitungsmeldung statt als Log | 01-02, 04-01 |
+
+## 11 Infrastruktur
+
+| ID | Idee | Braucht |
+|---|---|---|
+| 11-01 | Speichersystem — betrifft `GameClock._day_index`, `Timeline.history/_occurrences/_pending_effects` | — |
+| 11-02 | Sound & Musik — MIDI-/AdLib-Ästhetik, im GDD noch offen | — |
+| 11-03 | Build & Export — Windows/macOS/Linux; `export_presets.cfg` vor dem Committen prüfen | — |
+| 11-04 | Tutorial & Einstieg — im GDD als offene Frage markiert | viele |
+| 11-05 | Spielziel — Gewinn-/Verlustbedingungen, Schwierigkeitsgrade. Zuerst eine Design-, dann eine Bau-Frage | 03-06 |
+
+---
+
+## Zu klären, bevor IDs vergeben werden
+
+- **Finanzen haben kein eigenes System.** Konto, Kredit, laufende Kosten und
+  Gewinn/Verlust stecken im GDD nur implizit (die Bank taucht als Spielort auf).
+  Für eine Wirtschaftssimulation ist das aber ein Kernsystem. Provisorisch als
+  03-06 unter Wirtschaftsmodell einsortiert — oder soll es ein eigenes System
+  werden? Dann verschieben sich Nummern.
+- **09 Adventure-Layer ist unterspezifiziert.** Das GDD nennt das Genre
+  „Point-and-Click Adventure", aber Dialogsystem und Verkaufsvorgang stehen unter
+  „Offene Fragen". Solange das nicht geklärt ist, lassen sich 09-02 und 09-03
+  nicht sinnvoll spezifizieren.
+- **Reihenfolge:** Fast alles hängt an 02-01 und 03-01. Die beiden zuerst zu
+  bauen macht die meisten anderen Features überhaupt erst spezifizierbar.
