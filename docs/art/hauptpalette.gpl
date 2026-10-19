@@ -1,0 +1,264 @@
+GIMP Palette
+Name: Computerladen Hauptpalette
+Columns: 16
+# Eingefroren am 2026-10-19. Neue Szenen werden auf diese Palette gerechnet, nicht umgekehrt.
+# Index 0: Transparenz (im indizierten PNG per tRNS durchsichtig).
+# Index 1-15: Oberflächenfarben aus dem Style-Guide.
+# Index 16-255: Szenenfarben per Median-Cut aus: stilanker-c2.jpg, t-01-titelbild.jpg, c-01-cover.jpg
+#
+255   0 255	Transparenz
+ 29  25  22	tusche
+ 24  35  59	nacht
+ 44  61  99	nacht-hell
+111 102  84	gehaeuse-dunkel
+189 179 154	gehaeuse
+228 220 198	gehaeuse-hell
+245 240 226	papier
+207 226 195	endlos-gruen
+ 13  23  22	anzeige-grund
+111 240 207	anzeige
+192  57  43	kassenrot
+242 191  47	signalgelb
+ 31 111 117	petrol
+139  90  52	holz
+ 87  53  29	holz-dunkel
+  8   3  12	szene-001
+ 19   6  15	szene-002
+ 21   9  23	szene-003
+ 31  11  19	szene-004
+ 31  18  35	szene-005
+ 32  27  34	szene-006
+ 33  28  43	szene-007
+ 41  27  33	szene-008
+ 40  28  42	szene-009
+ 37  32  51	szene-010
+ 48  30  36	szene-011
+ 43  35  40	szene-012
+ 51  35  42	szene-013
+ 47  36  49	szene-014
+ 40  40  60	szene-015
+ 49  41  39	szene-016
+ 58  37  42	szene-017
+ 56  39  48	szene-018
+ 51  42  50	szene-019
+ 58  40  48	szene-020
+ 58  41  49	szene-021
+ 59  42  41	szene-022
+ 53  46  51	szene-023
+ 62  42  49	szene-024
+ 49  47  62	szene-025
+ 68  42  38	szene-026
+ 62  47  41	szene-027
+ 57  48  61	szene-028
+ 65  46  50	szene-029
+ 59  50  51	szene-030
+ 72  46  49	szene-031
+ 52  56  65	szene-032
+ 68  50  62	szene-033
+ 70  52  42	szene-034
+ 63  55  51	szene-035
+ 73  50  50	szene-036
+ 72  55  42	szene-037
+ 62  57  63	szene-038
+ 74  55  50	szene-039
+ 58  60  80	szene-040
+ 72  57  63	szene-041
+ 72  60  50	szene-042
+ 58  64  66	szene-043
+ 68  61  76	szene-044
+ 66  64  84	szene-045
+ 73  65  64	szene-046
+ 60  71  67	szene-047
+ 86  61  67	szene-048
+ 66  74  51	szene-049
+ 88  66  69	szene-050
+ 77  72  64	szene-051
+ 65  73  90	szene-052
+ 92  68  55	szene-053
+ 75  74  84	szene-054
+ 89  72  71	szene-055
+ 70  80  94	szene-056
+ 76  81  93	szene-057
+ 69  85  94	szene-058
+ 91  80  72	szene-059
+ 92  80  86	szene-060
+ 87  84  98	szene-061
+ 95  89  73	szene-062
+ 96  94  87	szene-063
+ 91  94 107	szene-064
+ 96  95  97	szene-065
+111  94  92	szene-066
+113 104  92	szene-067
+112 104 105	szene-068
+112 105 113	szene-069
+114 114 107	szene-070
+125 115 103	szene-071
+108 120 126	szene-072
+138 119  99	szene-073
+127 122 121	szene-074
+139 130 121	szene-075
+138 132 133	szene-076
+138 138 147	szene-077
+156 139 119	szene-078
+156 143 132	szene-079
+154 148 146	szene-080
+161 156 140	szene-081
+163 162 148	szene-082
+177 167 150	szene-083
+164 175 150	szene-084
+156 178 193	szene-085
+178 175 158	szene-086
+178 186 190	szene-087
+195 193 184	szene-088
+180 202 215	szene-089
+195 214 221	szene-090
+215 211 193	szene-091
+199 224 234	szene-092
+205 224 230	szene-093
+233 239 221	szene-094
+ 46  16  25	szene-095
+ 55  19  26	szene-096
+ 64  29  27	szene-097
+ 88  42  39	szene-098
+116   9  14	szene-099
+ 90  59  54	szene-100
+ 46  16  11	szene-101
+ 60  21  11	szene-102
+ 65  27  15	szene-103
+ 73  29  15	szene-104
+ 69  36  27	szene-105
+ 88  31  17	szene-106
+ 73  47  40	szene-107
+ 89  37  19	szene-108
+ 90  42  28	szene-109
+ 93  43  22	szene-110
+ 88  50  41	szene-111
+ 88  58  43	szene-112
+115  43  16	szene-113
+119  44  32	szene-114
+118  56  28	szene-115
+119  59  40	szene-116
+126  67  36	szene-117
+113  76  66	szene-118
+122  72  48	szene-119
+143  54  34	szene-120
+149  63  31	szene-121
+145  68  32	szene-122
+132  77  67	szene-123
+143  79  45	szene-124
+171  53  38	szene-125
+151  80  43	szene-126
+134  90  72	szene-127
+149  89  49	szene-128
+157  82  67	szene-129
+130  99  82	szene-130
+168  77  39	szene-131
+151  92  55	szene-132
+162  93  52	szene-133
+156  96  69	szene-134
+175  91  67	szene-135
+169  98  54	szene-136
+158 105  78	szene-137
+165 102  62	szene-138
+186  97  48	szene-139
+195  88  65	szene-140
+175 106  65	szene-141
+176 116  67	szene-142
+173 118  83	szene-143
+198 104  74	szene-144
+197 126  71	szene-145
+198 131  86	szene-146
+216 121  49	szene-147
+215 123  54	szene-148
+209 133  75	szene-149
+221 127  54	szene-150
+215 130  93	szene-151
+218 157 120	szene-152
+241 162 121	szene-153
+246 176 129	szene-154
+251 179 136	szene-155
+ 92  67  46	szene-156
+ 95  74  52	szene-157
+ 98  82  53	szene-158
+112  88  67	szene-159
+121  88  46	szene-160
+120  91  56	szene-161
+116  97  70	szene-162
+129  99  66	szene-163
+131 105  68	szene-164
+130 106  86	szene-165
+135 113  77	szene-166
+143 116  66	szene-167
+142 118  84	szene-168
+149 121  91	szene-169
+168 117  50	szene-170
+147 131 105	szene-171
+156 132  79	szene-172
+156 133 102	szene-173
+172 136  60	szene-174
+173 135  75	szene-175
+172 138  96	szene-176
+174 147  94	szene-177
+174 146 119	szene-178
+178 149  92	szene-179
+178 149 108	szene-180
+184 154 103	szene-181
+177 160 131	szene-182
+215 149  85	szene-183
+188 161 118	szene-184
+210 154  62	szene-185
+216 156  96	szene-186
+190 167 134	szene-187
+226 158  97	szene-188
+193 174 141	szene-189
+212 175  66	szene-190
+227 166  99	szene-191
+217 174  98	szene-192
+210 177 127	szene-193
+195 184 155	szene-194
+214 181 140	szene-195
+220 196 146	szene-196
+218 200 167	szene-197
+242 194 140	szene-198
+115 115  75	szene-199
+129 131 103	szene-200
+144 132  80	szene-201
+147 148  90	szene-202
+163 163  88	szene-203
+188 157  66	szene-204
+195 167  67	szene-205
+209 186  84	szene-206
+235 219 170	szene-207
+233 221 184	szene-208
+228 232 191	szene-209
+238 229 185	szene-210
+ 60  68  40	szene-211
+ 56 110  66	szene-212
+112 133  65	szene-213
+123 196  86	szene-214
+ 49  80  69	szene-215
+ 25  95  70	szene-216
+ 59 117  92	szene-217
+ 58  96  92	szene-218
+130 168 188	szene-219
+ 38  51  87	szene-220
+ 48  70 131	szene-221
+ 62  77 122	szene-222
+ 46  79 147	szene-223
+ 54  83 147	szene-224
+ 41  93 188	szene-225
+ 41  95 194	szene-226
+ 40  95 195	szene-227
+ 65 105 145	szene-228
+ 53 101 188	szene-229
+ 53 103 192	szene-230
+ 64 108 183	szene-231
+ 75 117 188	szene-232
+ 69 129 194	szene-233
+103 130 163	szene-234
+125 144 171	szene-235
+ 28  26  50	szene-236
+ 52  59  89	szene-237
+ 92  99 127	szene-238
+ 22  13  33	szene-239
+ 40  17  26	szene-240

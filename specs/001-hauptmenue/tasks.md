@@ -41,7 +41,7 @@ allem anderen.
 **Purpose**: Zuerst den Style-Guide ergänzen (Grundsatz IV), dann Palette, Werkzeuge, Schriften und
 Export-Vorlagen bereitstellen
 
-- [ ] T001 [C] Style-Guide ergänzen, Oberfläche (plan.md, Vorarbeiten 1, 2, 3 und 5) im Artifact
+- [x] T001 [C] Style-Guide ergänzen, Oberfläche (plan.md, Vorarbeiten 1, 2, 3 und 5) im Artifact
   https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX:
   - Baustein Menü: Zustand „nicht verfügbar“ mit Text und Pfeil in `gehaeuse-dunkel`, samt
     Kontrastbegründung (4,98 / 4,14 / 3,31 : 1, Regel für große Schrift).
@@ -50,22 +50,22 @@ Export-Vorlagen bereitstellen
     Oberflächenpixel links neben der gewählten Zeile, erscheint sofort.
   - Startgrund `anzeige-grund`.
   - Anrede „du“ für alle Texte.
-- [ ] T002 [C] Style-Guide ergänzen, Bild (plan.md, Vorarbeiten 4 und 6):
+- [x] T002 [C] Style-Guide ergänzen, Bild (plan.md, Vorarbeiten 4 und 6):
   - Abschnitt App-Symbol: Monitor aus dem Ladenschild auf `nacht`, 1024 × 1024 nach Apples
     Symbolraster, Liquid-Glass-Fassung.
   - Nachbearbeitung, Schritt 2: Flächenmittel, wenn die gemalten Pixel ungleich groß sind.
   - Hauptpalette aus „den ersten freigegebenen Bildern“.
-- [ ] T003 [K] Ergänzungen aus T001 und T002 im Style-Guide ansehen und freigeben
-- [ ] T004 [C] [P] `/build/` in die `.gitignore` im Repo-Root aufnehmen (Export-Ziel, research.md, R4)
-- [ ] T005 [C] Hauptpalette erzeugen mit `tools/raster/make_palette.py` (nur Standardbibliothek,
+- [x] T003 [K] Ergänzungen aus T001 und T002 im Style-Guide ansehen und freigeben
+- [x] T004 [C] [P] `/build/` in die `.gitignore` im Repo-Root aufnehmen (Export-Ziel, research.md, R4)
+- [x] T005 [C] Hauptpalette erzeugen mit `tools/raster/make_palette.py` (nur Standardbibliothek,
   Bilder per `sips` als BMP gelesen): 240 Farben per Median-Cut aus
   `docs/art/leonardo/stilanker-c2.jpg`, `t-01-titelbild.jpg` und `c-01-cover.jpg`, dazu die 15
   Oberflächenfarben aus `tokens.json` des Style-Guides und eine Transparenzfarbe; Ausgabe
   `docs/art/hauptpalette.gpl` und Farbtafel `docs/art/hauptpalette.png` (research.md, R7)
-- [ ] T006 [C] [P] Rasterskript `tools/raster/rasterize.py`: Flächenmittel auf die Zielgröße,
+- [x] T006 [C] [P] Rasterskript `tools/raster/rasterize.py`: Flächenmittel auf die Zielgröße,
   Abbildung auf `docs/art/hauptpalette.gpl` ohne Dithering, Ausgabe als indiziertes PNG mit
   Transparenz; Aufruf und Reihenfolge in `tools/raster/README.md` (research.md, R6)
-- [ ] T007 [C] [P] Nach Freigabe des Downloads durch Klaus: Pixelify Sans und Doto von Google Fonts
+- [x] T007 [C] [P] Nach Freigabe des Downloads durch Klaus: Pixelify Sans und Doto von Google Fonts
   samt SIL-OFL-Lizenz nach `src/assets/fonts/` als `PixelifySans-Variable.ttf`,
   `Doto-Variable.ttf`, `OFL-PixelifySans.txt` und `OFL-Doto.txt` (research.md, R8)
 - [ ] T008 [K] [P] Export-Vorlagen 4.7.2 im Godot-Editor installieren: „Editor → Export-Vorlagen

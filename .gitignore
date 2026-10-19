@@ -5,3 +5,10 @@
 # appearance.json, core-plugins.json, graph.json) — nur der persönliche
 # Fenster-/Tab-Zustand nicht.
 docs/game_bible/.obsidian/workspace.json
+
+# Export-Ziel der Godot-Builds (z. B. build/macos/Der Computerladen.app) —
+# jederzeit neu erzeugbar, siehe specs/001-hauptmenue/quickstart.md.
+/build/
+
+# Python-Zwischendateien der Werkzeuge unter tools/
+__pycache__/
