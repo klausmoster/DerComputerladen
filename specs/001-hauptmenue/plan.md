@@ -60,7 +60,7 @@ drei Bild-Assets, zwei Schriften, zwei Werkzeugskripte
 | Grundsatz | Prüfung | Vor Phase 0 | Nach Phase 1 |
 |---|---|---|---|
 | I. Nur Desktop | macOS-Export, Maus und Tastatur, Forward+ bleibt, keine Touch-Eingaben | erfüllt | erfüllt |
-| II. Klaus baut, Claude bereitet vor | Der Plan enthält nur Signaturen, keine Rümpfe. Die Aufteilung `[K]`/`[C]` folgt in den Tasks, `/speckit-implement` wird nicht verwendet | erfüllt | erfüllt |
+| II. Klaus entscheidet, der Agent baut, Claude plant und prüft (Verfassung 2.0.0) | Der Plan enthält nur Signaturen, keine Rümpfe. Die Aufteilung `[K]`/`[A]`/`[C]` folgt in den Tasks; umgesetzt wird phasenweise auf Klaus' Auftrag, `/speckit-implement` wird nicht verwendet | erfüllt | erfüllt |
 | III. Erst spezifizieren | Spec geklärt (fünf Fragen), eigener Branch, Godot-Details erst hier, Entscheidungen mit Alternativen in research.md | erfüllt | erfüllt |
 | IV. Ein Look: der Style-Guide | Folgendes fehlt im Style-Guide, siehe „Vorarbeiten“ unten: Zustand „nicht verfügbar“, Hinweis, Startgrund, App-Symbol, Nachbearbeitung bei ungleichem Raster. Es wird vor dem Bauen ergänzt. | erfüllt mit Vorarbeit | erfüllt mit Vorarbeit |
 | V. Daten sauber halten | game_bible unberührt, keine Spieldaten im Code | erfüllt | erfüllt |
@@ -160,5 +160,6 @@ sind erledigt.
 
 ## Offene Entscheidungen für Klaus
 
-- **Rollen:** ob Agents künftig auch `[K]`-Aufgaben umsetzen sollen. Das würde Grundsatz II und
-  CLAUDE.md ändern und muss vor `/speckit-tasks` feststehen.
+Keine. Die Rollenfrage ist entschieden: Der Godot-Agent `godot-entwickler` setzt die Arbeit in
+Godot um, `[K]` bleibt für das, was Klaus selbst lernen will oder was nur im Editor, in
+Grafikprogrammen oder mit seiner Entscheidung geht (Verfassung 2.0.0, Grundsatz II).
