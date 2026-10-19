@@ -1,7 +1,7 @@
 # Der Computerladen — Arbeitsanweisungen
 
 Wirtschaftssimulation + Point-and-Click-Adventure, Deutschland 1985–1999.
-Engine: Godot 4.6 / GDScript. Konzept: `docs/game_design.md`.
+Engine: Godot 4.7 / GDScript. Konzept: `docs/game_design.md`.
 
 ## Harte Rahmenbedingungen
 

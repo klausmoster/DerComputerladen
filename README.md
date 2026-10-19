@@ -95,7 +95,7 @@ wie bei den Komponenten: Template ist die Autorität, der Skill bleibt dünn.
 2. **Phase füllen** — `spec` (Problem, Lösung, Akzeptanzkriterien) → `plan`
    (technischer Vertrag, Schritte, Godot-Bauteile) → `tasks` (Entscheidungen,
    offene Fragen, Lernnotizen). Nur die aktuelle Phase, keine Vorgriffe.
-3. **Recherche vor dem Vertrag** — Godot-Doku zur Version 4.6 und bestehender
+3. **Recherche vor dem Vertrag** — Godot-Doku zur Version 4.7 und bestehender
    Code, nicht aus dem Gedächtnis spezifizieren.
 4. **Schritte mit Besitzer** — jeder Schritt `[K]` oder `[C]`, klein geschnitten.
 5. **Index pflegen** — `Features.md` und ggf. `Feature_Ideas.md` nachziehen.

@@ -62,7 +62,7 @@ Phase; spätere bleiben leer stehen (nicht löschen).
 Bevor ein technischer Vertrag entsteht:
 
 1. **Godot-Doku** zur betroffenen Klasse/API lesen — nicht aus dem Gedächtnis
-   spezifizieren. Godot-Version ist 4.6 (siehe `src/project.godot`); Antworten
+   spezifizieren. Godot-Version ist 4.7 (siehe `src/project.godot`); Antworten
    für Godot 3 sind unbrauchbar und kursieren zahlreich.
 2. **Bestehenden Code lesen**, an den das Feature andockt — vor allem
    `src/core/` und die Autoloads in `src/project.godot`.
