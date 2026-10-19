@@ -98,6 +98,7 @@ Stories aufbauen
 - [x] T011 [A] Schriften aus T007 importieren, Einstellungen in den `.import`-Dateien unter
   `src/assets/fonts/`: `antialiasing` None, `hinting` None, `subpixel_positioning` Disabled,
   `generate_mipmaps` aus, `multichannel_signed_distance_field` aus (research.md, R8)
+  - Dieselben Werte nach der Schriftprobe für Ark Pixel 10 und 12.
 - [x] T012 [A] Theme `src/ui/computerladen_theme.tres` laut Vertrag:
   - Standardschrift Pixelify Sans, Größe 10.
   - Varianten `MenuRow`, `MenuHeader`, `Subtitle`, `VersionLine`, `HintPanel` und `HintLabel`.
@@ -105,6 +106,8 @@ Stories aufbauen
   - `gui/theme/custom` in `src/project.godot` setzen.
   - Nach der Sichtprobe (T013): Pixelify Sans im Gewicht 400, Wortabstand über `spacing_space`,
     `HintLabel` und `VersionLine` in Größe 10, `Subtitle` in `drucker`.
+  - Nach der Schriftprobe: `text` in Ark Pixel 10, `menue` in Ark Pixel 12, ohne Gewicht und
+    Wortabstand (research.md, R8). Die Sichtprobe dazu folgt im Titelbildschirm.
 - [x] T013 [K] Sichtprobe der Schriften bei 8, 10 und 12 Pixeln im Editor: gleichmäßige Striche,
   keine grauen Kantenpixel; Abweichungen an Claude melden (research.md, R8)
   - Erste Runde am 2026-10-19: Bei 12 kleben die Wörter, bei 8 sind Pixelify Sans und Doto nicht
@@ -135,6 +138,8 @@ Stories aufbauen
   - Stellt sich 4 Oberflächenpixel links neben `row_rect`, erscheint ohne Verzögerung und bleibt
     stehen, bis `show_for` mit einer anderen Zeile kommt (FR-017).
   - Nach der Sichtprobe (T013): Umbruch bei 150, Kasten höchstens 160 breit.
+  - In Phase 3: Die Wuchsrichtung nach links setzt `_ready()`, weil `layout_mode = 0` an der
+    Instanz sie beim Laden zurücksetzt.
 - [x] T017 [A] Tests in `src/test/test_main_menu.gd` (Grundlagen): vier Einträge in der Reihenfolge
   „Neues Spiel“, „Spiel laden“, „Einstellungen“, „Beenden“; nur `quit` verfügbar;
   Startauswahl 0; `select()` sendet `selection_changed`
@@ -151,26 +156,28 @@ Auftrag für Phase 3.
 **Independent Test**: App bauen und im Finder doppelklicken: Der Titelbildschirm erscheint im
 Vollbild (quickstart.md, Abschnitte 4 und 5).
 
-- [ ] T018 [C] [US1] Titelbild rastern mit `tools/raster/rasterize.py`:
+- [x] T018 [C] [US1] Titelbild rastern mit `tools/raster/rasterize.py`:
   `docs/art/leonardo/t-01-titelbild.jpg` auf 1920 × 1080 beschneiden (je 4 Pixel oben und unten),
   dann auf genau 320 × 180 Bildpixel → `src/assets/images/title_t01.png` (FR-019)
-- [ ] T019 [C] [P] [US1] Logo rastern: `docs/art/leonardo/logo-ladenschild.png` mit Faktor 6 auf
+- [x] T019 [C] [P] [US1] Logo rastern: `docs/art/leonardo/logo-ladenschild.png` mit Faktor 6 auf
   etwa 142 × 27 Bildpixel mit Transparenz → `src/assets/images/logo_ladenschild.png`. Bricht der
-  Schriftzug auf, Ausweichlösung Faktor 3 (FR-019, research.md, R6).
+  Schriftzug auf, Ausweichlösung Faktor 3 (FR-019, research.md, R6). Ergebnis 141 × 27, der
+  Schriftzug bleibt lesbar.
 - [ ] T020 [K] [US1] Groben Feinschliff an `src/assets/images/title_t01.png` und
   `src/assets/images/logo_ladenschild.png` in Pixelorama oder Aseprite: Einzelpixel und
-  Farbreste entfernen, nur Farben der Hauptpalette; die Dateien bleiben an ihrem Ort
-- [ ] T021 [C] [P] [US1] App-Symbol per Skript `tools/raster/make_icon.py` vorbereiten:
-  - Den Monitor aus `docs/art/leonardo/logo-ladenschild.png` aufs Bildraster und auf die
-    Hauptpalette bringen, ganzzahlig vergrößert auf eine Fläche von 1024 × 1024 nach Apples
-    Symbolraster setzen, Grundfläche `nacht` → `src/assets/icon/app_icon.png`.
+  Farbreste entfernen, nur Farben der Hauptpalette; die Dateien bleiben an ihrem Ort. Danach
+  erzeugt Claude das App-Symbol neu (T021), denn es nimmt den Monitor aus dem Logo
+- [x] T021 [C] [P] [US1] App-Symbol per Skript `tools/raster/make_icon.py` vorbereiten:
+  - Den Monitor aus dem gerasterten Logo `src/assets/images/logo_ladenschild.png` (T019) nehmen,
+    also auf Bildraster und Hauptpalette, ganzzahlig vergrößert auf eine Fläche von 1024 × 1024
+    nach Apples Symbolraster setzen, Grundfläche `nacht` → `src/assets/icon/app_icon.png`.
   - Die Ebenen für Icon Composer (Monitor freigestellt, Grundfarbe) nach `docs/art/app_icon/`
     (FR-002, research.md, R5).
 - [ ] T022 [K] [US1] Liquid-Glass-Symbol in Icon Composer (Xcode 27.1) aus den Ebenen in
   `docs/art/app_icon/` bauen und als `src/assets/icon/app_icon.icon/` mit `.gdignore` darin
   ablegen
 - [ ] T023 [K] [US1] Gerastertes Titelbild, Logo und App-Symbol freigeben (SC-007)
-- [ ] T024 [A] [US1] Titelbildschirm `src/scenes/title/title_screen.tscn` und
+- [x] T024 [A] [US1] Titelbildschirm `src/scenes/title/title_screen.tscn` und
   `src/scenes/title/title_screen.gd` (`class_name TitleScreen extends Control`) laut Vertrag, mit
   den Bildern aus T018 und T019; Klaus' Feinschliff ändert nur deren Inhalt, nicht die Dateien:
   - Background als `TextureRect` (`title_t01.png`, 640 × 360, stretch_mode SCALE).
@@ -183,9 +190,9 @@ Vollbild (quickstart.md, Abschnitte 4 und 5).
   - `const STAGE := "PROTOTYP"` und
     `static func version_text(version: String) -> String`: „0.1“ wird zu „V0.1 · PROTOTYP“, leer
     zu „PROTOTYP“ (FR-005, FR-006, FR-014).
-- [ ] T025 [A] [P] [US1] Tests in `src/test/test_title_screen.gd`: `version_text("0.1")` ergibt
+- [x] T025 [A] [P] [US1] Tests in `src/test/test_title_screen.gd`: `version_text("0.1")` ergibt
   „V0.1 · PROTOTYP“, `version_text("")` ergibt „PROTOTYP“
-- [ ] T026 [A] [US1] Autoload `src/core/game_window.gd` (`GameWindow`, `extends Node`) laut
+- [x] T026 [A] [US1] Autoload `src/core/game_window.gd` (`GameWindow`, `extends Node`) laut
   Vertrag:
   - `BASE_SIZE`, `toggle_fullscreen()`, `is_fullscreen()` und
     `static func best_factor(usable: Vector2i, decorations: Vector2i) -> int`.
@@ -194,10 +201,12 @@ Vollbild (quickstart.md, Abschnitte 4 und 5).
     zentrieren.
   - Eingabe-Aktion `toggle_fullscreen` (Ctrl+Cmd+F, physische Taste) und Autoload-Eintrag in
     `src/project.godot` (FR-004, FR-013).
-- [ ] T027 [A] [P] [US1] Tests in `src/test/test_game_window.gd`: `best_factor` für 1920 × 1050
+  - Umgesetzt mit Abfrage in `_process()`, denn `size_changed` kommt bei Stretch `viewport` nie.
+    Nach dem Kürzel wartet GameWindow 1 s auf das Ende des Übergangs; ob das reicht, zeigt T031.
+- [x] T027 [A] [P] [US1] Tests in `src/test/test_game_window.gd`: `best_factor` für 1920 × 1050
   mit Titelleiste 28 (ergibt 2), 2560 × 1410 mit 28 (3), 3840 × 2130 mit 56 (5), 3024 × 1890 mit
   56 (4) und 600 × 300 mit 28 (1)
-- [ ] T028 [A] [US1] In `src/project.godot`: `display/window/size/mode = 3`,
+- [x] T028 [A] [US1] In `src/project.godot`: `display/window/size/mode = 3`,
   `application/run/main_scene = "res://scenes/title/title_screen.tscn"`,
   `application/config/icon = "res://assets/icon/app_icon.png"` (FR-001, FR-003, FR-004)
 - [ ] T029 [A] [US1] Export-Preset „macOS“ in `src/export_presets.cfg` laut Vertrag:

@@ -24,6 +24,13 @@ const SHADOW_OFFSET := 2
 @onready var _text: Label = $Text
 
 
+func _ready() -> void:
+	# Wächst der Hinweis, dann nach links, und die rechte Kante bleibt vor der Zeile. Das
+	# steht auch in menu_hint.tscn, hält dort aber nicht: layout_mode = 0 an einer Instanz
+	# setzt die Wuchsrichtung beim Laden zurück. _ready() kommt danach und gilt immer.
+	grow_horizontal = GROW_DIRECTION_BEGIN
+
+
 func _draw() -> void:
 	# Der Schatten gehört unter das Feld, _draw() malt aber nach dem Feld. Deshalb nur
 	# der Teil, der rechts und unten herausschaut: zwei Streifen, zusammen ein L.

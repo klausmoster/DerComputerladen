@@ -16,7 +16,8 @@ Repo-Root aus, Godot liegt unter `/Applications/Godot.app/Contents/MacOS/Godot`.
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://addons/gut/gut_cmdln.gd
 ```
 
-Erwartet: alle Tests grün, die bisherigen 50 und die neuen für Menü, Fenster und Versionstext.
+Erwartet: alle Tests grün. GDScript-Warnungen zeigt Godot headless nur mit `-d` hinter dem
+Programmnamen; ohne `-d` belegt eine Ausgabe ohne Warnungen nichts.
 
 ## 2. Startprobe ohne Fenster
 
@@ -25,7 +26,11 @@ Erwartet: alle Tests grün, die bisherigen 50 und die neuen für Menü, Fenster 
 ```
 
 Erwartet: Die Hauptszene startet und endet mit Exit-Code 0, ohne Fehler oder Warnungen in der
-Ausgabe.
+Ausgabe. Für die Warnungen dasselbe noch einmal mit `-d`:
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless -d --path src --quit-after 60
+```
 
 ## 3. Im Editor
 

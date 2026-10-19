@@ -27,23 +27,30 @@ def decode(path):
 
 
 def read_png(path):
-    """Liest ein 8-Bit-PNG (RGB oder RGBA, ohne Interlacing)."""
+    """Liest ein 8-Bit-PNG (RGB, RGBA oder indiziert, ohne Interlacing).
+
+    Ein indiziertes Bild kommt als RGBA zurück, die Durchsichtigkeit aus seinem tRNS-Chunk.
+    """
     data = open(path, "rb").read()
     if data[:8] != PNG_SIGNATURE:
         raise ValueError(f"{path}: kein PNG")
-    pos, idat, ihdr = 8, bytearray(), None
+    pos, idat, ihdr, plte, trns = 8, bytearray(), None, b"", b""
     while pos < len(data):
         length, kind = struct.unpack(">I4s", data[pos:pos + 8])
         chunk = data[pos + 8:pos + 8 + length]
         if kind == b"IHDR":
             ihdr = struct.unpack(">IIBBBBB", chunk)
+        elif kind == b"PLTE":
+            plte = chunk
+        elif kind == b"tRNS":
+            trns = chunk
         elif kind == b"IDAT":
             idat += chunk
         elif kind == b"IEND":
             break
         pos += 12 + length
     width, height, depth, ctype, _, _, interlace = ihdr
-    channels = {2: 3, 6: 4}.get(ctype)
+    channels = {2: 3, 3: 1, 6: 4}.get(ctype)
     if depth != 8 or channels is None or interlace != 0:
         raise ValueError(f"{path}: nicht unterstützt (Tiefe {depth}, Farbtyp {ctype}, Interlace {interlace})")
     raw = zlib.decompress(bytes(idat))
@@ -56,6 +63,12 @@ def read_png(path):
         _unfilter(ftype, line, prev, channels)
         rows.append(line)
         prev = line
+    if ctype == 3:
+        # Erst nach dem Entfiltern übersetzen: Die Filter rechnen auf den Indizes.
+        rgba = [plte[3 * k:3 * k + 3] + bytes([trns[k] if k < len(trns) else 255])
+                for k in range(len(plte) // 3)]
+        rows = [bytearray(b"".join(rgba[k] for k in line)) for line in rows]
+        channels = 4
     return width, height, channels, rows
 
 

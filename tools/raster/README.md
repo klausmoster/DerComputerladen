@@ -8,7 +8,8 @@ Python 3 mit Standardbibliothek; JPEG liest `sips` (macOS). Aufruf immer vom Rep
 |---|---|
 | `make_palette.py` | erzeugt einmalig die Hauptpalette `docs/art/hauptpalette.gpl` und die Farbtafel `docs/art/hauptpalette.png` |
 | `rasterize.py` | verkleinert ein Bild per Flächenmittel auf die Endgröße und rechnet es ohne Dithering auf die Hauptpalette |
-| `pngio.py` | gemeinsamer Teil: PNG lesen und schreiben, Flächenmittel, Farbabstand in OKLab |
+| `make_icon.py` | baut das App-Symbol 1024 × 1024 und die Ebenen für Icon Composer aus dem Monitor im gerasterten Logo |
+| `pngio.py` | gemeinsamer Teil: PNG lesen (auch indiziert) und schreiben, Flächenmittel, Farbabstand in OKLab |
 
 ## Reihenfolge
 
@@ -37,6 +38,18 @@ Python 3 mit Standardbibliothek; JPEG liest `sips` (macOS). Aufruf immer vom Rep
 
 3. **Von Hand aufräumen** in Pixelorama oder Aseprite: Einzelpixel und Farbreste entfernen,
    nur Farben der Hauptpalette verwenden (Palette `docs/art/hauptpalette.gpl` laden).
+
+4. **App-Symbol** aus dem gerasterten Logo, nach jedem Aufräumen am Logo neu:
+
+   ```bash
+   python3 -I tools/raster/make_icon.py
+   ```
+
+   Der Monitor (Bildpixel 6 bis 24 × 6 bis 21 des Logos) kommt ×32 mittig auf ein abgerundetes
+   Quadrat in `nacht` nach Apples Symbolraster. Freigestellt wird per Füllung vom Rand: Was über
+   rötliche Pixel mit dem Schildfeld zusammenhängt, fällt weg, auch der Schatten des Monitors.
+   Ergebnis: `src/assets/icon/app_icon.png` und die Ebenen für Icon Composer in
+   `docs/art/app_icon/`.
 
 Warum Flächenmittel statt Nearest Neighbor: Die gemalten Pixel in den Leonardo-Bildern sind
 ungleich groß, Nearest Neighbor würde zufällige Pixel herausgreifen (Style-Guide,

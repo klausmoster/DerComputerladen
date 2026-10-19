@@ -134,3 +134,81 @@ und 150) und die eigene `FontVariation` des Untertitels (er steht jetzt in `druc
 - Doto hat einen festen Vorschub von 6 Pixeln, mit Laufweite 7; die letzte Glyphe bekommt keine
   Laufweite. Der Untertitel ist also 32 × 7 + 6 = 230 breit. Bei Pixelify lässt sich die Breite so
   nicht abzählen, weil jeder Vorschub einzeln gerundet wird.
+
+## Phase 3: App bis zum Titelbildschirm (US1)
+
+### T024 Titelbildschirm (`src/scenes/title/title_screen.tscn`, `title_screen.gd`)
+
+- Szene aus Szenen: `MainMenu` und `MenuHint` sind Instanzen. An einer Instanz steht nur, was
+  abweicht, hier Lage und `entries`.
+- Die vier `MenuEntry` sind Unter-Resources der Titelszene, denn die Daten gehören zum
+  Titelbildschirm, nicht zum Menü. `available = false` steht nicht in der Datei: Godot speichert
+  nur, was vom Standardwert im Skript abweicht.
+- Die Zeile `[connection signal="selection_changed" … method="_on_main_menu_selection_changed"]`
+  schreibt auch der Editor, wenn man im Node-Dock unter „Signale“ verbindet. Verbindungen aus der
+  Szene stehen, bevor `_ready()` läuft; deshalb erreicht die zeitversetzte Startauswahl des Menüs
+  schon den Hinweis. Menü und Hinweis kennen einander nicht, der Titelbildschirm vermittelt.
+- Freie Lage oder Container: Kinder eines einfachen `Control` stehen über ihre Offsets
+  (`layout_mode = 0`), im `VBoxContainer` ordnet der Container (`layout_mode = 2`), Offsets wirken
+  dort nicht.
+- ×2 ohne `scale`: Der Hintergrund ist fest 640 × 360 und streckt die 320 × 180, das Logo bekommt
+  `custom_minimum_size` 282 × 54. Mit `scale` rechneten Container weiter mit der kleinen Größe.
+- Der Einzug von 4 für den Untertitel ist eine `StyleBoxEmpty` mit `content_margin_left = 4` als
+  Override: Ein Label zeichnet seinen Text innerhalb seiner Stylebox, das wirkt wie Padding.
+- Die Versionszeile hängt unten links (`anchors_preset = 2`) und wächst nach oben
+  (`grow_vertical = 0`); ihre Unterkante bleibt bei 354, wie hoch die Schrift auch ist. Den Text
+  setzt `_ready()` aus `ProjectSettings`, im Editor ist die Zeile deshalb leer.
+
+### T025 Tests (`src/test/test_title_screen.gd`)
+
+- Eine statische Funktion ruft man an der Klasse auf: `TitleScreen.version_text("0.1")`. Dafür
+  braucht es keine Instanz, keinen Baum und kein Warten auf Frames.
+
+### T026 GameWindow (`src/core/game_window.gd`, `project.godot`)
+
+- Autoload: `GameWindow="*res://core/game_window.gd"` legt den Node beim Start unter `/root` an.
+  Das Skript hat kein `class_name`, sonst verdeckte der Klassenname den Autoload.
+- `_unhandled_input` kommt zuletzt: Erst nimmt die Oberfläche, was sie braucht (Fokus, Enter),
+  dann das globale Kürzel. Die Taste steht als Aktion in `[input]` und lässt sich unter
+  Projekteinstellungen → Eingabezuordnung ändern; eine physische Taste liegt auf jeder Belegung
+  an derselben Stelle.
+- `Window.min_size` rechnet in Bildschirmpixeln, 640 × 360 sind auf Retina 320 × 180 Punkte.
+- `size_changed` meldet die Größe des Viewports, nicht die des Fensters. Bei Stretch `viewport`
+  bleibt der Viewport 640 × 360, das Signal kommt also nie. Den Moduswechsel erkennt deshalb
+  `_process()` durch Vergleich mit dem vorigen Bild.
+- Zwei Wege, zwei Zeitpunkte: Beim grünen Knopf meldet Godot das Fenster erst nach dem Übergang,
+  nach dem Kürzel sofort, während die Animation noch läuft. `maxi(jetzt, umgeschaltet + 1000)`
+  deckt beides ab. `Time.get_ticks_msec()` hängt nicht an Bildrate oder `time_scale`.
+- `Vector2i / Vector2i` teilt beide Achsen ganzzahlig; `@warning_ignore("integer_division")` sagt
+  Godot, dass das Abschneiden gewollt ist. Headless zeigt Godot solche Warnungen nur mit `-d`.
+
+### T027 Tests (`src/test/test_game_window.gd`)
+
+- `best_factor` ist eine reine Funktion: Alles kommt über Parameter, nichts wird abgefragt. Sie
+  läuft deshalb ohne Fenster. Der Test lädt das Skript per `preload`, weil der Autoload keinen
+  `class_name` hat.
+
+### T028 Projekteinstellungen
+
+- `window/size/mode = 3` gilt ab dem Start, auch für F5 im Editor.
+- `config/icon` lädt Godot zur Laufzeit direkt als Bild, an der Importierung vorbei, für Fenster
+  und Dock. In der exportierten Mac-App gewinnt das Symbol im Bundle, also das Liquid-Glass-Symbol.
+
+### Schriftwechsel auf Ark Pixel (Nachtrag zu T011 und T012)
+
+- Die Importwerte stehen in der `.import` unter `[params]`. Godot 4.7 schlägt für Schriften
+  Kantenglättung, Hinting und Subpixel vor; für Pixelschriften kommen alle drei auf 0.
+- Ark Pixel ist statisch, jede Größe eine eigene Datei. Eine `FontVariation` hätte nichts
+  abzuwandeln, deshalb zeigt das Theme direkt auf die Datei. `drucker` bleibt eine
+  `FontVariation`, weil Doto Gewicht und Laufweite braucht.
+- Eine Pixelschrift nur in ihrer Entwurfsgröße: Dann liegt jeder gezeichnete Pixel auf einem
+  Bildschirmpixel. WOFF2 ist nur gepacktes OpenType und ergibt dieselbe `FontFile`.
+- Godots Standard-Theme gibt Labels `line_spacing` 3. Die 0 muss deshalb ausdrücklich im Theme
+  stehen; Ark 10 ist 11 + 3 = 14 hoch, die Zeilen liegen 14 auseinander.
+
+### Nachtrag zu T016 (`menu_hint.gd`)
+
+- `instantiate()` setzt die Werte aus den Szenendateien, `_ready()` läuft erst danach. Was
+  `_ready()` setzt, gewinnt also gegen jede `.tscn`. `layout_mode = 0` an einer Instanz setzt
+  Anker und Wuchsrichtung beim Laden zurück; deshalb setzt der Hinweis seine Wuchsrichtung jetzt
+  selbst.

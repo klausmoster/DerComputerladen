@@ -16,8 +16,9 @@ src/
 ├── export_presets.cfg                 # neu, entsteht beim ersten Export; vor dem Commit ansehen
 ├── assets/
 │   ├── fonts/
-│   │   ├── PixelifySans-Variable.ttf  # + OFL-PixelifySans.txt
-│   │   └── Doto-Variable.ttf          # + OFL-Doto.txt
+│   │   ├── ark-pixel-10px-proportional-latin.otf   # `text`, + OFL-ArkPixel.txt
+│   │   ├── ark-pixel-12px-proportional-latin.woff2 # `menue`
+│   │   └── Doto-Variable.ttf          # `drucker`, + OFL-Doto.txt
 │   ├── images/
 │   │   ├── title_t01.png              # 320 × 180, indiziert, Hauptpalette
 │   │   └── logo_ladenschild.png       # etwa 142 × 27, indiziert, mit Transparenz
@@ -163,15 +164,22 @@ static func best_factor(usable: Vector2i, decorations: Vector2i) -> int   # imme
 
 Verbindlich:
 - In `_ready()`: Läuft Godot headless (`DisplayServer.get_name() == "headless"`), tut der
-  Autoload nichts. Sonst setzt er `get_window().min_size = BASE_SIZE` und verbindet
-  `get_window().size_changed`.
+  Autoload nichts. Sonst setzt er `get_window().min_size = BASE_SIZE`.
+- Den Wechsel des Fenstermodus erkennt `_process()`: Es vergleicht den Modus mit dem des
+  vorigen Bilds. Ein Signal dafür gibt es nicht, denn bei Stretch `viewport` meldet
+  `size_changed` nur den Viewport, und der bleibt 640 × 360.
 - `_unhandled_input()` reagiert auf die Aktion `toggle_fullscreen`.
-- Wechselt der Modus ins Fenster (gleich ob per Kürzel oder grünem Knopf), gilt:
+- Wechselt der Modus ins Fenster (gleich ob per Kürzel oder grünem Knopf), gilt nach dem Ende
+  des Übergangs:
   - Faktor `best_factor(screen_get_usable_rect(window_get_current_screen()).size, Titelleiste)`;
     die Titelleiste ergibt sich aus `window_get_size_with_decorations() − Fenstergröße`.
   - Danach `size = BASE_SIZE * Faktor` und `move_to_center()`.
 - `best_factor` rechnet `min((usable.x − decorations.x) / 640, (usable.y − decorations.y) / 360)`
   ganzzahlig, mindestens 1.
+- Das Ende des Übergangs: Beim grünen Knopf meldet Godot das Fenster erst, wenn macOS fertig
+  ist. Nach dem Kürzel meldet es den Wechsel sofort; GameWindow wartet dann `TRANSITION_MSEC`
+  (1000) ab dem Umschalten.
+- Ob macOS die Größe nach dem Übergang übernimmt, prüft Klaus in der gebauten App (T031).
 
 **`src/ui/ui_palette.gd`**: `class_name UiPalette extends RefCounted`
 
@@ -187,22 +195,21 @@ Die Werte kommen aus `tokens.json` des Style-Guides und werden nicht von Hand ve
 
 ## Theme `src/ui/computerladen_theme.tres`
 
-Projektweit gesetzt über `gui/theme/custom`. Standardschrift ist `text`: Pixelify Sans, Gewicht 400,
-Größe 10, Wortabstand +1.
+Projektweit gesetzt über `gui/theme/custom`. Standardschrift ist `text`: Ark Pixel 10, Größe 10.
 
 | Variante | Basis | Inhalt |
 |---|---|---|
-| `MenuRow` | Button | `menue`: Pixelify Sans, Gewicht 400, Größe 12, Wortabstand +2, `tusche`; nicht verfügbar `gehaeuse-dunkel` (Vorschlag für den Style-Guide, Kontrast ≥ 3 : 1); alle Styleboxen leer, auch `focus`; links 12 frei für den Pfeil |
+| `MenuRow` | Button | `menue`: Ark Pixel 12, Größe 12, `tusche`; nicht verfügbar `gehaeuse-dunkel` (Vorschlag für den Style-Guide, Kontrast ≥ 3 : 1); alle Styleboxen leer, auch `focus`; links 12 frei für den Pfeil |
 | `MenuHeader` | Label | `drucker`: Doto, Gewicht 600, Größe 10, Laufweite 1, `tusche`, mittig |
 | `Subtitle` | Label | `drucker`: Doto, Gewicht 600, Größe 10, Laufweite 1, `papier`, Schatten `tusche` um (1, 1) |
 | `VersionLine` | Label | `drucker`: Doto, Gewicht 600, Größe 10, Laufweite 1, `papier`, Schatten `tusche` um (1, 1) |
 | `HintPanel` | PanelContainer | laut Style-Guide: `papier`, Kontur 1 `tusche`, `content_margin` 5 (Kontur 1 und Innenabstand 4); der Kasten ist höchstens 160 breit |
-| `HintLabel` | Label | laut Style-Guide: `text` in `tusche`, `line_spacing` 1 (Zeilen 14 auseinander), Umbruch bei 150 |
+| `HintLabel` | Label | laut Style-Guide: `text` in `tusche`, `line_spacing` 0 (Ark Pixel 10 ist 14 hoch), Umbruch bei 150 |
 
-Schriftgewichte über `FontVariation` (`variation_opentype`), Laufweite über `spacing_glyph`,
-Wortabstand über `spacing_space`. Ist `spacing_space` gesetzt, ersetzt es beim Leerzeichen die
-Laufweite, statt dazuzukommen; wer beides will, setzt die Summe. `MenuHeader`, `Subtitle` und
-`VersionLine` teilen sich eine `FontVariation` (`drucker`).
+Ark Pixel ist je Größe eine eigene, statische Datei: kein Gewicht, kein Wortabstand, jede Größe
+nur in ihrer Entwurfsgröße. Doto bekommt Gewicht und Laufweite über eine `FontVariation`
+(`variation_opentype`, `spacing_glyph`); `MenuHeader`, `Subtitle` und `VersionLine` teilen sich
+diese eine (`drucker`).
 Import der Schriften und Sichtprobe: siehe research.md, R8.
 
 ## Projekteinstellungen (`src/project.godot`)

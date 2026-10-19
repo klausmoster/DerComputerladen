@@ -125,16 +125,18 @@ installierte Godot mit `--doctool` ausgibt; Beschreibungen aus der Doku 4.7
 ## R8 Schriften
 
 - **Entscheidung:**
-  - Pixelify Sans und Doto von Google Fonts (SIL OFL 1.1), mit Lizenzdatei nach
-    `src/assets/fonts/`. Die Dateinamen werden ohne eckige Klammern abgelegt.
+  - Zuerst Pixelify Sans und Doto von Google Fonts (SIL OFL 1.1), mit Lizenzdatei nach
+    `src/assets/fonts/`. Die Dateinamen werden ohne eckige Klammern abgelegt. Pixelify Sans ist
+    inzwischen durch Ark Pixel ersetzt, siehe die Schriftprobe unten.
   - Import-Einstellungen: `antialiasing` None, `hinting` None, `subpixel_positioning` Disabled,
     `generate_mipmaps` aus, `multichannel_signed_distance_field` aus.
-  - Das Gewicht wird per `FontVariation.variation_opentype` gesetzt. Saira braucht der Titel
-    nicht.
+  - Das Gewicht von Doto wird per `FontVariation.variation_opentype` gesetzt. Saira braucht der
+    Titel nicht.
   - Vor dem Festzurren des Themes gibt es eine Sichtprobe bei 8, 10 und 12 Pixeln.
 - **Begründung:** Im Stretch-Modus `viewport` wird Text in 640 × 360 gerastert und ganzzahlig
   vergrößert; Kantenglättung bliebe als graue Pixel sichtbar.
-- **Alternativen:** eigene Bitmap-Schrift (genauer, aber erst zu bauen).
+- **Alternativen:** eigene Bitmap-Schrift (genauer, aber erst zu bauen); Galmuri und Pixeloid,
+  ebenfalls pixelgenau (Schriftprobe unten).
 - **Ergebnis der Sichtprobe (T013, 2026-10-19):**
   - Pixelify Sans ist nicht auf ein festes Pixelraster gezeichnet (1000 Einheiten je Geviert,
     Versalhöhe 700, x-Höhe 450). Godot rundet jeden Vorschub auf ganze Pixel und trägt den Rest
@@ -156,6 +158,21 @@ installierte Godot mit `--doctool` ausgibt; Beschreibungen aus der Doku 4.7
     stoßen an den Buchstaben, ü wirkt wie U; B sieht aus wie 8. Kleinbuchstaben bleiben lesbar.
     Bei 12 sind die Formen klar, Doto bei 10 ebenso. Klaus hat entschieden: Der Untertitel steht
     in `drucker` (Doto 10).
+- **Schriftprobe und Wechsel auf Ark Pixel (2026-10-19):**
+  - Eine eigene Probe hat Pixelschriften mit deutschem Zeichensatz und freier Lizenz verglichen.
+    Pixelgenau sind Ark Pixel, Galmuri und Pixeloid. Bei Pixelify Sans liegen bei keiner Größe
+    von 8 bis 24 mehr als 30 % der Konturpunkte auf dem Pixelraster; auch bei 12 wirkt „Beenden“
+    wie „Geenden“.
+  - Entscheidung von Klaus: `text` in Ark Pixel 10, `menue` in Ark Pixel 12 (TakWolf,
+    github.com/TakWolf/ark-pixel-font, Release 2026.10.16, SIL OFL 1.1). Doto bleibt für
+    `drucker`.
+  - Ark Pixel 10: Versalhöhe 7, x-Höhe 5, Zeile 14 (Ascent 11, Descent 3), Leerzeichen 5.
+    Ark Pixel 12: Versalhöhe 9, x-Höhe 6, Zeile 16, Leerzeichen 6.
+  - Je Größe eine statische Datei, Gewicht und Wortabstand entfallen. Die 12er gibt es als OTF nur
+    im Paket mit allen Sprachen (25,6 MB); genommen ist die WOFF2-Fassung (548 KB), die Godot
+    ebenso liest.
+  - Mit Ark 10 sind alle vier Hinweise bei Umbruch 150 zweizeilig, „Einstellungen“ ist in Ark 12
+    72 Pixel breit.
 
 ## R9 Menü: Auswahl, Fokus, nicht verfügbare Einträge
 

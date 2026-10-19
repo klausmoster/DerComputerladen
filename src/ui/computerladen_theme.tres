@@ -1,14 +1,8 @@
 [gd_resource type="Theme" format=3]
 
-[ext_resource type="FontFile" path="res://assets/fonts/PixelifySans-Variable.ttf" id="1_pixelify"]
+[ext_resource type="FontFile" path="res://assets/fonts/ark-pixel-10px-proportional-latin.otf" id="1_ark_pixel_10"]
 [ext_resource type="FontFile" path="res://assets/fonts/Doto-Variable.ttf" id="2_doto"]
-
-[sub_resource type="FontVariation" id="FontVariation_text"]
-base_font = ExtResource("1_pixelify")
-variation_opentype = {
-2003265652: 400
-}
-spacing_space = 1
+[ext_resource type="FontFile" path="res://assets/fonts/ark-pixel-12px-proportional-latin.woff2" id="3_ark_pixel_12"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hint"]
 content_margin_left = 5.0
@@ -30,24 +24,17 @@ variation_opentype = {
 }
 spacing_glyph = 1
 
-[sub_resource type="FontVariation" id="FontVariation_menue"]
-base_font = ExtResource("1_pixelify")
-variation_opentype = {
-2003265652: 400
-}
-spacing_space = 2
-
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_menu_row"]
 content_margin_left = 12.0
 
 [resource]
-default_font = SubResource("FontVariation_text")
+default_font = ExtResource("1_ark_pixel_10")
 default_font_size = 10
 HintLabel/base_type = &"Label"
 HintLabel/colors/font_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
-HintLabel/constants/line_spacing = 1
+HintLabel/constants/line_spacing = 0
 HintLabel/font_sizes/font_size = 10
-HintLabel/fonts/font = SubResource("FontVariation_text")
+HintLabel/fonts/font = ExtResource("1_ark_pixel_10")
 HintPanel/base_type = &"PanelContainer"
 HintPanel/styles/panel = SubResource("StyleBoxFlat_hint")
 MenuHeader/base_type = &"Label"
@@ -62,7 +49,7 @@ MenuRow/colors/font_hover_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
 MenuRow/colors/font_hover_pressed_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
 MenuRow/colors/font_pressed_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
 MenuRow/font_sizes/font_size = 12
-MenuRow/fonts/font = SubResource("FontVariation_menue")
+MenuRow/fonts/font = ExtResource("3_ark_pixel_12")
 MenuRow/styles/disabled = SubResource("StyleBoxEmpty_menu_row")
 MenuRow/styles/focus = SubResource("StyleBoxEmpty_menu_row")
 MenuRow/styles/hover = SubResource("StyleBoxEmpty_menu_row")

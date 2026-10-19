@@ -28,8 +28,8 @@ Technischer Ansatz (Details in [research.md](research.md), Vertrag in
 
 **Language/Version**: GDScript, typisiert, Godot 4.7.2 (Forward+)
 
-**Primary Dependencies**: Godot-Export-Vorlagen 4.7.2 (macOS); Schriften Pixelify Sans und Doto
-(Google Fonts, SIL OFL 1.1); für die Bildvorbereitung `sips` (macOS) und Python 3.9 nur mit
+**Primary Dependencies**: Godot-Export-Vorlagen 4.7.2 (macOS); Schriften Ark Pixel 10 und 12
+(TakWolf) und Doto (Google Fonts), beide SIL OFL 1.1; für die Bildvorbereitung `sips` (macOS) und Python 3.9 nur mit
 Standardbibliothek; für das Liquid-Glass-Symbol Icon Composer aus Xcode 27.1
 
 **Storage**: N/A, keine Spielstände
@@ -130,7 +130,7 @@ Vorschlägen aus dem Review:
    „gedämpfter Text in `gehaeuse-dunkel` nur auf `papier`“ wird für Menüeinträge erweitert.
 2. **Hinweis:**
    - Feld in `papier` mit einem Oberflächenpixel `tusche` als Kontur und `pixelschatten`.
-   - Text in Pixelify Sans `text` (10) in `tusche`, höchstens 160 Oberflächenpixel breit (geändert
+   - Text in `text` (Ark Pixel 10) in `tusche`, höchstens 160 Oberflächenpixel breit (geändert
      nach der Sichtprobe, siehe unten).
    - Lage links neben der gewählten Zeile, 4 Oberflächenpixel Abstand. Er erscheint sofort, für
      Maus und Tastatur gleich.
@@ -168,6 +168,7 @@ In der ersten Sichtprobe (T013) am 2026-10-19 kleben bei 12 Pixeln die Wörter, 
 und Doto sind bei 8 nicht lesbar (research.md, R8). Klaus hat die korrigierten Textstile
 freigegeben:
 - Pixelify Sans nur im Grundschnitt 400. `menue` bekommt 2 Pixel Wortabstand, `text` 1 Pixel.
+  Später durch Ark Pixel ersetzt, siehe unten.
 - `klein` entfällt. Der Hinweis steht in `text`, sein Kasten ist höchstens 160 breit.
 - Doto nicht unter 10. Die Versionszeile steht in `drucker`.
 - Der Untertitel steht in `drucker`. In Pixelify Sans verformt er sich bei 10 Pixeln: C wirkt wie O,
@@ -175,6 +176,12 @@ freigegeben:
 
 Eingearbeitet in Style-Guide (Version 8), Titelscreen-Entwurf (Version 9), Vertrag, Theme und
 `menu_hint.gd`.
+
+Danach hat eine eigene Schriftprobe gezeigt, dass Pixelify Sans bei keiner Größe auf dem
+Pixelraster liegt, auch bei 12 nicht. Klaus hat entschieden: `text` in Ark Pixel 10, `menue` in
+Ark Pixel 12 (research.md, R8). Ark Pixel ist je Größe pixelgenau gezeichnet, Gewicht und
+Wortabstand entfallen. Eingearbeitet in Style-Guide (Version 9), Titelscreen-Entwurf
+(Version 10), Vertrag und Theme.
 
 ## Offene Entscheidungen für Klaus
 
