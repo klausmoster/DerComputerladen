@@ -51,7 +51,7 @@ auf Eingaben unter 100 ms (SC-003)
 - Nur Desktop mit Maus und Tastatur.
 
 **Scale/Scope**: eine Szene mit vier Menüeinträgen, ein Autoload, ein Theme, ein Export-Preset,
-drei Bild-Assets, zwei Schriften, zwei Werkzeugskripte
+drei Bild-Assets, zwei Schriften, drei Werkzeugskripte
 
 ## Constitution Check
 
@@ -62,13 +62,14 @@ drei Bild-Assets, zwei Schriften, zwei Werkzeugskripte
 | I. Nur Desktop | macOS-Export, Maus und Tastatur, Forward+ bleibt, keine Touch-Eingaben | erfüllt | erfüllt |
 | II. Klaus entscheidet, der Agent baut, Claude plant und prüft (Verfassung 2.0.0) | Der Plan enthält nur Signaturen, keine Rümpfe. Die Aufteilung `[K]`/`[A]`/`[C]` folgt in den Tasks; umgesetzt wird phasenweise auf Klaus' Auftrag, `/speckit-implement` wird nicht verwendet | erfüllt | erfüllt |
 | III. Erst spezifizieren | Spec geklärt (fünf Fragen), eigener Branch, Godot-Details erst hier, Entscheidungen mit Alternativen in research.md | erfüllt | erfüllt |
-| IV. Ein Look: der Style-Guide | Folgendes fehlt im Style-Guide, siehe „Vorarbeiten“ unten: Zustand „nicht verfügbar“, Hinweis, Startgrund, App-Symbol, Nachbearbeitung bei ungleichem Raster. Es wird vor dem Bauen ergänzt. | erfüllt mit Vorarbeit | erfüllt mit Vorarbeit |
+| IV. Ein Look: der Style-Guide | Folgendes fehlt im Style-Guide, siehe „Vorarbeiten“ unten: Zustand „nicht verfügbar“, Hinweis, Startgrund, App-Symbol, Anrede „du“, Nachbearbeitung bei ungleichem Raster und der Wortlaut zur Hauptpalette. Es wird vor dem Bauen ergänzt; in tasks.md sind das die ersten Tasks (T001 bis T003). | erfüllt mit Vorarbeit | erfüllt mit Vorarbeit |
 | V. Daten sauber halten | game_bible unberührt, keine Spieldaten im Code | erfüllt | erfüllt |
 | Technische Rahmenbedingungen | Godot 4.7, Projekt in `src/`, GUT; Timeline und GameClock unverändert | erfüllt | erfüllt |
 | Arbeitsweise | deutsche Dokumente; `.uid`/`.import` neuer Assets werden committet; `export_presets.cfg` vor dem Commit prüfen; `build/` ignorieren | erfüllt | erfüllt |
 
 Ergebnis: Die Prüfung ist bestanden, es gibt keine Verstöße, die begründet werden müssten.
-Grundsatz IV ist nur dann erfüllt, wenn die Vorarbeiten am Style-Guide vor dem Bauen passieren.
+Grundsatz IV ist nur dann erfüllt, wenn die Vorarbeiten am Style-Guide vor dem Bauen passieren
+(tasks.md, T001 bis T003).
 
 ## Project Structure
 
@@ -77,14 +78,16 @@ Grundsatz IV ist nur dann erfüllt, wenn die Vorarbeiten am Style-Guide vor dem 
 ```text
 specs/001-hauptmenue/
 ├── plan.md                      # dieser Plan
-├── research.md                  # Phase 0: Entscheidungen R1–R14
+├── research.md                  # Phase 0: Entscheidungen R1–R15
 ├── data-model.md                # Phase 1: Menüeintrag, Versionszeile, Zustände
 ├── quickstart.md                # Phase 1: Prüfanleitung
 ├── contracts/
 │   └── titelbildschirm.md       # Phase 1: technischer Vertrag
 ├── checklists/
-│   └── requirements.md          # Qualitätsprüfung der Spec
-└── tasks.md                     # Phase 2, entsteht mit /speckit-tasks
+│   ├── requirements.md          # Qualitätsprüfung der Spec
+│   └── review.md                # Review von Spec und Plan, alle Punkte erledigt
+├── tasks.md                     # Phase 2: Tasks mit Besitzern [K]/[A]/[C]
+└── lernnotizen.md               # entsteht bei der Umsetzung: eine Notiz je [A]-Task
 ```
 
 ### Source Code (repository root)
@@ -99,8 +102,8 @@ src/                             # Godot-Projekt
 ├── scenes/title/                # neu: Titelbildschirm, Menü, Eintrag, Hinweis
 └── test/                        # neu: drei Testdateien
 
-tools/raster/                    # neu: Palette und Rasterfassung (Python, außerhalb von Godot)
-docs/art/                        # neu: hauptpalette.gpl, hauptpalette.png
+tools/raster/                    # neu: Palette, Rasterfassung und App-Symbol (Python, außerhalb von Godot)
+docs/art/                        # neu: hauptpalette.gpl, hauptpalette.png, app_icon/ (Ebenen für Icon Composer)
 build/                           # Export-Ziel, nicht versioniert
 ```
 

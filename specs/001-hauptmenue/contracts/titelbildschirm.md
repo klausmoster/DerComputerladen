@@ -43,11 +43,13 @@ src/
 tools/raster/                          # Repo-Root, außerhalb des Godot-Projekts
 ├── make_palette.py                    # Hauptpalette per Median-Cut
 ├── rasterize.py                       # Flächenmittel + Palette → indiziertes PNG
+├── make_icon.py                       # App-Symbol 1024 × 1024 und Ebenen für Icon Composer
 └── README.md                          # Aufruf und Reihenfolge
 
 docs/art/
 ├── hauptpalette.gpl                   # 256 Farben, eingefroren
-└── hauptpalette.png                   # Farbtafel zum Ansehen
+├── hauptpalette.png                   # Farbtafel zum Ansehen
+└── app_icon/                          # Ebenen für Icon Composer: Monitor freigestellt, Grundfarbe
 
 .gitignore                             # ergänzt um /build/
 ```
