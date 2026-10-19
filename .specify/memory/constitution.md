@@ -20,24 +20,28 @@ Spiel ist, steht in `docs/game_design.md`.
 Begründung: Die Entscheidung ist endgültig. Rücksicht auf andere Plattformen kostet
 Gestaltungsfreiheit und bringt diesem Spiel nichts.
 
-### II. Klaus baut, Claude bereitet vor
+### II. Klaus entscheidet, der Agent baut, Claude plant und prüft
 
-- Klaus arbeitet in Godot: Szenen, Nodes, GDScript. Diese Arbeit wird ihm nicht abgenommen, er
-  lernt Godot dabei.
-- Claude schreibt Specs, recherchiert (Godot-Doku, Fachquellen), bereitet vor, erklärt, reviewt
-  und erstellt auf Wunsch Beispielcode zum Lernen.
-- Jede Aufgabe trägt einen Besitzer: `[K]` Klaus, `[C]` Claude. Standard ist `[K]`. Einzelne
-  Aufgaben gehen im Gespräch an Claude über; das ist der Normalfall.
-- Claude implementiert nie eigenmächtig. Eine Spec, ein Plan oder eine Taskliste ist eine
-  Beschreibung, keine Beauftragung. `/speckit-implement` wird nicht als Ganzes ausgeführt;
-  `[C]`-Aufgaben übernimmt Claude einzeln und nur auf Zuruf.
-- Code, den Claude erzeugt, sieht Klaus sich an, bevor er ins Projekt geht. Er ist Lern- und
-  Vorlagenmaterial, kein fertiges Ergebnis.
-- Claude erklärt an der konkreten Stelle im Projekt, warum etwas so gebaut wird, statt nur zu
-  liefern. Die Schritte bleiben klein und einzeln überprüfbar.
+- Klaus gibt jede Umsetzung frei und nimmt sie ab. Was er selbst in Godot bauen will, um es zu
+  lernen, trägt `[K]`, ebenso alles, was nur im Godot-Editor, in Grafikprogrammen oder mit seiner
+  Entscheidung geht.
+- Der Godot-Agent (`.claude/agents/godot-entwickler.md`) setzt `[A]`-Aufgaben um: Szenen, Nodes,
+  GDScript und Tests, nach dem Vertrag des Features, dieser Verfassung und dem Style-Guide. Für
+  Arbeit in Godot ist er der Standard.
+- Claude schreibt Spec und Plan, recherchiert, verteilt die Aufgaben auf `[K]`, `[A]` und `[C]`
+  und übernimmt die `[C]`-Aufgaben: Werkzeuge außerhalb von Godot, Style-Guide, Doku. Claude
+  beauftragt den Agent und prüft jedes Ergebnis, bevor Klaus es sieht.
+- Umgesetzt wird nur auf ausdrücklichen Auftrag von Klaus, eine Phase aus `tasks.md` nach der
+  anderen, nie das ganze Feature in einem Zug. Eine Spec, ein Plan oder eine Taskliste ist eine
+  Beschreibung, keine Beauftragung. `/speckit-implement` wird nicht verwendet.
+- Code eines Agents bleibt auf dem Feature-Branch und wird erst committet, wenn Klaus Diff und
+  Erklärung gesehen hat.
+- Zu jeder umgesetzten Aufgabe gibt es eine Lernnotiz in `specs/<nummer>-<kurzname>/lernnotizen.md`:
+  welche Godot-Konzepte vorkommen und warum es so gebaut ist, an der konkreten Stelle im Projekt.
+  Die Schritte bleiben klein und einzeln überprüfbar.
 
-Begründung: Das Projekt ist auch ein Lernprojekt. Am Ende steht ein Spiel, das Klaus selbst
-gebaut hat und versteht.
+Begründung: Die Umsetzung in Godot übernimmt ein spezialisierter Agent. Klaus behält jede
+Entscheidung und lernt über Lernnotizen, Review und die `[K]`-Aufgaben, die er sich aussucht.
 
 ### III. Erst spezifizieren, dann bauen
 
@@ -104,10 +108,12 @@ Regenerieren der Tabellen nicht verloren gehen.
   der Bauplan (*wie*), und `docs/game_bible/` ist der Spielinhalt.
 - Ablauf je Feature: `/speckit-specify` legt Branch und Spezifikation an, `/speckit-clarify`
   klärt die offenen Fragen mit Klaus, danach folgen `/speckit-plan`, `/speckit-checklist`,
-  `/speckit-tasks` und `/speckit-analyze`. Gebaut wird nach Grundsatz II.
+  `/speckit-tasks` und `/speckit-analyze`. Danach setzen Godot-Agent und Klaus die freigegebenen
+  Phasen um (Grundsatz II), und Claude prüft jede Phase gegen Spec und Vertrag.
 - Clarify, Checklist und Analyze sind in Spec Kit optional, bei uns laufen sie immer.
-- Claude committet, Klaus pusht. Claude versucht nie zu pushen; auf diesem Rechner liegen keine
-  GitHub-Zugangsdaten. Code committet Claude erst, wenn Klaus ihn gesehen hat.
+- Claude committet, Klaus pusht; der Godot-Agent committet nicht. Claude versucht nie zu pushen,
+  denn auf diesem Rechner liegen keine GitHub-Zugangsdaten. Code committet Claude erst, wenn Klaus
+  ihn gesehen hat.
 - `.godot/` bleibt draußen. `*.uid` und `*.import` werden committet, weil sie die stabile
   Resource-ID und die Import-Einstellungen halten.
 - `export_presets.cfg` wird vor dem Committen angesehen, weil dort je nach Godot-Version
@@ -124,4 +130,4 @@ Regenerieren der Tabellen nicht verloren gehen.
   ein Grundsatz wegfällt oder neu definiert wird; MINOR, wenn ein Grundsatz oder Abschnitt
   hinzukommt oder deutlich erweitert wird; PATCH für Klarstellungen und Wortlaut.
 
-**Version**: 1.0.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-19
+**Version**: 2.0.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-19
