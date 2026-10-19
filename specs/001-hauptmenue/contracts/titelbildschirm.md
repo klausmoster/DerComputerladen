@@ -67,7 +67,7 @@ TitleScreen (Control, füllt 640 × 360)              title_screen.gd
 │   └── Subtitle (Label)           „WIRTSCHAFTSSIMULATION · 1985–1999“, Variante Subtitle
 ├── MainMenu (Instanz main_menu.tscn)   Position x 472, y 150, Breite 144
 ├── MenuHint (Instanz menu_hint.tscn)   links neben der gewählten Zeile
-└── VersionLine (Label)            unten links (x 16, Abstand 6 zum Rand), Variante VersionLine
+└── VersionLine (Label)            unten links (x 16, Unterkante 6 über dem Rand, also y 354), Variante VersionLine
 
 MainMenu (Control)                 main_menu.gd: zeichnet Papier, Zeilen, Lochränder,
 │                                  Auswahl und Pfeil in _draw()
@@ -187,19 +187,23 @@ Die Werte kommen aus `tokens.json` des Style-Guides und werden nicht von Hand ve
 
 ## Theme `src/ui/computerladen_theme.tres`
 
-Projektweit gesetzt über `gui/theme/custom`. Standardschrift Pixelify Sans, Größe 10.
+Projektweit gesetzt über `gui/theme/custom`. Standardschrift ist `text`: Pixelify Sans, Gewicht 400,
+Größe 10, Wortabstand +1.
 
 | Variante | Basis | Inhalt |
 |---|---|---|
-| `MenuRow` | Button | Pixelify Sans, Gewicht 500, Größe 12, `tusche`; nicht verfügbar `gehaeuse-dunkel` (Vorschlag für den Style-Guide, Kontrast ≥ 3 : 1); alle Styleboxen leer, auch `focus`; links 12 frei für den Pfeil |
-| `MenuHeader` | Label | Doto, Gewicht 600, Größe 10, `tusche`, mittig |
-| `Subtitle` | Label | Pixelify Sans 10, `papier`, Schatten `tusche` um (1, 1) |
-| `VersionLine` | Label | Doto, Gewicht 600, Größe 8, `papier`, Schatten `tusche` um (1, 1) |
-| `HintPanel` | PanelContainer | laut Style-Guide |
-| `HintLabel` | Label | laut Style-Guide |
+| `MenuRow` | Button | `menue`: Pixelify Sans, Gewicht 400, Größe 12, Wortabstand +2, `tusche`; nicht verfügbar `gehaeuse-dunkel` (Vorschlag für den Style-Guide, Kontrast ≥ 3 : 1); alle Styleboxen leer, auch `focus`; links 12 frei für den Pfeil |
+| `MenuHeader` | Label | `drucker`: Doto, Gewicht 600, Größe 10, Laufweite 1, `tusche`, mittig |
+| `Subtitle` | Label | `drucker`: Doto, Gewicht 600, Größe 10, Laufweite 1, `papier`, Schatten `tusche` um (1, 1) |
+| `VersionLine` | Label | `drucker`: Doto, Gewicht 600, Größe 10, Laufweite 1, `papier`, Schatten `tusche` um (1, 1) |
+| `HintPanel` | PanelContainer | laut Style-Guide: `papier`, Kontur 1 `tusche`, `content_margin` 5 (Kontur 1 und Innenabstand 4); der Kasten ist höchstens 160 breit |
+| `HintLabel` | Label | laut Style-Guide: `text` in `tusche`, `line_spacing` 1 (Zeilen 14 auseinander), Umbruch bei 150 |
 
-Schriftgewichte über `FontVariation` (`variation_opentype`). Import der Schriften: siehe
-research.md, R8.
+Schriftgewichte über `FontVariation` (`variation_opentype`), Laufweite über `spacing_glyph`,
+Wortabstand über `spacing_space`. Ist `spacing_space` gesetzt, ersetzt es beim Leerzeichen die
+Laufweite, statt dazuzukommen; wer beides will, setzt die Summe. `MenuHeader`, `Subtitle` und
+`VersionLine` teilen sich eine `FontVariation` (`drucker`).
+Import der Schriften und Sichtprobe: siehe research.md, R8.
 
 ## Projekteinstellungen (`src/project.godot`)
 

@@ -47,7 +47,8 @@ Export-Vorlagen bereitstellen
     Kontrastbegründung (4,98 / 4,14 / 3,31 : 1, Regel für große Schrift).
   - Neuer Baustein Hinweis: Feld in `papier`, ein Oberflächenpixel `tusche` als Kontur,
     `pixelschatten`, Text `klein` in `tusche`, höchstens 140 Oberflächenpixel breit, 4
-    Oberflächenpixel links neben der gewählten Zeile, erscheint sofort.
+    Oberflächenpixel links neben der gewählten Zeile, erscheint sofort. Nach der Sichtprobe
+    (T013): Text in `text`, höchstens 160 breit.
   - Startgrund `anzeige-grund`.
   - Anrede „du“ für alle Texte.
 - [x] T002 [C] Style-Guide ergänzen, Bild (plan.md, Vorarbeiten 4 und 6):
@@ -83,7 +84,7 @@ Stories aufbauen
 
 **⚠️ CRITICAL**: Keine User Story beginnt, bevor diese Phase abgenommen ist.
 
-- [ ] T009 [A] Projekteinstellungen in `src/project.godot` laut Vertrag, Tabelle
+- [x] T009 [A] Projekteinstellungen in `src/project.godot` laut Vertrag, Tabelle
   „Projekteinstellungen“:
   - Basis 640 × 360, `display/window/stretch/mode = "viewport"`, `aspect = "keep"`,
     `scale_mode = "integer"`.
@@ -91,25 +92,31 @@ Stories aufbauen
   - `default_clear_color` und `application/boot_splash/bg_color` in `anzeige-grund` (#0d1716),
     `boot_splash/show_image = false`, `application/config/version = "0.1"`.
   - Fenstermodus und Hauptszene bleiben vorerst unverändert, die setzt T028.
-- [ ] T010 [A] [P] `src/ui/ui_palette.gd` mit `class_name UiPalette extends RefCounted`: die 15
+- [x] T010 [A] [P] `src/ui/ui_palette.gd` mit `class_name UiPalette extends RefCounted`: die 15
   Farben aus `tokens.json` als Konstanten mit Token-Namen (`TUSCHE := Color("1d1916")` bis
   `HOLZ_DUNKEL`), Werte unverändert übernommen
-- [ ] T011 [A] Schriften aus T007 importieren, Einstellungen in den `.import`-Dateien unter
+- [x] T011 [A] Schriften aus T007 importieren, Einstellungen in den `.import`-Dateien unter
   `src/assets/fonts/`: `antialiasing` None, `hinting` None, `subpixel_positioning` Disabled,
   `generate_mipmaps` aus, `multichannel_signed_distance_field` aus (research.md, R8)
-- [ ] T012 [A] Theme `src/ui/computerladen_theme.tres` laut Vertrag:
+- [x] T012 [A] Theme `src/ui/computerladen_theme.tres` laut Vertrag:
   - Standardschrift Pixelify Sans, Größe 10.
   - Varianten `MenuRow`, `MenuHeader`, `Subtitle`, `VersionLine`, `HintPanel` und `HintLabel`.
   - Gewichte über `FontVariation.variation_opentype`, Farben nur aus der Palette.
   - `gui/theme/custom` in `src/project.godot` setzen.
-- [ ] T013 [K] Sichtprobe der Schriften bei 8, 10 und 12 Pixeln im Editor: gleichmäßige Striche,
+  - Nach der Sichtprobe (T013): Pixelify Sans im Gewicht 400, Wortabstand über `spacing_space`,
+    `HintLabel` und `VersionLine` in Größe 10, `Subtitle` in `drucker`.
+- [x] T013 [K] Sichtprobe der Schriften bei 8, 10 und 12 Pixeln im Editor: gleichmäßige Striche,
   keine grauen Kantenpixel; Abweichungen an Claude melden (research.md, R8)
-- [ ] T014 [A] [P] `src/scenes/title/menu_entry.gd` mit `class_name MenuEntry extends Resource`:
+  - Erste Runde am 2026-10-19: Bei 12 kleben die Wörter, bei 8 sind Pixelify Sans und Doto nicht
+    lesbar. Korrigiert im Style-Guide (Versionen 7 und 8), in T012 und T016.
+  - Zweite Runde mit den korrigierten Stilen bei 10 und 12, in einer Vorschau-Szene außerhalb des
+    Repos; von Klaus abgenommen am 2026-10-19.
+- [x] T014 [A] [P] `src/scenes/title/menu_entry.gd` mit `class_name MenuEntry extends Resource`:
   - `@export var id: StringName`, `@export var label: String`, `@export var available: bool =
     false`, `@export_multiline var hint: String`.
   - Regeln aus data-model.md: `id` eindeutig und eines von `&"new_game"`, `&"load_game"`,
     `&"settings"`, `&"quit"`; „`hint` ist nie leer“.
-- [ ] T015 [A] Grundgerüst des Menüs in `src/scenes/title/main_menu.tscn` und
+- [x] T015 [A] Grundgerüst des Menüs in `src/scenes/title/main_menu.tscn` und
   `src/scenes/title/main_menu.gd` (`class_name MainMenu extends Control`):
   - Signale `entry_activated(id: StringName)` und
     `selection_changed(entry: MenuEntry, row_rect: Rect2)`; `const ROW_HEIGHT := 20`;
@@ -121,13 +128,14 @@ Stories aufbauen
     Auswahl über den Fokus, Startauswahl 0 per `call_deferred`.
   - `_draw()`: Papier mit Zeilen abwechselnd `papier`/`endlos-gruen` (20 hoch), Lochränder,
     `pixelschatten` und die gewählte Zeile in `signalgelb` mit Pfeil in `tusche` (FR-011).
-- [ ] T016 [A] Hinweis in `src/scenes/title/menu_hint.tscn` und `src/scenes/title/menu_hint.gd`
+- [x] T016 [A] Hinweis in `src/scenes/title/menu_hint.tscn` und `src/scenes/title/menu_hint.gd`
   (`class_name MenuHint extends PanelContainer`):
   - `show_for(entry: MenuEntry, row_rect: Rect2)` und `hide_hint()`, Varianten `HintPanel` und
     `HintLabel`.
   - Stellt sich 4 Oberflächenpixel links neben `row_rect`, erscheint ohne Verzögerung und bleibt
     stehen, bis `show_for` mit einer anderen Zeile kommt (FR-017).
-- [ ] T017 [A] Tests in `src/test/test_main_menu.gd` (Grundlagen): vier Einträge in der Reihenfolge
+  - Nach der Sichtprobe (T013): Umbruch bei 150, Kasten höchstens 160 breit.
+- [x] T017 [A] Tests in `src/test/test_main_menu.gd` (Grundlagen): vier Einträge in der Reihenfolge
   „Neues Spiel“, „Spiel laden“, „Einstellungen“, „Beenden“; nur `quit` verfügbar;
   Startauswahl 0; `select()` sendet `selection_changed`
 

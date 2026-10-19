@@ -135,6 +135,27 @@ installierte Godot mit `--doctool` ausgibt; Beschreibungen aus der Doku 4.7
 - **Begründung:** Im Stretch-Modus `viewport` wird Text in 640 × 360 gerastert und ganzzahlig
   vergrößert; Kantenglättung bliebe als graue Pixel sichtbar.
 - **Alternativen:** eigene Bitmap-Schrift (genauer, aber erst zu bauen).
+- **Ergebnis der Sichtprobe (T013, 2026-10-19):**
+  - Pixelify Sans ist nicht auf ein festes Pixelraster gezeichnet (1000 Einheiten je Geviert,
+    Versalhöhe 700, x-Höhe 450). Godot rundet jeden Vorschub auf ganze Pixel und trägt den Rest
+    weiter; ein „i“ ist bei 12 deshalb mal 2, mal 3 Pixel breit. Das bleibt.
+  - Das Leerzeichen hat 200 Einheiten, bei 10 und 12 also 2 Pixel, und die Wörter kleben.
+    Abhilfe: `spacing_space` 2 in `menue`, 1 in `text`.
+  - Die Achse `wght` reicht von 400 bis 700, Standard 400. 400 ist ein gezeichneter
+    Grundschnitt, 500 ist dazwischen gerechnet; ohne Kantenglättung werden gleiche Striche dann
+    mal 1, mal 2 Pixel breit. Deshalb 400 statt 500.
+  - Bei 8 ist die x-Höhe 3,6 Pixel, die Schrift ist nicht lesbar. `klein` entfällt, Pixelify
+    Sans wird ab 10 gesetzt.
+  - Doto steht auf einem Raster von 100 Einheiten: bei 10 ein Punkt je Pixel, Vorschub 6,
+    sauber, bei 20 ebenso. Bei 8 zerfällt sie, bei 14 werden die Punkte ungleich. Doto also ab
+    10; `anzeige-ziffern` (14) klärt der Baustein Anzeige.
+  - Godot 4.7.2: Ist `spacing_space` gesetzt, bekommt das Leerzeichen diesen Wert statt
+    `spacing_glyph`. Die letzte Glyphe eines Textes bekommt keine Laufweite.
+  - Gerendert nach der Korrektur: Bei 10 verformt Pixelify Sans Versalien, Ziffern und Umlaute.
+    Im Untertitel wird C zu O, I verliert eine Serife, 5 sieht aus wie 9. Die Umlautpunkte
+    stoßen an den Buchstaben, ü wirkt wie U; B sieht aus wie 8. Kleinbuchstaben bleiben lesbar.
+    Bei 12 sind die Formen klar, Doto bei 10 ebenso. Klaus hat entschieden: Der Untertitel steht
+    in `drucker` (Doto 10).
 
 ## R9 Menü: Auswahl, Fokus, nicht verfügbare Einträge
 

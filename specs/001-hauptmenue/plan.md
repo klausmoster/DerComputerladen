@@ -130,7 +130,8 @@ Vorschlägen aus dem Review:
    „gedämpfter Text in `gehaeuse-dunkel` nur auf `papier`“ wird für Menüeinträge erweitert.
 2. **Hinweis:**
    - Feld in `papier` mit einem Oberflächenpixel `tusche` als Kontur und `pixelschatten`.
-   - Text in Pixelify Sans `klein` (8) in `tusche`, höchstens 140 Oberflächenpixel breit.
+   - Text in Pixelify Sans `text` (10) in `tusche`, höchstens 160 Oberflächenpixel breit (geändert
+     nach der Sichtprobe, siehe unten).
    - Lage links neben der gewählten Zeile, 4 Oberflächenpixel Abstand. Er erscheint sofort, für
      Maus und Tastatur gleich.
 3. **Startgrund:** `anzeige-grund` bis zum ersten Bild; die schwarzen Ränder der Skalierung
@@ -160,6 +161,20 @@ Eingearbeitet in Spec, Datenmodell, Vertrag, Recherche und Quickstart.
 Die übrigen 25 Punkte hat Claude vorgeschlagen, darunter die Hinweistexte, die Messmethoden und
 die Vorarbeiten 1 bis 6. Klaus hat sie am 2026-10-19 freigegeben; alle 33 Punkte der Checkliste
 sind erledigt.
+
+## Korrektur nach der Sichtprobe
+
+In der ersten Sichtprobe (T013) am 2026-10-19 kleben bei 12 Pixeln die Wörter, und Pixelify Sans
+und Doto sind bei 8 nicht lesbar (research.md, R8). Klaus hat die korrigierten Textstile
+freigegeben:
+- Pixelify Sans nur im Grundschnitt 400. `menue` bekommt 2 Pixel Wortabstand, `text` 1 Pixel.
+- `klein` entfällt. Der Hinweis steht in `text`, sein Kasten ist höchstens 160 breit.
+- Doto nicht unter 10. Die Versionszeile steht in `drucker`.
+- Der Untertitel steht in `drucker`. In Pixelify Sans verformt er sich bei 10 Pixeln: C wirkt wie O,
+  5 wie 9. Entschieden nach der gerenderten Vorschau.
+
+Eingearbeitet in Style-Guide (Version 8), Titelscreen-Entwurf (Version 9), Vertrag, Theme und
+`menu_hint.gd`.
 
 ## Offene Entscheidungen für Klaus
 
