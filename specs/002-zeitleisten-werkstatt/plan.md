@@ -72,7 +72,7 @@ unter 5 Minuten; Prüfung und Ziehen unter 100 ms (SC-011).
 
 **Scale/Scope**: 25 übernommene und 6 neue Kalender-Ereignisse, ausgelegt bis 500 (R21). Dazu
 17 Klassen im Kern, ein umgebautes Autoload, zwei geänderte Kernklassen (`GameClock`, `GameDate`),
-die Werkstatt mit rund elf Szenen und Skripten und 19 Testdateien, davon zwei bestehende, die sich
+die Werkstatt mit rund elf Szenen und Skripten und 21 Testdateien, davon zwei bestehende, die sich
 ändern.
 
 ## Constitution Check

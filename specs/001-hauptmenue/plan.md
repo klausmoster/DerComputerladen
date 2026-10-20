@@ -6,14 +6,14 @@
 
 ## Summary
 
-Das Spiel wird als eigenständige Mac-App gebaut, startet per Doppelklick im Vollbild und lädt
+Das Spiel wird als eigenständige Mac-App gebaut, startet per Doppelklick im Fenster und lädt
 bis zum Titelbildschirm mit Hauptmenü. Nur „Beenden“ ist verfügbar, die übrigen drei Einträge sind
 sichtbar, aber gesperrt.
 
 Technischer Ansatz (Details in [research.md](research.md), Vertrag in
 [contracts/titelbildschirm.md](contracts/titelbildschirm.md)):
 - **Darstellung:** Godot 4.7.2 mit Basis 640 × 360, Stretch-Modus `viewport` und ganzzahliger
-  Skalierung, Nearest-Filter, Start in `MODE_FULLSCREEN`.
+  Skalierung, Nearest-Filter, Start im Fenster (bis 2026-10-20 in `MODE_FULLSCREEN`).
 - **Titelszene:** Sie hat ein Menü auf Endlospapier. Je Eintrag gibt es einen `Button`, und Maus
   und Tastatur teilen sich Godots Fokus als einzige Auswahl. Gesperrte Buttons bleiben laut Probe
   in 4.7.2 fokussierbar.

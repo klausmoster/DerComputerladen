@@ -381,12 +381,12 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
 
 ### Implementation for User Story 2
 
-- [ ] T031 [A] [P] [US2] `src/tools/werkstatt/werkstatt_theme.tres` nach dem Abschnitt
+- [x] T031 [A] [P] [US2] `src/tools/werkstatt/werkstatt_theme.tres` nach dem Abschnitt
   „Werkzeuge“ (T002): Farbrollen mit den Werten aus `UiPalette`, StyleBoxes für Panel, Button,
   LineEdit, ItemList, Tree und TabContainer. Schrift laut Style-Guide: Open Sans SemiBold aus
   `ThemeDB.fallback_font` in der Größe 14 (`default_font_size`), Titel 16, Zeitachse 12; die
   Werkstatt setzt die Schrift per Code als `default_font` (R14).
-- [ ] T032 [A] [US2] `src/tools/werkstatt/catalog_editor.gd` (`CatalogEditor`) laut Vertrag:
+- [x] T032 [A] [US2] `src/tools/werkstatt/catalog_editor.gd` (`CatalogEditor`) laut Vertrag:
   - **Datei:** `open()`; `save(force)` gibt ohne `force` `ERR_FILE_ALREADY_IN_USE` bei fremder
     Änderung oder beim Öffnen unlesbarer Datei; `revert()` liest neu, leert den Verlauf und löscht
     die Sicherungskopie (FR-034); `new_catalog()` mit den zehn Kategorien; `is_dirty()` über
@@ -414,7 +414,7 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
     Inhalt `{"catalog", "format": 1, "path", "saved"}`; `write_backup()`, `has_backup()`,
     `backup_matches()`, `backup_info()`, `restore_backup()` und `discard_backup()`.
   - `UndoRedo` in `NOTIFICATION_PREDELETE` freigeben.
-- [ ] T033 [A] [US2] `src/test/test_catalog_editor.gd`, mit eigener Sicherungsdatei über
+- [x] T033 [A] [US2] `src/test/test_catalog_editor.gd`, mit eigener Sicherungsdatei über
   `backup_path` und Katalogen in einem Testordner:
   - **Bearbeiten:** jede ändernde Methode samt Rückgängig und Wiederholen (US2, Szenario 7);
     Kennungsvorschlag „neubaugebiet_am_stadtrand“ (Szenario 1); Umbenennen zieht Verweise nach
@@ -429,7 +429,7 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
     bleibt als V22 in `issues()`, auch nach einer Änderung, und `has_errors()` ist wahr.
   - **Sicherung:** schreiben, übernehmen und verwerfen; `backup_matches()` erkennt die Kopie
     eines anderen Katalogs.
-- [ ] T034 [A] [US2] `src/tools/werkstatt/werkstatt.tscn` und `werkstatt.gd` (`Werkstatt`) laut
+- [x] T034 [A] [US2] `src/tools/werkstatt/werkstatt.tscn` und `werkstatt.gd` (`Werkstatt`) laut
   Vertrag:
   - **Aufbau:** Toolbar mit Speichern, Verwerfen, Rückgängig, Wiederholen und Statuszeile;
     `Main` mit `EventList`, `Center` (Platz für `TimelineView`, `Tabs` vorerst mit „Prüfung“) und
@@ -449,14 +449,14 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
     „Speichern / Verwerfen / Abbrechen“.
   - **Laufend:** `Timer` alle 120 s für `write_backup()`; Kürzel S, Z und Shift+Z mit
     `command_or_control_autoremap`.
-- [ ] T035 [A] [P] [US2] `src/tools/werkstatt/event_list.tscn` und `event_list.gd` (`EventList`):
+- [x] T035 [A] [P] [US2] `src/tools/werkstatt/event_list.tscn` und `event_list.gd` (`EventList`):
   - Suche über den Titel (Teilwort, Groß- und Kleinschreibung egal), Filter nach Art und
     Kategorie; Signal `event_selected(id)`.
   - Zeichen für Fehler und Warnung je Zeile.
   - „Neu …“ öffnet einen Dialog mit Art, Titel, Kategorie und der vorgeschlagenen Kennung, die
     Klaus ändern kann (US2, Szenario 1; FR-032). Dazu „Duplizieren“ und „Löschen“ mit Rückfrage,
     die die Verweise nennt.
-- [ ] T036 [A] [US2] `src/tools/werkstatt/event_form.tscn` und `event_form.gd` (`EventForm`):
+- [x] T036 [A] [US2] `src/tools/werkstatt/event_form.tscn` und `event_form.gd` (`EventForm`):
   - Felder je Art laut Vertrag.
   - Listen für Wirkungen (mit `scope` bei Ereignissen mit Dauer), Folgeereignisse (Ziel aus der
     Ereignisliste, Chance in %, Verzögerung von–bis) und Bedingungen.
@@ -472,9 +472,9 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
     `effects[1].delay_days`.
   - Bereich für Kategorien: anlegen, umbenennen, Farbe aus `UiPalette.CATEGORY_TOKENS`, löschen
     (FR-031).
-- [ ] T037 [A] [P] [US2] `src/tools/werkstatt/issues_panel.gd` (`IssuesPanel`): Liste mit Stufe,
+- [x] T037 [A] [P] [US2] `src/tools/werkstatt/issues_panel.gd` (`IssuesPanel`): Liste mit Stufe,
   Ereignis, Feld und Text; ein Klick sendet `issue_activated(event_id, field)`
-- [ ] T038 [A] [US2] Verdrahtung in `src/tools/werkstatt/werkstatt.gd` nach Vertrag, Abschnitt
+- [x] T038 [A] [US2] Verdrahtung in `src/tools/werkstatt/werkstatt.gd` nach Vertrag, Abschnitt
   „Verdrahtung“:
   - Auswahl aus Liste und Prüfung; das Formular zeigt das gewählte Ereignis.
   - `issue_activated` wählt das Ereignis und ruft `EventForm.focus_field()` auf (FR-033).
@@ -482,11 +482,11 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
   - Ein neues Ereignis wird gewählt, und der Fokus steht im Titel.
 
   Hängt an T034 bis T037.
-- [ ] T039 [A] [US2] `src/test/test_werkstatt_scene.gd`:
+- [x] T039 [A] [US2] `src/test/test_werkstatt_scene.gd`:
   - Die Szene baut headless mit `catalog_path` auf eine Kopie von `catalog_minimal.json` ohne
     Fehler auf und lässt das Fenster unangetastet.
   - Mit einer Fixture mit Fehler führt `issue_activated` zum Ereignis und zum Feld (FR-033).
-- [ ] T040 [K] [US2] Phase 4 abnehmen nach quickstart.md, Abschnitte 1 und 4.1, dazu FR-029
+- [x] T040 [K] [US2] Phase 4 abnehmen nach quickstart.md, Abschnitte 1 und 4.1, dazu FR-029
   (Lesbarkeit, Farben, Kontrast)
 
 **Checkpoint**: Klaus pflegt Ereignisse in der Werkstatt ohne Code. Abnahme durch Klaus, dann

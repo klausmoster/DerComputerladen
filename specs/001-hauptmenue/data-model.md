@@ -56,15 +56,17 @@ Regel: Ist die Version leer, wird kein „V“ ohne Zahl gezeigt, sondern nur da
 ## Zustand: Fenster
 
 ```text
-           Start
-             │
-             ▼
+                                                        Start
+                                                          │
+                                                          ▼
         ┌─────────┐   Ctrl+Cmd+F oder grüner Knopf   ┌─────────┐
         │Vollbild │ ───────────────────────────────▶ │ Fenster │
         │         │ ◀─────────────────────────────── │         │
         └─────────┘   Ctrl+Cmd+F oder grüner Knopf   └─────────┘
 ```
 
+- **Start:** im Fenster, mit derselben Größe wie beim Wechsel ins Fenster (FR-004; bis
+  2026-10-20 startete die App im Vollbild).
 - **Vollbild:** ganzzahlig skaliert, Rest schwarz (FR-012).
 - **Beim Wechsel ins Fenster:** Die Fenstergröße wird auf den größten ganzzahligen Faktor `f` der
   Basisgröße gesetzt, für den `f · 640` und `f · 360` samt Titelleiste in den nutzbaren Bereich

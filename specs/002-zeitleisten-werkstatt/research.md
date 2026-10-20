@@ -277,6 +277,11 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     `CONTENT_SCALE_MODE_DISABLED` und schaltet das Fenster auf `MODE_MAXIMIZED`, außer es läuft
     eingebettet im Editor (`Engine.is_embedded_in_editor()`). Sie schaltet die Verarbeitung von
     `GameWindow` ab, damit dessen Ganzzahl-Größe das Fenster nicht zurücksetzt.
+  - **Start im Fenster:** Bis zur Abnahme T040 startete das Projekt fürs Spiel im Vollbild. Unter
+    macOS lief dieser Übergang noch, wenn `_ready()` kam: `MODE_MAXIMIZED` ging verloren, auch
+    `--maximized` half nicht, und die Werkstatt stand im Vollbild ohne Titelleiste. Klaus hat
+    entschieden: kein Vollbild beim Start (Feature 001, FR-004 geändert). Seitdem startet das
+    Projekt im Fenster, und `MODE_MAXIMIZED` greift sofort.
   - **Bildschirmfaktor:** Dazu setzt sie `content_scale_factor` auf
     `DisplayServer.screen_get_scale()`, auf einem Retina-Bildschirm also 2. Ohne das stünde Text
     in physischen Pixeln da, eine Schrift der Größe 14 wäre dort nur halb so groß (Style-Guide,
@@ -287,10 +292,12 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
   - **Export:** Der Export schließt `tools/*` aus wie heute `test/*`.
 - **Begründung:** Die Werkstatt soll viel Text auf einen großen Bildschirm bringen (FR-029),
   das Spielraster 640 × 360 ist dafür zu klein. Die Eigenschaften lassen sich zur Laufzeit setzen
-  (öffentliche Setter in der Klassenreferenz). Ob das Umschalten aus dem Vollbild unter macOS
-  sauber aussieht, prüft der Quickstart.
+  (öffentliche Setter in der Klassenreferenz). Dass ein Wechsel aus dem Start-Vollbild unter
+  macOS verloren geht, hat die Abnahme T040 gezeigt; seitdem startet das Projekt im Fenster.
 - **Alternativen:** Editor-Plugin (von Klaus verworfen, siehe Spec); eigene Projekteinstellungen
-  für die Werkstatt (Godot kennt nur ein Set je Projekt).
+  für die Werkstatt (Godot kennt nur ein Set je Projekt); das Fenster die ersten Sekunden
+  beobachten und aus dem Start-Vollbild holen (ging, aber mit sichtbarem Umweg übers Vollbild,
+  bei T040 ausprobiert und verworfen).
 
 ## R14 Look der Werkstatt
 
@@ -347,7 +354,10 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 - **Probe:** `UndoRedo.new()` funktioniert außerhalb des Editors: Aktion ausgeführt, `undo()` nimmt
   sie zurück, `get_version()` zählt hoch.
 - **Hinweis:** `UndoRedo` erbt von `Object`, nicht von `RefCounted`. `CatalogEditor` muss es
-  beim Abräumen selbst freigeben (`NOTIFICATION_PREDELETE`).
+  beim Abräumen selbst freigeben (`NOTIFICATION_PREDELETE`). Außerdem hält `UndoRedo` das Ziel
+  jeder Methode fest: Riefe eine Aktion Methoden des Editors selbst auf, hielte sein eigener
+  Verlauf ihn am Leben, und `NOTIFICATION_PREDELETE` käme nie. Die Aktionen rufen deshalb eine
+  statische Funktion auf, die den Editor als `WeakRef` bekommt.
 - **Alternativen:** eigener Verlauf mit Kopien des ganzen Katalogs (einfach, aber bei jedem
   Tastendruck eine Kopie); `EditorUndoRedoManager` (nur in Editor-Plugins).
 
@@ -508,6 +518,8 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
   <Unix-Zeit>}`.
   - Beim Start fragt die Werkstatt, ob sie die Kopie übernehmen oder verwerfen soll. Dabei nennt
     sie die Zeiten von Kopie (`saved`) und Katalogdatei (`FileAccess.get_modified_time()`).
+    „Später“ (auch Esc) lässt die Kopie liegen, bis Klaus speichert oder nach seiner ersten
+    Änderung die nächste Sicherung sie ersetzt; bis dahin bleibt sie auch beim Schließen.
   - Angeboten wird nur eine Kopie, deren `path` zum geöffneten Katalog passt. Die Kopie eines
     anderen Katalogs bleibt liegen, und ein Hinweis nennt ihren Pfad.
   - Nach dem Speichern, nach dem Verwerfen und beim regulären Schließen löscht sie die Kopie

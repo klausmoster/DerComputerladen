@@ -276,3 +276,86 @@ Der Agent schreibt die Notizen, Claude trägt sie je Phase hier ein.
 - **Export-Filter:** `export_filter="all_resources"` packt alles, was Godot als Ressource kennt;
   JSON gehört dazu und liegt unverändert im Paket. Eine Gegenprobe mit `data/*` im
   `exclude_filter` zeigte, dass das Spiel einen fehlenden Katalog meldet.
+
+## Phase 4
+
+### T031 Das Theme der Werkstatt
+
+- **Theme für einen Teilbaum:** Godot sucht jeden Eintrag zuerst in den Themes der
+  Eltern-Controls, dann im Projekt-Theme, dann im Standard-Theme; der erste Treffer gilt.
+  `src/tools/werkstatt/werkstatt_theme.tres` auf dem Wurzelknoten der Werkstatt überdeckt so das
+  Theme des Spiels. Weil das Standard-Theme dunkel ist, hat jedes benutzte Control alle seine
+  Farben im Werkstatt-Theme; sonst stünde Text in `tusche` auf dunklem Grund.
+- Popups, Dialoge und Tooltips sind eigene Fenster, erben das Theme aber trotzdem, weil sie als
+  Kinder im Baum hängen.
+- **Typvarianten** wie `ErrorLineEdit` oder `TitleLabel`: `base_type` sagt, wovon sie erben, und
+  ein Node wählt sie über `theme_type_variation`.
+- **StyleBox:** Sie zeichnet den Hintergrund eines Controls; `content_margin_*` ist der
+  Innenabstand. `StyleBoxFlat` kennt nur eine Randfarbe und nur weiche Schatten. Für Relief und
+  Pixelschatten zeichnet `ReliefStyleBox` in `_draw(to_canvas_item, rect)` selbst Rechtecke mit
+  `RenderingServer.canvas_item_add_rect()`: erst die Kontur, darauf die Fläche, darauf die Kanten.
+- **Fokuslinie:** ein `StyleBoxFlat` mit `draw_center = false`, Rand 2 und `expand_margin` 4;
+  das ergibt 2 Pixel Linie mit 2 Pixeln Abstand.
+- Eine `.tres` kann keine `UiPalette`-Konstante nennen; die Farben stehen dort als Werte.
+  `test_werkstatt_theme.gd` sorgt dafür, dass sie Palettenfarben bleiben.
+
+### T032 und T033 Rückgängig zur Laufzeit
+
+- **Ablauf:** `create_action(name)`, `add_do_method()`, `add_undo_method()`, `commit_action()`;
+  das Commit führt die Do-Methode gleich aus.
+- **`get_version()`** steigt bei Commit und Wiederholen und sinkt bei Rückgängig. Falle:
+  Rückgängig und danach eine neue Aktion ergeben dieselbe Zahl wie vorher. `_commit()` in
+  `src/tools/werkstatt/catalog_editor.gd` erklärt deshalb den gespeicherten Stand für
+  unerreichbar, sobald unterhalb von ihm etwas Neues kommt.
+- **Vorher/Nachher je Aktion:** Ein geändertes Ereignis wird nicht verändert, sondern durch eine
+  Kopie ersetzt; das alte Objekt liegt unverändert im Verlauf. Eine Aktion kostet so nur die
+  betroffenen Ereignisse, und Rückgängig setzt genau die alten Objekte wieder ein. Die Schritte
+  sind Daten (`replace`, `insert`, `remove`), und `_inverse()` erzeugt das Rückgängig daraus.
+- **Zyklus vermeiden:** `UndoRedo` hält das Ziel jeder Methode fest. Riefe eine Aktion den
+  Editor selbst auf, hielte sein Verlauf ihn für immer am Leben. Jede Aktion zielt deshalb auf
+  eine statische Funktion, die den Editor als `WeakRef` bekommt.
+- **Fremde Änderung:** `get_modified_time()` zählt nur Sekunden; dazu kommt
+  `FileAccess.get_sha256()` des Inhalts.
+- Eine Änderung samt neuer Prüfung dauert bei 500 Ereignissen rund 5 ms (SC-011: unter 100 ms).
+
+### T034 bis T039 Die Werkstatt-Szene
+
+- **Szene aus Teilszenen:** `src/tools/werkstatt/werkstatt.tscn` setzt Liste und Formular als
+  eigene Szenen ein; jede bringt ihr Skript und ihre Knoten mit. Mit `unique_name_in_owner`
+  findet `%SaveButton` einen Knoten unabhängig vom Pfad.
+- **Signale nach oben, Aufrufe nach unten:** Die Teile kennen sich nicht. Sie melden der
+  Werkstatt (`event_selected`, `delete_requested`, `issue_activated`), und die Werkstatt ruft sie
+  auf (`refresh()`, `show_event()`, `focus_field()`). Den Katalog ändert nur der
+  `CatalogEditor`, die Auswahl gehört der Werkstatt.
+- **Schließen:** Mit `get_tree().auto_accept_quit = false` schließt das Fenster nicht mehr von
+  selbst; `_notification(NOTIFICATION_WM_CLOSE_REQUEST)` fragt nach und ruft erst danach
+  `get_tree().quit()`.
+- **Kürzel:** Ein `Button.shortcut` mit `command_or_control_autoremap` ergibt Cmd auf dem Mac und
+  Ctrl sonst. Ein Textfeld mit Fokus verbraucht Cmd+Z selbst, bevor die Kürzel drankommen; so
+  gehört Z dem Feld ohne eigenen Code. Cmd+S gibt vorher den Fokus ab, damit das Feld seinen Wert
+  übernimmt.
+- **Geteilte Ressourcen:** Eine geladene `.tres` ist für alle dieselbe. Die Schrift kommt deshalb
+  per `theme.duplicate()` in eine Kopie des Themes.
+- **Tree statt ItemList:** Nur ein Tree hat Spalten und Farben je Zelle; das Fehlerzeichen „!“
+  braucht seine eigene gefüllte Zelle. `select_mode = SELECT_ROW` markiert die ganze Zeile.
+- **Formular aus Code:** Welche Felder es gibt, hängt an Art und Listenlänge. `event_form.gd`
+  baut sie deshalb im Code und nach Änderungen neu, per `call_deferred()` am Ende des Bilds.
+- **LineEdit-Falle:** Ein `LineEdit` merkt sich auch das Setzen von `text` in seinem eigenen
+  Verlauf. Cmd+Z im frischen Feld hätte es geleert; das Formular schluckt Cmd+Z deshalb, solange
+  das Feld den übernommenen Wert zeigt.
+- **Szenen testen:** `test_werkstatt_scene.gd` wartet mit `wait_process_frames()` auf den Start
+  per `call_deferred()`, löst Klicks über die Signale aus und Tasten über
+  `get_viewport().push_input()`.
+- **Fenstermodus unter macOS:** `window.mode = …` ist kein sofortiger Zustand, sondern eine Bitte
+  an das System, das den Wechsel als Animation ausführt. Solange das Projekt im Vollbild
+  startete, lief dieser Übergang bei `_ready()` noch: `window.mode` las 0, und die Bitte um
+  `MODE_MAXIMIZED` ging verloren. Seit der Abnahme T040 startet das Projekt im Fenster, und die
+  Bitte greift sofort. `GameWindow` wartet aus demselben Grund das Ende eines Übergangs ab, bevor
+  es die Fenstergröße setzt.
+- **Start-Fit über `_process()` statt `call_deferred()`:** `GameWindow` gibt dem Spielfenster
+  seine Größe erst im ersten Bild. Ein aufgeschobener Aufruf liefe nach dem `_ready()` der
+  Werkstatt und schrumpfte ihr maximiertes Fenster; `_process()` dagegen läuft gar nicht, weil die
+  Werkstatt die Verarbeitung von `GameWindow` in ihrem `_ready()` anhält.
+- **`Engine.is_embedded_in_editor()`:** wahr, wenn das Spiel im Tab „Spiel“ des Editors läuft.
+  Dann gehört das Fenster dem Editor: `GameWindow` setzt beim Start keine Größe, und die
+  Werkstatt maximiert nicht.

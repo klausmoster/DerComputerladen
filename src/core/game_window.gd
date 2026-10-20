@@ -1,12 +1,13 @@
 extends Node
 
-## Autoload GameWindow: Vollbild, Fenster und Mindestgröße des Spielfensters.
+## Autoload GameWindow: Fenster, Vollbild und Mindestgröße des Spielfensters.
 ##
-## Die Eingabe-Aktion `toggle_fullscreen` (Ctrl+Cmd+F) schaltet zwischen Vollbild und
-## Fenster um, der grüne Fensterknopf von macOS tut das ohne eigenen Code. Kommt das Spiel
-## ins Fenster, bekommt es den größten ganzzahligen Faktor, der auf seinen Bildschirm
-## passt, und steht dort in der Mitte. Kleiner als das Oberflächenraster bei Faktor 1
-## lässt es sich nicht ziehen (FR-004, FR-013).
+## Das Spiel startet im Fenster. Gleich nach dem Start bekommt es den größten ganzzahligen
+## Faktor, der samt Titelleiste auf seinen Bildschirm passt, und steht dort in der Mitte.
+## Die Eingabe-Aktion `toggle_fullscreen` (Ctrl+Cmd+F) schaltet ins Vollbild und zurück, der
+## grüne Fensterknopf von macOS tut das ohne eigenen Code; zurück im Fenster bekommt das
+## Spiel wieder diese Größe. Kleiner als das Oberflächenraster bei Faktor 1 lässt es sich
+## nicht ziehen (FR-004, FR-013).
 ##
 ## Läuft Godot headless (Tests, Startprobe), gibt es kein Fenster, und der Autoload tut
 ## nichts.
@@ -38,6 +39,15 @@ func _ready() -> void:
 	# 640 × 360 Pixel also 320 × 180 Punkte, wie FR-013 es verlangt.
 	get_window().min_size = BASE_SIZE
 	_was_fullscreen = is_fullscreen()
+	# Das Spiel startet im Fenster (FR-004), anfangs in der Größe des Rasters. Seine Größe
+	# bekommt es im ersten Bild in _process(), auf demselben Weg wie nach dem Vollbild.
+	# Nicht per call_deferred(): Die Werkstatt hält GameWindow in ihrem _ready() an und
+	# maximiert ihr Fenster selbst. Ein aufgeschobener Aufruf liefe erst danach und schrumpfte
+	# ihr maximiertes Fenster auf die Spielgröße.
+	# Eingebettet im Editor bestimmt der Editor die Größe. GameWindow setzt dort keine, wie
+	# schon, als das Projekt noch im Vollbild startete.
+	if not _was_fullscreen and not Engine.is_embedded_in_editor():
+		_fit_msec = Time.get_ticks_msec()
 
 
 ## Ein Signal für den Wechsel des Fenstermodus gibt es nicht: size_changed meldet bei

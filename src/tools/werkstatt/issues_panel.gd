@@ -1,0 +1,88 @@
+class_name IssuesPanel
+extends Tree
+
+## Die Prüfung der Werkstatt (FR-033; contracts/werkstatt.md, „Liste, Formular, Prüfung“): alle
+## Meldungen des Katalogs als Tabelle mit Stufe, Ereignis, Feld und Text. Ein Klick auf eine
+## Meldung sendet issue_activated; die Werkstatt wählt dann das Ereignis und setzt den Fokus ins
+## Feld. Meldungen zu Kategorien haben kein Ereignis und führen zum Bereich für Kategorien.
+##
+## Das Panel ist selbst ein Tree: Ein Tree kann Spalten mit Überschriften und markiert die ganze
+## Zeile, eine ItemList nur einen Eintrag. Die Zeilen hängen unter einer unsichtbaren Wurzel
+## (hide_root), denn die Meldungen bilden keine Hierarchie.
+##
+## Fehler und Warnung unterscheiden sich in Form und Zeichen, nicht nur in der Farbe (Style-Guide,
+## „Farbrollen“): Ein Fehler ist ein gefülltes Feld in kassenrot mit „!“ in papier, eine Warnung
+## Text in holz mit „?“ davor.
+
+signal issue_activated(event_id: String, field: String)
+
+enum Column { SEVERITY, EVENT, FIELD, TEXT }
+
+const TITLES: Array[String] = ["Stufe", "Ereignis", "Feld", "Text"]
+## Breite der schmalen Spalten; der Text nimmt den Rest.
+const WIDTHS: Array[int] = [112, 200, 200, 0]
+
+
+func _ready() -> void:
+	columns = TITLES.size()
+	column_titles_visible = true
+	hide_root = true
+	# Ohne Klapp-Pfeil fällt auch sein Platz vorn in der ersten Spalte weg.
+	hide_folding = true
+	select_mode = Tree.SELECT_ROW
+	for column in columns:
+		set_column_title(column, TITLES[column])
+		set_column_title_alignment(column, HORIZONTAL_ALIGNMENT_LEFT)
+		set_column_clip_content(column, true)
+		set_column_expand(column, WIDTHS[column] == 0)
+		if WIDTHS[column] > 0:
+			set_column_custom_minimum_width(column, WIDTHS[column])
+	# Ein Mausklick wählt und springt sofort zum Feld, auch auf die schon gewählte Zeile. Mit den
+	# Pfeiltasten wandert nur die Auswahl, sonst nähme jeder Schritt der Liste den Fokus weg;
+	# Enter oder ein Doppelklick springen dann.
+	item_mouse_selected.connect(_on_item_mouse_selected)
+	item_activated.connect(_activate_selected)
+	show_issues([])
+
+
+## Zeigt [param issues] in ihrer Reihenfolge: zuerst die Meldungen beim Lesen, dann die der
+## Prüfung, darin nach Ereignis und Regel, Kategorien zuletzt (CatalogValidator).
+func show_issues(issues: Array[CatalogIssue]) -> void:
+	clear()
+	var root := create_item()
+	if issues.is_empty():
+		var empty := create_item(root)
+		empty.set_text(Column.TEXT, "Keine Meldungen. Der Katalog ist in Ordnung.")
+		for column in columns:
+			empty.set_selectable(column, false)
+		return
+	for issue in issues:
+		var item := create_item(root)
+		var is_error := issue.severity == CatalogIssue.Severity.ERROR
+		if is_error:
+			item.set_text(Column.SEVERITY, "! Fehler")
+			item.set_custom_bg_color(Column.SEVERITY, UiPalette.KASSENROT)
+			item.set_custom_color(Column.SEVERITY, UiPalette.PAPIER)
+		else:
+			item.set_text(Column.SEVERITY, "? Warnung")
+			item.set_custom_color(Column.SEVERITY, UiPalette.HOLZ)
+		item.set_text(Column.EVENT, issue.event_id if not issue.event_id.is_empty() else "–")
+		item.set_text(Column.FIELD, issue.field)
+		item.set_text(Column.TEXT, issue.message)
+		item.set_tooltip_text(Column.TEXT, issue.message)
+		item.set_metadata(Column.SEVERITY, {"event_id": issue.event_id, "field": issue.field})
+
+
+func _on_item_mouse_selected(_position: Vector2, button: int) -> void:
+	if button == MOUSE_BUTTON_LEFT:
+		_activate_selected()
+
+
+func _activate_selected() -> void:
+	var item := get_selected()
+	if item == null:
+		return
+	var place: Variant = item.get_metadata(Column.SEVERITY)
+	if typeof(place) != TYPE_DICTIONARY:
+		return
+	issue_activated.emit(place["event_id"], place["field"])

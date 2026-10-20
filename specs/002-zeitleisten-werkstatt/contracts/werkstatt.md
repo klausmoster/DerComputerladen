@@ -11,6 +11,9 @@ Die Werkstatt ist ein Entwicklungswerkzeug und gehört nicht zum Spiel; ihr Look
 src/tools/werkstatt/                  # ganzer Ordner vom Export ausgeschlossen
 ├── werkstatt.tscn / werkstatt.gd     # Wurzel, class_name Werkstatt
 ├── werkstatt_theme.tres              # Theme nach Style-Guide „Werkzeuge“
+├── relief_style_box.gd               # class_name ReliefStyleBox: Relief und Pixelschatten, die StyleBoxFlat nicht kann
+├── icons/schliessen.svg              # Schließen-Kreuz der Dialoge in tusche
+├── icons/griff_h.svg, griff_v.svg    # Griffe der Split-Container in tusche
 ├── catalog_editor.gd                 # class_name CatalogEditor, ohne Oberfläche
 ├── event_list.tscn / event_list.gd   # class_name EventList
 ├── event_form.tscn / event_form.gd   # class_name EventForm
@@ -25,8 +28,10 @@ src/tools/werkstatt/                  # ganzer Ordner vom Export ausgeschlossen
 
 src/test/
 ├── test_catalog_editor.gd            # Bearbeiten, Kennungen, Verweise, Rückgängig, Speichern, Verwerfen, Lesemeldungen, Sicherung
+├── test_event_form.gd                # Eingaben mit Komma, Prozent und Datum, ungültige Eingaben, Gewichte verteilen, focus_field()
 ├── test_what_if_probe.gd             # Speichern, Laden, Neu abspielen, Löschen, nicht anwendbare Eingriffe
 ├── test_timeline_view.gd             # Tag ↔ Pixel, Stapeln, jährliche nicht ziehbar, Vorschau beim Ziehen
+├── test_werkstatt_theme.gd           # Farben des Themes stammen aus UiPalette, Schriftgröße, Kästen
 └── test_werkstatt_scene.gd           # Rauchtest: Szene baut headless auf, Prüfmeldung führt zum Feld, Simulator rechnet, Spieluhr bleibt unberührt
 ```
 
@@ -47,18 +52,22 @@ src/test/
   - `get_window().content_scale_factor = DisplayServer.screen_get_scale()`, damit Text auf dem
     Retina-Bildschirm scharf und in normaler Größe steht (Style-Guide „Werkzeuge“);
   - `get_window().mode = Window.MODE_MAXIMIZED`, außer bei `Engine.is_embedded_in_editor()`;
-  - `GameWindow.set_process(false)` und `GameWindow.set_process_unhandled_input(false)`.
+    das greift sofort, weil das Projekt im Fenster startet (Feature 001, FR-004, seit T040);
+  - `GameWindow.set_process(false)` und `GameWindow.set_process_unhandled_input(false)`, damit
+    dessen Fenstergröße weder beim Start noch beim Wechsel aus dem Vollbild greift.
 
   Das betrifft nur den Prozess, in dem die Werkstatt läuft. Das Spiel lädt die Werkstatt nie,
-  `GameWindow` und `test_game_window.gd` bleiben unverändert.
+  `test_game_window.gd` bleibt unverändert. `GameWindow` setzt seit T040 auch beim Start die
+  Fenstergröße des Spiels, im ersten `_process()` (Feature 001, Vertrag).
 - Danach öffnet sie `catalog_path` über den `CatalogEditor` und prüft, ob es eine
   Sicherungskopie gibt (R23).
   - Fehlt die Datei, bietet ein Dialog an, einen leeren Katalog mit den zehn Kategorien
     anzulegen; geschrieben wird er erst beim Speichern.
   - Ist die Datei unlesbar, zeigt ein Dialog Zeile und Grund.
-  - Gehört die Kopie zu diesem Katalog (`backup_matches()`), fragt ein Dialog „Übernehmen“ oder
-    „Verwerfen“ und nennt beide Zeiten. Gehört sie zu einem anderen, bleibt sie liegen, und ein
-    Hinweis nennt ihren Pfad.
+  - Gehört die Kopie zu diesem Katalog (`backup_matches()`), fragt ein Dialog „Übernehmen“,
+    „Verwerfen“ oder „Später“ und nennt beide Zeiten. „Später“ (auch Esc) lässt die Kopie liegen,
+    bis Klaus speichert oder nach seiner ersten Änderung die nächste Sicherung sie ersetzt.
+    Gehört sie zu einem anderen Katalog, bleibt sie liegen, und ein Hinweis nennt ihren Pfad.
 - Speichern (Knopf oder Cmd+S): Hat der Katalog Fehler (`has_errors()`), fragt ein Dialog „Der
   Katalog hat N Fehler. Trotzdem speichern?“ (FR-034). Danach `save()`; meldet es
   `ERR_FILE_ALREADY_IN_USE`, folgt die Rückfrage zur fremden Änderung und erst dann `save(true)`.
@@ -67,14 +76,15 @@ src/test/
   `NOTIFICATION_WM_CLOSE_REQUEST` ab. Bei ungespeicherten Änderungen fragt ein Dialog „Speichern“,
   „Verwerfen“ oder „Abbrechen“; „Speichern“ läuft über dieselben Rückfragen wie oben. Danach
   beendet sie mit `get_tree().quit()`. Nach dem Speichern, nach dem Verwerfen und beim regulären
-  Schließen löscht sie die Sicherungskopie.
+  Schließen löscht sie die Sicherungskopie, beim Schließen nicht, solange „Später“ gilt.
 
 ## Szenenaufbau
 
 ```text
 Werkstatt (Control, volle Fläche)        werkstatt.gd; theme = werkstatt_theme.tres; default_font per Code
 └── Layout (VBoxContainer)
-    ├── Toolbar (HBoxContainer)          Speichern, Verwerfen, Rückgängig, Wiederholen | Datei, „ungespeichert“, Zahl der Fehler und Warnungen
+    ├── Toolbar (PanelContainer, Variante Toolbar)
+    │   └── HBoxContainer                Speichern, Verwerfen, Rückgängig, Wiederholen | Datei, „ungespeichert“, Zahl der Fehler und Warnungen
     └── Main (HSplitContainer)
         ├── EventList                    links, Breite etwa 280
         ├── Center (VSplitContainer)
@@ -106,6 +116,10 @@ unlesbaren Katalog; `InterventionDialog`. Den Dialog für „Neu …“ bringt `
   `issues_changed` aktualisiert Prüfung, Zeichen in der Liste und die Zahlen in der Toolbar.
 - Ein neues Ereignis, ob aus dem Dialog oder per Doppelklick, wird gewählt, und das Formular
   setzt den Fokus auf den Titel.
+- Fehlt das gewählte Ereignis nach einer Änderung, etwa nach dem Löschen oder nach dem
+  Rückgängigmachen eines Umbenennens, ist keins mehr gewählt.
+- Ohne lesbaren Katalog ist „Speichern“ gesperrt, damit eine kaputte Datei nicht überschrieben
+  wird; ohne ungespeicherte Änderungen ist „Verwerfen“ gesperrt.
 
 ## CatalogEditor
 
@@ -179,6 +193,10 @@ func undo() -> bool
 func redo() -> bool
 func can_undo() -> bool
 func can_redo() -> bool
+## Name der Aktion, die undo() bzw. redo() als Nächstes ausführt, etwa „Datum von Intel Pentium
+## erscheint“; leer, wenn es keine gibt. Für die Tooltips der Knöpfe.
+func undo_name() -> String
+func redo_name() -> String
 ```
 
 Regeln:
@@ -203,7 +221,8 @@ Regeln:
   „Anlegen“ ruft `add_event()`.
 
 **EventForm:**
-- Felder für das gewählte Ereignis; die Art bestimmt, welche Felder sichtbar sind (FR-031):
+- Felder für das gewählte Ereignis; die Art bestimmt, welche Felder sichtbar sind (FR-031). Die
+  Auswahl „Art“ hat fünf Einträge, „fix, jährlich“ ist einer davon (data-model.md):
   - fix: Datum und Dauer;
   - jährlich: Jahre von–bis, Beginn, Ende oder „ohne Dauer“;
   - gesetzt: Zeitfenster, Anzahl von–bis mit Wahrscheinlichkeit je Anzahl, Mindestabstand,

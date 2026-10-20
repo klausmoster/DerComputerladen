@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="8" viewBox="0 0 16 8">
+	<!-- Griff des VSplitContainer: drei Punkte in tusche, nebeneinander. -->
+	<g fill="#1d1916">
+		<rect x="1" y="3" width="2" height="2"/>
+		<rect x="7" y="3" width="2" height="2"/>
+		<rect x="13" y="3" width="2" height="2"/>
+	</g>
+</svg>

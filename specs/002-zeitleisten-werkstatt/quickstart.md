@@ -64,7 +64,8 @@ diff /tmp/fahrplan_a.txt /tmp/fahrplan_b.txt
 
 ## 4. Werkstatt von Hand
 
-Im Editor `src/tools/werkstatt/werkstatt.tscn` öffnen und F6 drücken.
+Im Editor `src/tools/werkstatt/werkstatt.tscn` öffnen und F6 drücken. Im Editor selbst zeigt die
+Szene noch die Pixelschrift des Spiels; die Werkstatt setzt Open Sans erst beim Start.
 
 ### 4.1 Grundgerüst (ab Phase 4)
 
@@ -91,7 +92,7 @@ Im Editor `src/tools/werkstatt/werkstatt.tscn` öffnen und F6 drücken.
 | Einen unbekannten Schlüssel in die Datei schreiben, Werkstatt neu starten, ein anderes Feld ändern | V22 nennt den Schlüssel und bleibt nach der Änderung stehen; Speichern fragt wegen des Fehlers nach | ereigniskatalog.md, Regel 5 |
 | Komma in der Datei löschen, Werkstatt neu starten | Meldung mit Zeile und Grund, Datei unverändert | Edge Case, R4 |
 | Katalogdatei vorübergehend umbenennen, Werkstatt starten | Angebot, einen leeren Katalog anzulegen; geschrieben wird erst beim Speichern | Edge Case |
-| Ungespeicherte Änderung, 2 Minuten warten, Werkstatt im Terminal mit `kill` beenden, neu starten | Angebot, die Sicherungskopie zu übernehmen, mit beiden Zeiten; danach ist die Änderung da | FR-050 |
+| Ungespeicherte Änderung, 2 Minuten warten, Werkstatt im Terminal mit `pkill -9 -f werkstatt.tscn` hart beenden, neu starten | Angebot, die Sicherungskopie zu übernehmen, mit beiden Zeiten; danach ist die Änderung da | FR-050 |
 | Bei liegender Sicherungskopie die Werkstatt mit `-- --katalog res://test/fixtures/catalog_minimal.json` starten | keine Übernahme angeboten, ein Hinweis nennt den Pfad der Kopie | R23 |
 
 ### 4.2 Kalender und Dauer (ab Phase 5)

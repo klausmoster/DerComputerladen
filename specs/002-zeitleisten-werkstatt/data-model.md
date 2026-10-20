@@ -58,8 +58,9 @@ Gemeinsame Felder:
 | `follow_ups` | Array[FollowUp] | Folgeereignisse, auch keine |
 | `conditions` | Array[EventCondition] | nur bei `PRESET`, `CHANCE`, `FOLLOW_ONLY` (FR-006) |
 
-`YEARLY` ist die Art „fix“ mit dem Häkchen „jährlich“. Die Spec kennt deshalb vier Arten, der
-Code fünf Werte für `Kind`; angezeigt wird `YEARLY` überall als „fix, jährlich“.
+`YEARLY` ist die Art „fix“, die jedes Jahr wiederkehrt. Die Spec kennt deshalb vier Arten, der
+Code fünf Werte für `Kind`; angezeigt wird `YEARLY` überall als „fix, jährlich“, in der Werkstatt
+als eigener Eintrag der Auswahl „Art“.
 
 Felder je Art (andere Felder sind leer und werden nicht gespeichert):
 

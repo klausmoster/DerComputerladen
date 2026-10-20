@@ -1,0 +1,131 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/werkstatt/event_form.gd" id="1_form"]
+
+[node name="EventForm" type="VBoxContainer"]
+size_flags_horizontal = 3
+script = ExtResource("1_form")
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Kein Ereignis gewählt"
+autowrap_mode = 3
+
+[node name="Subtitle" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+autowrap_mode = 3
+
+[node name="GeneralHint" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"ErrorLabel"
+autowrap_mode = 3
+
+[node name="EventBox" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Fields" type="VBoxContainer" parent="EventBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="EffectsHeader" type="HBoxContainer" parent="EventBox"]
+layout_mode = 2
+
+[node name="EffectsTitle" type="Label" parent="EventBox/EffectsHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Wirkungen"
+
+[node name="AddEffect" type="Button" parent="EventBox/EffectsHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Wirkung hinzufügen"
+text = "+"
+
+[node name="Effects" type="VBoxContainer" parent="EventBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FollowUpsHeader" type="HBoxContainer" parent="EventBox"]
+layout_mode = 2
+
+[node name="FollowUpsTitle" type="Label" parent="EventBox/FollowUpsHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Folgeereignisse"
+
+[node name="AddFollowUp" type="Button" parent="EventBox/FollowUpsHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Folgeereignis hinzufügen"
+text = "+"
+
+[node name="FollowUps" type="VBoxContainer" parent="EventBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ConditionsBox" type="VBoxContainer" parent="EventBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ConditionsHeader" type="HBoxContainer" parent="EventBox/ConditionsBox"]
+layout_mode = 2
+
+[node name="ConditionsTitle" type="Label" parent="EventBox/ConditionsBox/ConditionsHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Bedingungen"
+
+[node name="AddCondition" type="Button" parent="EventBox/ConditionsBox/ConditionsHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Bedingung hinzufügen"
+text = "+"
+
+[node name="ConditionsHint" type="Label" parent="EventBox/ConditionsBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"ErrorLabel"
+autowrap_mode = 3
+
+[node name="Conditions" type="VBoxContainer" parent="EventBox/ConditionsBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CategorySeparator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="CategoriesTitle" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Kategorien"
+
+[node name="Categories" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="NewCategory" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="NewCategoryName" type="LineEdit" parent="NewCategory"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Name der neuen Kategorie"
+
+[node name="NewCategoryButton" type="Button" parent="NewCategory"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Kategorie anlegen; sie bekommt die erste freie Farbe."
+text = "Anlegen"

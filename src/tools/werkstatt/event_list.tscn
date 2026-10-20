@@ -1,0 +1,115 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/werkstatt/event_list.gd" id="1_list"]
+
+[node name="EventList" type="VBoxContainer"]
+custom_minimum_size = Vector2(280, 0)
+script = ExtResource("1_list")
+
+[node name="Search" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Sucht im Titel, auch nach einem Teil des Worts."
+placeholder_text = "Titel suchen …"
+clear_button_enabled = true
+
+[node name="Filters" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="KindFilter" type="OptionButton" parent="Filters"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Nur Ereignisse dieser Art zeigen"
+clip_text = true
+
+[node name="CategoryFilter" type="OptionButton" parent="Filters"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Nur Ereignisse dieser Kategorie zeigen"
+clip_text = true
+
+[node name="List" type="Tree" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Buttons" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="NewButton" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Neues Ereignis anlegen"
+text = "Neu …"
+
+[node name="DuplicateButton" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Das gewählte Ereignis unter neuer Kennung kopieren"
+text = "Duplizieren"
+
+[node name="DeleteButton" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Das gewählte Ereignis löschen; vorher kommt eine Rückfrage"
+text = "Löschen"
+
+[node name="NewDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Neues Ereignis"
+ok_button_text = "Anlegen"
+cancel_button_text = "Abbrechen"
+
+[node name="Fields" type="GridContainer" parent="NewDialog"]
+custom_minimum_size = Vector2(420, 0)
+columns = 2
+
+[node name="KindCaption" type="Label" parent="NewDialog/Fields"]
+layout_mode = 2
+text = "Art"
+
+[node name="NewKind" type="OptionButton" parent="NewDialog/Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TitleCaption" type="Label" parent="NewDialog/Fields"]
+layout_mode = 2
+text = "Titel"
+
+[node name="NewTitle" type="LineEdit" parent="NewDialog/Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "etwa Neubaugebiet am Stadtrand"
+
+[node name="CategoryCaption" type="Label" parent="NewDialog/Fields"]
+layout_mode = 2
+text = "Kategorie"
+
+[node name="NewCategory" type="OptionButton" parent="NewDialog/Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IdCaption" type="Label" parent="NewDialog/Fields"]
+layout_mode = 2
+text = "Kennung"
+
+[node name="NewId" type="LineEdit" parent="NewDialog/Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Vorschlag aus dem Titel; du kannst ihn ändern."
+
+[node name="HintSpacer" type="Control" parent="NewDialog/Fields"]
+layout_mode = 2
+
+[node name="NewHint" type="Label" parent="NewDialog/Fields"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ErrorLabel"

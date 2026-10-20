@@ -24,7 +24,8 @@ können […] startet und lädt die App bis zum Startscreen".
   auf dem eigenen Mac; Signieren und Beglaubigen kommen mit 11-03.
 - Q: Startet die App im Vollbild oder im Fenster, und wie schaltet man um, solange es keine
   Einstellungen gibt? → A: Im Vollbild; Ctrl+Cmd+F und der grüne Fensterknopf schalten ins
-  Fenster und zurück.
+  Fenster und zurück. **Geändert am 2026-10-20** (Klaus, bei der Abnahme T040 von Feature 002):
+  Die App startet im Fenster; Ctrl+Cmd+F und der grüne Knopf schalten ins Vollbild und zurück.
 - Q: Wohin führt „Neues Spiel“, solange es noch keinen Spielbildschirm gibt? → A: Nirgendwohin:
   „Neues Spiel“ ist wie „Spiel laden“ vorerst nicht verfügbar; der Titelbildschirm ist die
   Endstation dieses Features.
@@ -65,7 +66,7 @@ Entscheidungen von Klaus bei der Umsetzung und der Lückensuche (T044):
 ### User Story 1 - App unter macOS bis zum Titelbildschirm starten (Priority: P1)
 
 Klaus baut das Spiel als Mac-App und startet sie wie jede andere App per Doppelklick, ohne die
-Entwicklungsumgebung. Die App lädt und zeigt dann im Vollbild den Titelbildschirm: den
+Entwicklungsumgebung. Die App lädt und zeigt dann im Fenster den Titelbildschirm: den
 Computerladen an der Straßenecke am Abend, oben links das Ladenschild-Logo mit Untertitel, rechts
 das Hauptmenü auf Endlospapier und unten links die Versionszeile.
 
@@ -86,7 +87,7 @@ funktioniert auch dann, wenn die Menüpunkte noch nichts tun.
 3. **Given** die App läuft, **When** Klaus auf Dock und App-Umschalter schaut, **Then** steht dort
    „Der Computerladen“ mit dem Monitor aus dem Logo auf `nacht` als Symbol.
 4. **Given** die App ist gestartet, **When** der Titelbildschirm erscheint, **Then** läuft sie im
-   Vollbild, und Ctrl+Cmd+F wechselt ins Fenster und wieder zurück.
+   Fenster, und Ctrl+Cmd+F wechselt ins Vollbild und wieder zurück.
 
 ---
 
@@ -198,10 +199,10 @@ passiert nichts.
   auch in der Listenansicht des Finders zu erkennen.
 - **FR-003**: Beim Start muss die App bis zum Titelbildschirm laden. Bis er bereit ist, zeigt sie
   nur den Startgrund in `anzeige-grund` aus dem Style-Guide, kein fremdes Logo.
-- **FR-004**: Die App muss im Vollbild starten. Ctrl+Cmd+F und der grüne Fensterknopf von macOS
-  schalten zwischen Vollbild und Fenster um. Im Fenster erscheint die Darstellung im größten
-  ganzzahligen Faktor, der samt Titelleiste auf den Bildschirm passt, auf dem das Fenster gerade
-  liegt.
+- **FR-004**: Die App muss im Fenster starten (bis 2026-10-20: im Vollbild). Ctrl+Cmd+F und der
+  grüne Fensterknopf von macOS schalten zwischen Fenster und Vollbild um. Im Fenster, auch beim
+  Start, erscheint die Darstellung im größten ganzzahligen Faktor, der samt Titelleiste auf den
+  Bildschirm passt, auf dem das Fenster gerade liegt.
 - **FR-005**: Der Titelbildschirm muss das Titelbild T-01 über den ganzen Bildschirm zeigen,
   darüber das Logo mit dem Untertitel „WIRTSCHAFTSSIMULATION · 1985–1999“, das Hauptmenü und die
   Versionszeile. Anordnung und Gestaltung folgen dem

@@ -166,7 +166,12 @@ static func best_factor(usable: Vector2i, decorations: Vector2i) -> int   # imme
 
 Verbindlich:
 - In `_ready()`: Läuft Godot headless (`DisplayServer.get_name() == "headless"`), tut der
-  Autoload nichts. Sonst setzt er `get_window().min_size = BASE_SIZE`.
+  Autoload nichts. Sonst setzt er `get_window().min_size = BASE_SIZE`. Startet das Fenster
+  nicht im Vollbild und nicht eingebettet im Editor (`Engine.is_embedded_in_editor()`), bekommt
+  es im ersten `_process()` dieselbe Größe wie beim Wechsel ins Fenster (seit 2026-10-20).
+  Eingebettet bestimmt der Editor die Größe. Kein `call_deferred()`: Die Werkstatt aus Feature
+  002 hält die Verarbeitung des Autoloads in ihrem `_ready()` an und behält so ihr maximiertes
+  Fenster.
 - Den Wechsel des Fenstermodus erkennt `_process()`: Es vergleicht den Modus mit dem des
   vorigen Bilds. Ein Signal dafür gibt es nicht, denn bei Stretch `viewport` meldet
   `size_changed` nur den Viewport, und der bleibt 640 × 360.
@@ -224,7 +229,7 @@ Import der Schriften und Sichtprobe: siehe research.md, R8.
 | `application/boot_splash/show_image` | `false` | `true` |
 | `application/boot_splash/bg_color` | `anzeige-grund` (#0d1716) | Grau |
 | `display/window/size/viewport_width` / `_height` | 640 / 360 | 1152 / 648 |
-| `display/window/size/mode` | 3 (Fullscreen) | 0 |
+| `display/window/size/mode` | nicht gesetzt, also 0 (Fenster); bis 2026-10-20: 3 (Fullscreen) | 0 |
 | `display/window/stretch/mode` | `viewport` | `disabled` |
 | `display/window/stretch/aspect` | `keep` | `keep` |
 | `display/window/stretch/scale_mode` | `integer` | `fractional` |
