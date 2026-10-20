@@ -2,8 +2,9 @@
 
 Gehört zu [spec.md](../spec.md) und [data-model.md](../data-model.md), Entscheidungen in
 [research.md](../research.md) (R3, R4, R19). Die Datei liegt unter `src/data/event_catalog.json`
-(Verfassung 2.1.0, Grundsatz V, Ausnahme Ereigniskatalog) und wird nur von der Werkstatt
-geschrieben. Lesen dürfen sie Spiel, Werkstatt, Textausgabe und Tests.
+(Verfassung 2.1.0, Grundsatz V, Ausnahme Ereigniskatalog). Gepflegt wird sie mit der Werkstatt;
+außer ihr schreibt sie nur einmal die Übernahme (R19). Lesen dürfen sie Spiel, Werkstatt,
+Textausgabe und Tests.
 
 ## Aufbau
 
@@ -54,12 +55,15 @@ geschrieben. Lesen dürfen sie Spiel, Werkstatt, Textausgabe und Tests.
 			"category": "lokal",
 			"conditions": [],
 			"count_min": 0,
-			"count_weights": [30, 70],
+			"count_weights": [
+				30,
+				70
+			],
 			"description": "Ein neues Wohngebiet entsteht – mehr potenzielle Laufkundschaft.",
 			"duration_days": 0,
 			"effects": [],
 			"follow_ups": [],
-			"id": "neubaugebiet_stadtrand",
+			"id": "neubaugebiet_am_stadtrand",
 			"kind": "preset",
 			"min_gap_days": 1095,
 			"title": "Neubaugebiet am Stadtrand",
@@ -134,7 +138,8 @@ geschrieben. Lesen dürfen sie Spiel, Werkstatt, Textausgabe und Tests.
 ```
 
 Das Beispiel zeigt jede Art einmal, gekürzt auf zwei Kategorien. „Neubaugebiet am Stadtrand“ und
-der Zeitungsartikel sind Beispiele für das Format, kein Teil der Übernahme.
+der Zeitungsartikel sind Beispiele für das Format, kein Teil der Übernahme. Listen stehen, wie
+`JSON.stringify` sie mit Einrückung schreibt, mit einem Eintrag je Zeile; leere Listen als `[]`.
 
 ## Felder
 
@@ -155,7 +160,7 @@ Ereignis, immer vorhanden: `id`, `title`, `description`, `category`, `kind`, `ef
 |---|---|
 | `"fixed"` | `date`, `duration_days` |
 | `"yearly"` | `yearly` mit `from`, `to` (Jahre), `start` (`"MM-TT"`), `end` (`"MM-TT"`, `"MM-ende"` oder `""` für ohne Dauer) |
-| `"preset"` | `window` mit `from`, `to` (`"JJJJ-MM-TT"`), `count_min`, `count_weights` (Liste von Zahlen), `min_gap_days`, `duration_days`, `conditions` |
+| `"preset"` | `window` mit `from`, `to` (`"JJJJ-MM-TT"`), `count_min`, `count_weights` (Liste von Zahlen in Prozent, Summe 100), `min_gap_days`, `duration_days`, `conditions` |
 | `"chance"` | `window`, `monthly_chance` (0 bis 1), `max_occurrences`, `min_gap_days`, `duration_days`, `conditions` |
 | `"follow_only"` | `duration_days`, `conditions` |
 
@@ -175,13 +180,18 @@ Damit gleicher Inhalt immer dieselbe Datei ergibt und eine Feldänderung genau e
    Schlüssel stehen damit alphabetisch, eingerückt wird mit Tabs.
 2. `events` wird vor dem Schreiben nach `id` sortiert. `categories`, `effects`, `follow_ups` und
    `conditions` bleiben in ihrer Reihenfolge.
-3. Ganzzahlige Felder werden als `int` geschrieben, auch Gewichte ohne Nachkommastellen (`30`
-   statt `30.0`). `JSON.parse` liest jede Zahl als `float`; beim Lesen wandelt der Katalog sie
-   zurück (research.md, R3).
+3. Zahlen (research.md, R3):
+   - Anteile (`monthly_chance`, `magnitude`, `chance`) werden auf vier Nachkommastellen gerundet,
+     die Gewichte je Anzahl auf zwei.
+   - Ganzzahlige Felder werden als `int` geschrieben, auch Gewichte ohne Nachkommastellen (`30`
+     statt `30.0`). `JSON.parse` liest jede Zahl als `float`; beim Lesen wandelt der Katalog sie
+     zurück.
+   - Alle Zahlen sind 64-Bit-Zahlen; ein `PackedFloat32Array` kommt nie in die Datei.
 4. Es werden genau die Schlüssel geschrieben, die zur Art gehören, auch leere Listen. Schlüssel
    einer anderen Art fallen weg.
-5. Unbekannte Schlüssel sind ein Fehler (V22) und werden nicht stillschweigend verworfen; so geht
-   beim Speichern nichts verloren, was jemand von Hand eingetragen hat.
+5. Unbekannte Schlüssel sind ein Fehler (V22). Der Katalog behält sie nicht. Damit beim Speichern
+   nichts still verloren geht, was jemand von Hand eingetragen hat, bleibt die Meldung in der
+   Werkstatt bis zum Speichern stehen, und die Werkstatt fragt vorher nach (FR-034).
 
 ## Lesen
 
@@ -189,8 +199,10 @@ Damit gleicher Inhalt immer dieselbe Datei ergibt und eine Feldänderung genau e
   gibt es keinen Katalog, sondern eine Meldung mit Zeile und Grund (research.md, R4).
 - Fehlende Schlüssel, falsche Typen und unbekannte Werte werden zu Prüfmeldungen V22. Das
   Ereignis bleibt mit Vorgabewerten im Katalog, damit die Werkstatt es zeigen und reparieren kann.
-- Im Spiel nimmt die Zeitleiste jedes Ereignis mit einer Fehlermeldung (Stufe `ERROR`) aus dem
-  Lauf und meldet es mit Kennung und Grund über `push_error()` (FR-049).
+- Spiel, Simulator, Statistik und Textausgabe rechnen mit `EventCatalog.without_faulty()`, also
+  ohne die Ereignisse mit einer Meldung der Stufe `ERROR` (data-model.md, „Fehlerhafte Ereignisse
+  ausnehmen“). Im Spiel meldet die Zeitleiste jedes davon mit Kennung und Grund über
+  `push_error()` (FR-049).
 
 ## Übernahme aus `EventDatabase`
 
@@ -207,3 +219,7 @@ Damit gleicher Inhalt immer dieselbe Datei ergibt und eine Feldänderung genau e
 | `delay_days`, `target`, `magnitude`, `note` | unverändert |
 | – | `"scope": "once"` für alle übernommenen Wirkungen |
 | – | `"follow_ups": []`, `"conditions": []` |
+
+Nach der Übernahme wird der Katalog einmal mit `EventCatalog.write_file()` neu geschrieben, damit
+er sicher kanonisch ist, und als `src/test/fixtures/event_catalog_uebernahme.json` eingefroren
+(research.md, R19).

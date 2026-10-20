@@ -44,11 +44,18 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
   - Schlüssel englisch wie die Felder im Code, Texte deutsch;
   - Datumsangaben als `"JJJJ-MM-TT"`, Tage im Jahr als `"MM-TT"` oder `"MM-ende"`;
   - Wahrscheinlichkeiten und Stärken als Anteil von 0 bis 1 (`0.03` = 3 %), wie bisher in
-    `EventDatabase`.
+    `EventDatabase`, auf vier Nachkommastellen gerundet geschrieben.
+  - Einzige Ausnahme: Die Gewichte je Anzahl stehen in Prozent mit Summe 100, weil „30 / 70“
+    lesbarer ist als „0.3 / 0.7“. Geschrieben werden sie auf zwei Nachkommastellen gerundet, als
+    `Array[float]` mit 64 Bit. Erst zum Würfeln werden sie in das `PackedFloat32Array` für
+    `rand_weighted()` umgewandelt.
 - **Probe:** `JSON.stringify` schreibt `int` ohne Nachkomma (`14`), `float` mit (`1.0`, `0.03`);
   `0.03 + 0.05` erscheint als `0.08`. `JSON.parse` liefert jede Zahl als `float` (14 → 14.0). Der
   Katalog wandelt deshalb ganzzahlige Felder beim Lesen mit `int()` um und schreibt sie als `int`.
   Sonst würde aus `14` beim nächsten Speichern `14.0`, und jede Datei hätte einen falschen Diff.
+  Ein `PackedFloat32Array` schrieb in einer zweiten Probe `33.3333320617676`; deshalb gibt es
+  keine 32-Bit-Zahlen in der Datei. Listen bricht `JSON.stringify` mit Einrückung zeilenweise um,
+  je Eintrag eine Zeile.
 - **Begründung:** Eine Datei ist für die Werkstatt einfach zu lesen und zu schreiben. Sortierte
   Schlüssel und Ereignisse ergeben eine kanonische Form: Gleicher Inhalt ergibt gleiche Datei, eine
   Feldänderung ändert genau eine Zeile (FR-035). Die Datumsform ist im Diff ohne Umrechnung lesbar.
@@ -105,7 +112,8 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
   - Ein gemeinsamer Generator wie bisher (`randomize()`): Jede Kleinigkeit würfelt das
     restliche Spiel neu, und kein Lauf lässt sich wiederholen.
   - SHA-256 für jeden einzelnen Wurf: rein rechnerisch die sauberste Lösung, aber 1.000 Spiele
-    würfeln rund 4,5 Millionen Mal, das sprengt SC-004.
+    würfeln mit dem übernommenen Katalog rund 2,2 Millionen Mal (6 Ereignisse × 180 Monate × 2
+    Würfe × 1.000 Spiele), mit 500 Ereignissen das Vielfache; das sprengt SC-004 und SC-011.
   - Godots `hash()`: ist schneller, aber nicht als stabil dokumentiert und nur 32 Bit breit.
 
 ## R6 Fahrplan und Tagesablauf
@@ -131,11 +139,14 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 
 ## R7 Beim Start gesetzte Ereignisse
 
-- **Entscheidung:** Der `preset`-Würfel zieht erst die Anzahl mit
-  `rand_weighted(count_weights)`, dann die Termine. Für k Termine mit Mindestabstand g im Fenster
-  der Länge L werden k Zahlen gleichverteilt aus 0 bis L − (k − 1) · g gezogen und sortiert; die
-  i-te bekommt i · g dazu.
-- **Begründung:** Das Verfahren verteilt gleichmäßig über alle erlaubten Anordnungen und hält den
+- **Entscheidung:** Der `preset`-Würfel zieht erst mit `rand_weighted()` über die Gewichte je
+  Anzahl einen Index j; die Anzahl ist k = `count_min` + j. Dann zieht er die Termine:
+  - L = `window_to` − `window_from` ist die Länge des Zeitfensters in Tagen, g der Mindestabstand.
+  - k Zahlen kommen aus `randi_range(0, L − (k − 1) · g)` und werden aufsteigend sortiert.
+  - Die i-te Zahl zᵢ (i = 0 … k − 1) ergibt den Termin `window_from` + zᵢ + i · g.
+
+  Dass auch die höchste Anzahl hineinpasst, also L ≥ (k − 1) · g, stellt V10 sicher.
+- **Begründung:** Das Verfahren verteilt die Termine gleichmäßig über das Fenster und hält den
   Mindestabstand immer ein, ohne neu zu würfeln. Die Zahl der Würfe hängt nur von k ab, ist also
   wiederholbar.
 - **Alternativen:** würfeln und verwerfen, bis der Abstand passt (Zahl der Würfe schwankt, bei
@@ -149,11 +160,15 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
   - Die Bedingungen sind erfüllt.
   - Die Höchstzahl ist nicht erreicht; dabei zählen alle Termine außer entfallenen und
     abgesagten.
-  - Der gewürfelte Tag liegt mindestens den Mindestabstand hinter dem Beginn des letzten Termins.
+  - Der gewürfelte Tag liegt mindestens den Mindestabstand hinter dem Beginn des letzten Termins,
+    der weder entfallen noch abgesagt ist (FR-005).
   - w liegt unter der wirksamen Chance.
 
-  Der Tag ist der t-te Teil der Tage dieses Monats, die im Zeitfenster liegen. Der Termin bekommt
-  Würfelwert, Schwelle und die beteiligten Modifikatoren als Begründung.
+  Der Tag ist der t-te Teil der Tage dieses Monats, die im Zeitfenster liegen. Als Begründung
+  bekommt der Termin Würfelwert, Schwelle und Grundchance, dazu die Modifikatoren mit Grund und
+  Wert, wie sie beim Wurf galten (`modifier_notes`). So bleibt sie lesbar, auch wenn ein
+  Modifikator später entfernt wird (FR-012). Termine von Folgeereignissen halten Wurf und
+  Wahrscheinlichkeit genauso fest.
 - **Begründung:** Das Würfeln im Januar 1985 fehlte bisher (offene Frage in 01-02). Ein
   gewürfelter Tag verteilt die Ereignisse über den Monat, statt alle auf den Ersten zu legen.
 - **Alternativen:** Ereignis am Monatsersten (alles ballt sich); täglich würfeln (180-mal so
@@ -166,9 +181,14 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     Dauer ist er gleich dem Beginn, und nichts endet.
   - Jährliche Ereignisse haben Beginn und Ende als Tag im Jahr; „ende“ heißt Monatsende, so
     stimmt der Februar in Schaltjahren.
-  - Es entstehen alle Vorkommen, die sich mit dem Spielzeitraum und mit den Jahren von–bis
-    überschneiden, auch eines, das vor dem 01.01.1985 begonnen hat. Ein solches Vorkommen beginnt
-    im Fahrplan am 01.01.1985 und trägt die Herkunft „jährlich, lief schon vor Spielbeginn“.
+  - Kandidaten sind die Vorkommen, die in den Jahren `yearly_from − 1` bis `yearly_to` beginnen.
+    In den Fahrplan kommt ein Vorkommen nur, wenn es sich mit dem 01.01. von `yearly_from` bis
+    31.12. von `yearly_to` und mit dem Spielzeitraum überschneidet. Beispiel: Die CeBIT ab 1986
+    hat im März 1985 kein Vorkommen; der Winter ab 1985 hat eines, das am 01.12.1984 beginnt.
+  - Ein Vorkommen, das vor dem 01.01.1985 begonnen hat, beginnt im Fahrplan am 01.01.1985 und
+    trägt die Herkunft „jährlich, lief schon vor Spielbeginn“.
+  - Dafür rechnet `GameDate` auch Tage vor 1985, als negative Indizes (31.12.1984 = −1). Bisher
+    zählte `to_day_index()` die Jahre vor 1985 nicht ab und ergab für den 31.12.1984 den Wert 365.
   - Jede Wirkung hat `scope` `ONCE` oder `DURING`. `DURING` meldet Beginn und Ende. Eine
     verzögerte `DURING`-Wirkung beginnt später und endet mit dem Ereignis.
   - Ein Ereignis, das noch läuft, beginnt nicht erneut (FR-022); der neue Termin entfällt mit
@@ -183,9 +203,14 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 ## R10 Folgeereignisse und Ketten
 
 - **Entscheidung:** Beginnt ein Ereignis, entscheidet je Folgeereignis ein eigener Würfel über
-  ob (Wahrscheinlichkeit) und wann (Tag aus der Verzögerungsspanne). Eine Kette am selben Tag
-  bricht nach `MAX_CHAIN = 16` Gliedern ab und meldet das. Die Prüfung im Katalog sucht Kreise
-  über Kanten mit 100 % und Verzögerung 0 und meldet sie als Fehler.
+  ob (Wahrscheinlichkeit) und wann (Tag aus der Verzögerungsspanne). Die Prüfung im Katalog sucht
+  Kreise über Kanten mit 100 % und Verzögerung 0 und meldet sie als Fehler.
+- **Kettenbremse:** Gezählt wird je Kette (FR-018):
+  - Ein Termin, den der Tag von sich aus beginnt, ist das erste Glied seiner Kette.
+  - Ein Folgeereignis ohne Verzögerung ist ein Glied mehr als sein Auslöser.
+  - Ein Folgetermin mit Verzögerung beginnt an seinem Tag eine neue Kette.
+  - Das 17. Glied beginnt nicht (`MAX_CHAIN = 16`). Sein Termin entfällt mit der Meldung
+    `CHAIN_STOPPED` im Protokoll, und das Autoload gibt im Spiel eine Warnung aus (R12).
 - **Begründung:** Die Kettenbremse ersetzt den fehlenden Schutz vor Endlosschleifen aus 01-02.
   16 Glieder sind weit mehr, als ein sinnvoller Spieltag braucht. Der Würfel je Entscheidung hält
   FR-015 ein.
@@ -210,7 +235,12 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 - **Statistik mit Eingriffen:** Modifikatoren und Einplanungen beziehen sich auf Ereignisse und
   Tage und lassen sich auf jeden Seed übertragen. Absagen und Verschiebungen beziehen sich auf
   einen Termin eines bestimmten Seeds und lassen sich nicht übertragen. Die Statistik nimmt
-  deshalb nur Modifikatoren und Einplanungen mit; FR-045 ist entsprechend präzisiert.
+  deshalb nur Modifikatoren und Einplanungen mit; FR-045 ist entsprechend präzisiert. Sie wendet
+  sie an dem Tag an, an dem sie im Simulator geschahen. Ein Modifikator, den Klaus dort später
+  entfernt hat, wirkt also auch in der Statistik nur bis zu diesem Tag.
+- **Eingriffsprotokoll:** Jeder angenommene Eingriff kommt mit dem Tag, an dem er geschah, in
+  `TimelineRun.interventions`. Aus diesem Protokoll entstehen Proben (R22) und die Eingriffe der
+  Statistik.
 - **Alternativen:** Chance im Katalog überschreiben (verboten durch FR-025); Eingriffe in die
   Vergangenheit (würden das Protokoll umschreiben).
 
@@ -224,7 +254,10 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     per `call_deferred()` am Ende des ersten Bilds auf, also nach dem `_ready()` der Hauptszene.
     So hören Abnehmer in der Szene den ersten Spieltag schon mit.
   - Für spätere Abnehmer gibt es außerdem `running_entries()`: Sie fragen damit beim Einstieg den
-    Stand ab.
+    Stand ab. Das Autoload reicht die Abfrage an den Lauf durch.
+  - Aus `CHAIN_STOPPED` wird `entry_skipped`, wie bei jedem entfallenen Termin, und zusätzlich eine
+    Warnung über `push_warning()` mit Ereignis und Tag (FR-018). Meldungen `INTERVENTION` stehen
+    nur im Protokoll und werden kein Signal.
 - **Begründung:** Ein Abnehmer, der erst später dazukommt (etwa nach dem Laden), braucht den
   Zustand und nicht nur die Änderungen. Das ist das übliche Paar aus Abfrage und Meldung.
 - **Alternativen:** Spielbeginn direkt in `_ready()` des Autoloads (die Meldungen des ersten Tags
@@ -262,6 +295,13 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
   das Projekt-Theme zurück, und dort steht Ark Pixel.
 - **Kategorienfarben:** Im Katalog stehen Token-Namen der Palette (`"petrol"`). `UiPalette`
   bekommt dafür `static func by_token(token: StringName) -> Color`.
+  - Erlaubt sind nur die Tokens, die der Style-Guide für Kategorien freigibt, als Liste
+    `UiPalette.CATEGORY_TOKENS`. Jedes hat zum Grund des Zeitstrahls mindestens 3 : 1 Kontrast,
+    wie für farbige Flächen ohne Text üblich.
+  - Titel stehen in Textfarbe auf dem Grund neben der Marke, nie auf der farbigen Fläche; so gilt
+    für sie der Kontrast aus FR-029.
+  - Eine neue Kategorie bekommt das erste noch freie Token dieser Liste. Die Grundfarbe steht nicht
+    darin und kann deshalb nie zur Kategorienfarbe werden.
 - **Alternativen:** Godots Standard-Theme (von Klaus verworfen, Option „nüchternes Werkzeug“);
   Pixelschriften der Spieloberfläche (bei voller Auflösung winzig).
 
@@ -276,6 +316,15 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     beim Speichern; laut Doku ist sie genau dafür da.
 - **Kürzel:** `InputEventKey` mit `command_or_control_autoremap = true`: Cmd auf dem Mac, Ctrl
   unter Windows und Linux. Belegt sind S, Z und Shift+Z.
+- **Eingabefelder:** Ein Feld übernimmt seinen Wert beim Verlassen oder mit Enter. Enter gibt dabei
+  den Fokus ab; sonst gehörte das nächste Cmd+Z noch dem Textfeld und erreichte den Verlauf des
+  Katalogs nicht.
+- **Verwerfen:** `revert()` liest die Datei neu, leert den Verlauf und löscht die Sicherungskopie
+  (FR-034).
+- **Speichern mit Fehlern:** Hat der Katalog Fehler, fragt die Werkstatt vor dem Speichern nach
+  (FR-034). Die Meldungen beim Lesen (V22) behält der `CatalogEditor` bis zum nächsten Speichern,
+  auch wenn die laufende Prüfung sie nicht kennt. Ein unbekannter Schlüssel geht so nicht still
+  verloren: Er ist ein Fehler, und verworfen wird er erst, wenn Klaus die Rückfrage bestätigt.
 - **Schließen:** `get_tree().auto_accept_quit = false`; `_notification()` fängt
   `NOTIFICATION_WM_CLOSE_REQUEST` ab und fragt bei ungespeicherten Änderungen nach. Ob Cmd+Q unter
   macOS dieselbe Meldung schickt, prüft der Quickstart.
@@ -300,6 +349,10 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
   - **Verschieben:** Mausrad, Shift+Mausrad oder Ziehen auf leerer Fläche.
   - **Genauigkeit:** Ab der Monatsansicht sind Tage als Striche zu sehen. Beim Ziehen steht das
     Datum tagesgenau neben dem Mauszeiger.
+  - **Vorschau beim Ziehen:** Bis zum Loslassen ändert sich der Katalog nicht (R15). Der Zeitstrahl
+    prüft eine Kopie des Ereignisses mit dem neuen Wert über `CatalogValidator.validate_event()`
+    und zeigt einen Fehler sofort am Mauszeiger, etwa wenn Anzahl und Mindestabstand nicht mehr ins
+    Fenster passen (US4, Szenario 2).
 - **Begründung:** Eigenes Zeichnen ist für eine Achse mit Hunderten Marken das Übliche und
   schnell. Zugleich lernt Klaus dabei, was er für Spielansichten braucht: `_draw`, Eingaben,
   Tooltips.
@@ -308,12 +361,19 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 
 ## R17 Statistik ohne Ruckeln
 
-- **Entscheidung:** `TimelineStatistics` rechnet die Spiele in Häppchen: Die Werkstatt ruft je
-  Bild `run_batch(25)` auf und wartet dazwischen mit `await get_tree().process_frame`. Abbrechen
-  setzt ein Flag; das Ergebnis der fertigen Spiele bleibt stehen. Mit Stichtagen (R6) dauert ein
-  Spiel mit dem heutigen Katalog wenige Millisekunden, 1.000 Spiele also Sekunden (SC-004).
+- **Entscheidung:** `TimelineStatistics` rechnet in Häppchen nach Zeit. Die Werkstatt ruft je Bild
+  `run_for(15)` auf und wartet dazwischen mit `await get_tree().process_frame`:
+  - `run_for()` spielt das laufende Spiel monatsweise weiter und beginnt danach das nächste, bis
+    15 ms verbraucht sind (gemessen mit `Time.get_ticks_usec()`).
+  - Abbrechen setzt ein Flag; das Ergebnis der fertigen Spiele bleibt stehen, das angefangene zählt
+    nicht.
+  - Mit Stichtagen (R6) dauert ein Spiel mit dem übernommenen Katalog wenige Millisekunden,
+    1.000 Spiele also Sekunden (SC-004).
 - **Begründung:** Häppchen im Hauptthread sind einfach zu verstehen und brauchen keinen Schutz
-  vor gleichzeitigem Zugriff.
+  vor gleichzeitigem Zugriff. Ein Zeitbudget statt einer festen Zahl von Spielen hält die
+  Werkstatt auch mit 500 Ereignissen bedienbar: Dort dauert ein Spiel 0,1 bis 0,2 s (R21), und
+  25 Spiele je Bild ließen sie sekundenlang einfrieren. Ein einzelner Monat dauert auch dann nur
+  etwa eine Millisekunde.
 - **Alternativen:** `Thread` oder `WorkerThreadPool` (schneller auf vielen Kernen, aber Katalog
   und Ergebnis müssten gegen gleichzeitigen Zugriff geschützt werden, für einen Lernenden ein
   Minenfeld); alles in einem Zug (die Werkstatt friert ein, Abbrechen ginge nicht).
@@ -328,8 +388,12 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 
   - Optionen nach `--`, gelesen mit `OS.get_cmdline_user_args()`: `--katalog` mit einem Pfad zu
     einem anderen Katalog, `--protokoll` für alle Meldungen statt nur der Termine.
+  - Die Textausgabe spielt den Lauf bis `--bis` ab, ohne Angabe bis zum 31.12.1999, und gibt dann
+    den Fahrplan bis zu diesem Tag aus. So stehen auch gewürfelte Termine und Folgetermine darin.
   - Die Zeilen baut `ScheduleText`. Dieselbe Klasse nutzen die Tests, die die Ausgabe vergleichen.
-  - Bei Katalogfehlern stehen sie auf stderr, Exit-Code 1.
+  - Bei Katalogfehlern stehen die Meldungen auf stderr. Die Ausgabe läuft trotzdem, ohne die
+    fehlerhaften Ereignisse wie im Spiel, und der Exit-Code ist 1. Ist der Katalog nicht lesbar,
+    gibt es nur die Meldung, ebenfalls mit Exit-Code 1.
 - **Begründung:** Die Doku nennt `-s` mit `extends SceneTree` als Weg für Skripte ohne Szene. Eine
   Textausgabe lässt sich mit `diff` vergleichen (SC-002).
 - **Alternativen:** eine Szene mit `--quit-after` (startet unnötig die Oberfläche); ein
@@ -337,42 +401,58 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 
 ## R19 Übernahme der vorhandenen Ereignisse
 
-- **Entscheidung:** In zwei Schritten, bevor der alte Code fällt:
+- **Entscheidung:** In drei Schritten; die ersten beiden laufen, solange der alte Code noch da ist:
   1. **Schnappschuss:** Ein Einmal-Skript außerhalb des Repos erzeugt mit dem alten
      `EventDatabase` die Datei `src/test/fixtures/historische_ereignisse.txt`. Darin steht je
      fixes Ereignis eine Zeile mit Datum, Kennung und Wirkungen.
   2. **Katalog:** Ein zweites Einmal-Skript schreibt aus denselben Daten
-     `src/data/event_catalog.json`:
+     `src/data/event_catalog.json`, dazu die zehn Kategorien samt „Kalender“ mit ihren
+     Startfarben:
      - Kategorie-Enum → Kategorie-Kennung (`hardware` …).
      - `earliest_year`/`latest_year` → Zeitfenster 01.01. bis 31.12.
      - `cooldown_days` → `min_gap_days`.
+  3. **Normalisieren und einfrieren:** Sobald es `EventCatalog` gibt, wird der Katalog einmal mit
+     `read_file()` gelesen und mit `write_file()` geschrieben. Erst danach hat er sicher die
+     kanonische Form, die das Einmal-Skript ohne die neuen Klassen nur nachahmen kann. Eine Kopie
+     wird zur eingefrorenen Übernahme `src/test/fixtures/event_catalog_uebernahme.json`; an ihr
+     wird SC-005 geprüft, und sie ändert sich nie mehr.
 
-  Danach werden `event_database.gd`, die alten Tests und `timeline_demo` gelöscht. Neu dazu
-  kommen Kalender-Ereignisse, Kategorie „Kalender“ und die Kategorienfarben.
+  Gelöscht werden `event_database.gd`, die alten Tests und `timeline_demo` im selben Schritt, in
+  dem `TimelineEvent` und `EventEffect` umgebaut werden; dazwischen kompilierte der alte Code
+  nicht. Die Kalender-Ereignisse legt Klaus mit User Story 3 in der Werkstatt an.
 - **Startwerte der Kalender-Ereignisse** (Klaus stellt in der Werkstatt nach):
 
   | Ereignis | Termin | Wirkung |
   |---|---|---|
-  | Weihnachtsgeschäft | 01.11. bis Ende Dezember | „Kundenstrom alles +30 %“, während |
+  | Weihnachtsgeschäft | 01.11. bis Ende Dezember | „Kundenstrom alles +30 %“, gilt während |
   | Frühling, Sommer, Herbst, Winter | je 1. März, Juni, September, Dezember bis zum Monatsende vor der nächsten | keine |
-  | CeBIT | 15. bis 21. März, ab 1986 | Pressemeldung mit Ziel `messe`, einmal |
+  | CeBIT | 15. bis 21. März, ab 1986 | Pressemeldung mit Ziel `messe`, einmaliger Anstoß |
 - **Begründung:** Der Schnappschuss belegt SC-005 („wie vor dem Umbau“) auch dann noch, wenn der
-  alte Code weg ist. Ein Skript überträgt 25 Ereignisse fehlerfrei; von Hand abzuschreiben wäre
-  fehleranfällig.
+  alte Code weg ist. Die eingefrorene Kopie hält den Nachweis fest, auch wenn Klaus den echten
+  Katalog in der Werkstatt ändert. Ein Skript überträgt 25 Ereignisse fehlerfrei; von Hand
+  abzuschreiben wäre fehleranfällig.
 - **Alternativen:** von Hand abschreiben; den alten Code als Prüfreferenz behalten (toter Code,
   den 01-01 ausdrücklich nicht will).
 
 ## R20 Tests
 
 - **Entscheidung:** GUT-Tests je Klasse unter `src/test/`. Sie arbeiten mit Test-Katalogen unter
-  `src/test/fixtures/`, nie mit dem echten Katalog. Davon ausgenommen ist
-  `test_shipped_catalog.gd`, der genau den echten Katalog prüft: fehlerfrei, die 19 historischen
-  Ereignisse wie im Schnappschuss, die Kalender-Ereignisse vorhanden.
+  `src/test/fixtures/`, nie mit dem echten Katalog. Ausnahmen:
+  - `test_shipped_catalog.gd` prüft am echten Katalog nur, was dauerhaft gelten muss: keine
+    Fehler (FR-048), die Kalender-Ereignisse aus FR-023 und das Weihnachtsgeschäft in allen
+    15 Jahren (SC-009).
+  - `test_uebernahme.gd` prüft die eingefrorene Übernahme (R19): 25 Ereignisse, zehn Kategorien
+    und die 19 historischen Termine für 100 Seeds wie im Schnappschuss (SC-005).
+
+  Dazu:
   - Jede Prüfregel bekommt eine kaputte Fixture (SC-006).
+  - `test_large_catalog.gd` misst für SC-011 die Prüfung, eine Änderung über den `CatalogEditor`
+    samt neuer Prüfung und ein ganzes Spiel.
   - Der Rauchtest lädt die Werkstatt headless und prüft, dass sie ohne Fehler aufbaut.
   - Zeitstrahl, Formulare, Fenster und Look prüft Klaus von Hand nach dem Quickstart.
 - **Begründung:** Abnahme unabhängig vom Spielinhalt (Annahme in der Spec); der echte Katalog
-  ändert sich laufend in der Werkstatt.
+  ändert sich laufend in der Werkstatt. Ein Test, der ihn Zeile für Zeile prüft, bräche bei der
+  ersten Änderung, die Klaus macht.
 
 ## R21 Größe des Katalogs
 
@@ -390,25 +470,35 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 
 - **Entscheidung:** Je Probe eine JSON-Datei unter `src/tools/werkstatt/proben/`, kanonisch
   geschrieben wie der Katalog (data-model.md, WhatIfProbe).
-  - Gespeichert werden Seed, Modifikatoren, Einplanungen, Absagen und Verschiebungen.
+  - Gespeichert werden der Seed, der Tag, bis zu dem der Lauf abgespielt war, und das
+    Eingriffsprotokoll (R11): jeder Eingriff mit dem Tag, an dem er geschah.
   - Absagen und Verschiebungen merken sich Ereignis und Tag statt der laufenden Nummer.
-  - Beim Laden wendet `WhatIfProbe.apply_to()` alles auf einen frischen Lauf an und gibt die nicht
-    anwendbaren Eingriffe als Sätze zurück (FR-051).
+  - Beim Laden legt `WhatIfProbe.build_run()` einen Lauf mit dem Seed der Probe an, spielt ihn bis
+    zum Tag jedes Eingriffs ab und wendet ihn dort an. Die nicht anwendbaren Eingriffe gibt sie als
+    Sätze zurück (FR-051). Genauso startet der Simulator „mit Eingriffen“ neu.
+  - Der Ordner hat eine Vorgabe und lässt sich angeben; die Tests schreiben in einen eigenen.
 - **Begründung:** Im Projektordner landen die Proben in der Versionsverwaltung. So lässt sich eine
   Balance-Probe auch nach Wochen wiederholen. Mit dem Ordner `tools/` sind sie vom Export
   ausgeschlossen. Die laufende Nummer eines Termins hängt davon ab, wie der Katalog gerade
-  aussieht; Ereignis und Tag dagegen sind das, was Klaus abgesagt hat.
+  aussieht; Ereignis und Tag dagegen sind das, was Klaus abgesagt hat. Alle Eingriffe vor dem
+  ersten Tag anzuwenden reicht nicht: Ein gewürfelter Termin entsteht erst im Lauf, seine Absage
+  ginge vorher ins Leere.
 - **Alternativen:** Proben unter `user://` (nicht versioniert, auf einem anderen Rechner weg);
   alle Proben in einer Datei (jede Änderung einer Probe berührt alle).
 
 ## R23 Sicherungskopie der Werkstatt
 
 - **Entscheidung:** Ein `Timer` ruft alle 120 Sekunden `CatalogEditor.write_backup()` auf. Gibt es
-  ungespeicherte Änderungen, schreibt die Methode den Katalog kanonisch nach
-  `user://werkstatt_sicherung.json`.
+  ungespeicherte Änderungen, schreibt die Methode nach `user://werkstatt_sicherung.json`, kanonisch
+  wie den Katalog: `{"catalog": {…}, "format": 1, "path": "<Pfad des Katalogs>", "saved":
+  <Unix-Zeit>}`.
   - Beim Start fragt die Werkstatt, ob sie die Kopie übernehmen oder verwerfen soll. Dabei nennt
-    sie die Zeiten von Kopie und Katalogdatei (`FileAccess.get_modified_time()`).
-  - Nach dem Speichern und beim regulären Schließen löscht sie die Kopie (FR-050).
+    sie die Zeiten von Kopie (`saved`) und Katalogdatei (`FileAccess.get_modified_time()`).
+  - Angeboten wird nur eine Kopie, deren `path` zum geöffneten Katalog passt. Die Kopie eines
+    anderen Katalogs bleibt liegen, und ein Hinweis nennt ihren Pfad.
+  - Nach dem Speichern, nach dem Verwerfen und beim regulären Schließen löscht sie die Kopie
+    (FR-050).
+  - Der Pfad der Kopie hat diese Vorgabe und lässt sich ändern; die Tests nutzen eine eigene Datei.
 - **Begründung:** `user://` liegt außerhalb des Projekts, die Kopie gerät also nie aus Versehen in
   einen Commit. Zwei Minuten begrenzen den Verlust bei einem Absturz und kosten bei einem kleinen
   Katalog nichts.
@@ -420,10 +510,13 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 - **Entscheidung:** Läuft ein Durchlauf mit Eingriffen, rechnet der Simulator denselben Seed ohne
   Eingriffe bis zum selben Tag mit. `ScheduleDiff.compare()` paart dann je Ereignis die Termine:
   1. erst Termine am selben Tag; ein Paar mit anderem Zustand gilt als „anderer Zustand“;
-  2. dann die übrigen in Tagesreihenfolge, als „verschoben“;
+  2. dann Termine, die ein Eingriff verschoben hat: Ein Termin mit `moved_from_day` paart sich mit
+     dem Termin desselben Ereignisses an diesem ursprünglichen Tag und gilt als „verschoben“;
   3. was übrig bleibt, ist „neu“ oder „weggefallen“.
 - **Begründung:** Dank der unabhängigen Würfel (R5) unterscheiden sich beide Läufe nur dort, wo die
   Eingriffe wirken. Die Paarung je Ereignis zeigt das ohne Rauschen. Die Kosten sind ein zweiter
-  Lauf, also Millisekunden.
+  Lauf, also Millisekunden. „Verschoben“ heißt nur, was wirklich verschoben wurde: Ein Modifikator
+  bringt Termine dazu oder nimmt welche weg. Würde der Vergleich die übrigen einfach der Reihe nach
+  paaren, hieße ein weggefallener Termin 1995 zusammen mit einem neuen 1992 „verschoben“.
 - **Alternativen:** Vergleich über die laufende Nummer (stimmt nicht mehr, sobald ein Termin
   dazukommt); nur die Protokolle als Text vergleichen (zeigt Zeilen, nicht Termine).

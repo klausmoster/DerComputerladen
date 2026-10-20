@@ -18,15 +18,18 @@ TimelineRun (ein Spiel) ──┬── Seed
                           ├── ChanceModifier (Eingriffe) ──► Kennung eines TimelineEvent
                           └── TimelineMessage (Protokoll)
 
-WhatIfProbe (Werkstatt) ──── Seed und Eingriffe, gespeichert neben der Werkstatt
+WhatIfProbe (Werkstatt) ──── Seed und Eingriffsprotokoll, gespeichert neben der Werkstatt
 ```
 
 Der Katalog ist die Beschreibung, was passieren kann; er ändert sich während eines Spiels nie
 (Spec, Key Entities). Ein `TimelineRun` arbeitet auf einer eigenen Kopie.
 
 **Zeit:** Alle Tage sind Tagesindizes wie in `GameDate`: 01.01.1985 = 0, 31.12.1999 = 5477
-(15 Jahre, davon 3 Schaltjahre). Ein Monat hat die Nummer 0 (Januar 1985) bis 179 (Dezember
-1999). In der Datei stehen Datumsangaben lesbar, umgerechnet wird beim Lesen.
+(15 Jahre, davon 3 Schaltjahre). Tage vor 1985 haben negative Indizes, etwa 31.12.1984 = −1 und
+01.12.1984 = −31; `GameDate` rechnet dafür auch rückwärts richtig. Gebraucht werden sie nur für
+jährliche Vorkommen, die vor Spielbeginn beginnen. Ein Monat hat die Nummer 0 (Januar 1985) bis
+179 (Dezember 1999). In der Datei stehen Datumsangaben lesbar, umgerechnet wird beim Lesen; ein
+Datum außerhalb des Spielzeitraums erkennt die Prüfung am Index (V06).
 
 ## EventCategory
 
@@ -34,7 +37,7 @@ Der Katalog ist die Beschreibung, was passieren kann; er ändert sich während e
 |---|---|---|
 | `id` | String | Kennung, `[a-z0-9_]+`, eindeutig; entsteht beim Anlegen aus dem Namen und bleibt fest |
 | `name` | String | Anzeigename, deutsch; Umbenennen ändert nur ihn |
-| `color` | StringName | Token aus `UiPalette`, etwa `&"petrol"`; neue Kategorien bekommen das erste noch freie Token |
+| `color` | StringName | Token aus `UiPalette`, etwa `&"petrol"`; nur Tokens, die der Style-Guide für Kategorien erlaubt; neue Kategorien bekommen das erste noch freie davon |
 
 Bei der Übernahme: `hardware`, `software`, `tech`, `wirtschaft`, `lokal`, `konkurrenz`, `kunde`,
 `reklamation`, `lieferung` (aus dem bisherigen Enum) und neu `kalender`. Gelöscht werden kann eine
@@ -55,8 +58,8 @@ Gemeinsame Felder:
 | `follow_ups` | Array[FollowUp] | Folgeereignisse, auch keine |
 | `conditions` | Array[EventCondition] | nur bei `PRESET`, `CHANCE`, `FOLLOW_ONLY` (FR-006) |
 
-`YEARLY` ist in der Werkstatt „fix, jährlich“; Spec und Fahrplan sprechen von „fix“ und
-„jährlich“.
+`YEARLY` ist die Art „fix“ mit dem Häkchen „jährlich“. Die Spec kennt deshalb vier Arten, der
+Code fünf Werte für `Kind`; angezeigt wird `YEARLY` überall als „fix, jährlich“.
 
 Felder je Art (andere Felder sind leer und werden nicht gespeichert):
 
@@ -70,7 +73,7 @@ Felder je Art (andere Felder sind leer und werden nicht gespeichert):
 | `PRESET`, `CHANCE` | `window_from`, `window_to` | int | Zeitfenster, beide Tage einschließlich |
 | `PRESET`, `CHANCE` | `min_gap_days` | int ≥ 0 | Mindestabstand zwischen zwei Beginnen |
 | `PRESET` | `count_min` | int ≥ 0 | kleinste Anzahl |
-| `PRESET` | `count_weights` | PackedFloat32Array | Gewicht je Anzahl ab `count_min`, Summe 100 |
+| `PRESET` | `count_weights` | Array[float] | Gewicht je Anzahl ab `count_min` in Prozent, Summe 100; die einzige Prozentangabe in der Datei, geschrieben auf zwei Nachkommastellen |
 | `CHANCE` | `monthly_chance` | float 0..1 | Grundchance pro Monat |
 | `CHANCE` | `max_occurrences` | int ≥ 0 | 0 heißt unbegrenzt |
 
@@ -120,8 +123,10 @@ wirkt `DURING` wie `ONCE` (FR-021).
 | `source_event_id` | String | bei `FOLLOW_UP` das auslösende Ereignis |
 | `started_before_game` | bool | bei `YEARLY`: lief schon vor dem 01.01.1985 (R9) |
 | `state` | `State` | siehe unten |
-| `roll`, `threshold` | float | bei `ROLLED`: Würfelwert und wirksame Schwelle; sonst −1 |
-| `modifier_ids` | PackedStringArray | bei `ROLLED`: Modifikatoren, die beim Wurf galten |
+| `roll`, `threshold` | float | bei `ROLLED` und `FOLLOW_UP`: Würfelwert und Schwelle, die er unterschreiten musste; sonst −1 |
+| `base_chance` | float | bei `ROLLED`: Grundchance aus dem Katalog; bei `FOLLOW_UP`: Wahrscheinlichkeit des Folgeereignisses |
+| `modifier_notes` | PackedStringArray | bei `ROLLED`: die Modifikatoren, wie sie beim Wurf galten, je „<grund> <wert in Prozentpunkten>“, etwa „Ware vom windigen Händler +5“ |
+| `moved_from_day` | int | ursprünglicher Tag, wenn ein Eingriff den Termin verschoben hat; sonst −1 |
 | `note` | String | Grund bei Entfall, Absage, Verschiebung oder Einplanung |
 
 **Zustände:**
@@ -137,8 +142,9 @@ wirkt `DURING` wie `ONCE` (FR-021).
     └── Eingriff „absagen“ ──────────────────────────────────► CANCELLED („abgesagt“)
 ```
 
-Verschieben ändert nur `day` und `end_day` eines `PLANNED`-Termins und setzt `note`. Termine
-werden nie gelöscht; der Fahrplan ist zugleich die Geschichte des Spiels (01-03).
+Verschieben ändert nur `day` und `end_day` eines `PLANNED`-Termins, setzt `note` und beim ersten
+Verschieben `moved_from_day`. Termine werden nie gelöscht; der Fahrplan ist zugleich die
+Geschichte des Spiels (01-03).
 
 **Fällige verzögerte Wirkungen** ergeben sich aus `event.effects`: Tag = `day + delay_days`. Der
 Fahrplan zeigt sie beim Termin (FR-013).
@@ -204,16 +210,25 @@ Die Regeln aus den Edge Cases der Spec, durchnummeriert für Tests (SC-006):
 | V14 | Dauer, Verzögerung, Mindestabstand oder Höchstzahl negativ; `delay_min` > `delay_max` | Fehler |
 | V15 | Folgeereignis oder Bedingung verweist auf unbekannte Kennung | Fehler |
 | V16 | Folgeereignis zeigt auf ein fixes oder jährliches Ereignis | Fehler |
-| V17 | Bedingung an einem fixen oder jährlichen Ereignis | Fehler |
-| V18 | Kreis aus Folgeereignissen mit 100 % und Verzögerung 0 | Fehler |
-| V19 | Wirkung `DURING` beginnt wegen ihrer Verzögerung erst nach dem Ende ihres Ereignisses | Fehler |
+| V17 | Bedingung an einem fixen oder jährlichen Ereignis; schon der Schlüssel `conditions` bei `fixed` oder `yearly` ergibt V17, nicht V22 | Fehler |
+| V18 | Kreis aus Folgeereignissen mit 100 % und Verzögerung 0; gemeldet bei jedem Ereignis des Kreises | Fehler |
+| V19 | Wirkung `DURING` mit `delay_days` ≥ Dauer: Sie begänne erst am Tag des Endes oder danach | Fehler |
 | V20 | Wirkung auf Preis, Nachfrage, Ruf oder Kundenstrom mit Stärke 0 | Warnung |
-| V21 | Kategorie: Kennung doppelt oder leer, Farbe kein Token der Palette | Fehler |
+| V21 | Kategorie: Kennung doppelt oder leer, Farbe nicht in `UiPalette.CATEGORY_TOKENS` | Fehler |
 | V22 | Strukturfehler beim Lesen: Datei kein gültiges JSON (mit Zeile), `format` nicht 1, Pflichtfeld fehlt, falscher Typ, unbekannter Schlüssel oder Wert für `kind` oder `scope` | Fehler |
 | V23 | Kreis aus Folgeereignissen mit 100 % und Verzögerung, der bis Spielende weiterläuft | Warnung |
 | V24 | Gesetzt: Mindestabstand kürzer als die Dauer, gesetzte Termine würden sich überlappen | Fehler |
 
-Ein Ereignis ohne Wirkung ist erlaubt (reine Meldung).
+Ein Ereignis ohne Wirkung ist erlaubt (reine Meldung). Meldungen ohne Ereignis (V21 nennt die
+Kategorie in `field`, V22 bei einem Parse-Fehler die Zeile) haben ein leeres `event_id`.
+
+**Fehlerhafte Ereignisse ausnehmen:** Spiel, Simulator, Statistik und Textausgabe rechnen mit
+`EventCatalog.without_faulty(issues)`, einer Kopie ohne die Ereignisse, zu denen eine Meldung der
+Stufe `ERROR` gehört:
+- Folgeereignisse, die auf ein ausgenommenes Ereignis zeigen, fallen mit weg.
+- Bedingungen bleiben stehen: Ein ausgenommenes Ereignis tritt nie ein. „Schon eingetreten“ ist
+  damit nie erfüllt, „noch nicht eingetreten“ immer.
+- Fehler ohne Ereignis, etwa V21, nehmen nichts aus.
 
 ## EventStatistic (Statistik je Ereignis)
 
@@ -241,13 +256,27 @@ Eine gespeicherte Probe aus dem Simulator (FR-051), eine JSON-Datei je Probe unt
 | `id` | String | Kennung = Dateiname, aus dem Namen erzeugt wie bei Ereignissen |
 | `name` | String | Anzeigename, etwa „Windiger Händler ab 1990“ |
 | `seed` | int | Seed des Durchlaufs |
-| `modifiers` | Array[ChanceModifier] | wie im Lauf |
-| `schedulings` | Array | `{ event_id, day, reason }`, eingeplante Ereignisse |
-| `cancellations` | Array | `{ event_id, day, reason }`, abgesagte Termine |
-| `moves` | Array | `{ event_id, day, new_day, reason }`, verschobene Termine |
+| `until_day` | int | Tag, bis zu dem der Lauf beim Speichern abgespielt war |
+| `interventions` | Array | das Eingriffsprotokoll des Laufs, siehe unten |
 
-Absagen und Verschiebungen merken sich Ereignis und Tag statt der laufenden Nummer, denn die
-Nummer kann sich ändern, wenn sich der Katalog ändert. Beim Laden sucht die Werkstatt den
-geplanten Termin dieses Ereignisses an diesem Tag; fehlt er, ist der Eingriff nicht anwendbar und
-wird genannt. Dasselbe gilt für Modifikatoren und Einplanungen mit unbekannter Kennung. In die
-Statistik gehen nur `modifiers` und `schedulings` ein (FR-045).
+**Eingriffsprotokoll:** `TimelineRun.interventions` hält jeden Eingriff in der Reihenfolge, in der
+er geschah, als Dictionary:
+- `kind`: `"add_modifier"`, `"remove_modifier"`, `"cancel"`, `"move"` oder `"schedule"`;
+- `at_day`: der Wert von `today`, als der Eingriff geschah, also −1 vor Spielbeginn;
+- je nach Art `event_id`, `day`, `new_day`, `reason` und bei Modifikatoren `modifier` mit den
+  Feldern von `ChanceModifier`.
+
+Absagen und Verschiebungen merken sich Ereignis und Tag des Termins statt der laufenden Nummer,
+denn die Nummer kann sich ändern, wenn sich der Katalog ändert.
+
+**Neu abspielen:** `WhatIfProbe.build_run(catalog)` legt einen Lauf mit `seed` an und geht das
+Protokoll der Reihe nach durch:
+1. den Lauf bis `at_day` abspielen, bei −1 gar nicht;
+2. dort den Eingriff mit `TimelineRun.apply_intervention()` anwenden; Absagen und Verschiebungen
+   finden ihren Termin über `find_planned(event_id, day)`.
+
+Danach spielt sie bis `until_day` weiter. So entsteht derselbe Fahrplan wie beim Speichern, auch
+für gewürfelte und Folge-Termine. Ein Eingriff, dessen Ereignis oder Termin fehlt, ist nicht
+anwendbar und wird genannt. Genauso startet der Simulator neu mit Eingriffen. In die Statistik
+gehen nur `add_modifier`, `remove_modifier` und `schedule` ein, jeweils an ihrem `at_day` wie
+beim Neu abspielen (FR-045).

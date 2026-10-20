@@ -334,7 +334,7 @@ Der Mittelwert über 1.000 Spiele liegt nahe bei 90.
 5. **Given** dieselben Einstellungen, **When** die Statistik zweimal gerechnet wird, **Then** sind
    beide Ergebnisse gleich.
 6. **Given** ein Test-Katalog mit einem Ereignis „beim Start gesetzt“, das zu 30 % keinmal und zu
-   70 % einmal kommt, **When** 1.000 Spiele gerechnet werden, **Then** fehlt es in 27 % bis 33 %
+   70 % einmal kommt, **When** 1.000 Spiele gerechnet werden, **Then** fehlt es in 25 % bis 35 %
    der Spiele.
 
 ---
@@ -386,8 +386,8 @@ Verhalten im Lauf:
   auf 0 % bis 100 % begrenzt; die Werkstatt zeigt Summe und Begrenzung.
 - Das Enddatum eines Modifikators ist erreicht: Ab dem Folgetag wirkt er nicht mehr, ohne dass ihn
   jemand entfernt.
-- Ein Eingriff träfe einen Termin, der schon eingetreten ist, oder verschöbe einen Termin vor den
-  aktuellen Spieltag oder hinter den 31.12.1999: Das ist nicht möglich.
+- Ein Eingriff träfe einen Termin, der schon eingetreten ist, oder verschöbe einen Termin auf den
+  aktuellen Spieltag, davor oder hinter den 31.12.1999: Das ist nicht möglich.
 - Beim Spielstart enthält der Katalog fehlerhafte Einträge: Sie werden übersprungen und mit
   Kennung und Grund gemeldet, der Rest läuft.
 - Der Katalog fehlt oder ist nicht lesbar: Das Spiel startet trotzdem mit leerer Zeitleiste und
@@ -397,8 +397,9 @@ Verhalten im Lauf:
   die Werkstatt, statt die fremde Änderung stillschweigend zu überschreiben.
 - Klaus bricht die Statistik ab: Sie zeigt das Ergebnis der bis dahin gerechneten Spiele und nennt
   deren Zahl.
-- Ein einmaliges Ereignis liegt am 29.02. eines Schaltjahrs, ein fixes Ereignis mit Dauer läuft
-  über den Jahreswechsel, oder ein Ereignis läuft über sein Zeitfenster hinaus: Das ist erlaubt;
+- Ein fixes Ereignis, das nicht jährlich ist, liegt am 29.02. eines Schaltjahrs, ein fixes
+  Ereignis mit Dauer läuft über den Jahreswechsel, oder ein Ereignis läuft über sein Zeitfenster
+  hinaus: Das ist erlaubt;
   das Zeitfenster gilt für die Beginne. Beginnt oder endet ein Zeitfenster mitten im Monat, wird nur
   an Tagen im Fenster gewürfelt.
 - Ein Modifikator hat sein Ende vor dem Beginn oder eine schon vergebene Kennung: Er wird
@@ -436,8 +437,8 @@ Verhalten im Lauf:
   Gewürfelt wird zu Beginn jedes Monats im Spielzeitraum, auch im Januar 1985. Bei Erfolg tritt das
   Ereignis an einem gewürfelten Tag dieses Monats ein. Ein Monat, den das Zeitfenster nur teilweise
   überdeckt, wird gewürfelt, der Tag aber nur unter den Tagen im Fenster. Der Mindestabstand zählt
-  vom Beginn des letzten Termins dieses Ereignisses. Bei der Höchstzahl zählen alle Termine außer
-  entfallenen und abgesagten.
+  vom Beginn des letzten Termins dieses Ereignisses, der weder entfallen noch abgesagt ist. Bei der
+  Höchstzahl zählen ebenfalls alle Termine außer entfallenen und abgesagten.
 - **FR-006**: Ereignisse, die nicht fix oder jährlich sind, müssen Bedingungen haben können: Ein
   anderes Ereignis ist schon eingetreten oder noch nicht eingetreten. Bei Ereignissen über
   Wahrscheinlichkeit werden sie vor dem Würfeln geprüft, bei geplanten Terminen am Tag ihrer
@@ -468,8 +469,9 @@ Verhalten im Lauf:
 - **FR-012**: Jeder Termin muss Datum, Ereignis, Herkunft (fix, jährlich, gesetzt, gewürfelt,
   Folge von …, Eingriff), Zustand, bei Dauer das Ende und eine Begründung tragen. Zustände sind
   geplant, läuft, eingetreten (ohne Dauer), beendet (mit Dauer, nach dem Ende), entfallen und
-  abgesagt. Die Begründung nennt bei Zufall Würfelwert, Schwelle und
-  beteiligte Modifikatoren, bei Entfall und Absage den Grund.
+  abgesagt. Die Begründung nennt bei jedem Zufall, auch bei Folgeereignissen, Würfelwert und
+  Schwelle, dazu die beteiligten Modifikatoren mit Grund und Wert, wie sie beim Wurf galten; bei
+  Entfall, Absage und Verschiebung den Grund.
 - **FR-013**: Verzögerte Wirkungen müssen mit ihrem Fälligkeitstag beim auslösenden Termin im
   Fahrplan stehen.
 - **FR-014**: Jedes Spiel muss einen Seed haben, eine ganze Zahl von 0 bis 2.147.483.647; ist
@@ -494,15 +496,16 @@ Verhalten im Lauf:
   Meldungen behalten Namen und Bedeutung, damit spätere Abnehmer sich ohne Umbau anschließen
   können; die Felder der gemeldeten Ereignisse und Wirkungen folgen dem neuen Katalog.
 - **FR-018**: Ketten von Folgeereignissen am selben Tag müssen nach einer festen Höchstzahl von
-  Gliedern abbrechen und das melden.
+  Gliedern abbrechen und das melden. Gezählt wird je Kette, vom Termin an, der sie anstößt; der
+  Abbruch steht im Protokoll und erscheint im Spiel als Warnung.
 - **FR-019**: Nach dem 31.12.1999 darf die Zeitleiste nichts mehr melden.
 
 **Kalender und Dauer**
 
-- **FR-020**: Ein Ereignis muss eine Dauer haben können. Bei einmaligen Ereignissen ist sie eine
-  Zahl von Tagen: Das Ereignis beginnt an seinem Datum, sein letzter Tag ist Beginn plus Dauer
-  minus 1, und das Ende wird am Tag danach gemeldet. Bei jährlichen Ereignissen sind Beginn und
-  Ende Tage im Jahr, das Ende darf über den Jahreswechsel reichen und „Monatsende“ sein.
+- **FR-020**: Ein Ereignis muss eine Dauer haben können. Bei Ereignissen, die nicht jährlich sind,
+  ist sie eine Zahl von Tagen: Das Ereignis beginnt an seinem Datum, sein letzter Tag ist Beginn
+  plus Dauer minus 1, und das Ende wird am Tag danach gemeldet. Bei jährlichen Ereignissen sind
+  Beginn und Ende Tage im Jahr, das Ende darf über den Jahreswechsel reichen und „Monatsende“ sein.
 - **FR-021**: Gilt eine Wirkung nur während ihres Ereignisses, müssen ihr Beginn und ihr Ende
   gemeldet werden; ist sie verzögert, beginnt sie entsprechend später und endet mit dem Ereignis.
   Einmalige Anstöße und alle Wirkungen von Ereignissen ohne Dauer werden einmal gemeldet, wie
@@ -531,8 +534,8 @@ Verhalten im Lauf:
   aus. Fixe und jährliche Termine lassen sich weder absagen noch verschieben.
 - **FR-027**: Eingriffe dürfen nur ab dem aktuellen Spieltag wirken; Vergangenes bleibt, wie es war.
   Vor dem Abspielen des 01.01.1985 wirken sie ab diesem Tag. Jeder Eingriff steht mit Zeitpunkt und
-  Grund im Protokoll. Die Eingriffe stehen später allen
-  Spielteilen offen; in diesem Feature nutzen sie die Werkstatt und die automatischen Tests.
+  Grund im Protokoll. Die Eingriffe stehen später allen Spielteilen offen; in diesem Feature nutzen
+  sie die Werkstatt und die automatischen Tests.
 
 **Werkstatt: Katalog bearbeiten**
 
@@ -554,8 +557,9 @@ Verhalten im Lauf:
     Zeitfenster, Mindestabstand, Dauer). Die übrigen Felder der neuen Art bekommen Vorgaben, Werte
     der alten Art fallen weg; Cmd+Z stellt den alten Stand wieder her.
   - Eine Kategorie lässt sich nur löschen, wenn kein Ereignis mehr zu ihr gehört. Eine neue
-    Kategorie bekommt die erste Farbe der Palette, die noch keine Kategorie hat. Ihre Kennung
-    entsteht beim Anlegen aus dem Namen und bleibt danach fest; Umbenennen ändert nur den Namen.
+    Kategorie bekommt die erste noch freie der Farben, die der Style-Guide für Kategorien erlaubt.
+    Ihre Kennung entsteht beim Anlegen aus dem Namen und bleibt danach fest; Umbenennen ändert nur
+    den Namen.
   - Zahlen nimmt die Werkstatt mit Komma oder Punkt an und zeigt sie mit Komma. Wahrscheinlichkeiten
     und Stärken stehen in Prozent, Daten als `TT.MM.JJJJ`, auch ohne führende Nullen. Eine
     ungültige Eingabe wird nicht übernommen; das Feld zeigt den alten Wert und einen Hinweis.
@@ -601,7 +605,7 @@ Verhalten im Lauf:
 **Werkstatt: Simulator**
 
 - **FR-040**: Klaus muss in der Werkstatt einen Seed eingeben oder würfeln lassen und daraus den
-  Fahrplan erzeugen können, ohne das Spiel zu starten.
+  Fahrplan erzeugen können, ohne das Spiel zu starten. Das Seed-Feld nimmt nur Ziffern an.
 - **FR-041**: Er muss die Zeit tage-, monats- und jahresweise oder bis zu einem Datum oder bis zum
   Spielende weiterschalten können; Fahrplan und Protokoll zeigen dabei, was eingetreten, entfallen
   und noch geplant ist, und zu jedem Termin seine Begründung.
@@ -692,11 +696,12 @@ Verhalten im Lauf:
 
 ### Measurable Outcomes
 
-- **SC-001**: Klaus legt in der Werkstatt je ein Ereignis jeder Art an (fix, jährlich mit Dauer,
-  beim Start gesetzt, über Wahrscheinlichkeit mit einem Folgeereignis der Art „nur als Folge“) und
-  sieht es im Fahrplan, ohne eine Datei von Hand zu öffnen, in zusammen höchstens 10 Minuten; das
-  Schreiben der Texte zählt nicht mit. Klaus misst selbst, nachdem er den Quickstart einmal
-  durchgegangen ist; die Uhr läuft vom ersten „Neu“ bis das vierte Ereignis im Simulator steht.
+- **SC-001**: Klaus legt in der Werkstatt fünf Ereignisse an: je eines fix, jährlich mit Dauer,
+  beim Start gesetzt und über Wahrscheinlichkeit, dazu ein Folgeereignis der Art „nur als Folge“.
+  Er speichert und erzeugt im Simulator den Fahrplan für den Seed 4711, ohne eine Datei von Hand zu
+  öffnen, in zusammen höchstens 10 Minuten; das Schreiben der Texte zählt nicht mit. Im Fahrplan
+  stehen dann das fixe, das jährliche und das gesetzte Ereignis. Klaus misst selbst, nachdem er den
+  Quickstart einmal durchgegangen ist; die Uhr läuft vom ersten „Neu“, bis der Fahrplan erzeugt ist.
 - **SC-002**: Mit gleichem Katalog, Seed und gleichen Eingriffen ergeben 10 Durchläufe bis zum
   Spielende 10 Zeichen für Zeichen gleiche Textausgaben, ob Tag für Tag oder in Sprüngen
   geschaltet.
@@ -707,10 +712,13 @@ Verhalten im Lauf:
   durchgerechnet und die Statistik über 1.000 Spiele in unter 30 Sekunden. Gemessen wird in der
   Werkstatt mit dem übernommenen Katalog samt Kalender-Ereignissen: „Bis zum Ende“, bis das
   Protokoll steht, und die Statistik vom Start bis 100 %.
-- **SC-005**: Bei jedem von 100 Seeds treten die 19 historischen Ereignisse am selben Tag und mit
-  denselben Wirkungen ein wie vor dem Umbau.
+- **SC-005**: Im übernommenen Katalog treten bei jedem von 100 Seeds die 19 historischen Ereignisse
+  am selben Tag und mit denselben Wirkungen ein wie vor dem Umbau. Geprüft wird an einer
+  eingefrorenen Kopie der Übernahme, damit spätere Änderungen in der Werkstatt den Nachweis nicht
+  berühren.
 - **SC-006**: Jede Prüfregel aus den Edge Cases ist mit einem absichtlich fehlerhaften Beispiel
-  belegt: Die Werkstatt benennt Ereignis und Feld, und die automatische Prüfung schlägt fehl.
+  belegt: Die Werkstatt benennt das Ereignis und das Feld, bei Kategorien die Kategorie. Bei einer
+  Fehlerregel schlägt die automatische Prüfung fehl, eine Warnregel erscheint als Warnung.
 - **SC-007**: Zu jedem Termin im Fahrplan sieht Klaus mit einem Klick, warum er dort steht.
 - **SC-008**: Für ein Ereignis zu 50 % pro Monat ohne weitere Grenzen ergibt die Statistik über
   1.000 Spiele einen Mittelwert zwischen 85,5 und 94,5.
@@ -720,8 +728,8 @@ Verhalten im Lauf:
   sich mit Zeitstrahl und Formularen so eintakten lässt, wie er es sich vorgestellt hat.
 - **SC-011**: Mit einem Test-Katalog von 500 Ereignissen, je zur Hälfte fix und über
   Wahrscheinlichkeit, ist ein ganzes Spiel in unter 2 Sekunden durchgerechnet und die Statistik
-  über 1.000 Spiele in unter 5 Minuten. Die Werkstatt reagiert dabei auf eine Änderung und beim
-  Ziehen auf dem Zeitstrahl in unter 100 ms.
+  über 1.000 Spiele in unter 5 Minuten. Eine Änderung am Katalog samt neuer Prüfung dauert unter
+  100 ms; das Ziehen auf dem Zeitstrahl ruckelt nicht.
 
 ## Assumptions
 

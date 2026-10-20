@@ -27,10 +27,12 @@ Technischer Ansatz (Details in [research.md](research.md), Verträge unter [cont
   den Farben des Computerladens. Sie hat Liste, Formular, Prüfung und einen Zeitstrahl mit
   Ziehen, Zoom und Tooltips. Alle Änderungen laufen über `CatalogEditor` mit `UndoRedo`.
 - **Simulator und Statistik** arbeiten auf einer Kopie des aktuellen, auch ungespeicherten
-  Katalogs. Die Statistik rechnet in Häppchen je Bild und lässt sich abbrechen.
-- **Was wäre, wenn:** Eingriffe im Simulator lassen sich als Probe speichern und laden. Der Fahrplan
-  markiert, was sie gegenüber demselben Seed ohne Eingriffe ändern (`ScheduleDiff`). Eine
-  Sicherungskopie unter `user://` schützt vor Abstürzen (Review, R22 bis R24).
+  Katalogs. Die Statistik rechnet in Häppchen nach Zeitbudget und lässt sich abbrechen.
+- **Was wäre, wenn:** Eingriffe im Simulator lassen sich als Probe speichern und laden. Jede Probe
+  hält das Eingriffsprotokoll mit dem Tag jedes Eingriffs und spielt es beim Laden nach. Der
+  Fahrplan markiert, was die Eingriffe gegenüber demselben Seed ohne Eingriffe ändern
+  (`ScheduleDiff`). Eine Sicherungskopie unter `user://` schützt vor Abstürzen (Review, R22 bis
+  R24).
 - **Kalender:** Weihnachtsgeschäft, Jahreszeiten und CeBIT sind jährliche Ereignisse mit Dauer.
   `GameClock.season_changed` entfällt.
 
@@ -42,13 +44,14 @@ Technischer Ansatz (Details in [research.md](research.md), Verträge unter [cont
 (`rand_weighted`), `JSON`, `FileAccess`, `UndoRedo`, `String.sha256_buffer()`, `PopupMenu`,
 eigenes Zeichnen. Tests mit GUT 9.7.1.
 
-**Storage**: Ereigniskatalog als JSON-Datei `src/data/event_catalog.json`, nur die Werkstatt
-schreibt sie (Verfassung 2.1.0, Grundsatz V). Keine Spielstände; das Modell ist so angelegt, dass
-Seed, Fahrplan und Eingriffe genügen (11-01).
+**Storage**: Ereigniskatalog als JSON-Datei `src/data/event_catalog.json`, gepflegt mit der
+Werkstatt; außer ihr schreibt ihn nur einmal die Übernahme (Verfassung 2.1.0, Grundsatz V). Keine
+Spielstände; das Modell ist so angelegt, dass Seed, Fahrplan und Eingriffe genügen (11-01).
 
-**Testing**: GUT 9.7.1 headless mit Test-Katalogen unter `src/test/fixtures/` und einem
-Schnappschuss der alten Daten. Rauchtest für die Werkstatt-Szene; Zeitstrahl, Formulare, Fenster
-und Look von Hand nach [quickstart.md](quickstart.md).
+**Testing**: GUT 9.7.1 headless mit Test-Katalogen unter `src/test/fixtures/`, einem
+Schnappschuss der alten Daten und einer eingefrorenen Kopie der Übernahme. Rauchtest für die
+Werkstatt-Szene; Zeitstrahl, Formulare, Fenster und Look von Hand nach
+[quickstart.md](quickstart.md).
 
 **Target Platform**: Entwickelt und geprüft auf macOS (Entwicklungsrechner, Apple Silicon); das
 Spiel ist für Windows, macOS und Linux gedacht (Nachweis mit 11-03). Die Werkstatt läuft nur in
@@ -69,7 +72,8 @@ unter 5 Minuten; Prüfung und Ziehen unter 100 ms (SC-011).
 
 **Scale/Scope**: 25 übernommene und 6 neue Kalender-Ereignisse, ausgelegt bis 500 (R21). Dazu
 17 Klassen im Kern, ein umgebautes Autoload, zwei geänderte Kernklassen (`GameClock`, `GameDate`),
-die Werkstatt mit rund elf Szenen und Skripten und 15 Testdateien.
+die Werkstatt mit rund elf Szenen und Skripten und 17 Testdateien, davon zwei bestehende, die sich
+ändern.
 
 ## Constitution Check
 
@@ -104,8 +108,9 @@ specs/002-zeitleisten-werkstatt/
 │   ├── zeitleiste.md            # Kern, Autoload, Textausgabe, Tests
 │   └── werkstatt.md             # Werkstatt: Szenen, CatalogEditor, Bedienung
 ├── checklists/
-│   └── requirements.md          # Qualitätsprüfung der Spec
-├── tasks.md                     # Phase 2 (/speckit-tasks), noch nicht angelegt
+│   ├── requirements.md          # Qualitätsprüfung der Spec
+│   └── review.md                # Review der Anforderungen, von Klaus entschieden
+├── tasks.md                     # Aufgaben je Phase (/speckit-tasks), nach der Analyse überarbeitet
 └── lernnotizen.md               # entsteht bei der Umsetzung, eine Notiz je [A]-Task
 ```
 
@@ -144,8 +149,10 @@ Keine Einträge, die Prüfung der Verfassung zeigt keine Verstöße.
    - eine Schrift ohne Pixelraster, vorgeschlagen Godots eingebaute Schrift (R14);
    - Farbrollen aus der Hauptpalette: Grund, Fläche, Text, gedämpfter Text, Auswahl, Fehler,
      Warnung, Ziehen;
-   - Startfarben der zehn Kategorien im Zeitstrahl;
-   - Text mit mindestens 4,5 : 1 Kontrast zu seinem Grund (FR-029).
+   - die Farben, die Kategorien tragen dürfen, mit mindestens 3 : 1 Kontrast zum Grund des
+     Zeitstrahls und ohne die Grundfarbe, dazu die Startfarben der zehn Kategorien (R14);
+   - Text mit mindestens 4,5 : 1 Kontrast zu seinem Grund (FR-029); Titel im Zeitstrahl stehen in
+     Textfarbe auf dem Grund, nicht auf der Kategorienfarbe.
 
    Claude entwirft ihn, Klaus gibt ihn frei.
 2. **Schnappschuss der alten Daten** (R19), bevor der alte Code fällt. Er hält die 19 historischen
@@ -157,19 +164,19 @@ Jede Phase endet mit grünen Tests, Lernnotizen und Klaus' Abnahme; erst dann fo
 
 | Phase | Inhalt | Story |
 |---|---|---|
-| 1 | Vorarbeit Style-Guide „Werkzeuge“ | – |
-| 2 | Grundlage: Datenklassen, Katalog lesen und schreiben, Prüfregeln, `GameDate`-Ergänzungen, `UiPalette.by_token()`, Fixtures, Schnappschuss, Übernahme in `event_catalog.json` | blockiert alles |
-| 3 | Fahrplan abspulen: Würfel, Termine, Meldungen, `TimelineRun` (fix, gesetzt, Würfelrunde, Folgeereignisse, Bedingungen, Stichtage), Autoload umbauen, Textausgabe, Export-Filter, Probe-Export (R4). Alte Engine, `EventDatabase`, Demo und alte Tests entfernen | US1 (P1) |
-| 4 | Werkstatt, Grundgerüst: Fenster, Theme, `CatalogEditor` mit Rückgängig, Liste, Formular, Kategorien, Prüfung, Speichern, Schließen, Sicherungskopie | US2 (P1) |
+| 1 | Setup: Style-Guide „Werkzeuge“, Schnappschuss der alten Daten, Übernahme in `event_catalog.json`, Export-Filter `tools/*` | – |
+| 2 | Grundlage: `GameDate` (Tage vor 1985, ISO-Datum), `UiPalette`, Datenklassen. `TimelineEvent` und `EventEffect` umbauen und im selben Schritt alte Engine, `EventDatabase`, Demo und alte Tests entfernen. `EventCatalog`, Katalog normalisieren und einfrieren, Prüfregeln, `ScheduleEntry`, stille Hülle des Autoloads | blockiert alles |
+| 3 | Fahrplan abspulen: Würfel, Modifikatoren, Meldungen, `TimelineRun` (fix, gesetzt, Würfelrunde, Folgeereignisse, Bedingungen, Stichtage), Autoload, Textausgabe, Prüfung der Übernahme, Probe-Export (R4) | US1 (P1) |
+| 4 | Werkstatt, Grundgerüst: Theme, `CatalogEditor` mit Rückgängig und Verwerfen, Fenster, Liste, Formular, Kategorien, Prüfung, Verdrahtung, Speichern, Schließen, Sicherungskopie | US2 (P1) |
 | 5 | Kalender und Dauer: Dauer, jährliche Ereignisse, `ONCE`/`DURING`, Kalender-Ereignisse im Katalog, `season_changed` und `GameDate`-Altlasten entfernen | US3 (P2) |
-| 6 | Zeitstrahl: Zeichnen, Zoom, Ziehen, Tooltips, Rechtsklick, Doppelklick | US4 (P2) |
+| 6 | Zeitstrahl: Zeichnen, Zoom, Ziehen mit Vorschau, Tooltips, Rechtsklick, Doppelklick | US4 (P2) |
 | 7 | Simulator: Seed, Schalter, Fahrplan, Protokoll, Begründung | US5 (P2) |
-| 8 | Was wäre, wenn: Modifikatoren, Absagen, Verschieben, Einplanen im Kern und im Simulator, Vergleich mit `ScheduleDiff`, Proben speichern und laden | US6 (P2) |
-| 9 | Statistik in Häppchen, Ergebnis-Tabelle, Verteilung | US7 (P3) |
-| 10 | Abschluss: CLAUDE.md (Tabelle „Aufbau“, Beschreibung der Timeline), Features.md, Quickstart vollständig, Lückensuche mit `/speckit-converge` | – |
+| 8 | Was wäre, wenn: Eingriffe und Eingriffsprotokoll im Kern, Vergleich mit `ScheduleDiff`, Proben mit Neu abspielen, Eingriffe im Simulator | US6 (P2) |
+| 9 | Statistik nach Zeitbudget, Ergebnis-Tabelle, Verteilung | US7 (P3) |
+| 10 | Abschluss: großer Katalog (SC-011), CLAUDE.md (Tabelle „Aufbau“, Beschreibung der Timeline), Features.md, Lückensuche mit `/speckit-converge`, Quickstart vollständig, Abnahme | – |
 
-Phase 5 kann auch vor Phase 4 laufen, wenn Klaus den Kern erst vollständig sehen will; die
-Werkstatt braucht die Felder für Dauer und „jährlich“ ohnehin schon ab Phase 2.
+Die Phasen laufen in dieser Reihenfolge. Phase 5 braucht die Werkstatt aus Phase 4, denn Klaus legt
+die Kalender-Ereignisse dort an.
 
 ## Was Klaus dabei lernt
 
@@ -183,7 +190,8 @@ Kandidaten für Lernnotizen und für `[K]`-Aufgaben, die Klaus sich aussucht:
 - Theme für einen Teilbaum, Fenster zur Laufzeit umstellen (Phase 4).
 - Eigenes Control mit `_draw()`, `_gui_input()`, `_get_tooltip()` und `PopupMenu` (Phase 6). Gut
   geeignet als `[K]`-Aufgabe, weil Klaus genau das später für Spielansichten braucht.
-- Arbeit in Häppchen mit `await get_tree().process_frame` (Phase 9).
+- Arbeit in Häppchen nach Zeitbudget mit `Time.get_ticks_usec()` und
+  `await get_tree().process_frame` (Phase 9).
 
 ## Was wegfällt und wer es nutzte
 
@@ -191,7 +199,7 @@ Kandidaten für Lernnotizen und für `[K]`-Aufgaben, die Klaus sich aussucht:
 |---|---|---|
 | `Timeline.fast_forward_to()` | niemand; gedacht für Idee 01-05 | 01-05 baut später auf `TimelineRun.advance_to()` auf (Vermerk in Feature_Ideas) |
 | `GameClock.season_changed` | `timeline_demo`, ein Test | Kalender-Ereignisse (FR-023, FR-024) |
-| `GameDate.season()`, `is_holiday_season()` | `timeline_demo`, Tests | entfallen samt Tests |
+| `GameDate.season()`, `is_holiday_season()` | `GameClock.advance_day()` (für `season_changed`), `timeline_demo`, Tests | entfallen samt Tests und ihrem Aufruf in der Uhr |
 | `timeline_demo.tscn/.gd` | Startbefehle in den Abnahmen von 01-01 und 01-02 | die Werkstatt; die beiden Feature-Docs bleiben als Historie, der Quickstart von 002 nimmt die Hauptszene |
 | `EventDatabase`, `test_event_database.gd`, `test_timeline_event.gd` | alte Engine | Katalog, Schnappschuss, neue Tests |
 | `EventEffect.Kind.SPAWN` | kein Ereignis | Folgeereignisse als eigener Teil |
@@ -213,6 +221,20 @@ heißt seitdem „Was wäre, wenn: Spieleraktionen ausprobieren“. Die übrigen
 Vorschläge eingearbeitet: Spec (FR-004 bis FR-051, Edge Cases, SC-001, SC-003, SC-004, SC-011),
 Datenmodell (Zustand „beendet“, V23, V24, WhatIfProbe), Verträge, research.md (R22 bis R24) und
 Quickstart.
+
+Die Analyse mit `/speckit-analyze` fand 40 Befunde, alle von Klaus zur Einarbeitung freigegeben.
+An der Spec haben sich dadurch geändert:
+- **Präzisiert:** Mindestabstand ab dem letzten Termin, der weder entfallen noch abgesagt ist
+  (FR-005). Begründungen nennen jeden Wurf, auch bei Folgeereignissen, mit den Modifikatoren, wie
+  sie beim Wurf galten (FR-012). Die Kettenbremse zählt je Kette und warnt im Spiel (FR-018). Das
+  Seed-Feld nimmt nur Ziffern an (FR-040).
+- **Messbar gemacht:** SC-001 hat fünf Ereignisse und als Endpunkt den erzeugten Fahrplan.
+  SC-005 prüft an einer eingefrorenen Kopie der Übernahme. SC-006 unterscheidet Fehler- und
+  Warnregeln. SC-011 misst auch Änderung samt Prüfung. US7, Szenario 6 erlaubt 25 % bis 35 %.
+- **Klargestellt:** Kategorienfarben kommen aus den Farben, die der Style-Guide dafür erlaubt
+  (FR-031). Ein Verschieben auf den aktuellen Spieltag oder davor ist nicht möglich (Edge Cases).
+
+Alles Übrige betraf Plan, Verträge, Datenmodell, Recherche, Quickstart und Tasks.
 
 ## Offene Entscheidungen für Klaus
 
