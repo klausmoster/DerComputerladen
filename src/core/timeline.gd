@@ -1,124 +1,63 @@
 extends Node
 
-## Autoload-Singleton: die Ereignis-Engine.
+## Autoload `Timeline`: die Zeitleiste des Spiels (Feature 002).
 ##
-## Registriert alle Ereignisse, lauscht auf die Spieluhr und feuert fixe
-## Ereignisse an ihrem Datum bzw. würfelt variable Ereignisse monatlich aus.
-## Beim Feuern werden die Kettenreaktionen (EventEffect) verteilt – sofort
-## oder zeitverzögert – und per `effect_applied` an andere Systeme gemeldet.
+## Noch ist sie eine stille Hülle. Beim Start liest sie den Ereigniskatalog, prüft ihn und
+## behält ihn ohne die Ereignisse mit Fehlern. Abgespielt wird noch nichts: Den Lauf
+## (`TimelineRun`), die Verbindung zur Spieluhr und das Senden der Signale baut T024 in Phase 3.
+##
+## Die Zeitleiste wendet keine Wirkung selbst an. Sie meldet nur, über die Signale unten, und
+## Wirtschaft, Nachfrage und Ruf hängen sich später daran.
 
+# Die Signale stehen schon jetzt mit ihren Typen fest, damit sich Abnehmer daran anschließen
+# können. Gesendet werden sie erst mit dem Lauf (T024). Bis dahin unterdrückt
+# @warning_ignore die Warnung „nie benutzt“, sonst wäre der Start mit -d nicht mehr still.
+
+## Ein Ereignis beginnt, wie bisher.
+@warning_ignore("unused_signal")
 signal event_fired(event: TimelineEvent, date: GameDate)
+## Eine Wirkung beginnt, wie bisher.
+@warning_ignore("unused_signal")
 signal effect_applied(effect: EventEffect, source: TimelineEvent, date: GameDate)
+## Ein Ereignis mit Dauer endet.
+@warning_ignore("unused_signal")
+signal event_ended(event: TimelineEvent, date: GameDate)
+## Eine Wirkung, die nur während ihres Ereignisses gilt, endet.
+@warning_ignore("unused_signal")
+signal effect_ended(effect: EventEffect, source: TimelineEvent, date: GameDate)
+## Ein Termin entfällt: Eine Bedingung ist nicht erfüllt, das Ereignis läuft noch, oder die
+## Kette ist zu lang.
+@warning_ignore("unused_signal")
+signal entry_skipped(entry: ScheduleEntry, date: GameDate)
 
-var fixed_events: Array[TimelineEvent] = []
-var variable_events: Array[TimelineEvent] = []
-var history: Array[Dictionary] = []  ## { event, day_index }
+const CATALOG_PATH := EventCatalog.DEFAULT_PATH
 
-var _fixed_by_day: Dictionary = {}    ## day_index -> Array[TimelineEvent]
-var _pending_effects: Array[Dictionary] = []  ## { apply_day, effect, source }
-var _occurrences: Dictionary = {}     ## event id -> int
-var _last_fired_day: Dictionary = {}  ## event id -> day_index
-var _rng := RandomNumberGenerator.new()
+## Tests setzen einen Test-Katalog, bevor der Knoten in den Baum kommt.
+var catalog_path: String = CATALOG_PATH
+## Der geprüfte Katalog ohne die Ereignisse mit Fehlern; leer, wenn die Datei fehlt oder nicht
+## lesbar ist.
+var catalog: EventCatalog
 
 
+## Liest und prüft den Katalog. Ein fehlerfreier Katalog erzeugt keine Ausgabe.
 func _ready() -> void:
-	_rng.randomize()
-	_load_events()
-	GameClock.day_passed.connect(_on_day_passed)
-	GameClock.month_passed.connect(_on_month_passed)
-
-
-func _load_events() -> void:
-	for event in EventDatabase.build_fixed_events():
-		register_event(event)
-	for event in EventDatabase.build_variable_events():
-		register_event(event)
-
-
-func register_event(event: TimelineEvent) -> void:
-	if event.is_fixed:
-		fixed_events.append(event)
-		var idx := event.trigger_day_index()
-		if not _fixed_by_day.has(idx):
-			_fixed_by_day[idx] = [] as Array[TimelineEvent]
-		_fixed_by_day[idx].append(event)
-	else:
-		variable_events.append(event)
-
-
-## Bereits ausgelöste Ereignisse bis (einschließlich) `date` – nützlich beim
-## Spielstart, um den Markt auf den passenden Stand zu bringen, ohne dass die
-## Uhr durch die ganze Vergangenheit ticken muss.
-func fast_forward_to(date: GameDate) -> void:
-	var target := date.to_day_index()
-	for idx: int in _fixed_by_day.keys():
-		if idx <= target:
-			for event: TimelineEvent in _fixed_by_day[idx]:
-				_fire(event, GameDate.from_day_index(idx))
-
-
-func _on_day_passed(date: GameDate) -> void:
-	_apply_due_effects(date)
-	var idx := date.to_day_index()
-	if _fixed_by_day.has(idx):
-		for event: TimelineEvent in _fixed_by_day[idx]:
-			_fire(event, date)
-
-
-func _on_month_passed(date: GameDate) -> void:
-	_roll_variable_events(date)
-
-
-func _roll_variable_events(date: GameDate) -> void:
-	var current_day := date.to_day_index()
-	for event in variable_events:
-		var occ: int = _occurrences.get(event.id, 0)
-		var last: int = _last_fired_day.get(event.id, -1)
-		if not event.can_occur(date, occ, last, current_day):
+	var issues: Array[CatalogIssue] = []
+	var loaded := EventCatalog.read_file(catalog_path, issues)
+	if loaded == null:
+		# FR-049: Das Spiel startet trotzdem, mit leerer Zeitleiste; die Meldung nennt Datei
+		# und Grund.
+		for issue in issues:
+			push_error("Zeitleiste: %s Die Zeitleiste bleibt leer." % issue.message)
+		catalog = EventCatalog.new()
+		return
+	issues.append_array(CatalogValidator.validate(loaded))
+	catalog = loaded.without_faulty(issues)
+	# Jede Meldung der Stufe ERROR nennt Ereignis bzw. Kategorie und Grund. Fehlt das Ereignis
+	# danach im Katalog, sagt die Meldung das dazu. Warnungen sind für die Werkstatt.
+	for issue in issues:
+		if issue.severity != CatalogIssue.Severity.ERROR:
 			continue
-		if _rng.randf() < event.monthly_chance:
-			_fire(event, date)
-
-
-func _fire(event: TimelineEvent, date: GameDate) -> void:
-	history.append({"event": event, "day_index": date.to_day_index()})
-	_occurrences[event.id] = int(_occurrences.get(event.id, 0)) + 1
-	_last_fired_day[event.id] = date.to_day_index()
-	event_fired.emit(event, date)
-
-	for effect in event.effects:
-		if effect.delay_days <= 0:
-			_dispatch_effect(effect, event, date)
-		else:
-			_pending_effects.append({
-				"apply_day": date.to_day_index() + effect.delay_days,
-				"effect": effect,
-				"source": event,
-			})
-
-
-func _apply_due_effects(date: GameDate) -> void:
-	var idx := date.to_day_index()
-	var still_pending: Array[Dictionary] = []
-	for pending in _pending_effects:
-		if pending["apply_day"] <= idx:
-			_dispatch_effect(pending["effect"], pending["source"], date)
-		else:
-			still_pending.append(pending)
-	_pending_effects = still_pending
-
-
-func _dispatch_effect(effect: EventEffect, source: TimelineEvent, date: GameDate) -> void:
-	effect_applied.emit(effect, source, date)
-	# SPAWN-Effekte lösen ein weiteres registriertes Ereignis aus.
-	if effect.kind == EventEffect.Kind.SPAWN and not effect.target.is_empty():
-		var spawned := _find_event(effect.target)
-		if spawned != null:
-			_fire(spawned, date)
-
-
-func _find_event(event_id: String) -> TimelineEvent:
-	for event in fixed_events + variable_events:
-		if event.id == event_id:
-			return event
-	return null
+		var text := "Zeitleiste: %s" % issue.message
+		if loaded.get_event(issue.event_id) != null and catalog.get_event(issue.event_id) == null:
+			text += " Das Ereignis wird übersprungen."
+		push_error(text)

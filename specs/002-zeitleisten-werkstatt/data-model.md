@@ -79,6 +79,18 @@ Felder je Art (andere Felder sind leer und werden nicht gespeichert):
 
 Beispiel `count_min = 0`, `count_weights = [30, 70]`: zu 30 % keinmal, zu 70 % einmal.
 
+**Vorgaben:** Fehlt beim Lesen ein Feld, meldet `from_dict()` V22 und setzt die Vorgabe; dieselben
+Vorgaben bekommt ein neu angelegtes Ereignis:
+- Texte leer, Listen leer, `kind` = `FIXED`, `duration_days` = 0;
+- `date` = 0 (01.01.1985), Zeitfenster 0 bis 5477, `min_gap_days` = 0;
+- `yearly_from` = 1985, `yearly_to` = 1999, `yearly_start` = (1, 1), `yearly_end` = (0, 0);
+- `count_min` = 1, `count_weights` = [100], also genau einmal;
+- `monthly_chance` = 0.0, `max_occurrences` = 0.
+
+Für Wirkungen gilt `kind` = `PRESSE`, `target` = `*`, `magnitude` = 0.0, `delay_days` = 0 und
+`scope` nach FR-007: `DURING` bei Ereignissen mit Dauer, sonst `ONCE`. Für Folgeereignisse gilt
+`chance` = 1.0 und eine Verzögerung von 0; für Bedingungen `occurred` = `true`.
+
 ## EventEffect
 
 | Feld | Typ | Bedeutung |
@@ -121,6 +133,7 @@ wirkt `DURING` wie `ONCE` (FR-021).
 | `end_day` | int | Tag, an dem das Ende gemeldet wird; = `day` ohne Dauer; > 5477 heißt nach Spielende |
 | `origin` | `Origin` | `FIXED`, `YEARLY`, `PRESET`, `ROLLED`, `FOLLOW_UP`, `INTERVENTION` |
 | `source_event_id` | String | bei `FOLLOW_UP` das auslösende Ereignis |
+| `source_title` | String | bei `FOLLOW_UP` der Titel des auslösenden Ereignisses, gesetzt vom Lauf; `origin_label()` und `explain()` nennen ihn, ohne Titel die Kennung |
 | `started_before_game` | bool | bei `YEARLY`: lief schon vor dem 01.01.1985 (R9) |
 | `state` | `State` | siehe unten |
 | `roll`, `threshold` | float | bei `ROLLED` und `FOLLOW_UP`: Würfelwert und Schwelle, die er unterschreiten musste; sonst −1 |
@@ -185,7 +198,7 @@ Vergangenheit und der Wert 0 sind erlaubt (Edge Cases).
 | `severity` | `Severity` | `ERROR` oder `WARNING` |
 | `rule` | String | Kennung der Regel, `V01` bis `V24` |
 | `event_id` | String | betroffenes Ereignis oder leer |
-| `field` | String | betroffenes Feld, etwa `date`, `effects[1].delay_days` |
+| `field` | String | betroffene Stelle, benannt wie in der Datei: etwa `date`, `window.from`, `yearly.start`, `count_weights`, `effects[1].delay_days`; bei Kategorien `categories[2].color`; bei einem Parse-Fehler `Zeile 13` |
 | `message` | String | deutsch, nennt Ereignis und Feld |
 
 ## Prüfregeln
@@ -202,7 +215,7 @@ Die Regeln aus den Edge Cases der Spec, durchnummeriert für Tests (SC-006):
 | V06 | Datum oder Zeitfenster außerhalb 01.01.1985 bis 31.12.1999 | Fehler |
 | V07 | Zeitfenster endet vor seinem Beginn | Fehler |
 | V08 | Jährlich: Jahre außerhalb 1985 bis 1999 oder `yearly_from` > `yearly_to` | Fehler |
-| V09 | Jährlich: Beginn oder Ende kein gültiger Tag im Jahr oder 29.02. | Fehler |
+| V09 | Jährlich: Beginn oder Ende kein gültiger Tag im Jahr oder 29.02.; der Beginn ist auch dann ein Fehler, wenn er „Monatsende“ oder leer ist | Fehler |
 | V10 | Gesetzt: höchste Anzahl passt mit Mindestabstand nicht ins Zeitfenster | Fehler |
 | V11 | Gesetzt: Gewichte negativ oder Summe nicht 100 (Toleranz 0,01) | Fehler |
 | V12 | Grundchance oder Wahrscheinlichkeit eines Folgeereignisses außerhalb 0 bis 1 | Fehler |
@@ -210,14 +223,14 @@ Die Regeln aus den Edge Cases der Spec, durchnummeriert für Tests (SC-006):
 | V14 | Dauer, Verzögerung, Mindestabstand oder Höchstzahl negativ; `delay_min` > `delay_max` | Fehler |
 | V15 | Folgeereignis oder Bedingung verweist auf unbekannte Kennung | Fehler |
 | V16 | Folgeereignis zeigt auf ein fixes oder jährliches Ereignis | Fehler |
-| V17 | Bedingung an einem fixen oder jährlichen Ereignis; schon der Schlüssel `conditions` bei `fixed` oder `yearly` ergibt V17, nicht V22 | Fehler |
+| V17 | Bedingung an einem fixen oder jährlichen Ereignis; der Schlüssel `conditions` bei `fixed` oder `yearly` ergibt V17, nicht V22. Eine leere Liste ist kein Fehler, sie fällt beim Speichern weg | Fehler |
 | V18 | Kreis aus Folgeereignissen mit 100 % und Verzögerung 0; gemeldet bei jedem Ereignis des Kreises | Fehler |
-| V19 | Wirkung `DURING` mit `delay_days` ≥ Dauer: Sie begänne erst am Tag des Endes oder danach | Fehler |
+| V19 | Wirkung `DURING` mit `delay_days` ≥ Dauer: Sie begänne erst am Tag des Endes oder danach. Bei jährlichen Ereignissen zählt die Dauer eines Vorkommens in einem Jahr ohne 29. Februar | Fehler |
 | V20 | Wirkung auf Preis, Nachfrage, Ruf oder Kundenstrom mit Stärke 0 | Warnung |
 | V21 | Kategorie: Kennung doppelt oder leer, Farbe nicht in `UiPalette.CATEGORY_TOKENS` | Fehler |
-| V22 | Strukturfehler beim Lesen: Datei kein gültiges JSON (mit Zeile), `format` nicht 1, Pflichtfeld fehlt, falscher Typ, unbekannter Schlüssel oder Wert für `kind` oder `scope` | Fehler |
-| V23 | Kreis aus Folgeereignissen mit 100 % und Verzögerung, der bis Spielende weiterläuft | Warnung |
-| V24 | Gesetzt: Mindestabstand kürzer als die Dauer, gesetzte Termine würden sich überlappen | Fehler |
+| V22 | Strukturfehler beim Lesen: Datei kein gültiges JSON (mit Zeile), Datei fehlt (mit Pfad), `format` nicht 1, Pflichtfeld fehlt, falscher Typ, unbekannter Schlüssel, unbekannter Wert für `kind` oder `scope`, ein Datum, das kein Kalendertag ist (etwa `1993-02-30`) | Fehler |
+| V23 | Kreis aus Folgeereignissen mit 100 % und Verzögerung, der bis Spielende weiterläuft; gemeldet bei jedem Ereignis des Kreises | Warnung |
+| V24 | Gesetzt: Mindestabstand kürzer als die Dauer, gesetzte Termine würden sich überlappen; nur, wenn mehr als ein Termin möglich ist | Fehler |
 
 Ein Ereignis ohne Wirkung ist erlaubt (reine Meldung). Meldungen ohne Ereignis (V21 nennt die
 Kategorie in `field`, V22 bei einem Parse-Fehler die Zeile) haben ein leeres `event_id`.

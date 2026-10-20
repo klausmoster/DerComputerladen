@@ -107,7 +107,7 @@ die nur den Katalog lädt.
 
 **⚠️ CRITICAL**: Keine User Story beginnt, bevor diese Phase abgenommen ist.
 
-- [ ] T007 [A] [P] `src/core/game_date.gd` laut Vertrag, Abschnitt „Geänderte Bestandteile“:
+- [x] T007 [A] [P] `src/core/game_date.gd` laut Vertrag, Abschnitt „Geänderte Bestandteile“:
   - `to_day_index()` und `from_day_index()` rechnen auch vor 1985, mit negativen Indizes
     (research.md, R9). Bisher ergab der 31.12.1984 den Index 365.
   - Neu `from_iso()`, `to_iso()` und `is_valid()`.
@@ -118,13 +118,13 @@ die nur den Katalog lädt.
   - `is_valid(1988, 2, 29)` ist wahr, `is_valid(1989, 2, 29)` falsch; `from_iso("1993-13-01")`
     liefert `null`.
   - `to_iso()` und `from_iso()` ergeben für den 01.01.1985 und den 31.12.1999 wieder dasselbe.
-- [ ] T008 [A] [P] `src/ui/ui_palette.gd`:
+- [x] T008 [A] [P] `src/ui/ui_palette.gd`:
   - `TOKENS` mit allen 15 Token-Namen wie im Style-Guide (`&"tusche"` bis `&"holz-dunkel"`,
     Bindestriche wie `&"gehaeuse-hell"`);
   - `CATEGORY_TOKENS` mit den Kategorienfarben aus T001, in deren Reihenfolge;
   - `static func by_token(token: StringName) -> Color`, die für unbekannte Tokens Magenta
     `Color(1, 0, 1)` liefert.
-- [ ] T009 [A] [P] Kleine Datenklassen unter `src/core/timeline/` laut Vertrag, alle `RefCounted`
+- [x] T009 [A] [P] Kleine Datenklassen unter `src/core/timeline/` laut Vertrag, alle `RefCounted`
   mit `from_dict(data, issues)` und `to_dict()`:
   - `catalog_issue.gd`: `CatalogIssue` mit `Severity { ERROR, WARNING }`, `rule`, `event_id`,
     `field`, `message`.
@@ -133,7 +133,7 @@ die nur den Katalog lädt.
   - `follow_up.gd`: `FollowUp` mit `target`, `chance` „float 0..1, Vorgabe 1.0“ und
     `delay_min`/`delay_max` „int ≥ 0; gleich heißt fest“.
   - `event_condition.gd`: `EventCondition` mit `event` und `occurred`.
-- [ ] T010 [A] `EventEffect` und `TimelineEvent` umbauen und im selben Schritt die alte Engine
+- [x] T010 [A] `EventEffect` und `TimelineEvent` umbauen und im selben Schritt die alte Engine
   entfernen, damit das Projekt nach diesem Task wieder fehlerfrei lädt (Vertrag, Datenklassen;
   research.md, R19):
   - **EventEffect:** Datei mit `.uid` per
@@ -161,7 +161,7 @@ die nur den Katalog lädt.
     wird zu einem leeren Autoload (`extends Node` mit Doc-Kommentar), bis T017 die Hülle baut.
 
   Hängt an T009.
-- [ ] T011 [A] `src/core/timeline/event_catalog.gd` (`EventCatalog`) laut Vertrag:
+- [x] T011 [A] `src/core/timeline/event_catalog.gd` (`EventCatalog`) laut Vertrag:
   - `from_json()`: bei einem Parse-Fehler `null` und V22 mit Zeile und Grund aus
     `get_error_line()`/`get_error_message()`; `format` ≠ 1 und unbekannte Schlüssel sind V22.
   - `read_file()`, `to_json()` nach den Schreibregeln 1 bis 5 (Anteile auf vier, Gewichte auf
@@ -173,14 +173,14 @@ die nur den Katalog lädt.
   - Ganzzahlige Felder werden beim Lesen mit `int()` zurückgewandelt (research.md, R3).
 
   Hängt an T010.
-- [ ] T012 [A] Übernahme normalisieren und einfrieren (research.md, R19, Schritt 3):
+- [x] T012 [A] Übernahme normalisieren und einfrieren (research.md, R19, Schritt 3):
   - `src/data/event_catalog.json` mit `EventCatalog.read_file()` lesen und mit `write_file()` neu
     schreiben. Im Diff ändert sich höchstens die Form, nie ein Wert.
   - Das Ergebnis als `src/test/fixtures/event_catalog_uebernahme.json` kopieren. Diese Datei
     ändert sich danach nie mehr.
 
   Hängt an T004 und T011.
-- [ ] T013 [A] `src/test/test_event_catalog.gd`:
+- [x] T013 [A] `src/test/test_event_catalog.gd`:
   - Rundreise: `fixtures/event_catalog_uebernahme.json` lesen und wieder schreiben ergibt
     bytegleichen Text.
   - Ganze Zahlen stehen ohne Nachkomma; ein Gewicht 33,333333 wird als `33.33` geschrieben, eine
@@ -190,7 +190,7 @@ die nur den Katalog lädt.
   - `without_faulty()`: Ein Ereignis mit Fehler fehlt samt dem Folgeereignis, das auf es zeigt.
 
   Hängt an T012.
-- [ ] T014 [A] `src/core/timeline/catalog_validator.gd` (`CatalogValidator`) mit den Regeln aus
+- [x] T014 [A] `src/core/timeline/catalog_validator.gd` (`CatalogValidator`) mit den Regeln aus
   data-model.md, Tabelle „Prüfregeln“. Meldungen nach Kennung, dann Regel, Kategorien zuletzt:
   - **Kennung und Titel:** V01 Kennung leer · V02 Kennung doppelt · V03 Kennung enthält andere
     Zeichen als `a–z`, `0–9`, `_` · V04 Titel leer · V05 Kategorie unbekannt.
@@ -215,7 +215,7 @@ die nur den Katalog lädt.
     Vorschau beim Ziehen (R16); `validate()` nutzt sie je Ereignis.
 
   Hängt an T008 und T011.
-- [ ] T015 [A] Fixtures `src/test/fixtures/catalog_vNN_<zweck>.json`, je Regel eine, darunter
+- [x] T015 [A] Fixtures `src/test/fixtures/catalog_vNN_<zweck>.json`, je Regel eine, darunter
   `catalog_v04_titel_leer.json`, die auch der Quickstart nutzt; für V22 dient
   `catalog_v22_kaputt.json` aus T013. Dazu `catalog_minimal.json` ohne jede Meldung. Tests in
   `src/test/test_catalog_validator.gd` (SC-006):
@@ -227,7 +227,7 @@ die nur den Katalog lädt.
     V23.
 
   Hängt an T013 und T014.
-- [ ] T016 [A] [P] `src/core/timeline/schedule_entry.gd` (`ScheduleEntry`). Die Klasse kommt schon
+- [x] T016 [A] [P] `src/core/timeline/schedule_entry.gd` (`ScheduleEntry`). Die Klasse kommt schon
   hier, weil das Signal `entry_skipped(entry: ScheduleEntry, …)` der Hülle sie braucht:
   - `Origin` und `State { PLANNED, RUNNING, OCCURRED, ENDED, SKIPPED, CANCELLED }`, Felder wie im
     Datenmodell, darunter `roll`/`threshold` „bei `ROLLED` und `FOLLOW_UP`; sonst −1“,
@@ -237,7 +237,7 @@ die nur den Katalog lädt.
     „entfallen“, „abgesagt“), `explain()` aus den Feldern des Termins, `due_effects()`.
 
   Hängt an T010; läuft parallel zu T011 bis T015.
-- [ ] T017 [A] Stille Hülle `src/core/timeline.gd`:
+- [x] T017 [A] Stille Hülle `src/core/timeline.gd`:
   - Die fünf Signale laut Vertrag, typisiert.
   - `catalog_path`; `_ready()` liest den Katalog mit `read_file()`, prüft ihn mit
     `CatalogValidator`, meldet jedes Ereignis mit Fehler über `push_error()` mit Kennung und Grund
@@ -246,7 +246,7 @@ die nur den Katalog lädt.
   - Noch gibt es keinen Lauf und keine Verbindung zur Uhr.
 
   Hängt an T011, T014 und T016.
-- [ ] T018 [A] Katalogtests, Teil 1:
+- [x] T018 [A] Katalogtests, Teil 1:
   - `src/test/test_shipped_catalog.gd`: Der echte Katalog hat keine Meldung der Stufe `ERROR`
     (FR-048). Mehr prüft dieser Test am echten Katalog nie, außer den Kalender-Ereignissen
     (T045).
@@ -255,7 +255,7 @@ die nur den Katalog lädt.
     sechs; zehn Kategorien in der Reihenfolge aus T001.
 
   Hängt an T012 und T014.
-- [ ] T019 [K] Phase 2 abnehmen nach quickstart.md, Abschnitte 1 und 2: Alle Tests grün, die
+- [x] T019 [K] Phase 2 abnehmen nach quickstart.md, Abschnitte 1 und 2: Alle Tests grün, die
   Startprobe bleibt ohne Ausgabe. Dazu `src/data/event_catalog.json` nach T012 im Diff ansehen
   und prüfen, dass neue Skripte ihre `.uid` haben.
 
@@ -304,6 +304,9 @@ Seed 1 und 2 mit `catalog_us1_preset.json` vergleichen (quickstart.md, Abschnitt
     Meldung heißt `CHAIN_STOPPED`.
   - Nach `LAST_DAY` keine Meldung mehr.
   - Dazu `chance_info()`, `get_entry()`, `running_entries()` und `is_finished()`.
+  - Folgetermine bekommen `source_title`, den Titel des auslösenden Ereignisses.
+  - `CatalogValidator` nutzt danach `TimelineRun.FIRST_DAY` und `LAST_DAY` statt eigener
+    Konstanten.
 
   Dauer und jährliche Ereignisse folgen in Phase 5, Eingriffe in Phase 8.
 - [ ] T023 [A] [US1] `src/test/test_timeline_run.gd`, Teil 1, mit Fixtures
@@ -327,6 +330,7 @@ Seed 1 und 2 mit `catalog_us1_preset.json` vergleichen (quickstart.md, Abschnitt
     `entry_skipped` und einer Warnung über `push_warning()` (FR-018).
   - `start_game()` per `call_deferred()` aus `_ready()` (R12); ein gültiger Katalog erzeugt keine
     Ausgabe.
+  - Die fünf Signale senden jetzt; `@warning_ignore("unused_signal")` aus T017 entfällt.
 - [ ] T025 [A] [US1] `src/test/test_timeline.gd`, eigene Instanz mit `catalog_path` auf eine
   Fixture und eigener Uhr (Vertrag, Ablauf):
   - Signale in der Reihenfolge des Tagesablaufs.
@@ -460,8 +464,10 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
   - Eingaben: Komma oder Punkt, Prozent, `TT.MM.JJJJ` auch ohne führende Nullen. Ungültiges wird
     nicht übernommen: Der alte Wert bleibt, ein Hinweis erscheint. Eine Eingabe gilt beim
     Verlassen oder mit Enter; Enter gibt den Fokus ab (R15).
-  - Eine Änderung von „Anzahl von–bis“ verteilt die Gewichte neu, alle gleich, und geht mit
-    `set_event_fields()` als eine Aktion an den Katalog.
+  - Eine Änderung von „Anzahl von–bis“ verteilt die Gewichte neu, alle gleich auf zwei
+    Nachkommastellen; den Rest bekommt das letzte Gewicht, damit die Summe genau 100 ist (bei
+    sechs Anzahlen 16,67 · 5 und 16,65). Beides geht mit `set_event_fields()` als eine Aktion an
+    den Katalog.
   - `focus_field(field)` setzt den Fokus auf ein Feld, auch in den Listen wie
     `effects[1].delay_days`.
   - Bereich für Kategorien: anlegen, umbenennen, Farbe aus `UiPalette.CATEGORY_TOKENS`, löschen

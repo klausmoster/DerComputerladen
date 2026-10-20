@@ -219,8 +219,9 @@ Regeln:
 - Eine Eingabe gilt beim Verlassen des Felds oder mit Enter; Enter gibt dabei den Fokus ab, damit
   das nächste Cmd+Z den Katalog erreicht (R15). Ist sie ungültig, bleibt der alte Wert stehen,
   und ein Hinweis am Feld sagt, warum (FR-031).
-- Ändert Klaus „Anzahl von–bis“, verteilt das Formular die Gewichte neu, alle gleich (FR-004),
-  und schickt beides mit `set_event_fields()` als eine Aktion.
+- Ändert Klaus „Anzahl von–bis“, verteilt das Formular die Gewichte neu, alle gleich (FR-004)
+  auf zwei Nachkommastellen; den Rest bekommt das letzte Gewicht, damit die Summe genau 100 ist.
+  Beides schickt es mit `set_event_fields()` als eine Aktion.
 - `func focus_field(field: String) -> void` setzt den Fokus auf das Feld einer Prüfmeldung, auch
   in den Listen, etwa `effects[1].delay_days`; ein unbekanntes Feld wählt nur das Ereignis.
 - Kategorien verwaltet ein kleiner Bereich unter dem Formular: anlegen, umbenennen, Farbe wählen,

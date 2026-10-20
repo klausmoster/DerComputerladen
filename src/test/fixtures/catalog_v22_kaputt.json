@@ -1,0 +1,23 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		}
+	],
+	"events": [
+		{
+			"category": "hardware",
+			"date": "1993-03-22"
+			"description": "In der Zeile davor fehlt hinter dem Datum das Komma.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "intel_pentium",
+			"kind": "fixed",
+			"title": "Intel Pentium erscheint"
+		}
+	],
+	"format": 1
+}

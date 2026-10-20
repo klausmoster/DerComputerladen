@@ -208,8 +208,9 @@ Damit gleicher Inhalt immer dieselbe Datei ergibt und eine Feldänderung genau e
 
 - Die Datei wird als Text gelesen und mit einer `JSON`-Instanz geparst. Bei einem Parse-Fehler
   gibt es keinen Katalog, sondern eine Meldung mit Zeile und Grund (research.md, R4).
-- Fehlende Schlüssel, falsche Typen und unbekannte Werte werden zu Prüfmeldungen V22. Das
-  Ereignis bleibt mit Vorgabewerten im Katalog, damit die Werkstatt es zeigen und reparieren kann.
+- Fehlende Schlüssel, falsche Typen und unbekannte Werte werden zu Prüfmeldungen V22, ebenso ein
+  Datum, das kein Kalendertag ist. Das Ereignis bleibt mit den Vorgabewerten aus data-model.md im
+  Katalog, damit die Werkstatt es zeigen und reparieren kann.
 - Spiel, Simulator, Statistik und Textausgabe rechnen mit `EventCatalog.without_faulty()`, also
   ohne die Ereignisse mit einer Meldung der Stufe `ERROR` (data-model.md, „Fehlerhafte Ereignisse
   ausnehmen“). Im Spiel meldet die Zeitleiste jedes davon mit Kennung und Grund über

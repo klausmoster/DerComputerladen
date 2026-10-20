@@ -7,8 +7,9 @@ extends RefCounted
 ## Hauptpalette `docs/art/hauptpalette.gpl` (Index 1 bis 15). Farben der Oberfläche
 ## kommen nur von hier oder aus dem Theme, nie frei gewählt.
 ##
-## Die Klasse wird nie instanziiert: Konstanten hängen an der Klasse selbst, deshalb
-## geht `UiPalette.TUSCHE` überall, ohne Autoload und ohne `new()`.
+## Die Klasse wird nie instanziiert: Konstanten und statische Funktionen hängen an der
+## Klasse selbst, deshalb gehen `UiPalette.TUSCHE` und `UiPalette.by_token(&"petrol")`
+## überall, ohne Autoload und ohne `new()`.
 
 const TUSCHE := Color("1d1916")
 const NACHT := Color("18233b")
@@ -25,3 +26,35 @@ const SIGNALGELB := Color("f2bf2f")
 const PETROL := Color("1f6f75")
 const HOLZ := Color("8b5a34")
 const HOLZ_DUNKEL := Color("57351d")
+
+## Token-Name aus dem Style-Guide → Farbe, für alle 15 Farben, z. B. &"gehaeuse-hell".
+## Daten wie der Ereigniskatalog nennen Farben über diese Namen statt über Farbwerte.
+const TOKENS := {
+	&"tusche": TUSCHE,
+	&"nacht": NACHT,
+	&"nacht-hell": NACHT_HELL,
+	&"gehaeuse-dunkel": GEHAEUSE_DUNKEL,
+	&"gehaeuse": GEHAEUSE,
+	&"gehaeuse-hell": GEHAEUSE_HELL,
+	&"papier": PAPIER,
+	&"endlos-gruen": ENDLOS_GRUEN,
+	&"anzeige-grund": ANZEIGE_GRUND,
+	&"anzeige": ANZEIGE,
+	&"kassenrot": KASSENROT,
+	&"signalgelb": SIGNALGELB,
+	&"petrol": PETROL,
+	&"holz": HOLZ,
+	&"holz-dunkel": HOLZ_DUNKEL,
+}
+
+## Tokens, die der Style-Guide für Kategorien erlaubt, in seiner Reihenfolge; jedes mit
+## mindestens 3 : 1 Kontrast zu papier und endlos-gruen, den Gründen des Zeitstrahls (R14).
+const CATEGORY_TOKENS: Array[StringName] = [
+	&"nacht-hell", &"petrol", &"nacht", &"kassenrot", &"holz-dunkel", &"gehaeuse-dunkel", &"holz",
+]
+
+
+## Farbe zum Token; Color(1, 0, 1) (Magenta) für unbekannte Tokens, damit Fehler auffallen.
+static func by_token(token: StringName) -> Color:
+	var color: Color = TOKENS.get(token, Color(1, 0, 1))
+	return color

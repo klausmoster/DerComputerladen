@@ -137,7 +137,9 @@ var message: String
 ```
 
 `from_dict()` hängt Strukturfehler (V22) an `issues` an und füllt Vorgabewerte; es gibt nie `null`
-für ein Ereignis zurück, das sich als Dictionary lesen lässt.
+für ein Ereignis zurück, das sich als Dictionary lesen lässt. Die Hilfen dafür (`read_string()`,
+`read_int()`, `check_keys()` und weitere) stehen als statische Funktionen in `CatalogIssue`, denn
+jede von ihnen erzeugt Meldungen V22.
 
 ## Katalog und Prüfung
 
@@ -149,7 +151,8 @@ var categories: Array[EventCategory] = []
 var events: Array[TimelineEvent] = []
 
 ## Parst JSON-Text. Bei einem Parse-Fehler: null und eine Meldung V22 mit Zeile und Grund in
-## [param issues]. Strukturfehler landen ebenfalls in [param issues].
+## [param issues]. Strukturfehler landen ebenfalls in [param issues]. null auch, wenn der Text
+## kein Objekt ist oder ein anderes Format als 1 hat: Ihn zu lesen und zu speichern, zerstörte ihn.
 static func from_json(text: String, issues: Array[CatalogIssue]) -> EventCatalog
 ## Liest eine Datei; fehlt sie, null und eine Meldung mit Pfad.
 static func read_file(path: String, issues: Array[CatalogIssue]) -> EventCatalog
@@ -435,9 +438,11 @@ Beispiel, das Weihnachtsgeschäft 1999 nach einem Lauf bis zum Spielende:
 |---|---|
 | `test_game_date.gd` | geändert: `from_iso`, `to_iso`, `is_valid`; Tage vor 1985 (31.12.1984 = −1, 01.12.1984 = −31, Rundreise über Index und zurück); Tests zu Jahreszeit und Weihnachtsgeschäft entfallen |
 | `test_game_clock.gd` | geändert: Test zu `season_changed` entfällt |
-| `test_event_catalog.gd` | Lesen, Schreiben, Rundreise Datei → Katalog → Datei bytegleich an der eingefrorenen Übernahme, Zahlen als `int`, Rundung auf vier bzw. zwei Stellen, Parse-Fehler mit Zeile, unbekannter Schlüssel als V22, `without_faulty()` |
+| `test_ui_palette.gd` | alle 15 Tokens, `by_token()` mit Magenta für Unbekanntes, Kategorienfarben mit mindestens 3 : 1 zu `papier` und `endlos-gruen` |
+| `test_event_catalog.gd` | Lesen, Schreiben, Rundreise Datei → Katalog → Datei bytegleich an der eingefrorenen Übernahme und an `fixtures/catalog_alle_arten.json` (jede Art einmal), Zahlen als `int`, Rundung auf vier bzw. zwei Stellen, Parse-Fehler mit Zeile, unbekannter Schlüssel als V22, `without_faulty()` |
 | `test_catalog_validator.gd` | jede Regel V01 bis V24 mit einer kaputten Fixture (SC-006): Fehlerregeln als `ERROR`, V13, V20 und V23 als `WARNING`; `validate_event()` |
 | `test_timeline_run.gd` | Fahrplan fix, jährlich, gesetzt; Würfelrunde inklusive Januar 1985; Dauer, Enden vor Beginnen, Winter am ersten Tag, keine CeBIT 1985; Wirkungen `ONCE`/`DURING`; Folgeereignisse und Kettenbremse je Kette; Bedingungen; nach dem 31.12.1999 nichts mehr; Tag für Tag = Sprünge; Unabhängigkeit der Würfel bei geänderten, neuen und gelöschten Ereignissen (FR-015) |
+| `test_schedule_entry.gd` | Beschriftungen von Herkunft und Zustand, `explain()` mit deutschem Komma für gewürfelte Termine und Folgen, `due_effects()` |
 | `test_interventions.gd` | Modifikatoren: Summe, Begrenzung, Ablauf, einzeln entfernen; Absagen, Verschieben, Einplanen; Ablehnungen; Eingriffsprotokoll und `apply_intervention()`; SC-003 |
 | `test_timeline_statistics.gd` | 50 % pro Monat → Mittelwert 85,5 bis 94,5 (SC-008); gesetzt 30/70 → 25 bis 35 % ohne; gleiche Ergebnisse bei Wiederholung; Eingriffe an ihrem Tag; `run_for()` hält sein Budget ungefähr ein |
 | `test_schedule_text.gd` | Format der Zeilen samt Spalte „bis“ und Zusätzen; 10 Läufe mit gleichem Seed, Tag für Tag und in Sprüngen, ergeben 10 gleiche Ausgaben (SC-002) |

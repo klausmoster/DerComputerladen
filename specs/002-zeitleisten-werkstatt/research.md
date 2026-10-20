@@ -69,7 +69,8 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 
 - **Entscheidung:** Beide lesen mit `FileAccess.get_file_as_string()` und parsen mit einer
   `JSON`-Instanz. Bei einem Fehler nennen `get_error_line()` und `get_error_message()` die Stelle
-  (Probe: kaputte Datei → `ERR_PARSE_ERROR`, „Zeile 3: Expected value“). Strukturfehler wie ein
+  (Probe: kaputte Datei → `ERR_PARSE_ERROR` mit „Expected value“; `get_error_line()` zählt ab 0,
+  die Meldung nennt die Zeile deshalb mit `+ 1` wie ein Texteditor). Strukturfehler wie ein
   fehlendes Feld werden zu Prüfmeldungen. Schwere Fehler schließen im Spiel nur das betroffene
   Ereignis aus, nicht den ganzen Katalog (FR-049).
 - **Export:** Die Doku rät, Projektdateien nach dem Export über `ResourceLoader` zu lesen, weil
