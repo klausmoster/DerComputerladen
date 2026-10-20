@@ -1,0 +1,57 @@
+{
+	"categories": [
+		{
+			"color": "nacht",
+			"id": "kalender",
+			"name": "Kalender"
+		}
+	],
+	"events": [
+		{
+			"category": "kalender",
+			"description": "Beginnt jedes Jahr genau am 01.01., 1985 also mit dem Spiel.",
+			"effects": [],
+			"follow_ups": [],
+			"id": "januarflaute",
+			"kind": "yearly",
+			"title": "Januarflaute",
+			"yearly": {
+				"end": "01-ende",
+				"from": 1985,
+				"start": "01-01",
+				"to": 1999
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "Ohne Dauer: jedes Jahr ein Augenblick.",
+			"effects": [],
+			"follow_ups": [],
+			"id": "neujahr",
+			"kind": "yearly",
+			"title": "Neujahr",
+			"yearly": {
+				"end": "",
+				"from": 1985,
+				"start": "01-01",
+				"to": 1999
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "Gilt nur in den Jahren 1990 bis 1995.",
+			"effects": [],
+			"follow_ups": [],
+			"id": "winter_ab_1990",
+			"kind": "yearly",
+			"title": "Winter ab 1990",
+			"yearly": {
+				"end": "02-ende",
+				"from": 1990,
+				"start": "12-01",
+				"to": 1995
+			}
+		}
+	],
+	"format": 1
+}

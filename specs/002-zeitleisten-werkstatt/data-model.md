@@ -160,7 +160,8 @@ Verschieben ändert nur `day` und `end_day` eines `PLANNED`-Termins, setzt `note
 Verschieben `moved_from_day`. Termine werden nie gelöscht; der Fahrplan ist zugleich die
 Geschichte des Spiels (01-03).
 
-**Fällige verzögerte Wirkungen** ergeben sich aus `event.effects`: Tag = `day + delay_days`. Der
+**Fällige verzögerte Wirkungen** ergeben sich aus `event.effects`: Tag = `day + delay_days`, bei
+einem Vorkommen, das schon vor Spielbeginn lief, also ab dem 01.01.1985 gezählt. Der
 Fahrplan zeigt sie beim Termin (FR-013).
 
 ## ChanceModifier
@@ -226,7 +227,7 @@ Die Regeln aus den Edge Cases der Spec, durchnummeriert für Tests (SC-006):
 | V16 | Folgeereignis zeigt auf ein fixes oder jährliches Ereignis | Fehler |
 | V17 | Bedingung an einem fixen oder jährlichen Ereignis; der Schlüssel `conditions` bei `fixed` oder `yearly` ergibt V17, nicht V22. Eine leere Liste ist kein Fehler, sie fällt beim Speichern weg | Fehler |
 | V18 | Kreis aus Folgeereignissen mit 100 % und Verzögerung 0; gemeldet bei jedem Ereignis des Kreises | Fehler |
-| V19 | Wirkung `DURING` mit `delay_days` ≥ Dauer: Sie begänne erst am Tag des Endes oder danach. Bei jährlichen Ereignissen zählt die Dauer eines Vorkommens in einem Jahr ohne 29. Februar | Fehler |
+| V19 | Wirkung `DURING` mit `delay_days` ≥ Dauer: Sie begänne erst am Tag des Endes oder danach. Bei jährlichen Ereignissen zählt die Dauer eines Vorkommens in einem Jahr ohne 29. Februar. Das erste, auf den Spielbeginn gekürzte Vorkommen ist kürzer (Winter 1984/85: 59 statt 90 Tage); dort kann eine Wirkung, die die Prüfung besteht, trotzdem ausfallen | Fehler |
 | V20 | Wirkung auf Preis, Nachfrage, Ruf oder Kundenstrom mit Stärke 0 | Warnung |
 | V21 | Kategorie: Kennung doppelt oder leer, Farbe nicht in `UiPalette.CATEGORY_TOKENS` | Fehler |
 | V22 | Strukturfehler beim Lesen: Datei kein gültiges JSON (mit Zeile), Datei fehlt (mit Pfad), `format` nicht 1, Pflichtfeld fehlt, falscher Typ, unbekannter Schlüssel, unbekannter Wert für `kind` oder `scope`, ein Datum, das kein Kalendertag ist (etwa `1993-02-30`) | Fehler |

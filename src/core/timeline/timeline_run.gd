@@ -10,11 +10,11 @@ extends RefCounted
 ## Timeline hängt ihn an die Spieluhr und macht aus den Meldungen Signale. Er wendet keine Wirkung
 ## an, er meldet nur.
 ##
-## Stand Phase 3: fixe und beim Start gesetzte Termine, die Würfelrunde für Ereignisse über
-## Wahrscheinlichkeit, Bedingungen, Folgeereignisse mit Kettenbremse und verzögerte Wirkungen.
-## Jeder Termin ist ein Augenblick: end_day = day, nach dem Beginn ist er „eingetreten“. Dauer und
-## jährliche Ereignisse kommen mit Phase 5, Eingriffe mit Phase 8; die Stellen dafür sind im Code
-## mit „Phase 5“ und „Phase 8“ markiert.
+## Stand Phase 5: fixe, jährliche und beim Start gesetzte Termine, die Würfelrunde für Ereignisse
+## über Wahrscheinlichkeit, Bedingungen, Folgeereignisse mit Kettenbremse, verzögerte Wirkungen
+## und Ereignisse mit Dauer (R9). Ein Termin mit Dauer „läuft“ nach seinem Beginn und ist nach
+## seinem Ende „beendet“; einer ohne Dauer ist ein Augenblick und nach dem Beginn „eingetreten“.
+## Eingriffe kommen mit Phase 8; die Stelle dafür ist im Code mit „Phase 8“ markiert.
 
 const FIRST_DAY := 0          # 01.01.1985
 const LAST_DAY := 5477        # 31.12.1999
@@ -55,8 +55,11 @@ var _entries_by_event: Dictionary = {}
 ## Tag → die dann fälligen verzögerten Wirkungen, je [laufende Nummer, Stelle der Wirkung,
 ## Termin, Wirkung].
 var _due_effects: Dictionary = {}
-## Die Stichtage (R6): aufsteigend die Tage nach today, an denen ein Termin beginnt oder eine
-## Wirkung fällig wird. Der nächste Monatserste kommt in _next_stop() dazu.
+## Tag → die laufenden Termine, deren Ende an diesem Tag gemeldet wird. Ein Ende nach dem
+## 31.12.1999 steht nicht darin, denn es wird nie gemeldet (FR-019).
+var _ends: Dictionary = {}
+## Die Stichtage (R6): aufsteigend die Tage nach today, an denen ein Termin beginnt oder endet oder
+## eine Wirkung fällig wird. Der nächste Monatserste kommt in _next_stop() dazu.
 var _stop_days: PackedInt32Array = PackedInt32Array()
 ## Kennung → Tag, an dem zuerst ein Termin des Ereignisses begann; für Bedingungen (FR-006).
 var _first_start: Dictionary = {}
@@ -65,8 +68,8 @@ var _first_start: Dictionary = {}
 var _chain_links: Dictionary = {}
 
 
-## Kopiert den Katalog und legt den Fahrplan an: fixe und beim Start gesetzte Termine (FR-010).
-## Die Termine jährlicher Ereignisse kommen mit Phase 5 dazu.
+## Kopiert den Katalog und legt den Fahrplan an: fixe, jährliche und beim Start gesetzte Termine
+## (FR-010).
 func _init(p_catalog: EventCatalog, p_seed: int) -> void:
 	catalog = p_catalog.duplicate_catalog() if p_catalog != null else EventCatalog.new()
 	seed = p_seed
@@ -82,7 +85,7 @@ func _init(p_catalog: EventCatalog, p_seed: int) -> void:
 			TimelineEvent.Kind.FIXED:
 				_add_entry(event, event.date, ScheduleEntry.Origin.FIXED)
 			TimelineEvent.Kind.YEARLY:
-				pass  # Phase 5: ein Termin je Vorkommen (R9)
+				_plan_yearly(event)
 			TimelineEvent.Kind.PRESET:
 				_plan_preset(event)
 			TimelineEvent.Kind.CHANCE:
@@ -92,7 +95,8 @@ func _init(p_catalog: EventCatalog, p_seed: int) -> void:
 				pass  # kommt nur als Folge eines anderen Ereignisses
 
 
-## Spielt den 01.01.1985 ab, mit der Würfelrunde für Januar 1985. Nur einmal aufrufbar: Danach
+## Spielt den 01.01.1985 ab, mit der Würfelrunde für Januar 1985 und den jährlichen Ereignissen,
+## die schon vor Spielbeginn liefen, wie dem Winter 1984/85 (R9). Nur einmal aufrufbar: Danach
 ## gibt es eine leere Liste zurück und spielt nichts mehr ab.
 func begin() -> Array[TimelineMessage]:
 	var messages: Array[TimelineMessage] = []
@@ -105,8 +109,8 @@ func begin() -> Array[TimelineMessage]:
 ## begin() selbst auf, falls noch nicht geschehen.
 ##
 ## Der Lauf geht dabei nicht jeden Tag einzeln durch, sondern springt von Stichtag zu Stichtag
-## (R6): zum nächsten Tag, an dem ein Termin beginnt, eine Wirkung fällig wird oder ein Monat
-## anfängt. An allen anderen Tagen geschieht nichts. Ob man ihn Tag für Tag aufruft oder in
+## (R6): zum nächsten Tag, an dem ein Termin beginnt oder endet, eine Wirkung fällig wird oder ein
+## Monat anfängt. An allen anderen Tagen geschieht nichts. Ob man ihn Tag für Tag aufruft oder in
 ## Sprüngen, ergibt deshalb dieselben Meldungen.
 func advance_to(day: int) -> Array[TimelineMessage]:
 	var messages: Array[TimelineMessage] = []
@@ -137,8 +141,8 @@ func get_entry(serial: int) -> ScheduleEntry:
 	return _by_serial[serial - 1]
 
 
-## Die Termine, die gerade laufen, in der Reihenfolge des Fahrplans. Bis Phase 5 die Dauer
-## bringt, ist jeder Termin ein Augenblick und die Liste leer.
+## Die Termine, die gerade laufen, in der Reihenfolge des Fahrplans: begonnen, mit Dauer und noch
+## nicht beendet. Ein Termin, dessen Ende erst nach dem 31.12.1999 käme, läuft bis zum Schluss.
 func running_entries() -> Array[ScheduleEntry]:
 	var running: Array[ScheduleEntry] = []
 	for entry in entries:
@@ -199,6 +203,27 @@ func _plan_preset(event: TimelineEvent) -> void:
 		_add_entry(event, event.window_from + offsets[i] + i * gap, ScheduleEntry.Origin.PRESET)
 
 
+## Legt die Termine eines jährlichen Ereignisses an, einen je Vorkommen (R9):
+## - Kandidaten sind die Vorkommen, die in den Jahren yearly_from − 1 bis yearly_to beginnen.
+## - In den Fahrplan kommt eines nur, wenn es sich mit dem 01.01. von yearly_from bis 31.12. von
+##   yearly_to und mit dem Spielzeitraum überschneidet. So hat der Winter ab 1985 ein Vorkommen ab
+##   dem 01.12.1984, die CeBIT ab 1986 aber keins im März 1985.
+## - Ein Vorkommen, das vor dem 01.01.1985 begann, beginnt im Fahrplan am 01.01.1985 und trägt
+##   started_before_game. Seine Tage vor 1985 rechnet GameDate mit negativen Indizes.
+func _plan_yearly(event: TimelineEvent) -> void:
+	var from_day := maxi(GameDate.new(event.yearly_from, 1, 1).to_day_index(), FIRST_DAY)
+	var to_day := mini(GameDate.new(event.yearly_to, 12, 31).to_day_index(), LAST_DAY)
+	for year in range(event.yearly_from - 1, event.yearly_to + 1):
+		var occurrence := _occurrence(event, year)
+		if occurrence.is_empty() or occurrence[1] < from_day or occurrence[0] > to_day:
+			continue
+		var entry := _add_entry(event, maxi(occurrence[0], FIRST_DAY), ScheduleEntry.Origin.YEARLY)
+		entry.started_before_game = occurrence[0] < FIRST_DAY
+		# Das Ende wird am Tag nach dem letzten gemeldet. Ohne Dauer bleibt end_day = day.
+		if event.has_duration():
+			entry.end_day = occurrence[1] + 1
+
+
 ## Neuer, geplanter Termin. Er bekommt die nächste laufende Nummer und seine Stelle im Fahrplan:
 ## nach Tag, Herkunft, Kennung und laufender Nummer. Mit [param at_day_end] kommt er stattdessen
 ## hinter alle Termine seines Tags; so reihen sich Folgetermine ein, die noch heute beginnen.
@@ -208,7 +233,10 @@ func _add_entry(event: TimelineEvent, day: int, origin: ScheduleEntry.Origin,
 	entry.serial = _by_serial.size() + 1
 	entry.event = event
 	entry.day = day
-	entry.end_day = day  # Phase 5: Beginn plus Dauer (R9)
+	# Das Ende wird am Tag nach dem letzten Tag gemeldet, also am Beginn plus Dauer (R9); ohne
+	# Dauer ist end_day der Beginn, und nichts endet. Jährliche Ereignisse haben kein
+	# duration_days, ihr Ende setzt _plan_yearly().
+	entry.end_day = day + maxi(event.duration_days, 0)
 	entry.origin = origin
 	_by_serial.append(entry)
 	if not _entries_by_event.has(event.id):
@@ -246,7 +274,9 @@ func _next_stop() -> int:
 
 ## Spielt einen Stichtag ab, in der festen Folge aus dem Vertrag (Tagesablauf; R6, FR-016).
 func _play_day(day: int, messages: Array[TimelineMessage]) -> void:
-	# 1. Enden laufender Termine: Phase 5, sobald es Dauer gibt.
+	# 1. Enden laufender Termine, vor allem anderen: So endet am 01.03. erst der Winter, und dann
+	#    beginnt der Frühling.
+	_end_entries(day, messages)
 	# 2. Verzögerte Wirkungen, die heute fällig werden.
 	_start_due_effects(day, messages)
 	# 3. Am Monatsersten die Würfelrunde.
@@ -259,6 +289,24 @@ func _play_day(day: int, messages: Array[TimelineMessage]) -> void:
 	# Der Stichtag ist erledigt; alles, was jetzt noch vorgemerkt ist, liegt nach heute.
 	while not _stop_days.is_empty() and _stop_days[0] <= day:
 		_stop_days.remove_at(0)
+
+
+## Schritt 1: Die Termine, deren Ende heute gemeldet wird, enden nach laufender Nummer. Je Termin
+## erst das Ende jeder Wirkung, die nur während des Ereignisses gilt und schon begonnen hat, in
+## Listenreihenfolge, dann das Ende des Ereignisses. Einmalige Anstöße enden nicht (FR-021).
+func _end_entries(day: int, messages: Array[TimelineMessage]) -> void:
+	if not _ends.has(day):
+		return
+	var ending: Array = _ends[day]
+	_ends.erase(day)
+	ending.sort_custom(_serial_before)
+	for entry: ScheduleEntry in ending:
+		entry.state = ScheduleEntry.State.ENDED
+		for effect in entry.event.effects:
+			# Auch eine verzögerte Wirkung „während“ endet mit dem Ereignis.
+			if _is_during(entry, effect) and _effect_day(entry, effect) < entry.end_day:
+				_emit(TimelineMessage.Kind.EFFECT_ENDED, day, entry, effect, messages)
+		_emit(TimelineMessage.Kind.EVENT_ENDED, day, entry, null, messages)
 
 
 ## Schritt 2: die verzögerten Wirkungen des Tags, Termine nach laufender Nummer, je Termin die
@@ -332,27 +380,41 @@ func _start_entries(day: int, messages: Array[TimelineMessage]) -> void:
 
 
 ## Ein Termin beginnt oder entfällt. Die Prüfungen kommen in der Reihenfolge aus dem Vertrag:
-## erst die Bedingungen, dann die Kettenbremse.
+## erst die Bedingungen, dann ob das Ereignis noch läuft, dann die Kettenbremse.
 func _start_entry(entry: ScheduleEntry, day: int, queue: Array[ScheduleEntry],
 		messages: Array[TimelineMessage]) -> void:
 	var unmet := _unmet_condition(entry.event, day)
 	if not unmet.is_empty():
 		_skip(entry, day, TimelineMessage.Kind.ENTRY_SKIPPED, unmet, messages)
 		return
-	# Phase 5: Läuft das Ereignis noch, entfällt der Termin ebenfalls (FR-022).
+	# Ein Ereignis läuft nie zweimal gleichzeitig (FR-022). Was heute endet, hat Schritt 1 schon
+	# beendet; es hält den neuen Termin nicht auf.
+	var running := _running_entry(entry.event)
+	if running != null:
+		_skip(entry, day, TimelineMessage.Kind.ENTRY_SKIPPED,
+			"läuft noch bis %s" % GameDate.from_day_index(running.end_day - 1), messages)
+		return
 	var link: int = _chain_links.get(entry.serial, 1)
 	if link > MAX_CHAIN:
 		_skip(entry, day, TimelineMessage.Kind.CHAIN_STOPPED,
 			"Glied %d einer Kette am selben Tag, erlaubt sind %d" % [link, MAX_CHAIN], messages)
 		return
-	entry.state = ScheduleEntry.State.OCCURRED  # Phase 5: RUNNING bei Ereignissen mit Dauer
+	if entry.end_day > entry.day:
+		entry.state = ScheduleEntry.State.RUNNING
+		_plan_end(entry)
+	else:
+		entry.state = ScheduleEntry.State.OCCURRED
 	if not _first_start.has(entry.event.id):
 		_first_start[entry.event.id] = day
 	_emit(TimelineMessage.Kind.EVENT_STARTED, day, entry, null, messages)
 	var effects := entry.event.effects
 	for i in effects.size():
-		if effects[i].delay_days > 0:
-			_plan_effect(entry, i, day + effects[i].delay_days)
+		var effect_day := _effect_day(entry, effects[i])
+		# Eine Wirkung „während“, die erst mit dem Ende oder danach begänne, beginnt nie (V19).
+		if _is_during(entry, effects[i]) and effect_day >= entry.end_day:
+			continue
+		if effect_day > day:
+			_plan_effect(entry, i, effect_day)
 		else:
 			_emit(TimelineMessage.Kind.EFFECT_STARTED, day, entry, effects[i], messages)
 	for i in entry.event.follow_ups.size():
@@ -376,6 +438,18 @@ func _plan_effect(entry: ScheduleEntry, index: int, day: int) -> void:
 		_due_effects[day] = []
 	_due_effects[day].append([entry.serial, index, entry, entry.event.effects[index]])
 	_add_stop(day)
+
+
+## Merkt das Ende eines laufenden Termins für seinen Tag vor. Ein Ende nach dem 31.12.1999 wird
+## nie gemeldet (FR-019): Der Termin läuft dann bis zum Schluss, und der Fahrplan zeigt sein Ende
+## trotzdem, über end_day.
+func _plan_end(entry: ScheduleEntry) -> void:
+	if entry.end_day > LAST_DAY:
+		return
+	if not _ends.has(entry.end_day):
+		_ends[entry.end_day] = []
+	_ends[entry.end_day].append(entry)
+	_add_stop(entry.end_day)
 
 
 ## Würfelt über das Folgeereignis Nummer [param index] des Termins [param source], der heute
@@ -439,6 +513,14 @@ func _may_start_again(event: TimelineEvent, day: int) -> bool:
 			return false
 		counted += 1
 	return event.max_occurrences <= 0 or counted < event.max_occurrences
+
+
+## Der Termin des Ereignisses, der gerade läuft; null, wenn keiner läuft (FR-022).
+func _running_entry(event: TimelineEvent) -> ScheduleEntry:
+	for entry: ScheduleEntry in _entries_by_event.get(event.id, []):
+		if entry.state == ScheduleEntry.State.RUNNING:
+			return entry
+	return null
 
 
 ## Neue Meldung über einen Termin. Sie geht an die Liste dieses Aufrufs und ins Protokoll. Der
@@ -511,6 +593,23 @@ static func _due_before(a: Array, b: Array) -> bool:
 	return a[1] < b[1]
 
 
+## Termine nach laufender Nummer.
+static func _serial_before(a: ScheduleEntry, b: ScheduleEntry) -> bool:
+	return a.serial < b.serial
+
+
+## Ob die Wirkung nur während ihres Termins gilt: Sie ist „während“, und der Termin hat eine
+## Dauer. Bei Ereignissen ohne Dauer wirkt „während“ wie „einmal“ (FR-021).
+static func _is_during(entry: ScheduleEntry, effect: EventEffect) -> bool:
+	return effect.scope == EventEffect.Scope.DURING and entry.end_day > entry.day
+
+
+## Der Tag, an dem die Wirkung beginnt: der Beginn des Termins plus ihre Verzögerung. Eine
+## negative Verzögerung (V14) gilt als 0.
+static func _effect_day(entry: ScheduleEntry, effect: EventEffect) -> int:
+	return entry.day + maxi(effect.delay_days, 0)
+
+
 ## Die Modifikatoren für die Begründung, je „<grund> <wert in Prozentpunkten>“, etwa
 ## „Ware vom windigen Händler +5“. Der Termin behält den Text, auch wenn der Modifikator später
 ## entfernt wird (R8).
@@ -542,3 +641,27 @@ static func _first_days_of_months() -> PackedInt32Array:
 			month = 1
 			year += 1
 	return days
+
+
+## Beginn und letzter Tag des Vorkommens eines jährlichen Ereignisses, das im Jahr [param year]
+## beginnt, als Tagesindizes; ohne Dauer ist der letzte Tag der Beginn. Leer, wenn Beginn oder
+## Ende in diesem Jahr kein Kalendertag ist, etwa der 29.02. außerhalb eines Schaltjahrs; die
+## Prüfung meldet das als V09.
+static func _occurrence(event: TimelineEvent, year: int) -> PackedInt32Array:
+	var start := event.yearly_start
+	if not GameDate.is_valid(year, start.x, start.y):
+		return PackedInt32Array()
+	var first := GameDate.new(year, start.x, start.y).to_day_index()
+	var end := event.yearly_end
+	if end == Vector2i.ZERO:
+		return PackedInt32Array([first, first])
+	# Liegt das Ende im Jahr vor dem Beginn, reicht das Vorkommen ins nächste Jahr, wie der Winter
+	# vom 01.12. bis Ende Februar. Das Monatsende, Tag 0, liegt hinter jedem Tag seines Monats.
+	var end_year := year
+	if end.x < start.x or (end.x == start.x and end.y != 0 and end.y < start.y):
+		end_year += 1
+	# „ende“ heißt Monatsende; so reicht der Februar im Schaltjahr bis zum 29.
+	var last := end.y if end.y != 0 else GameDate.days_in_month(end_year, end.x)
+	if not GameDate.is_valid(end_year, end.x, last):
+		return PackedInt32Array()
+	return PackedInt32Array([first, GameDate.new(end_year, end.x, last).to_day_index()])

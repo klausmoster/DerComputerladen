@@ -189,13 +189,20 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     31.12. von `yearly_to` und mit dem Spielzeitraum überschneidet. Beispiel: Die CeBIT ab 1986
     hat im März 1985 kein Vorkommen; der Winter ab 1985 hat eines, das am 01.12.1984 beginnt.
   - Ein Vorkommen, das vor dem 01.01.1985 begonnen hat, beginnt im Fahrplan am 01.01.1985 und
-    trägt die Herkunft „jährlich, lief schon vor Spielbeginn“.
+    trägt die Herkunft „jährlich, lief schon vor Spielbeginn“. Verzögerte Wirkungen zählen dann
+    ab dem 01.01.1985, denn der Termin beginnt dort (data-model.md: Tag = `day + delay_days`).
+  - Gekürzt wird nur auf den Spielbeginn, nicht auf das erste Jahr: Ein Winter ab 1990 hat ein
+    Vorkommen ab dem 01.12.1989, weil es in den Januar 1990 reicht.
+  - Endet ein jährliches Ereignis an dem Tag, an dem es beginnt, dauert es einen Tag.
   - Dafür rechnet `GameDate` auch Tage vor 1985, als negative Indizes (31.12.1984 = −1). Bisher
     zählte `to_day_index()` die Jahre vor 1985 nicht ab und ergab für den 31.12.1984 den Wert 365.
   - Jede Wirkung hat `scope` `ONCE` oder `DURING`. `DURING` meldet Beginn und Ende. Eine
     verzögerte `DURING`-Wirkung beginnt später und endet mit dem Ereignis.
   - Ein Ereignis, das noch läuft, beginnt nicht erneut (FR-022); der neue Termin entfällt mit
-    Begründung.
+    der Begründung „läuft noch bis TT.MM.JJJJ“, dem letzten Tag des laufenden Termins. Geprüft
+    wird nach den Bedingungen und vor der Kettenbremse. Auch ein gewürfelter Termin wird erst an
+    seinem Tag geprüft; als entfallener Termin zählt er weder für die Höchstzahl noch für den
+    Mindestabstand (FR-005).
 - **Begründung:** So deckt ein Modell Weihnachtsgeschäft, Jahreszeiten und Lieferengpass ab, und
   das Ende fällt nie auf einen falschen Tag. Der Winter am ersten Spieltag (US3, Szenario 2)
   ergibt sich ohne Sonderfall.

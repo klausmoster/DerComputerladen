@@ -504,7 +504,7 @@ am 1. November und Ende mit dem 31. Dezember (quickstart.md, Abschnitt 4.2).
 
 ### Implementation for User Story 3
 
-- [ ] T041 [A] [US3] `src/core/timeline/timeline_run.gd`, Teil 2 (research.md, R9):
+- [x] T041 [A] [US3] `src/core/timeline/timeline_run.gd`, Teil 2 (research.md, R9):
   - **Dauer:** `end_day` = Beginn + Dauer. Tagesablauf, Schritt 1: Enden vor Beginnen, Zustand
     `ENDED`.
   - **Wirkungen:** `ONCE` wird einmal gemeldet. `DURING` meldet `EFFECT_ENDED`; eine verzögerte
@@ -516,7 +516,7 @@ am 1. November und Ende mit dem 31. Dezember (quickstart.md, Abschnitt 4.2).
   - Ein Vorkommen, das vor dem 01.01.1985 begonnen hat, beginnt am Tag 0 mit
     `started_before_game`; seine Tage rechnet `GameDate` mit negativen Indizes (T007).
   - Nach dem 31.12.1999 wird kein Ende mehr gemeldet.
-- [ ] T042 [A] [US3] `src/test/test_timeline_run.gd`, Teil 2, mit Fixtures
+- [x] T042 [A] [US3] `src/test/test_timeline_run.gd`, Teil 2, mit Fixtures
   `src/test/fixtures/catalog_us3_*.json`:
   - Weihnachtsgeschäft: Beginn am 01.11.1993, Ende am 01.01.1994 (US3, Szenario 1).
   - Der Winter 1984/85 beginnt am Tag 0 mit `started_before_game`; am 01.03.1985 kommt erst sein
@@ -527,14 +527,14 @@ am 1. November und Ende mit dem 31. Dezember (quickstart.md, Abschnitt 4.2).
   - Der Winter 1987/88 reicht bis zum 29.02.1988; der letzte Winter reicht bis zum 29.02.2000,
     sein Ende wird nicht gemeldet.
   - Eine CeBIT ab 1986 hat 1985 kein Vorkommen.
-- [ ] T043 [A] [P] [US3] Altlasten entfernen (FR-024):
+- [x] T043 [A] [P] [US3] Altlasten entfernen (FR-024):
   - `src/core/game_clock.gd`: `signal season_changed` und die beiden Zeilen in `advance_day()`,
     die es über `is_holiday_season()` auslösen.
   - `src/core/game_date.gd`: `is_holiday_season()` und `season()`.
   - Tests: in `src/test/test_game_clock.gd` der Test
     `test_weihnachtsgeschaeft_meldet_sich_am_ersten_november`, in `src/test/test_game_date.gd` die
     Tests zu Jahreszeit und Weihnachtsgeschäft.
-- [ ] T044 [K] [US3] Kalender-Ereignisse in der Werkstatt anlegen und speichern, Kategorie
+- [x] T044 [K] [US3] Kalender-Ereignisse in der Werkstatt anlegen und speichern, Kategorie
   „Kalender“, Startwerte aus research.md, R19:
   - Weihnachtsgeschäft: jährlich 1985 bis 1999, 01.11. bis Ende Dezember, „Kundenstrom * +30 %“,
     gilt nur während.
@@ -543,14 +543,17 @@ am 1. November und Ende mit dem 31. Dezember (quickstart.md, Abschnitt 4.2).
   - CeBIT: jährlich 1986 bis 1999, 15.03. bis 21.03., „Presse messe“ als einmaliger Anstoß.
 
   Wenn Klaus lieber zusieht, legt Claude sie in der Werkstatt an. Hängt an T040 und T041.
-- [ ] T045 [A] [US3] `src/test/test_shipped_catalog.gd`, Teil 2:
+  Erledigt am 2026-10-20: Auf Klaus' Wunsch hat Claude sie über den `CatalogEditor` angelegt,
+  mit denselben Aufrufen wie die Werkstatt; Kennungen `weihnachtsgeschaeft`, `fruehling`,
+  `sommer`, `herbst`, `winter`, `cebit`.
+- [x] T045 [A] [US3] `src/test/test_shipped_catalog.gd`, Teil 2:
   - Die sechs Kalender-Ereignisse sind vorhanden (FR-023).
   - Das Weihnachtsgeschäft liegt in allen 15 Jahren vom 01.11. bis zum 31.12.; das Ende von 1999
     liegt nach Spielende (SC-009).
   - Der Katalog bleibt fehlerfrei.
 
   Hängt an T044.
-- [ ] T046 [K] [US3] Phase 5 abnehmen nach quickstart.md, Abschnitte 1 und 4.2
+- [x] T046 [K] [US3] Phase 5 abnehmen nach quickstart.md, Abschnitte 1 und 4.2
 
 **Checkpoint**: Kalender-Ereignisse und Dauer funktionieren, die Uhr ist entschlackt. Abnahme durch
 Klaus, dann Auftrag für Phase 6.

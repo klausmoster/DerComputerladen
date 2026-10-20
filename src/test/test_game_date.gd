@@ -1,8 +1,9 @@
 extends GutTest
 
 ## Prüft den Kalender: Schaltjahre, Monatslängen, die Umrechnung in den
-## Tagesindex auch vor 1985, das Datum als Text „JJJJ-MM-TT“ und die daraus
-## abgeleiteten Auskünfte (Jahreszeit, Weihnachtsgeschäft, Beschriftung).
+## Tagesindex auch vor 1985, das Datum als Text „JJJJ-MM-TT“ und die
+## Beschriftung. Jahreszeiten und Weihnachtsgeschäft sind seit Feature 002
+## Ereignisse der Zeitleiste (FR-023, FR-024), keine Auskünfte des Datums.
 ##
 ## `GameDate` rechnet intern über einen absoluten Tagesindex mit 1985-01-01 als
 ## Nullpunkt. Stimmt diese Umrechnung nicht, verschiebt sich die gesamte
@@ -186,25 +187,6 @@ func test_datum_als_text_hin_und_zurueck() -> void:
 
 
 # --- Abgeleitete Auskünfte ------------------------------------------------
-
-func test_weihnachtsgeschaeft_umfasst_november_und_dezember() -> void:
-	assert_true(GameDate.new(1993, 11, 1).is_holiday_season(), "November zählt dazu.")
-	assert_true(GameDate.new(1993, 12, 24).is_holiday_season(), "Dezember zählt dazu.")
-	assert_false(GameDate.new(1993, 10, 31).is_holiday_season(), "Oktober zählt nicht dazu.")
-	assert_false(GameDate.new(1994, 1, 1).is_holiday_season(), "Januar zählt nicht dazu.")
-
-
-func test_jahreszeiten_stimmen() -> void:
-	var erwartet := {
-		12: "Winter", 1: "Winter", 2: "Winter",
-		3: "Frühling", 4: "Frühling", 5: "Frühling",
-		6: "Sommer", 7: "Sommer", 8: "Sommer",
-		9: "Herbst", 10: "Herbst", 11: "Herbst",
-	}
-	for monat: int in erwartet:
-		assert_eq(GameDate.new(1993, monat, 15).season(), erwartet[monat],
-			"Monat %d ist der falschen Jahreszeit zugeordnet." % monat)
-
 
 func test_beschriftung_und_textform() -> void:
 	var datum := GameDate.new(1993, 3, 22)

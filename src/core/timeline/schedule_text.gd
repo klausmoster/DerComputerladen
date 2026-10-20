@@ -48,9 +48,9 @@ static func protocol_lines(run: TimelineRun) -> PackedStringArray:
 
 
 ## Die Fahrplanzeile eines Termins. Hinter dem Titel stehen, in dieser Reihenfolge, die Zusätze
-## für Folgetermine, für jährliche Vorkommen, die schon vor dem 01.01.1985 liefen, und für Termine,
-## deren Ende erst nach dem 31.12.1999 gemeldet würde. Die beiden letzten kommen mit Phase 5 vor,
-## wenn es Dauer und jährliche Ereignisse gibt.
+## für Folgetermine, für jährliche Vorkommen, die schon vor dem 01.01.1985 liefen, wie der Winter
+## 1984/85, und für Termine, deren Ende erst nach dem 31.12.1999 gemeldet würde, wie das
+## Weihnachtsgeschäft 1999.
 static func _entry_line(entry: ScheduleEntry) -> String:
 	var has_duration := entry.end_day > entry.day
 	# Die Spalte „bis“ nennt den letzten Tag; das Ende wird erst am Tag danach gemeldet.

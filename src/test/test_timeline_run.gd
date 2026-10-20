@@ -1,22 +1,26 @@
 extends GutTest
 
-## Prüft den Lauf der Zeitleiste, Teil 1 (Feature 002, T023): den Fahrplan aus fixen und beim
+## Prüft den Lauf der Zeitleiste. Teil 1 (Feature 002, T023): den Fahrplan aus fixen und beim
 ## Start gesetzten Terminen, die Würfelrunde, Modifikatoren, Bedingungen, Folgeereignisse mit
 ## Kettenbremse, den Tagesablauf und das Spielende. Dazu die Würfel (T020), Modifikatoren und
-## Meldungen (T021).
+## Meldungen (T021). Teil 2 (T042): Ereignisse mit Dauer, Wirkungen „einmal“ und „während“,
+## jährliche Ereignisse und die Kalender-Ereignisse (US3).
 ##
-## Die Tests arbeiten mit kleinen Test-Katalogen res://test/fixtures/catalog_us1_*.json, nie mit
-## dem echten Katalog, und legen jeden Lauf selbst an; die Autoloads fassen sie nicht an. Wo ein
-## Ergebnis vom Zufall abhängt, rechnet der Test mit denselben Würfeln nach (EventDice), statt
-## eine Zahl festzuschreiben. So prüft er die Regeln aus dem Vertrag, Tabelle „Zwecke und Würfe“.
+## Die Tests arbeiten mit kleinen Test-Katalogen res://test/fixtures/catalog_us1_*.json und
+## catalog_us3_*.json, nie mit dem echten Katalog, und legen jeden Lauf selbst an; die Autoloads
+## fassen sie nicht an. Wo ein Ergebnis vom Zufall abhängt, rechnet der Test mit denselben Würfeln
+## nach (EventDice), statt eine Zahl festzuschreiben. So prüft er die Regeln aus dem Vertrag,
+## Tabelle „Zwecke und Würfe“.
 
 const ORDNER := "res://test/fixtures/"
 const LETZTER_TAG := TimelineRun.LAST_DAY
-## Kataloge, an denen „Tag für Tag“ gegen „in Sprüngen“ geprüft wird (US1, Szenario 8).
+## Kataloge, an denen „Tag für Tag“ gegen „in Sprüngen“ geprüft wird (US1, Szenario 8); die aus
+## US3 prüfen dabei auch die Enden.
 const KATALOGE_FUER_SPRUENGE := [
 	"event_catalog_uebernahme", "catalog_us1_abstand", "catalog_us1_abstand_geplant",
 	"catalog_us1_bedingungen", "catalog_us1_folgen", "catalog_us1_kette",
-	"catalog_us1_tagesablauf", "catalog_us1_wuerfel",
+	"catalog_us1_tagesablauf", "catalog_us1_wuerfel", "catalog_us3_dauer",
+	"catalog_us3_jaehrlich", "catalog_us3_kalender", "catalog_us3_laeuft_noch",
 ]
 
 
@@ -780,7 +784,329 @@ func test_fahrplan_nach_tag_sortiert_und_nummern_eindeutig() -> void:
 		if meldung.kind == TimelineMessage.Kind.EVENT_STARTED:
 			assert_same(run.get_entry(meldung.entry.serial), meldung.entry)
 			assert_eq(meldung.entry.day, meldung.day)
-	assert_eq(run.running_entries().size(), 0, "Ohne Dauer läuft nichts; Dauer kommt mit Phase 5.")
+	assert_eq(run.running_entries().size(), 0, "Ohne Dauer läuft nichts.")
+
+
+# --- Jährliche Ereignisse und Kalender (T042, US3) --------------------------------
+
+func test_weihnachtsgeschaeft_beginnt_am_ersten_november_und_endet_am_ersten_januar() -> void:
+	# Arrange (US3, Szenario 1)
+	var run := TimelineRun.new(_katalog("catalog_us3_kalender"), 4711)
+	run.advance_to(_tag(1993, 10, 31))
+
+	# Act
+	var beginn := run.advance_to(_tag(1993, 11, 1))
+	run.advance_to(_tag(1993, 12, 31))
+	var ende := run.advance_to(_tag(1994, 1, 1))
+
+	# Assert
+	var wirkung := "Weihnachtsgeschäft: Kundenstrom · * · +30% — Startwert."
+	assert_eq(_zeilen(beginn), [
+		"01.11.1993  Beginn  Weihnachtsgeschäft",
+		"01.11.1993  Wirkung  " + wirkung,
+	])
+	assert_eq(_zeilen(ende), [
+		"01.01.1994  Wirkungsende  " + wirkung,
+		"01.01.1994  Ende  Weihnachtsgeschäft",
+	], "Erst endet die Wirkung, die nur während gilt, dann das Ereignis.")
+	var termin := _termin_am(run, "weihnachtsgeschaeft", _tag(1993, 11, 1))
+	assert_not_null(termin)
+	if termin != null:
+		assert_eq(termin.end_day, _tag(1994, 1, 1), "Der letzte Tag ist der 31.12.1993.")
+		assert_eq([termin.origin_label(), termin.state_label()], ["jährlich", "beendet"])
+
+
+func test_weihnachtsgeschaeft_liegt_in_allen_15_jahren_vom_01_11_bis_31_12() -> void:
+	# Arrange
+	var run := TimelineRun.new(_katalog("catalog_us3_kalender"), 4711)
+
+	# Act
+	run.advance_to(LETZTER_TAG)
+
+	# Assert
+	var jahre := []
+	for termin in _termine(run, "weihnachtsgeschaeft"):
+		var jahr := GameDate.from_day_index(termin.day).year
+		jahre.append(jahr)
+		assert_eq(termin.day, _tag(jahr, 11, 1), "Beginn am 01.11.%d." % jahr)
+		assert_eq(termin.end_day - 1, _tag(jahr, 12, 31), "Letzter Tag 31.12.%d." % jahr)
+		var zustand := "läuft" if jahr == 1999 else "beendet"
+		assert_eq(termin.state_label(), zustand, "%d: Nur 1999 läuft bis zum Schluss." % jahr)
+	assert_eq(jahre, range(1985, 2000), "Je Spieljahr ein Termin, keiner aus 1984.")
+	# Die Zeile für 1999 wie im Vertrag, Abschnitt Textausgabe.
+	assert_has(ScheduleText.plan_lines(run), "01.11.1999  bis 31.12.1999  weihnachtsgeschaeft"
+		+ "           jährlich      läuft         Weihnachtsgeschäft (Ende nach Spielende)")
+
+
+func test_winter_laeuft_ab_dem_ersten_spieltag_und_endet_vor_dem_fruehling() -> void:
+	# Arrange (US3, Szenario 2): Der Winter 1984/85 begann am 01.12.1984, vor dem Spiel.
+	var run := TimelineRun.new(_katalog("catalog_us3_kalender"), 4711)
+
+	# Act
+	var erster_tag := run.begin()
+	run.advance_to(_tag(1985, 2, 28))
+	var erster_maerz := run.advance_to(_tag(1985, 3, 1))
+
+	# Assert
+	assert_eq(_zeilen(erster_tag), ["01.01.1985  Beginn  Winter"],
+		"Er gilt ab Spielbeginn als laufend und wird am ersten Spieltag gemeldet.")
+	assert_eq(_zeilen(erster_maerz), ["01.03.1985  Ende  Winter", "01.03.1985  Beginn  Frühling"],
+		"Erst das Ende des Winters, dann der Beginn des Frühlings (FR-016).")
+	var winter := _termine(run, "winter")[0]
+	assert_eq([winter.day, winter.end_day], [0, _tag(1985, 3, 1)], "Tag 0 bis 28.02.1985.")
+	assert_true(winter.started_before_game, "Er lief schon vor Spielbeginn.")
+	assert_eq(winter.state_label(), "beendet")
+	assert_eq(winter.explain(), "Jedes Jahr laut Katalog, lief schon vor Spielbeginn")
+	assert_string_ends_with(_zeile_mit(ScheduleText.plan_lines(run, _tag(1985, 3, 1)),
+		"01.01.1985  bis 28.02.1985  winter "), "Winter (lief schon vor Spielbeginn)")
+
+
+func test_winter_reicht_bis_zum_29_februar_und_der_letzte_ins_jahr_2000() -> void:
+	# Arrange
+	var run := TimelineRun.new(_katalog("catalog_us3_kalender"), 4711)
+
+	# Act: weit über das Spielende hinaus
+	run.advance_to(LETZTER_TAG + 400)
+
+	# Assert
+	var winter := _termine(run, "winter")
+	var letzte_tage := []
+	for termin in winter:
+		letzte_tage.append(str(GameDate.from_day_index(termin.end_day - 1)))
+	assert_eq(letzte_tage.size(), 16, "Vom Winter 1984/85 bis zum Winter 1999/2000.")
+	assert_has(letzte_tage, "29.02.1988", "Der Winter 1987/88 reicht bis zum Schalttag.")
+	assert_has(letzte_tage, "28.02.1989", "1989 ist kein Schaltjahr.")
+	assert_eq(letzte_tage.back(), "29.02.2000", "Der letzte Winter reicht bis zum 29.02.2000.")
+	var enden := []
+	for meldung in run.protocol:
+		if meldung.kind == TimelineMessage.Kind.EVENT_ENDED and meldung.event.id == "winter":
+			enden.append(str(GameDate.from_day_index(meldung.day)))
+	assert_eq(enden.size(), 15, "Ein Ende je März, von 1985 bis 1999.")
+	assert_does_not_have(enden, "01.03.2000", "Das Ende des letzten Winters wird nicht gemeldet.")
+	var letzter: ScheduleEntry = winter.back()
+	assert_eq(letzter.state_label(), "läuft", "Er läuft bis zum Schluss.")
+	assert_string_ends_with(_zeile_mit(ScheduleText.plan_lines(run),
+		"01.12.1999  bis 29.02.2000  winter "), "Winter (Ende nach Spielende)")
+
+
+func test_cebit_ab_1986_hat_1985_kein_vorkommen() -> void:
+	# Arrange: die CeBIT vom 15. bis 21. März, ab 1986, mit einer Pressemeldung als einmaligem
+	# Anstoß
+	var run := TimelineRun.new(_katalog("catalog_us3_kalender"), 4711)
+
+	# Act
+	run.advance_to(LETZTER_TAG)
+
+	# Assert
+	var jahre := []
+	for termin in _termine(run, "cebit"):
+		var jahr := GameDate.from_day_index(termin.day).year
+		jahre.append(jahr)
+		assert_eq([termin.day, termin.end_day], [_tag(jahr, 3, 15), _tag(jahr, 3, 22)],
+			"%d: vom 15. bis 21. März, das Ende kommt am 22." % jahr)
+	assert_eq(jahre, range(1986, 2000), "Kein Vorkommen im März 1985.")
+	assert_eq(_arten(run, "cebit"), {"Beginn": 14, "Wirkung": 14, "Ende": 14},
+		"Die Pressemeldung ist ein einmaliger Anstoß und hat kein Ende (US3, Szenario 4).")
+
+
+func test_laufende_termine_in_der_reihenfolge_des_fahrplans() -> void:
+	# Arrange
+	var run := TimelineRun.new(_katalog("catalog_us3_kalender"), 4711)
+
+	# Act
+	run.advance_to(_tag(1993, 11, 15))
+	var im_november := _kennungen(run.running_entries())
+	run.advance_to(_tag(1994, 1, 15))
+	var im_januar := _kennungen(run.running_entries())
+
+	# Assert
+	assert_eq(im_november, ["herbst", "weihnachtsgeschaeft"])
+	assert_eq(im_januar, ["winter"])
+
+
+func test_jaehrlich_ohne_dauer_ab_spielbeginn_und_ab_einem_spaeteren_jahr() -> void:
+	# Arrange
+	var run := TimelineRun.new(_katalog("catalog_us3_jaehrlich"), 4711)
+	var erste_januare := []
+	for jahr in range(1985, 2000):
+		erste_januare.append(_tag(jahr, 1, 1))
+
+	# Act
+	run.advance_to(LETZTER_TAG)
+
+	# Assert: „Neujahr“ hat als Ende (0, 0) und ist jedes Jahr ein Augenblick.
+	assert_eq(_tage(run, "neujahr"), erste_januare)
+	for termin in _termine(run, "neujahr"):
+		assert_eq(termin.end_day, termin.day, "Ohne Dauer endet nichts.")
+		assert_eq(termin.state_label(), "eingetreten")
+	assert_eq(_arten(run, "neujahr"), {"Beginn": 15}, "Nur Beginne, kein Ende.")
+	# „Januarflaute“ beginnt 1985 genau am ersten Spieltag, also nicht schon davor.
+	assert_eq(_tage(run, "januarflaute"), erste_januare)
+	var januar_1985 := _termine(run, "januarflaute")[0]
+	assert_false(januar_1985.started_before_game)
+	assert_eq(januar_1985.end_day, _tag(1985, 2, 1))
+	# „Winter ab 1990“ gilt 1990 bis 1995. Das Vorkommen ab dem 01.12.1989 reicht in den Januar
+	# 1990 und gehört deshalb dazu, ungekürzt; das letzte reicht bis zum 29.02.1996.
+	var winter := _termine(run, "winter_ab_1990")
+	assert_eq(winter.size(), 7, "Winter 1989/90 bis 1995/96.")
+	if winter.size() == 7:
+		assert_eq(winter[0].day, _tag(1989, 12, 1))
+		assert_false(winter[0].started_before_game)
+		assert_eq(winter[6].end_day - 1, _tag(1996, 2, 29))
+
+
+# --- Dauer, Wirkungen und Ereignisse, die noch laufen (T042, US3) -----------------
+
+func test_ereignis_mit_42_tagen_dauer_endet_am_tag_nach_seinem_letzten_tag() -> void:
+	# Arrange (US3, Szenarien 3 und 4): „Sonderaktion“ beginnt am 10.03.1994 und dauert 42 Tage.
+	# Zwei Wirkungen gelten nur während, eine davon kommt zwei Wochen später; die Pressemeldung
+	# ist ein einmaliger Anstoß.
+	var run := TimelineRun.new(_katalog("catalog_us3_dauer"), 4711)
+	run.advance_to(_tag(1994, 3, 9))
+
+	# Act
+	var bis_zum_letzten_tag := run.advance_to(_tag(1994, 4, 20))
+	var laufend_am_letzten_tag := _kennungen(run.running_entries())
+	var am_ende := run.advance_to(_tag(1994, 4, 21))
+
+	# Assert
+	var nachfrage := "Sonderaktion: Nachfrage · * · +10% — Gilt, solange die Aktion läuft."
+	var kundenstrom := "Sonderaktion: Kundenstrom · * · +5% — Spricht sich nach zwei Wochen herum."
+	assert_eq(_zeilen(bis_zum_letzten_tag), [
+		"10.03.1994  Beginn  Sonderaktion",
+		"10.03.1994  Wirkung  " + nachfrage,
+		"10.03.1994  Wirkung  Sonderaktion: Presse · lokal — Die Lokalzeitung berichtet.",
+		"24.03.1994  Wirkung  " + kundenstrom,
+	])
+	assert_eq(laufend_am_letzten_tag, ["sonderaktion"], "Am 20.04.1994 läuft sie noch.")
+	assert_eq(_zeilen(am_ende), [
+		"21.04.1994  Wirkungsende  " + nachfrage,
+		"21.04.1994  Wirkungsende  " + kundenstrom,
+		"21.04.1994  Ende  Sonderaktion",
+	], "Die verzögerte Wirkung endet mit dem Ereignis, die Pressemeldung hat kein Ende.")
+	var termin := _termine(run, "sonderaktion")[0]
+	assert_eq(termin.end_day, termin.day + 42, "Das Ende ist der Beginn plus Dauer.")
+	assert_eq(termin.state_label(), "beendet")
+	assert_eq(run.running_entries().size(), 0)
+
+
+func test_waehrend_wirkt_ohne_dauer_wie_ein_einmaliger_anstoss() -> void:
+	# Arrange (FR-021): „Kurzmeldung“ am 01.06.1994 hat keine Dauer, aber zwei Wirkungen
+	# „während“, eine sofort und eine eine Woche später.
+	var run := TimelineRun.new(_katalog("catalog_us3_dauer"), 4711)
+	run.advance_to(_tag(1994, 5, 31))
+
+	# Act
+	var meldungen := run.advance_to(_tag(1994, 12, 31))
+
+	# Assert
+	assert_eq(_zeilen(meldungen), [
+		"01.06.1994  Beginn  Kurzmeldung",
+		"01.06.1994  Wirkung  Kurzmeldung: Nachfrage · * · +5% — Sofort.",
+		"08.06.1994  Wirkung  Kurzmeldung: Nachfrage · * · +5% — Eine Woche später.",
+	], "Kein Ende, weder für das Ereignis noch für seine Wirkungen.")
+	assert_eq(_zustaende(run, "kurzmeldung"), ["01.06.1994 eingetreten"])
+
+
+func test_wirkung_waehrend_die_erst_mit_dem_ende_begaenne_beginnt_nie() -> void:
+	# Arrange: Mit 42 Tagen Verzögerung bei 42 Tagen Dauer begänne die Wirkung am Tag des Endes.
+	# Die Prüfung meldet das als V19, und das Spiel nimmt so ein Ereignis aus. Läuft es trotzdem,
+	# beginnt die Wirkung nie und endet deshalb auch nicht.
+	var catalog := _katalog("catalog_us3_dauer")
+	catalog.get_event("sonderaktion").effects[1].delay_days = 42
+	var issues := CatalogValidator.validate(catalog)
+	assert_true(issues.size() == 1 and issues[0].rule == "V19", "Voraussetzung: %s" % [issues])
+	var run := TimelineRun.new(catalog, 4711)
+
+	# Act
+	run.advance_to(LETZTER_TAG)
+
+	# Assert
+	var nachfrage := "Sonderaktion: Nachfrage · * · +10% — Gilt, solange die Aktion läuft."
+	var wirkungen := []
+	for meldung in run.protocol:
+		if meldung.event.id == "sonderaktion" and meldung.effect != null:
+			wirkungen.append(meldung.to_line())
+	assert_eq(wirkungen, [
+		"10.03.1994  Wirkung  " + nachfrage,
+		"10.03.1994  Wirkung  Sonderaktion: Presse · lokal — Die Lokalzeitung berichtet.",
+		"21.04.1994  Wirkungsende  " + nachfrage,
+	])
+
+
+func test_nach_dem_31_12_1999_kommt_kein_ende_mehr() -> void:
+	# Arrange: Beide beginnen am 21.12.1999. Das eine endet nach 10 Tagen am 31.12.1999, das
+	# andere läuft bis zum 31.12.1999 und endete erst am 01.01.2000.
+	var run := TimelineRun.new(_katalog("catalog_us3_dauer"), 4711)
+	run.advance_to(_tag(1999, 12, 30))
+
+	# Act: weit über das Spielende hinaus
+	var meldungen := run.advance_to(LETZTER_TAG + 400)
+
+	# Assert
+	assert_eq(_zeilen(meldungen), [
+		"31.12.1999  Wirkungsende  Endet am letzten Tag: Kundenstrom · * · +10% — Gilt, solange "
+			+ "es läuft.",
+		"31.12.1999  Ende  Endet am letzten Tag",
+	], "Ein Ende am 31.12.1999 wird gemeldet, eines danach nicht mehr (FR-019).")
+	var spaet := _termine(run, "endet_nach_spielende")[0]
+	assert_eq(spaet.end_day, LETZTER_TAG + 1)
+	assert_eq(_kennungen(run.running_entries()), ["endet_nach_spielende"],
+		"Was nach Spielende endete, läuft bis zum Schluss.")
+	assert_eq(run.advance_to(LETZTER_TAG + 1000).size(), 0)
+
+
+func test_laufender_lieferengpass_entfaellt_beim_zweiten_termin() -> void:
+	# Arrange (US3, Szenario 6): Der Lieferengpass kommt im Januar und im Februar 1990 sicher und
+	# dauert 60 Tage. Der Termin im Februar fällt bei jedem Seed in die Zeit, in der der erste
+	# noch läuft.
+	var catalog := _katalog("catalog_us3_laeuft_noch")
+
+	for seed_wert in range(1, 21):
+		# Act
+		var run := TimelineRun.new(catalog, seed_wert)
+		run.advance_to(LETZTER_TAG)
+
+		# Assert
+		var termine := _termine(run, "lieferengpass")
+		assert_eq(termine.size(), 2, "Seed %d: im Januar und im Februar." % seed_wert)
+		if termine.size() != 2:
+			continue
+		var erster := termine[0]
+		var zweiter := termine[1]
+		var bis := GameDate.from_day_index(erster.end_day - 1)
+		assert_eq(erster.end_day, erster.day + 60)
+		assert_eq(erster.state_label(), "beendet")
+		assert_eq(zweiter.state_label(), "entfallen", "Seed %d: Er läuft noch." % seed_wert)
+		assert_eq(zweiter.note, "läuft noch bis %s" % bis)
+		assert_eq(zweiter.explain(), "Würfel %s < Schwelle 1,0000 (100 %%); entfallen: läuft noch "
+			% _vier_stellen_abgerundet(zweiter.roll) + "bis %s" % bis)
+		var zum_zweiten := []
+		for meldung in run.protocol:
+			if meldung.entry == zweiter:
+				zum_zweiten.append(meldung.to_line())
+		assert_eq(zum_zweiten, ["%s  Entfall  Lieferengpass: läuft noch bis %s"
+			% [GameDate.from_day_index(zweiter.day), bis]], "Weder Beginn noch Ende.")
+
+
+func test_folge_die_noch_laeuft_entfaellt_und_beginnt_nach_dem_ende_neu() -> void:
+	# Arrange: Die Aufträge A, B und C am 01.06., 20.06. und 01.07.1990 bringen sofort je eine
+	# „Sonderschicht“ von 30 Tagen. Die erste läuft vom 01.06. bis zum 30.06.1990.
+	var run := TimelineRun.new(_katalog("catalog_us3_laeuft_noch"), 4711)
+
+	# Act
+	var juni := run.advance_to(_tag(1990, 6, 30))
+	var erster_juli := run.advance_to(_tag(1990, 7, 1))
+
+	# Assert
+	assert_has(_zeilen(juni), "20.06.1990  Entfall  Sonderschicht: läuft noch bis 30.06.1990")
+	assert_eq(_zeilen(erster_juli), [
+		"01.07.1990  Ende  Sonderschicht",
+		"01.07.1990  Beginn  Auftrag C",
+		"01.07.1990  Beginn  Sonderschicht",
+	], "Was am selben Tag endet, hält den neuen Termin nicht auf.")
+	assert_eq(_zustaende(run, "sonderschicht"),
+		["01.06.1990 beendet", "20.06.1990 entfallen", "01.07.1990 läuft"])
 
 
 # --- Helfer ----------------------------------------------------------------------
@@ -823,6 +1149,40 @@ func _tage(run: TimelineRun, kennung: String) -> Array:
 	for termin in _termine(run, kennung):
 		tage.append(termin.day)
 	return tage
+
+
+## Der Termin des Ereignisses, der an [param tag] beginnt; null, wenn es keinen gibt.
+func _termin_am(run: TimelineRun, kennung: String, tag: int) -> ScheduleEntry:
+	for termin in _termine(run, kennung):
+		if termin.day == tag:
+			return termin
+	return null
+
+
+## Die Kennungen der Ereignisse von Terminen, in deren Reihenfolge.
+func _kennungen(termine: Array[ScheduleEntry]) -> Array:
+	var kennungen := []
+	for termin in termine:
+		kennungen.append(termin.event.id)
+	return kennungen
+
+
+## Die Meldungen eines Ereignisses, gezählt je Art, etwa {"Beginn": 14, "Ende": 14}.
+func _arten(run: TimelineRun, kennung: String) -> Dictionary:
+	var arten := {}
+	for meldung in run.protocol:
+		if meldung.event.id == kennung:
+			var art := TimelineMessage.KIND_LABELS[meldung.kind]
+			arten[art] = int(arten.get(art, 0)) + 1
+	return arten
+
+
+## Die erste Zeile, die mit [param anfang] beginnt; leer, wenn es keine gibt.
+func _zeile_mit(zeilen: PackedStringArray, anfang: String) -> String:
+	for zeile in zeilen:
+		if zeile.begins_with(anfang):
+			return zeile
+	return ""
 
 
 ## Je Termin des Ereignisses „TT.MM.JJJJ <zustand>“.

@@ -5,9 +5,9 @@ extends GutTest
 ## Dazu SC-002: Zehn Läufe mit gleichem Seed ergeben zehn gleiche Ausgaben, ob Tag für Tag oder in
 ## Sprüngen geschaltet.
 ##
-## Dauer und jährliche Ereignisse kommen erst mit Phase 5. Für die Spalte „bis“ und zwei der
-## Zusätze legt der Test deshalb Termine von Hand in einen leeren Lauf, so wie der Lauf sie später
-## anlegt; ScheduleText formatiert nur, was im Fahrplan steht.
+## Für die Spalte „bis“ und zwei der Zusätze legt ein Test Termine von Hand in einen leeren Lauf,
+## so wie der Lauf sie anlegt. ScheduleText formatiert nur, was im Fahrplan steht; wie der Lauf
+## Dauer und jährliche Ereignisse anlegt, prüft test_timeline_run.gd.
 
 const ORDNER := "res://test/fixtures/"
 const LETZTER_TAG := TimelineRun.LAST_DAY
@@ -55,7 +55,7 @@ func test_bis_zu_einem_tag() -> void:
 
 
 func test_spalte_bis_und_zusaetze() -> void:
-	# Arrange: ein leerer Lauf und drei Termine von Hand, wie Phase 5 sie anlegen wird
+	# Arrange: ein leerer Lauf und drei Termine von Hand, so wie der Lauf sie anlegt
 	var katalog := _katalog("catalog_minimal")
 	var run := TimelineRun.new(EventCatalog.new(), 4711)
 	var winter := TimelineEvent.new()

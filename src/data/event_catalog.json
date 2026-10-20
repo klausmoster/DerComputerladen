@@ -117,6 +117,30 @@
 			"title": "CD-ROM wird Standard"
 		},
 		{
+			"category": "kalender",
+			"description": "",
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "presse",
+					"magnitude": 0.0,
+					"note": "",
+					"scope": "once",
+					"target": "messe"
+				}
+			],
+			"follow_ups": [],
+			"id": "cebit",
+			"kind": "yearly",
+			"title": "CeBIT",
+			"yearly": {
+				"end": "03-21",
+				"from": 1986,
+				"start": "03-15",
+				"to": 1999
+			}
+		},
+		{
 			"category": "wirtschaft",
 			"date": "1999-01-01",
 			"description": "Der Euro kommt als Verrechnungswährung – Preise müssen umgedacht werden.",
@@ -135,6 +159,21 @@
 			"id": "euro_buchgeld",
 			"kind": "fixed",
 			"title": "Euro als Buchgeld"
+		},
+		{
+			"category": "kalender",
+			"description": "",
+			"effects": [],
+			"follow_ups": [],
+			"id": "fruehling",
+			"kind": "yearly",
+			"title": "Frühling",
+			"yearly": {
+				"end": "05-ende",
+				"from": 1985,
+				"start": "03-01",
+				"to": 1999
+			}
 		},
 		{
 			"category": "kunde",
@@ -169,6 +208,21 @@
 			"window": {
 				"from": "1985-01-01",
 				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "",
+			"effects": [],
+			"follow_ups": [],
+			"id": "herbst",
+			"kind": "yearly",
+			"title": "Herbst",
+			"yearly": {
+				"end": "11-ende",
+				"from": 1985,
+				"start": "09-01",
+				"to": 1999
 			}
 		},
 		{
@@ -627,6 +681,21 @@
 			"title": "Konjunkturflaute"
 		},
 		{
+			"category": "kalender",
+			"description": "",
+			"effects": [],
+			"follow_ups": [],
+			"id": "sommer",
+			"kind": "yearly",
+			"title": "Sommer",
+			"yearly": {
+				"end": "08-ende",
+				"from": 1985,
+				"start": "06-01",
+				"to": 1999
+			}
+		},
+		{
 			"category": "tech",
 			"date": "1996-01-15",
 			"description": "Der neue Anschlussstandard – noch ohne nennenswerte Geräte.",
@@ -645,6 +714,30 @@
 			"id": "usb_10",
 			"kind": "fixed",
 			"title": "USB 1.0 vorgestellt"
+		},
+		{
+			"category": "kalender",
+			"description": "",
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "kundenstrom",
+					"magnitude": 0.3,
+					"note": "",
+					"scope": "during",
+					"target": "*"
+				}
+			],
+			"follow_ups": [],
+			"id": "weihnachtsgeschaeft",
+			"kind": "yearly",
+			"title": "Weihnachtsgeschäft",
+			"yearly": {
+				"end": "12-ende",
+				"from": 1985,
+				"start": "11-01",
+				"to": 1999
+			}
 		},
 		{
 			"category": "wirtschaft",
@@ -817,6 +910,21 @@
 			"id": "win_98",
 			"kind": "fixed",
 			"title": "Windows 98"
+		},
+		{
+			"category": "kalender",
+			"description": "",
+			"effects": [],
+			"follow_ups": [],
+			"id": "winter",
+			"kind": "yearly",
+			"title": "Winter",
+			"yearly": {
+				"end": "02-ende",
+				"from": 1985,
+				"start": "12-01",
+				"to": 1999
+			}
 		}
 	],
 	"format": 1

@@ -42,7 +42,7 @@ func test_signale_kommen_in_der_reihenfolge_des_tagesablaufs() -> void:
 	assert_eq(spur, _erwartete_signale(zeitleiste.run))
 	# Die Signale tragen die Ereignisse des Laufs; get_event() liefert dieselben Objekte.
 	assert_same(ereignisse[ereignisse.size() - 1], zeitleiste.get_event("folge_b"))
-	assert_eq(zeitleiste.running_entries().size(), 0, "Ohne Dauer läuft nichts (bis Phase 5).")
+	assert_eq(zeitleiste.running_entries().size(), 0, "Ohne Dauer läuft nichts.")
 
 
 func test_ohne_seed_wird_gewuerfelt() -> void:
@@ -56,14 +56,18 @@ func test_ohne_seed_wird_gewuerfelt() -> void:
 
 
 func test_ereignis_mit_fehler_fehlt_im_lauf_und_wird_gemeldet() -> void:
-	# Arrange und Act: Im Test-Katalog hat intel_pentium keinen Titel (V04).
+	# Arrange und Act: Im Test-Katalog hat intel_pentium keinen Titel (V04). Der feste Seed hält
+	# den Fahrplan gleich und damit auch die Zahl der Prüfungen in der Schleife unten.
 	var zeitleiste := await _zeitleiste("catalog_v04_titel_leer", _uhr())
+	zeitleiste.start_game(4711)
 
 	# Assert
 	assert_push_error("Ereignis „intel_pentium“, Feld „title“: Der Titel ist leer. Das Ereignis "
 		+ "wird übersprungen.", "Die Meldung nennt Kennung und Grund (FR-049).")
 	assert_null(zeitleiste.get_event("intel_pentium"), "Das Ereignis fehlt im Lauf.")
 	assert_not_null(zeitleiste.get_event("reklamationswelle"), "Die übrigen sind da.")
+	# Mit Seed 4711 sind es 16 Termine: das Weihnachtsgeschäft in 15 Jahren und das Neubaugebiet.
+	assert_gte(zeitleiste.run.entries.size(), 15, "Die Schleife prüft echte Termine.")
 	for termin in zeitleiste.run.entries:
 		assert_ne(termin.event.id, "intel_pentium")
 

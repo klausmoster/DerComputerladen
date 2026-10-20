@@ -1,0 +1,116 @@
+{
+	"categories": [
+		{
+			"color": "holz-dunkel",
+			"id": "lokal",
+			"name": "Lokal"
+		}
+	],
+	"events": [
+		{
+			"category": "lokal",
+			"date": "1999-12-21",
+			"description": "Läuft zehn Tage, der letzte ist der 30.12.1999.",
+			"duration_days": 10,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "kundenstrom",
+					"magnitude": 0.1,
+					"note": "Gilt, solange es läuft.",
+					"scope": "during",
+					"target": "*"
+				}
+			],
+			"follow_ups": [],
+			"id": "endet_am_letzten_tag",
+			"kind": "fixed",
+			"title": "Endet am letzten Tag"
+		},
+		{
+			"category": "lokal",
+			"date": "1999-12-21",
+			"description": "Läuft elf Tage, der letzte ist der 31.12.1999.",
+			"duration_days": 11,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "kundenstrom",
+					"magnitude": 0.1,
+					"note": "Gilt, solange es läuft.",
+					"scope": "during",
+					"target": "*"
+				}
+			],
+			"follow_ups": [],
+			"id": "endet_nach_spielende",
+			"kind": "fixed",
+			"title": "Endet nach Spielende"
+		},
+		{
+			"category": "lokal",
+			"date": "1994-06-01",
+			"description": "Ohne Dauer; ihre Wirkungen „während“ wirken wie einmalige Anstöße.",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "nachfrage",
+					"magnitude": 0.05,
+					"note": "Sofort.",
+					"scope": "during",
+					"target": "*"
+				},
+				{
+					"delay_days": 7,
+					"kind": "nachfrage",
+					"magnitude": 0.05,
+					"note": "Eine Woche später.",
+					"scope": "during",
+					"target": "*"
+				}
+			],
+			"follow_ups": [],
+			"id": "kurzmeldung",
+			"kind": "fixed",
+			"title": "Kurzmeldung"
+		},
+		{
+			"category": "lokal",
+			"date": "1994-03-10",
+			"description": "Läuft 42 Tage, vom 10.03. bis 20.04.1994.",
+			"duration_days": 42,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "nachfrage",
+					"magnitude": 0.1,
+					"note": "Gilt, solange die Aktion läuft.",
+					"scope": "during",
+					"target": "*"
+				},
+				{
+					"delay_days": 14,
+					"kind": "kundenstrom",
+					"magnitude": 0.05,
+					"note": "Spricht sich nach zwei Wochen herum.",
+					"scope": "during",
+					"target": "*"
+				},
+				{
+					"delay_days": 0,
+					"kind": "presse",
+					"magnitude": 0.0,
+					"note": "Die Lokalzeitung berichtet.",
+					"scope": "once",
+					"target": "lokal"
+				}
+			],
+			"follow_ups": [],
+			"id": "sonderaktion",
+			"kind": "fixed",
+			"title": "Sonderaktion"
+		}
+	],
+	"format": 1
+}

@@ -134,19 +134,6 @@ func test_monatswechsel_meldet_sich_nur_beim_monatswechsel() -> void:
 		"Innerhalb eines Monats darf month_passed nicht feuern.")
 
 
-func test_weihnachtsgeschaeft_meldet_sich_am_ersten_november() -> void:
-	# Arrange
-	_vorspulen_bis(1993, 10, 31)
-	watch_signals(_clock)
-
-	# Act
-	_clock.advance_day()
-
-	# Assert
-	assert_signal_emitted(_clock, "season_changed",
-		"Der Beginn des Weihnachtsgeschäfts muss gemeldet werden.")
-
-
 # --- Ende der Zeitleiste --------------------------------------------------
 
 func test_uhr_endet_nach_1999() -> void:

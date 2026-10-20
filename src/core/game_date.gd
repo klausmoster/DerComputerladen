@@ -108,23 +108,6 @@ static func from_day_index(index: int) -> GameDate:
 	return GameDate.new(y, m, remaining + 1)
 
 
-## Weihnachtsgeschäft (November/Dezember) – Hauptumsatzzeit.
-func is_holiday_season() -> bool:
-	return month == 11 or month == 12
-
-
-func season() -> String:
-	match month:
-		12, 1, 2:
-			return "Winter"
-		3, 4, 5:
-			return "Frühling"
-		6, 7, 8:
-			return "Sommer"
-		_:
-			return "Herbst"
-
-
 func _to_string() -> String:
 	return "%02d.%02d.%d" % [day, month, year]
 

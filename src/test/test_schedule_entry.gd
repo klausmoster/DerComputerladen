@@ -3,8 +3,8 @@ extends GutTest
 ## Prüft den Termin im Fahrplan (Feature 002, T016): Vorgaben, Bezeichnungen für Herkunft und
 ## Zustand, die Begründung mit deutschem Komma und die verzögerten Wirkungen.
 ##
-## Noch legt kein Lauf Termine an (TimelineRun kommt mit Phase 3). Die Tests füllen die Felder
-## deshalb von Hand, so wie der Lauf es später tut.
+## Die Tests füllen die Felder von Hand, so wie der Lauf es tut. So prüfen sie Beschriftungen und
+## Begründungen ohne Katalog; die Termine aus einem Lauf prüft test_timeline_run.gd.
 
 
 func test_vorgaben_heissen_nicht_gewuerfelt_und_nicht_verschoben() -> void:

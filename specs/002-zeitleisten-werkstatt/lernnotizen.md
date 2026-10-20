@@ -359,3 +359,83 @@ Der Agent schreibt die Notizen, Claude trägt sie je Phase hier ein.
 - **`Engine.is_embedded_in_editor()`:** wahr, wenn das Spiel im Tab „Spiel“ des Editors läuft.
   Dann gehört das Fenster dem Editor: `GameWindow` setzt beim Start keine Größe, und die
   Werkstatt maximiert nicht.
+
+## Phase 5
+
+### T041 Dauer und jährliche Ereignisse
+
+- **Enden als Stichtage:** `_ends` in `src/core/timeline/timeline_run.gd` ist ein Dictionary
+  Tag → Termine, gebaut wie `_due_effects` für verzögerte Wirkungen: Es enthält nur die Tage, an
+  denen wirklich etwas endet. `_plan_end()` trägt das Ende beim Beginn ein und meldet den Tag mit
+  `_add_stop()` als Stichtag an. Deshalb springt `advance_to()` auch zu Enden, und Tag für Tag
+  ergibt weiter dasselbe wie in Sprüngen.
+- **Enden vor Beginnen:** `_play_day()` ruft `_end_entries()` als ersten Schritt auf. Am 01.03.
+  ist der Winter deshalb schon beendet, wenn der Frühling beginnt. Auch die Prüfung „läuft noch“
+  (FR-022) in `_start_entry()` hält einen Termin, der heute endet, nicht mehr für laufend.
+- **Jährliche Vorkommen in Tagesindizes:** `_occurrence()` macht aus Monat und Tag einen Beginn
+  und einen letzten Tag, beide als Index von `GameDate`. Liegt das Ende im Jahr vor dem Beginn,
+  gehört es ins Folgejahr. Für „ende“ fragt es `days_in_month()` im Jahr des Endes, so endet der
+  Winter 1987/88 am 29.02. Der Winter 1984/85 beginnt beim Index −31; `maxi(…, FIRST_DAY)` setzt
+  den Termin auf Tag 0, und `started_before_game` hält fest, dass er schon vorher lief.
+- **Leeres Ergebnis statt Sonderwert:** `_occurrence()` gibt ein `PackedInt32Array` mit zwei
+  Zahlen zurück, leer, wenn es das Vorkommen nicht gibt. Der Aufrufer fragt `is_empty()` und
+  braucht keinen geheimen Wert wie −1.
+- **Eine Regel an einer Stelle:** `_is_during()` und `_effect_day()` sind statische Hilfen, die
+  Beginn und Ende gleichermaßen fragen. Ob eine Wirkung „während“ gilt und an welchem Tag sie
+  beginnt, kann so beim Ende nicht anders ausfallen als beim Beginn, wie `_hits()` in Phase 3.
+- Verzögerungen zählen ab `day`, dem Beginn im Fahrplan (data-model.md: Tag = `day +
+  delay_days`). Beim Winter 1984/85 ist das der 01.01.1985, nicht der 01.12.1984.
+
+### T042 Tests zu Dauer und Kalender
+
+- **Vier Fixtures nach Zweck:** `catalog_us3_kalender.json` mit den sechs Kalender-Ereignissen
+  und den Startwerten aus R19, `catalog_us3_dauer.json` für die Szenarien 3 und 4, FR-021 und
+  das Spielende, `catalog_us3_laeuft_noch.json` für FR-022 beim Würfeln und bei Folgen,
+  `catalog_us3_jaehrlich.json` für Sonderfälle der jährlichen Ereignisse. Ein Einmal-Skript hat
+  geprüft, dass `read_file()` und `to_json()` jede Datei bytegleich wieder ergeben.
+- **Ohne Würfel nachzurechnen:** Der Lieferengpass hat 100 %, ein Fenster von Januar bis Februar
+  1990 und 60 Tage Dauer. Der Termin im Februar fällt bei jedem Seed in die Zeit des ersten.
+  Der Test läuft deshalb über 20 Seeds, ohne mit `EventDice` nachzurechnen.
+- Die Tests vergleichen ganze Protokollzeilen. So prüfen sie auch die Reihenfolge: das
+  Wirkungsende vor dem Ende, das Ende vor dem Beginn.
+- **GUT:** `assert_eq` vergleicht Arrays und Dictionaries nach Inhalt, etwa
+  `{"Beginn": 14, "Wirkung": 14, "Ende": 14}`. `range(1985, 2000)` ist in Godot 4 ein Array und
+  lässt sich direkt vergleichen. `assert_string_ends_with()` nimmt keinen eigenen Meldungstext.
+- **Fehlerprobe:** In eine Kopie des Projekts außerhalb des Repos wurden nacheinander elf Fehler
+  eingebaut, etwa „Enden nach den Beginnen“ oder „Monatsende ohne Schaltjahr“. Zehn haben Tests
+  scheitern lassen. Der elfte, ein Ende nach dem 31.12.1999 trotzdem vorzumerken, ändert nichts,
+  weil `advance_to()` am Tag 5477 aufhört; die Abfrage in `_plan_end()` hält nur `_ends` sauber,
+  wie die gleiche in `_plan_effect()`.
+
+### T043 Altlasten entfernen
+
+- **Ein Signal ist Schnittstelle:** Wer ein Signal über seinen Namen als Text anspricht, etwa
+  mit `connect(&"season_changed", …)` oder GUTs `assert_signal_emitted(_clock, "season_changed")`,
+  merkt sein Fehlen erst zur Laufzeit; solche Texte prüft der Parser nicht. Darum zuerst ein
+  `grep` über `src/`: Außer `game_clock.gd`, `game_date.gd` und ihren Tests nutzte nichts
+  `season_changed`, `is_holiday_season()` oder `season()`.
+- Das Weihnachtsgeschäft meldet jetzt die Zeitleiste über `event_fired` und `event_ended`, sobald
+  T044 es in den Katalog legt. Bis dahin meldet es niemand; einen Abnehmer gibt es noch nicht.
+
+### T045 Kalender im echten Katalog
+
+- **Nur, was dauerhaft gilt:** `src/test/test_shipped_catalog.gd` prüft die sechs Kennungen, die
+  Art „jährlich“, Beginn und Ende aus FR-023 und die Jahre. Titel, Texte, Wirkungen und die
+  genauen Tage der CeBIT prüft er nicht, denn die stellt Klaus in der Werkstatt nach.
+- **`const` mit `Vector2i`:** `JEDES_JAHR` ist ein konstantes Dictionary mit Werten wie
+  `Vector2i(12, 0)`. Ein eingebauter Typ mit festen Zahlen ist ein konstanter Ausdruck und darf
+  deshalb in `const` stehen.
+- **SC-009 über einen Lauf:** Der Test legt den Lauf an wie das Autoload (lesen, prüfen,
+  `without_faulty()`), spielt bis zum 31.12.1999 und liest die Termine. So prüft er Katalog und
+  Lauf zusammen, bis zu „(Ende nach Spielende)“ in der Textausgabe. Jährliche Termine hängen
+  nicht am Seed.
+- **Gegenprobe:** Sechs falsche Kataloge in einer Kopie außerhalb des Repos, etwa „Ende 12-30“,
+  „Winter fehlt“ oder „CeBIT im April“, ließen jeweils mindestens einen Test scheitern.
+
+### Korrekturen nach dem Review
+
+- **Zufall in Tests festhalten:** `test_ereignis_mit_fehler_fehlt_im_lauf_und_wird_gemeldet` in
+  `src/test/test_timeline.gd` startete das Spiel per `call_deferred()` ohne Seed, und seine
+  Schleife prüft jeden Termin einzeln. Je nach Wurf hatte das Neubaugebiet einen Termin oder
+  keinen, und die Zahl der Asserts schwankte. `start_game(4711)` ersetzt den Lauf wie in den
+  anderen Tests der Datei; die Schleife prüft jetzt 16 Termine, bei jedem Lauf gleich viele.
