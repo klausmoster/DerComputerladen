@@ -44,6 +44,7 @@ src/
 tools/raster/                          # Repo-Root, außerhalb des Godot-Projekts
 ├── make_palette.py                    # Hauptpalette per Median-Cut
 ├── rasterize.py                       # Flächenmittel + Palette → indiziertes PNG
+├── cleanup.py                         # grober Feinschliff per Regel: Farbreste, Einzelpixel
 ├── make_icon.py                       # App-Symbol 1024 × 1024 und Ebenen für Icon Composer
 └── README.md                          # Aufruf und Reihenfolge
 
@@ -231,6 +232,7 @@ Import der Schriften und Sichtprobe: siehe research.md, R8.
 | `rendering/2d/snap/snap_2d_transforms_to_pixel` | `true` | `false` |
 | `rendering/2d/snap/snap_2d_vertices_to_pixel` | `true` | `false` |
 | `rendering/environment/defaults/default_clear_color` | `anzeige-grund` | Grau |
+| `rendering/textures/vram_compression/import_etc2_astc` | `true` (für den Export `universal` und `arm64` nötig; ändert an unseren verlustfreien Texturen nichts) | `false` |
 | `[autoload] GameWindow` | `*res://core/game_window.gd` | – |
 
 Eingabe-Aktion `toggle_fullscreen`: Taste F mit Ctrl und Cmd (Meta), physische Taste. Windows
@@ -249,6 +251,10 @@ und Linux bekommen ihre Kürzel mit 11-03.
 | `application/short_version` / `version` | `0.1` / `0.1.0` |
 | `application/icon` | `res://assets/icon/app_icon.png` |
 | `application/liquid_glass_icon` | `res://assets/icon/app_icon.icon` |
+| `exclude_filter` | `addons/gut/*, test/*`: GUT und die Tests kommen nicht in die App |
+
+`export_presets.cfg` schreibt Godot selbst; Geheimes legt es getrennt in
+`.godot/export_credentials.cfg` ab, das nicht versioniert wird.
 
 ## Tests (GUT 9.7.1)
 

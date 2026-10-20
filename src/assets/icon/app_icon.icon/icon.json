@@ -1,0 +1,20 @@
+{
+  "fill" : {
+    "solid" : "extended-srgb:0.09412,0.13725,0.23137,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "monitor.png",
+          "name" : "monitor"
+        }
+      ]
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "macOS"
+    ]
+  }
+}

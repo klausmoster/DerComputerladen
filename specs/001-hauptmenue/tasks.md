@@ -69,8 +69,10 @@ Export-Vorlagen bereitstellen
 - [x] T007 [C] [P] Nach Freigabe des Downloads durch Klaus: Pixelify Sans und Doto von Google Fonts
   samt SIL-OFL-Lizenz nach `src/assets/fonts/` als `PixelifySans-Variable.ttf`,
   `Doto-Variable.ttf`, `OFL-PixelifySans.txt` und `OFL-Doto.txt` (research.md, R8)
-- [ ] T008 [K] [P] Export-Vorlagen 4.7.2 im Godot-Editor installieren: „Editor → Export-Vorlagen
+- [x] T008 [K] [P] Export-Vorlagen 4.7.2 im Godot-Editor installieren: „Editor → Export-Vorlagen
   verwalten → Herunterladen und installieren“, 1,3 GB (research.md, R4)
+  - Auf Klaus' Wunsch von Claude erledigt: Download aus dem Release 4.7.2-stable, SHA-512
+    geprüft, nur `macos.zip` und `version.txt` installiert, Download danach gelöscht.
 
 **Checkpoint**: Style-Guide ergänzt und freigegeben, Palette und Werkzeuge liegen vor, Schriften
 im Projekt, Export-Vorlagen installiert.
@@ -163,20 +165,26 @@ Vollbild (quickstart.md, Abschnitte 4 und 5).
   etwa 142 × 27 Bildpixel mit Transparenz → `src/assets/images/logo_ladenschild.png`. Bricht der
   Schriftzug auf, Ausweichlösung Faktor 3 (FR-019, research.md, R6). Ergebnis 141 × 27, der
   Schriftzug bleibt lesbar.
-- [ ] T020 [K] [US1] Groben Feinschliff an `src/assets/images/title_t01.png` und
+- [x] T020 [K] [US1] Groben Feinschliff an `src/assets/images/title_t01.png` und
   `src/assets/images/logo_ladenschild.png` in Pixelorama oder Aseprite: Einzelpixel und
   Farbreste entfernen, nur Farben der Hauptpalette; die Dateien bleiben an ihrem Ort. Danach
   erzeugt Claude das App-Symbol neu (T021), denn es nimmt den Monitor aus dem Logo
+  - Auf Klaus' Wunsch von Claude per Regel erledigt, mit `tools/raster/cleanup.py`: Titelbild
+    209 → 183 Farben, Logo 111 → 70. Von Hand nachbessern geht jederzeit, danach T021 neu.
 - [x] T021 [C] [P] [US1] App-Symbol per Skript `tools/raster/make_icon.py` vorbereiten:
   - Den Monitor aus dem gerasterten Logo `src/assets/images/logo_ladenschild.png` (T019) nehmen,
     also auf Bildraster und Hauptpalette, ganzzahlig vergrößert auf eine Fläche von 1024 × 1024
     nach Apples Symbolraster setzen, Grundfläche `nacht` → `src/assets/icon/app_icon.png`.
   - Die Ebenen für Icon Composer (Monitor freigestellt, Grundfarbe) nach `docs/art/app_icon/`
     (FR-002, research.md, R5).
-- [ ] T022 [K] [US1] Liquid-Glass-Symbol in Icon Composer (Xcode 27.1) aus den Ebenen in
+- [x] T022 [K] [US1] Liquid-Glass-Symbol in Icon Composer (Xcode 27.1) aus den Ebenen in
   `docs/art/app_icon/` bauen und als `src/assets/icon/app_icon.icon/` mit `.gdignore` darin
   ablegen
-- [ ] T023 [K] [US1] Gerastertes Titelbild, Logo und App-Symbol freigeben (SC-007)
+  - Auf Klaus' Wunsch von Claude angelegt: `icon.json` nach Xcodes Vorlage, Füllung `nacht`,
+    eine Ebene `monitor.png`, mit `ictool` gerendert und geprüft. In Icon Composer weiter
+    bearbeitbar.
+- [x] T023 [K] [US1] Gerastertes Titelbild, Logo und App-Symbol freigeben (SC-007)
+  - Von Klaus freigegeben am 2026-10-20.
 - [x] T024 [A] [US1] Titelbildschirm `src/scenes/title/title_screen.tscn` und
   `src/scenes/title/title_screen.gd` (`class_name TitleScreen extends Control`) laut Vertrag, mit
   den Bildern aus T018 und T019; Klaus' Feinschliff ändert nur deren Inhalt, nicht die Dateien:
@@ -209,15 +217,25 @@ Vollbild (quickstart.md, Abschnitte 4 und 5).
 - [x] T028 [A] [US1] In `src/project.godot`: `display/window/size/mode = 3`,
   `application/run/main_scene = "res://scenes/title/title_screen.tscn"`,
   `application/config/icon = "res://assets/icon/app_icon.png"` (FR-001, FR-003, FR-004)
-- [ ] T029 [A] [US1] Export-Preset „macOS“ in `src/export_presets.cfg` laut Vertrag:
+- [x] T029 [A] [US1] Export-Preset „macOS“ in `src/export_presets.cfg` laut Vertrag:
   - Pfad `../build/macos/Der Computerladen.app`, `universal`.
   - Codesign Built-in (ad-hoc only), Notarisierung aus, `display/high_res` an.
   - Bundle-ID `de.klausmoster.dercomputerladen`, Versionen 0.1 und 0.1.0.
   - `application/icon` und `application/liquid_glass_icon`.
   - Keine Zugangsdaten in der Datei.
-- [ ] T030 [C] [US1] `src/export_presets.cfg` auf Zugangsdaten prüfen (CLAUDE.md), dann die App
+  - Dazu, im Vertrag ergänzt: `import_etc2_astc` in `project.godot`, ohne das der Export für
+    `universal` abbricht, und `exclude_filter` für GUT und Tests (`.pck` 0,8 statt 2,3 MB).
+- [x] T030 [C] [US1] `src/export_presets.cfg` auf Zugangsdaten prüfen (CLAUDE.md), dann die App
   laut quickstart.md, Abschnitt 4 nach `build/macos/Der Computerladen.app` exportieren
-- [ ] T031 [K] [US1] Mac-App nach quickstart.md, Abschnitt 5 abnehmen:
+  - Keine Zugangsdaten (Identität, Team-ID und Installer-Identität leer). Export mit Exit 0,
+    universal (x86_64, arm64), ad hoc signiert, `Assets.car` mit dem Liquid-Glass-Symbol und
+    `icon.icns`; die App startet headless ohne Meldung.
+- [x] T031 [K] [US1] Mac-App nach quickstart.md, Abschnitt 5 abnehmen:
+  - Erster Test am 2026-10-20: Der Start wirkte lang, eine Ladeanzeige braucht es aber nicht.
+    Gemessen bis zum zweiten Bild: 0,8 bis 1,0 s, auch über den Finder-Weg, ohne Shader-Cache
+    1,4 s (SC-001: höchstens 3 s). Langsamer ist nur der erste Start nach einem Export, wenn
+    macOS die neue App prüft. Beenden kommt auf Klaus' Wunsch sofort (T032, T033 vorgezogen).
+  - Zweiter Test nach dem neuen Export: von Klaus abgenommen am 2026-10-20, ebenso T034.
   - Start per Doppelklick im Finder, aus dem Dock und über Spotlight (FR-001).
   - Startgrund ohne Godot-Logo (FR-003), Zeit bis zum Titel (SC-001, SC-002).
   - Dock, Symbol und Finder-Informationen.
@@ -237,14 +255,16 @@ dann Auftrag für Phase 4.
 **Independent Test**: „Beenden“ wählen, dann Cmd+Q, dann Fenster schließen: Jedes Mal endet die App
 vollständig.
 
-- [ ] T032 [A] [US2] In `src/scenes/title/title_screen.gd`: `_on_main_menu_entry_activated` mit
+- [x] T032 [A] [US2] In `src/scenes/title/title_screen.gd`: `_on_main_menu_entry_activated` mit
   `entry_activated` des MainMenu verbinden; bei `&"quit"` ruft es `get_tree().quit()` auf (FR-008)
-- [ ] T033 [A] [P] [US2] Test in `src/test/test_main_menu.gd`: `activate_selected()` auf „Beenden“
+- [x] T033 [A] [P] [US2] Test in `src/test/test_main_menu.gd`: `activate_selected()` auf „Beenden“
   sendet genau einmal `entry_activated(&"quit")`
-- [ ] T034 [K] [US2] In der gebauten App prüfen:
+  - T032 und T033 auf Klaus' Wunsch in Phase 3 vorgezogen (Befund aus T031), mit Gegentest: Ein
+    nicht verfügbarer Eintrag meldet nichts.
+- [x] T034 [K] [US2] In der gebauten App prüfen:
   - „Beenden“ per Klick, Enter und Leertaste, jeweils mit höchstens drei Eingaben (SC-005).
   - Cmd+Q und Fenster schließen beenden die App. Fehlt Cmd+Q, Auftrag für T035.
-- [ ] T035 [A] [US2] Nur wenn T034 kein Cmd+Q findet: in `src/core/game_window.gd` einen Eintrag
+- [x] T035 [A] [US2] Entfällt: Cmd+Q wirkt, Godot bringt es mit (research.md, R11; T034). Nur wenn T034 kein Cmd+Q findet: in `src/core/game_window.gd` einen Eintrag
   „Der Computerladen beenden“ mit Cmd+Q über `NativeMenu` ergänzen (research.md, R11)
 
 **Checkpoint**: Beenden funktioniert auf allen drei Wegen. Abnahme durch Klaus, dann Auftrag für

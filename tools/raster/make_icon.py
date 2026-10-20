@@ -11,6 +11,8 @@ Ergebnis:
   src/assets/icon/app_icon.png        das Symbol, 1024 × 1024, RGBA
   docs/art/app_icon/monitor.png       Ebene für Icon Composer: der Monitor freigestellt
   docs/art/app_icon/grundfarbe.png    Ebene für Icon Composer: die ganze Fläche in `nacht`
+  src/assets/icon/app_icon.icon/Assets/monitor.png
+                                      dieselbe Ebene im Liquid-Glass-Symbol, falls es schon da ist
 
 Aufruf vom Repo-Root:
   python3 -I tools/raster/make_icon.py
@@ -78,6 +80,8 @@ def main():
     parser.add_argument("--zoom", type=int, default=32, help="Vergrößerung je Bildpixel")
     parser.add_argument("--ausgabe", default="src/assets/icon/app_icon.png")
     parser.add_argument("--ebenen", default="docs/art/app_icon")
+    parser.add_argument("--glas", default="src/assets/icon/app_icon.icon",
+                        help="Liquid-Glass-Symbol, dessen Ebene mit erneuert wird")
     args = parser.parse_args()
 
     width, height, channels, rows = pngio.read_png(args.logo)
@@ -125,11 +129,16 @@ def main():
     pngio.write_png_rgba(os.path.join(args.ebenen, "monitor.png"), CANVAS, CANVAS, layer)
     pngio.write_png_rgba(os.path.join(args.ebenen, "grundfarbe.png"), CANVAS, CANVAS,
                          [NACHT + (255,)] * (CANVAS * CANVAS))
+    glass_assets = os.path.join(args.glas, "Assets")
+    if os.path.isdir(glass_assets):
+        pngio.write_png_rgba(os.path.join(glass_assets, "monitor.png"), CANVAS, CANVAS, layer)
 
     colors = len({c for c in monitor if c is not None})
     print(f"Monitor {monitor_w} × {monitor_h} Bildpixel aus {args.logo}, {colors} Farben, "
           f"×{zoom} = {monitor_w * zoom} × {monitor_h * zoom} bei {left}/{top}")
     print(f"Symbol → {args.ausgabe}; Ebenen monitor.png und grundfarbe.png → {args.ebenen}/")
+    if os.path.isdir(glass_assets):
+        print(f"Ebene monitor.png auch → {glass_assets}/")
 
 
 if __name__ == "__main__":

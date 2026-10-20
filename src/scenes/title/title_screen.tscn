@@ -93,4 +93,5 @@ offset_bottom = -6.0
 grow_vertical = 0
 theme_type_variation = &"VersionLine"
 
+[connection signal="entry_activated" from="MainMenu" to="." method="_on_main_menu_entry_activated"]
 [connection signal="selection_changed" from="MainMenu" to="." method="_on_main_menu_selection_changed"]

@@ -212,3 +212,47 @@ und 150) und die eigene `FontVariation` des Untertitels (er steht jetzt in `druc
   `_ready()` setzt, gewinnt also gegen jede `.tscn`. `layout_mode = 0` an einer Instanz setzt
   Anker und Wuchsrichtung beim Laden zurück; deshalb setzt der Hinweis seine Wuchsrichtung jetzt
   selbst.
+
+### T029 Export-Preset (`src/export_presets.cfg`)
+
+- Die Datei gehört zum Projekt und wird versioniert. `[runnable_presets]` legt das ausführbare
+  Preset je Plattform fest, `[preset.0]` das Allgemeine (`export_path` relativ zu `src/`, Filter),
+  `[preset.0.options]` alle Optionen der Plattform, auch die mit Standardwert.
+- Geheimes schreibt Godot nie hierher: Optionen mit `PROPERTY_USAGE_SECRET` (Zertifikat, Passwort,
+  Beglaubigungs-Zugänge, Skript-Schlüssel) landen in `.godot/export_credentials.cfg`, das nicht
+  versioniert wird. Deshalb darf `export_presets.cfg` ins Repo.
+- Godot schreibt die Datei nur beim Speichern aus dem Export-Dialog. Der Agent hat sie in einer
+  Wegwerf-Kopie per kleinem `EditorExportPlugin` von Godot selbst schreiben lassen, statt das
+  Format zu raten.
+- Ad-hoc-Signatur: signiert, aber ohne Apple-Zertifikat. Auf dem eigenen Mac startet die App, für
+  die Weitergabe braucht es Developer ID und Beglaubigung (11-03). Universal heißt: eine
+  ausführbare Datei mit x86_64 und arm64, prüfbar mit `lipo -info`.
+- Zwei Symbole: Aus `application/liquid_glass_icon` macht `actool` aus Xcode `Assets.car`
+  (`CFBundleIconName`), aus `application/icon` baut Godot `icon.icns` als Ersatz für ältere
+  Systeme. Die `.gdignore` im `.icon` hält den Ordner aus dem Import, `actool` liest ihn trotzdem.
+- `import_etc2_astc` lässt den Importer VRAM-komprimierte Texturen auch als ETC2/ASTC erzeugen;
+  Apple-Silicon braucht sie, deshalb verlangt der Export für `arm64` und `universal` die
+  Einstellung. Unsere Texturen sind verlustfrei, an ihren `.import` ändert sich nichts.
+- `exclude_filter` ist eine kommagetrennte Liste von Mustern; `*` deckt auch `/` ab. Mit den
+  Quelldateien fallen ihre abgeleiteten Dateien weg (`.gdc`, `.scn`, `.import`).
+
+### T032 Beenden (`title_screen.gd`, `title_screen.tscn`), vorgezogen aus Phase 4
+
+- Signal statt Aufruf: `MainMenu` meldet nur `entry_activated(id)` und weiß nicht, was „quit“
+  bedeutet. Was geschieht, entscheidet `TitleScreen._on_main_menu_entry_activated`. Deshalb kann
+  ein Test das Menü auslösen, ohne dass etwas endet.
+- `get_tree().quit()` setzt nur eine Marke; das Spiel endet am Ende des laufenden Bilds, mit
+  Exit-Code 0.
+- Für Klick, Enter und Leertaste braucht es keinen Code: Ein `Button` sendet `pressed` bei einem
+  Linksklick und, wenn er den Fokus hat, bei der Aktion `ui_accept`. Ausgelöst wird beim
+  Loslassen, also einmal je Tastendruck; ein gesperrter Button sendet nie.
+- Cmd+Q und der rote Knopf laufen über die Schließen-Anfrage: Jeder Node bekommt
+  `NOTIFICATION_WM_CLOSE_REQUEST`, dann beendet der SceneTree, weil `auto_accept_quit` an ist.
+
+### T033 Tests (`test_main_menu.gd`)
+
+- `watch_signals` hängt GUT an alle Signale; `assert_signal_emit_count(…, 1)` prüft „genau
+  einmal“, `assert_signal_emitted_with_parameters` den Inhalt.
+- Erst der Gegentest auf einem nicht verfügbaren Eintrag zeigt, dass `activate_selected()` die
+  Verfügbarkeit prüft; ein Menü, das immer meldet, bestünde den ersten Test allein.
+- `watch_signals` steht nach `select()`, damit nur zählt, was der Act-Schritt auslöst.

@@ -1,11 +1,15 @@
 extends GutTest
 
-## Prüft das Grundgerüst des Hauptmenüs: die Zeilen in ihrer Reihenfolge, welche sich
-## auslösen lassen, die Startauswahl und die Meldung, wenn eine Zeile gewählt wird.
+## Prüft das Hauptmenü: die Zeilen in ihrer Reihenfolge, welche sich auslösen lassen, die
+## Startauswahl, die Meldung, wenn eine Zeile gewählt wird, und die Meldung, wenn ein
+## Eintrag ausgelöst wird.
 ##
 ## Die vier Einträge entstehen hier im Code, mit den Werten aus dem Datenmodell
 ## (specs/001-hauptmenue/data-model.md). Geprüft wird also das Menü, nicht die Daten,
 ## die später im Titelbildschirm stehen.
+##
+## Das Menü steht hier allein, ohne Titelbildschirm. Auf entry_activated hört also nur
+## GUT, und ein ausgelöstes „Beenden“ beendet nicht den Testlauf.
 
 const MENU_SCENE := preload("res://scenes/title/main_menu.tscn")
 
@@ -69,6 +73,35 @@ func test_select_meldet_selection_changed() -> void:
 		Vector2(_menu.size.x, MainMenu.ROW_HEIGHT))
 	assert_eq(parameter[1], erwartet, "Das Rechteck muss die gewählte Zeile sein.")
 	assert_eq(_menu.selected_index(), 3)
+
+
+# --- Auslösen -------------------------------------------------------------
+
+func test_beenden_meldet_quit_genau_einmal() -> void:
+	# Arrange
+	_menu.select(3)
+	watch_signals(_menu)
+
+	# Act
+	_menu.activate_selected()
+
+	# Assert
+	assert_signal_emit_count(_menu, "entry_activated", 1,
+		"Einmal auslösen heißt genau einmal melden.")
+	assert_signal_emitted_with_parameters(_menu, "entry_activated", [&"quit"])
+
+
+func test_nicht_verfuegbarer_eintrag_meldet_nichts() -> void:
+	# Arrange: „Einstellungen“ steht direkt über „Beenden“, ist aber nicht verfügbar.
+	_menu.select(2)
+	watch_signals(_menu)
+
+	# Act
+	_menu.activate_selected()
+
+	# Assert
+	assert_signal_not_emitted(_menu, "entry_activated",
+		"Ein nicht verfügbarer Eintrag darf nichts melden, auch wenn er gewählt ist.")
 
 
 # --- Helfer ---------------------------------------------------------------

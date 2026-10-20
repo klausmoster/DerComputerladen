@@ -79,6 +79,9 @@ installierte Godot mit `--doctool` ausgibt; Beschreibungen aus der Doku 4.7
     `application/icon` des Exports und in `application/config/icon`.
   - Dazu kommt ein Liquid-Glass-Symbol aus Icon Composer in `application/liquid_glass_icon`.
     Das braucht Xcode 26 oder neuer; vorhanden sind macOS 27.0.1 und Xcode 27.1.
+  - Das `.icon` ist ein Ordner mit `icon.json` und `Assets/`. Angelegt nach Xcodes Dateivorlage
+    „Icon Composer Icon“ (Füllung `nacht`, eine Ebene) und mit `ictool` aus Icon Composer
+    gerendert und geprüft; Icon Composer öffnet es zum Weiterbearbeiten.
   - Grundfläche `nacht` (Review, Entscheidung von Klaus); `kassenrot` bedeutet im Style-Guide
     Geld und Gefahr. Der Style-Guide bekommt dazu einen Abschnitt App-Symbol.
 - **Begründung:** Godot 4.7 unterstützt Liquid-Glass-Symbole beim Export unter macOS. Ältere
@@ -101,6 +104,9 @@ installierte Godot mit `--doctool` ausgibt; Beschreibungen aus der Doku 4.7
   - Werkzeuge: `sips` (macOS) zum Dekodieren, Python-Skripte nur mit Standardbibliothek in
     `tools/raster/`. Den groben Feinschliff (Einzelpixel, Farbreste) macht Klaus in Pixelorama
     (frei) oder Aseprite; der volle Feinschliff nach Schritt 4 kommt später (Review).
+  - Auf Klaus' Wunsch lief der grobe Feinschliff per Regel (`tools/raster/cleanup.py`): Farben
+    mit höchstens 3 Pixeln gehen auf die nächste häufige Farbe (OKLab-Abstand bis 0,10),
+    Einzelpixel auf die häufigste Nachbarfarbe (unter 0,05). Lichter, Kanten und Schrift bleiben.
   - Abnahme: FR-019 und SC-007 der Spec. Dass die Rasterfassung in dieses Feature gehört, hat
     Klaus im Review bestätigt.
   - Schritt 2 der Nachbearbeitung im Style-Guide wird entsprechend ergänzt.
@@ -212,9 +218,16 @@ installierte Godot mit `--doctool` ausgibt; Beschreibungen aus der Doku 4.7
 
 - **Entscheidung:** „Beenden“ ruft `get_tree().quit()` auf. Für Cmd+Q und das Schließen des
   Fensters ist kein eigener Code vorgesehen; Godot nimmt die Schließen-Anfrage standardmäßig an.
-- **Offen zu prüfen:** Ob das App-Menü des Exports Cmd+Q schon mitbringt, ließ sich im
-  Quelltext nicht eindeutig finden. Fehlt es im Quickstart, kommt in diesem Feature ein Eintrag
-  „Der Computerladen beenden“ mit Cmd+Q über `NativeMenu` dazu.
+- **Befund (Quelltext 4.7.2, 2026-10-20):** Jede exportierte macOS-App bekommt ein App-Menü mit
+  „Quit Der Computerladen“ und ⌘Q. Cmd+Q und der rote Knopf werden zur Schließen-Anfrage
+  (`NOTIFICATION_WM_CLOSE_REQUEST`); weil `auto_accept_quit` an ist, endet das Spiel ohne
+  Rückfrage. Ein eigener Eintrag über `NativeMenu` (T035) ist deshalb voraussichtlich nicht
+  nötig; bestätigt wird es in der App (T034).
+- **Systemmenüs:** Die App hat kein `.lproj`, die Menüs von macOS erscheinen deshalb englisch
+  („About/Hide/Quit Der Computerladen“). FR-015 verlangt Deutsch nur für den Titelbildschirm.
+- **Später, mit Spielständen:** `get_tree().quit()` sendet kein
+  `NOTIFICATION_WM_CLOSE_REQUEST`, Cmd+Q und der rote Knopf schon. Dann erst die Benachrichtigung
+  an alle Nodes schicken und danach `quit()` aufrufen (Godot-Doku „Handling quit requests“).
 
 ## R12 Version und Hauptszene
 

@@ -8,6 +8,7 @@ Python 3 mit Standardbibliothek; JPEG liest `sips` (macOS). Aufruf immer vom Rep
 |---|---|
 | `make_palette.py` | erzeugt einmalig die Hauptpalette `docs/art/hauptpalette.gpl` und die Farbtafel `docs/art/hauptpalette.png` |
 | `rasterize.py` | verkleinert ein Bild per Flächenmittel auf die Endgröße und rechnet es ohne Dithering auf die Hauptpalette |
+| `cleanup.py` | räumt ein gerastertes Bild grob auf: Farbreste und Einzelpixel nach festen Regeln |
 | `make_icon.py` | baut das App-Symbol 1024 × 1024 und die Ebenen für Icon Composer aus dem Monitor im gerasterten Logo |
 | `pngio.py` | gemeinsamer Teil: PNG lesen (auch indiziert) und schreiben, Flächenmittel, Farbabstand in OKLab |
 
@@ -36,8 +37,16 @@ Python 3 mit Standardbibliothek; JPEG liest `sips` (macOS). Aufruf immer vom Rep
    1920 × 1080, dann ÷ 6). Pixel mit gemitteltem Alpha unter 128 werden transparent. Mit
    `--vorschau datei.png --zoom 3` entsteht zusätzlich eine vergrößerte Ansicht zum Prüfen.
 
-3. **Von Hand aufräumen** in Pixelorama oder Aseprite: Einzelpixel und Farbreste entfernen,
-   nur Farben der Hauptpalette verwenden (Palette `docs/art/hauptpalette.gpl` laden).
+3. **Aufräumen**, erst per Regel, danach bei Bedarf von Hand:
+
+   ```bash
+   python3 -I tools/raster/cleanup.py src/assets/images/title_t01.png --vorschau vorher-nachher.png
+   ```
+
+   Farben mit höchstens 3 Pixeln gehen auf die nächste häufige Farbe (OKLab-Abstand bis 0,10),
+   Einzelpixel auf die häufigste Farbe ihrer Nachbarn, wenn sie ihr ähnlich sind (unter 0,05).
+   Lichter, Kanten und Schrift bleiben stehen. Von Hand geht es in Pixelorama oder Aseprite
+   weiter, nur mit Farben der Hauptpalette (Palette `docs/art/hauptpalette.gpl` laden).
 
 4. **App-Symbol** aus dem gerasterten Logo, nach jedem Aufräumen am Logo neu:
 
@@ -49,7 +58,8 @@ Python 3 mit Standardbibliothek; JPEG liest `sips` (macOS). Aufruf immer vom Rep
    Quadrat in `nacht` nach Apples Symbolraster. Freigestellt wird per Füllung vom Rand: Was über
    rötliche Pixel mit dem Schildfeld zusammenhängt, fällt weg, auch der Schatten des Monitors.
    Ergebnis: `src/assets/icon/app_icon.png` und die Ebenen für Icon Composer in
-   `docs/art/app_icon/`.
+   `docs/art/app_icon/`. Gibt es das Liquid-Glass-Symbol `src/assets/icon/app_icon.icon/`
+   schon, bekommt es die neue Ebene `monitor.png` mit.
 
 Warum Flächenmittel statt Nearest Neighbor: Die gemalten Pixel in den Leonardo-Bildern sind
 ungleich groß, Nearest Neighbor würde zufällige Pixel herausgreifen (Style-Guide,

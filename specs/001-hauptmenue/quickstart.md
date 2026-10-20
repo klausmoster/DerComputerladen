@@ -47,7 +47,7 @@ Projekt im Godot-Editor starten (F5).
 | Mauszeiger | Hand nur über „Beenden“, sonst Pfeil | FR-018 |
 | Rechtsklick | wählt die Zeile und zeigt den Hinweis, löst nichts aus | FR-009 |
 | Esc | löst nichts aus | Edge Cases |
-| „Beenden“ | per Klick, Enter und Leertaste: Spiel schließt sofort | FR-008, FR-010 |
+| „Beenden“ | per Klick, Enter und Leertaste: Spiel schließt sofort (per Tastatur bis T036: Shift+Tab, dann Enter oder Leertaste) | FR-008, FR-010 |
 
 ## 4. Mac-App bauen
 
@@ -58,6 +58,9 @@ Projekt im Godot-Editor starten (F5).
 ```
 
 Danach `src/export_presets.cfg` ansehen: Es dürfen keine Passwörter oder Schlüssel darin stehen.
+In einem frisch geklonten Stand ohne `src/.godot/` meldet der erste `--import` einige Male
+„Cannot open file … .fontdata“, weil das Theme vor den Schriften geladen wird; der zweite Lauf
+ist sauber.
 Vertrauliches legt Godot in `src/.godot/export_credentials.cfg` ab, das nicht versioniert wird.
 
 ## 5. Mac-App prüfen

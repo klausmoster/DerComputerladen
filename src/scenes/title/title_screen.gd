@@ -6,7 +6,8 @@ extends Control
 ##
 ## Er setzt die Teile nur zusammen und verbindet sie. Das Menü meldet die gewählte Zeile
 ## per Signal, der Titelbildschirm reicht sie an den Hinweis weiter. Menü und Hinweis
-## kennen einander nicht.
+## kennen einander nicht. Ebenso meldet das Menü einen ausgelösten Eintrag nur; was dann
+## geschieht, entscheidet der Titelbildschirm.
 
 ## Kennzeichen in der Versionszeile, solange das Spiel ein Prototyp ist.
 const STAGE := "PROTOTYP"
@@ -28,6 +29,15 @@ static func version_text(version: String) -> String:
 	if version.is_empty():
 		return STAGE
 	return "V%s · %s" % [version, STAGE]
+
+
+## Führt den ausgelösten Eintrag aus. Verbunden in title_screen.tscn. Das Menü meldet nur
+## verfügbare Einträge, und verfügbar ist bisher nur „Beenden“.
+func _on_main_menu_entry_activated(id: StringName) -> void:
+	if id == &"quit":
+		# Ohne Rückfrage (FR-008). quit() beendet nicht sofort, sondern am Ende des
+		# laufenden Bilds; was in diesem Bild noch läuft, läuft zu Ende.
+		get_tree().quit()
 
 
 ## Zeigt den Hinweis zur gewählten Zeile neben ihr. Verbunden in title_screen.tscn.
