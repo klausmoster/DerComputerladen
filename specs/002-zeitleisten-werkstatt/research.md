@@ -68,8 +68,9 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 - **Export:** Die Doku rät, Projektdateien nach dem Export über `ResourceLoader` zu lesen, weil
   importierte Dateien im Paket umgewandelt liegen. JSON wird nicht importiert: `load()` liefert
   die Datei als `JSON`-Ressource (Probe), sie liegt also unverändert im Paket. Ob
-  `FileAccess` sie in der exportierten App findet, prüft der Quickstart. Falls nicht, kommt
-  `*.json` in den Include-Filter des Presets.
+  `FileAccess` sie in der exportierten App findet, prüft ein Probe-Export als eigene Aufgabe in
+  Phase 3, gleich nachdem die Zeitleiste den Katalog liest. Falls nicht, kommt `*.json` in den
+  Include-Filter des Presets.
 - **Alternativen:** `load()` als `JSON`-Ressource (liefert bei Fehlern nur `null` ohne Zeile und
   legt den Katalog in den Ressourcen-Cache, was die Werkstatt beim Neuladen stört).
 
@@ -98,7 +99,8 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
   nur bei gleicher Godot-Version zugesagt; über Betriebssysteme hinweg gelten sie, denn PCG32 und
   SHA-256 rechnen nur mit ganzen Zahlen. Nach einem Godot-Update werden gespeicherte Textausgaben
   neu erzeugt, falls sich etwas ändert. Für 11-01 heißt das: Spielstände speichern Seed, Fahrplan
-  und Eingriffe, nicht den Zustand der Würfel.
+  und Eingriffe, nicht den Zustand der Würfel. Klaus hat im Review entschieden, dass die gleiche
+  Godot-Version reicht; ein eigener Zufallsgenerator ist damit nicht nötig.
 - **Alternativen:**
   - Ein gemeinsamer Generator wie bisher (`randomize()`): Jede Kleinigkeit würfelt das
     restliche Spiel neu, und kein Lauf lässt sich wiederholen.
@@ -199,8 +201,11 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     abgelaufene werden nicht aufgeräumt, sondern übersprungen (wie 01-07 entschieden). Die
     wirksame Chance ist Grundchance plus Summe, begrenzt auf 0 bis 1.
   - **Termine:** Absagen, Verschieben und Einplanen gehen nur für Tage nach dem zuletzt
-    abgespielten Tag und nur für Termine, die nicht fix oder jährlich sind. Jeder Eingriff erzeugt
-    eine Meldung `INTERVENTION` im Protokoll.
+    abgespielten Tag und nur für Termine, die nicht fix oder jährlich sind. Vor `begin()` ist
+    `today = -1`, Eingriffe sind dann ab dem 01.01.1985 möglich. Jeder Eingriff erzeugt eine
+    Meldung `INTERVENTION` im Protokoll.
+  - **Randfälle:** Ein Modifikator mit Ende vor Beginn, leerem Grund oder doppelter Kennung wird
+    abgelehnt. Ein Beginn in der Vergangenheit und der Wert 0 sind erlaubt.
   - Abgelehnte Eingriffe geben einen `Error` zurück, den Grund auf Deutsch in `last_refusal`.
 - **Statistik mit Eingriffen:** Modifikatoren und Einplanungen beziehen sich auf Ereignisse und
   Tage und lassen sich auf jeden Seed übertragen. Absagen und Verschiebungen beziehen sich auf
@@ -371,9 +376,54 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 
 ## R21 Größe des Katalogs
 
-- **Entscheidung:** Ausgelegt wird für bis zu 500 Ereignisse. Die Zielzeiten aus SC-004 gelten für
-  den übernommenen Katalog. Mit 500 Ereignissen dürfen Statistik und Werkstatt langsamer werden,
-  bleiben aber bedienbar: Die Statistik läuft in Häppchen, und die Prüfung läuft nach jeder
-  Änderung in unter 100 ms.
+- **Entscheidung:** Ausgelegt wird für bis zu 500 Ereignisse. SC-004 gilt für den übernommenen
+  Katalog, SC-011 für einen erzeugten Test-Katalog mit 500 Ereignissen, je zur Hälfte fix und über
+  Wahrscheinlichkeit: ein Spiel unter 2 s, Statistik über 1.000 Spiele unter 5 Minuten, Prüfung
+  und Ziehen unter 100 ms.
+- **Abschätzung:** 250 Ereignisse über Wahrscheinlichkeit würfeln in 180 Monaten je zweimal, das
+  sind 90.000 Würfe je Spiel. Bei 1 bis 2 µs je Wurf samt Prüfung sind das 0,1 bis 0,2 s je
+  Spiel und für 1.000 Spiele 2 bis 4 Minuten.
 - **Begründung:** Die Ideensammlung („Zeitgeschehen in der Zeitung“) kann einige Hundert reine
   Meldungen bringen; mehr ist nicht absehbar.
+
+## R22 Was-wäre-wenn-Proben speichern
+
+- **Entscheidung:** Je Probe eine JSON-Datei unter `src/tools/werkstatt/proben/`, kanonisch
+  geschrieben wie der Katalog (data-model.md, WhatIfProbe).
+  - Gespeichert werden Seed, Modifikatoren, Einplanungen, Absagen und Verschiebungen.
+  - Absagen und Verschiebungen merken sich Ereignis und Tag statt der laufenden Nummer.
+  - Beim Laden wendet `WhatIfProbe.apply_to()` alles auf einen frischen Lauf an und gibt die nicht
+    anwendbaren Eingriffe als Sätze zurück (FR-051).
+- **Begründung:** Im Projektordner landen die Proben in der Versionsverwaltung. So lässt sich eine
+  Balance-Probe auch nach Wochen wiederholen. Mit dem Ordner `tools/` sind sie vom Export
+  ausgeschlossen. Die laufende Nummer eines Termins hängt davon ab, wie der Katalog gerade
+  aussieht; Ereignis und Tag dagegen sind das, was Klaus abgesagt hat.
+- **Alternativen:** Proben unter `user://` (nicht versioniert, auf einem anderen Rechner weg);
+  alle Proben in einer Datei (jede Änderung einer Probe berührt alle).
+
+## R23 Sicherungskopie der Werkstatt
+
+- **Entscheidung:** Ein `Timer` ruft alle 120 Sekunden `CatalogEditor.write_backup()` auf. Gibt es
+  ungespeicherte Änderungen, schreibt die Methode den Katalog kanonisch nach
+  `user://werkstatt_sicherung.json`.
+  - Beim Start fragt die Werkstatt, ob sie die Kopie übernehmen oder verwerfen soll. Dabei nennt
+    sie die Zeiten von Kopie und Katalogdatei (`FileAccess.get_modified_time()`).
+  - Nach dem Speichern und beim regulären Schließen löscht sie die Kopie (FR-050).
+- **Begründung:** `user://` liegt außerhalb des Projekts, die Kopie gerät also nie aus Versehen in
+  einen Commit. Zwei Minuten begrenzen den Verlust bei einem Absturz und kosten bei einem kleinen
+  Katalog nichts.
+- **Alternativen:** Kopie neben dem Katalog (könnte mitcommittet werden); Kopie nach jeder Änderung
+  (bei 500 Ereignissen unnötige Schreiblast).
+
+## R24 Vergleich zweier Durchläufe
+
+- **Entscheidung:** Läuft ein Durchlauf mit Eingriffen, rechnet der Simulator denselben Seed ohne
+  Eingriffe bis zum selben Tag mit. `ScheduleDiff.compare()` paart dann je Ereignis die Termine:
+  1. erst Termine am selben Tag; ein Paar mit anderem Zustand gilt als „anderer Zustand“;
+  2. dann die übrigen in Tagesreihenfolge, als „verschoben“;
+  3. was übrig bleibt, ist „neu“ oder „weggefallen“.
+- **Begründung:** Dank der unabhängigen Würfel (R5) unterscheiden sich beide Läufe nur dort, wo die
+  Eingriffe wirken. Die Paarung je Ereignis zeigt das ohne Rauschen. Die Kosten sind ein zweiter
+  Lauf, also Millisekunden.
+- **Alternativen:** Vergleich über die laufende Nummer (stimmt nicht mehr, sobald ein Termin
+  dazukommt); nur die Protokolle als Text vergleichen (zeigt Zeilen, nicht Termine).

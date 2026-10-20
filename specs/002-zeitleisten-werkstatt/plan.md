@@ -28,6 +28,9 @@ Technischer Ansatz (Details in [research.md](research.md), Verträge unter [cont
   Ziehen, Zoom und Tooltips. Alle Änderungen laufen über `CatalogEditor` mit `UndoRedo`.
 - **Simulator und Statistik** arbeiten auf einer Kopie des aktuellen, auch ungespeicherten
   Katalogs. Die Statistik rechnet in Häppchen je Bild und lässt sich abbrechen.
+- **Was wäre, wenn:** Eingriffe im Simulator lassen sich als Probe speichern und laden. Der Fahrplan
+  markiert, was sie gegenüber demselben Seed ohne Eingriffe ändern (`ScheduleDiff`). Eine
+  Sicherungskopie unter `user://` schützt vor Abstürzen (Review, R22 bis R24).
 - **Kalender:** Weihnachtsgeschäft, Jahreszeiten und CeBIT sind jährliche Ereignisse mit Dauer.
   `GameClock.season_changed` entfällt.
 
@@ -54,8 +57,8 @@ der Entwicklungsumgebung und wird nicht exportiert.
 **Project Type**: Desktop-Spiel (Godot-Projekt unter `src/`) mit Entwicklungswerkzeug
 
 **Performance Goals**: ein ganzes Spiel 1985–1999 unter 1 s, Statistik über 1.000 Spiele unter
-30 s (SC-004, mit dem übernommenen Katalog). Die Prüfung des Katalogs braucht nach jeder Änderung
-weniger als 100 ms, das Ziehen auf dem Zeitstrahl läuft flüssig.
+30 s (SC-004, mit dem übernommenen Katalog). Mit 500 Ereignissen: ein Spiel unter 2 s, Statistik
+unter 5 Minuten; Prüfung und Ziehen unter 100 ms (SC-011).
 
 **Constraints**:
 - Wiederholbar: gleicher Katalog, Seed und gleiche Eingriffe ergeben dasselbe Protokoll, egal in
@@ -65,8 +68,8 @@ weniger als 100 ms, das Ziehen auf dem Zeitstrahl läuft flüssig.
 - Nur Desktop mit Maus und Tastatur.
 
 **Scale/Scope**: 25 übernommene und 6 neue Kalender-Ereignisse, ausgelegt bis 500 (R21). Dazu
-16 Klassen im Kern, ein umgebautes Autoload, zwei geänderte Kernklassen (`GameClock`, `GameDate`),
-die Werkstatt mit rund zehn Szenen und Skripten und zwölf Testdateien.
+17 Klassen im Kern, ein umgebautes Autoload, zwei geänderte Kernklassen (`GameClock`, `GameDate`),
+die Werkstatt mit rund elf Szenen und Skripten und 15 Testdateien.
 
 ## Constitution Check
 
@@ -76,7 +79,7 @@ die Werkstatt mit rund zehn Szenen und Skripten und zwölf Testdateien.
 |---|---|---|---|
 | I. Nur Desktop | Die Werkstatt setzt Maus und Tastatur voraus: Hover, Tooltips, Rechtsklick, Ziehen. Kürzel Cmd bzw. Ctrl über `command_or_control_autoremap`, keine Touch-Eingaben, Forward+ bleibt | erfüllt | erfüllt |
 | II. Klaus entscheidet, der Agent baut, Claude plant und prüft | Der Plan enthält nur Signaturen, keine Rümpfe. Die Aufteilung `[K]`/`[A]`/`[C]` folgt in den Tasks, umgesetzt wird phasenweise auf Klaus' Auftrag mit Lernnotizen; `/speckit-implement` wird nicht verwendet | erfüllt | erfüllt |
-| III. Erst spezifizieren | Spec mit 5 Fragen geklärt, eigener Branch, Godot-Details erst hier, Entscheidungen mit Alternativen in research.md (R1–R21) | erfüllt | erfüllt |
+| III. Erst spezifizieren | Spec mit 5 Fragen geklärt und im Review nachgeschärft, eigener Branch, Godot-Details erst hier, Entscheidungen mit Alternativen in research.md (R1–R24) | erfüllt | erfüllt |
 | IV. Ein Look: der Style-Guide | Die Werkstatt nutzt Farben der Hauptpalette. Wie, regelt ein neuer Abschnitt „Werkzeuge“ im Style-Guide, der vor dem Bau der Werkstatt entsteht (siehe „Vorarbeiten“). Das Spiel selbst bekommt keine neue Oberfläche | erfüllt mit Vorarbeit | erfüllt mit Vorarbeit |
 | V. Daten sauber halten | Katalog als Datei im Spielprojekt, gepflegt mit der Werkstatt (Ausnahme Ereigniskatalog, Verfassung 2.1.0); game_bible unberührt | erfüllt | erfüllt |
 | Technische Rahmenbedingungen | Godot 4.7 und GUT 9.7.1, Projekt in `src/`. `GameClock` und `Timeline` bleiben Autoloads, die Timeline meldet weiter nur per Signal. Kalender-Ereignisse ziehen in die Timeline, damit alles, was ein Ereignis auslösen kann, dort steht | erfüllt | erfüllt |
@@ -93,8 +96,8 @@ erfüllt, wenn der Abschnitt „Werkzeuge“ im Style-Guide steht, bevor die Wer
 specs/002-zeitleisten-werkstatt/
 ├── spec.md                      # Spezifikation, geklärt
 ├── plan.md                      # dieser Plan
-├── research.md                  # Phase 0: Entscheidungen R1–R21
-├── data-model.md                # Phase 1: Klassen, Felder, Zustände, Prüfregeln V01–V22
+├── research.md                  # Phase 0: Entscheidungen R1–R24
+├── data-model.md                # Phase 1: Klassen, Felder, Zustände, Prüfregeln V01–V24
 ├── quickstart.md                # Phase 1: Prüfanleitung
 ├── contracts/
 │   ├── ereigniskatalog.md       # Dateiformat des Katalogs
@@ -114,18 +117,18 @@ src/                                 # Godot-Projekt
 │   ├── game_clock.gd                # geändert: season_changed entfällt
 │   ├── game_date.gd                 # geändert: ISO-Datum, Altlasten entfallen
 │   ├── timeline.gd                  # umgebaut: Hülle um TimelineRun
-│   └── timeline/                    # neu: der Kern, 16 Klassen
+│   └── timeline/                    # neu: der Kern, 17 Klassen
 ├── data/
 │   └── event_catalog.json           # neu; event_database.gd entfällt
 ├── scenes/                          # timeline_demo entfällt
-├── tools/werkstatt/                 # neu: Werkstatt und Textausgabe, nicht im Export
+├── tools/werkstatt/                 # neu: Werkstatt, Textausgabe, proben/; nicht im Export
 ├── ui/ui_palette.gd                 # geändert: by_token()
 ├── export_presets.cfg               # geändert: tools/* ausgeschlossen
 └── test/                            # neue und geänderte Tests, fixtures/
 ```
 
 **Structure Decision**: Die vorhandene Aufteilung bleibt. Der Kern bekommt einen Unterordner
-`src/core/timeline/`, weil er aus 16 kleinen Klassen besteht. Werkzeuge, die Godot-Code brauchen,
+`src/core/timeline/`, weil er aus 17 kleinen Klassen besteht. Werkzeuge, die Godot-Code brauchen,
 liegen unter `src/tools/` und werden wie `test/` vom Export ausgeschlossen. Werkzeuge außerhalb
 von Godot (Python) bleiben unter `tools/` im Repo-Root. Einzelheiten stehen in den Verträgen.
 
@@ -141,7 +144,8 @@ Keine Einträge, die Prüfung der Verfassung zeigt keine Verstöße.
    - eine Schrift ohne Pixelraster, vorgeschlagen Godots eingebaute Schrift (R14);
    - Farbrollen aus der Hauptpalette: Grund, Fläche, Text, gedämpfter Text, Auswahl, Fehler,
      Warnung, Ziehen;
-   - Startfarben der zehn Kategorien im Zeitstrahl.
+   - Startfarben der zehn Kategorien im Zeitstrahl;
+   - Text mit mindestens 4,5 : 1 Kontrast zu seinem Grund (FR-029).
 
    Claude entwirft ihn, Klaus gibt ihn frei.
 2. **Schnappschuss der alten Daten** (R19), bevor der alte Code fällt. Er hält die 19 historischen
@@ -155,12 +159,12 @@ Jede Phase endet mit grünen Tests, Lernnotizen und Klaus' Abnahme; erst dann fo
 |---|---|---|
 | 1 | Vorarbeit Style-Guide „Werkzeuge“ | – |
 | 2 | Grundlage: Datenklassen, Katalog lesen und schreiben, Prüfregeln, `GameDate`-Ergänzungen, `UiPalette.by_token()`, Fixtures, Schnappschuss, Übernahme in `event_catalog.json` | blockiert alles |
-| 3 | Fahrplan abspulen: Würfel, Termine, Meldungen, `TimelineRun` (fix, gesetzt, Würfelrunde, Folgeereignisse, Bedingungen, Stichtage), Autoload umbauen, Textausgabe, Export-Filter. Alte Engine, `EventDatabase`, Demo und alte Tests entfernen | US1 (P1) |
-| 4 | Werkstatt, Grundgerüst: Fenster, Theme, `CatalogEditor` mit Rückgängig, Liste, Formular, Prüfung, Speichern, Schließen | US2 (P1) |
+| 3 | Fahrplan abspulen: Würfel, Termine, Meldungen, `TimelineRun` (fix, gesetzt, Würfelrunde, Folgeereignisse, Bedingungen, Stichtage), Autoload umbauen, Textausgabe, Export-Filter, Probe-Export (R4). Alte Engine, `EventDatabase`, Demo und alte Tests entfernen | US1 (P1) |
+| 4 | Werkstatt, Grundgerüst: Fenster, Theme, `CatalogEditor` mit Rückgängig, Liste, Formular, Kategorien, Prüfung, Speichern, Schließen, Sicherungskopie | US2 (P1) |
 | 5 | Kalender und Dauer: Dauer, jährliche Ereignisse, `ONCE`/`DURING`, Kalender-Ereignisse im Katalog, `season_changed` und `GameDate`-Altlasten entfernen | US3 (P2) |
 | 6 | Zeitstrahl: Zeichnen, Zoom, Ziehen, Tooltips, Rechtsklick, Doppelklick | US4 (P2) |
 | 7 | Simulator: Seed, Schalter, Fahrplan, Protokoll, Begründung | US5 (P2) |
-| 8 | Eingriffe: Modifikatoren, Absagen, Verschieben, Einplanen im Kern und im Simulator | US6 (P2) |
+| 8 | Was wäre, wenn: Modifikatoren, Absagen, Verschieben, Einplanen im Kern und im Simulator, Vergleich mit `ScheduleDiff`, Proben speichern und laden | US6 (P2) |
 | 9 | Statistik in Häppchen, Ergebnis-Tabelle, Verteilung | US7 (P3) |
 | 10 | Abschluss: CLAUDE.md (Tabelle „Aufbau“, Beschreibung der Timeline), Features.md, Quickstart vollständig, Lückensuche mit `/speckit-converge` | – |
 
@@ -181,9 +185,20 @@ Kandidaten für Lernnotizen und für `[K]`-Aufgaben, die Klaus sich aussucht:
   geeignet als `[K]`-Aufgabe, weil Klaus genau das später für Spielansichten braucht.
 - Arbeit in Häppchen mit `await get_tree().process_frame` (Phase 9).
 
-## Präzisierung der Spec
+## Was wegfällt und wer es nutzte
 
-Beim Planen fielen zwei Unschärfen auf; beide sind in der Spec nachgezogen:
+| Teil | Bisherige Nutzer | Danach |
+|---|---|---|
+| `Timeline.fast_forward_to()` | niemand; gedacht für Idee 01-05 | 01-05 baut später auf `TimelineRun.advance_to()` auf (Vermerk in Feature_Ideas) |
+| `GameClock.season_changed` | `timeline_demo`, ein Test | Kalender-Ereignisse (FR-023, FR-024) |
+| `GameDate.season()`, `is_holiday_season()` | `timeline_demo`, Tests | entfallen samt Tests |
+| `timeline_demo.tscn/.gd` | Startbefehle in den Abnahmen von 01-01 und 01-02 | die Werkstatt; die beiden Feature-Docs bleiben als Historie, der Quickstart von 002 nimmt die Hauptszene |
+| `EventDatabase`, `test_event_database.gd`, `test_timeline_event.gd` | alte Engine | Katalog, Schnappschuss, neue Tests |
+| `EventEffect.Kind.SPAWN` | kein Ereignis | Folgeereignisse als eigener Teil |
+
+## Änderungen an der Spec nach Plan und Review
+
+Beim Planen fielen zwei Unschärfen auf:
 - **Statistik mit Eingriffen:** Absagen und Verschiebungen lassen sich nicht auf andere Seeds
   übertragen, denn sie betreffen einen Termin, den es nur im Fahrplan eines bestimmten Seeds
   gibt. FR-045 und US7, Szenario 4 sagen jetzt, dass die Statistik Modifikatoren und
@@ -191,6 +206,13 @@ Beim Planen fielen zwei Unschärfen auf; beide sind in der Spec nachgezogen:
 - **Tag eines Eingriffs:** Der aktuelle Spieltag ist schon abgespielt. Verschieben und Einplanen
   gehen deshalb erst ab dem folgenden Tag; FR-026 sagt jetzt „nach dem aktuellen Spieltag“ statt
   „zwischen dem aktuellen Spieltag und …“.
+
+Im Review der Checkliste [review.md](checklists/review.md) hat Klaus vier Fragen entschieden:
+Proben speichern, Sicherungskopie, Unterschiede markieren, Seeds je Godot-Version. User Story 6
+heißt seitdem „Was wäre, wenn: Spieleraktionen ausprobieren“. Die übrigen Punkte sind als
+Vorschläge eingearbeitet: Spec (FR-004 bis FR-051, Edge Cases, SC-001, SC-003, SC-004, SC-011),
+Datenmodell (Zustand „beendet“, V23, V24, WhatIfProbe), Verträge, research.md (R22 bis R24) und
+Quickstart.
 
 ## Offene Entscheidungen für Klaus
 

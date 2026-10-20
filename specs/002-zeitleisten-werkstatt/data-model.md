@@ -17,6 +17,8 @@ TimelineRun (ein Spiel) ──┬── Seed
                           ├── ScheduleEntry (Fahrplan) ──► TimelineEvent
                           ├── ChanceModifier (Eingriffe) ──► Kennung eines TimelineEvent
                           └── TimelineMessage (Protokoll)
+
+WhatIfProbe (Werkstatt) ──── Seed und Eingriffe, gespeichert neben der Werkstatt
 ```
 
 Der Katalog ist die Beschreibung, was passieren kann; er ändert sich während eines Spiels nie
@@ -30,12 +32,13 @@ Der Katalog ist die Beschreibung, was passieren kann; er ändert sich während e
 
 | Feld | Typ | Bedeutung |
 |---|---|---|
-| `id` | String | Kennung, `[a-z0-9_]+`, eindeutig |
-| `name` | String | Anzeigename, deutsch |
-| `color` | StringName | Token aus `UiPalette`, etwa `&"petrol"` |
+| `id` | String | Kennung, `[a-z0-9_]+`, eindeutig; entsteht beim Anlegen aus dem Namen und bleibt fest |
+| `name` | String | Anzeigename, deutsch; Umbenennen ändert nur ihn |
+| `color` | StringName | Token aus `UiPalette`, etwa `&"petrol"`; neue Kategorien bekommen das erste noch freie Token |
 
 Bei der Übernahme: `hardware`, `software`, `tech`, `wirtschaft`, `lokal`, `konkurrenz`, `kunde`,
-`reklamation`, `lieferung` (aus dem bisherigen Enum) und neu `kalender`.
+`reklamation`, `lieferung` (aus dem bisherigen Enum) und neu `kalender`. Gelöscht werden kann eine
+Kategorie nur, wenn kein Ereignis mehr zu ihr gehört (FR-031).
 
 ## TimelineEvent
 
@@ -102,8 +105,8 @@ wirkt `DURING` wie `ONCE` (FR-021).
 | `event` | String | Kennung eines anderen Ereignisses |
 | `occurred` | bool | `true`: schon eingetreten; `false`: noch nicht eingetreten |
 
-„Eingetreten“ heißt: Ein Termin dieses Ereignisses hat bis zum Vortag begonnen (Zustand `RUNNING`
-oder `OCCURRED`).
+„Eingetreten“ heißt: Ein Termin dieses Ereignisses hat bis zum Vortag begonnen (Zustand `RUNNING`,
+`OCCURRED` oder `ENDED`), auch wenn er noch läuft (FR-006).
 
 ## ScheduleEntry (Termin)
 
@@ -125,13 +128,13 @@ oder `OCCURRED`).
 
 ```text
             Beginn, ohne Dauer
- PLANNED ─────────────────────────────► OCCURRED
-    │  │                                   ▲
-    │  │ Beginn, mit Dauer                 │ Ende
-    │  └──────────────────► RUNNING ───────┘
-    │
-    ├── Bedingung nicht erfüllt, läuft noch, Kette gestoppt ──► SKIPPED
-    └── Eingriff „absagen“ ──────────────────────────────────► CANCELLED
+ PLANNED ─────────────────────────────► OCCURRED   („eingetreten“)
+    │  │
+    │  │ Beginn, mit Dauer                 Ende
+    │  └──────────────────► RUNNING ─────────────► ENDED   („beendet“)
+    │                      („läuft“)
+    ├── Bedingung nicht erfüllt, läuft noch, Kette gestoppt ──► SKIPPED   („entfallen“)
+    └── Eingriff „absagen“ ──────────────────────────────────► CANCELLED („abgesagt“)
 ```
 
 Verschieben ändert nur `day` und `end_day` eines `PLANNED`-Termins und setzt `note`. Termine
@@ -154,6 +157,10 @@ Fahrplan zeigt sie beim Termin (FR-013).
 Wirksame Chance am Tag d = `clamp(monthly_chance + Σ value aller Modifikatoren mit
 from_day ≤ d ≤ to_day, 0, 1)` (FR-025).
 
+Abgelehnt wird ein Modifikator mit `to_day` < `from_day`, mit leerem Grund, mit einer schon
+vergebenen Kennung oder für ein Ereignis, das nicht `CHANCE` ist. Ein `from_day` in der
+Vergangenheit und der Wert 0 sind erlaubt (Edge Cases).
+
 ## TimelineMessage (Meldung)
 
 | Feld | Typ | Bedeutung |
@@ -170,7 +177,7 @@ from_day ≤ d ≤ to_day, 0, 1)` (FR-025).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `severity` | `Severity` | `ERROR` oder `WARNING` |
-| `rule` | String | Kennung der Regel, `V01` bis `V22` |
+| `rule` | String | Kennung der Regel, `V01` bis `V24` |
 | `event_id` | String | betroffenes Ereignis oder leer |
 | `field` | String | betroffenes Feld, etwa `date`, `effects[1].delay_days` |
 | `message` | String | deutsch, nennt Ereignis und Feld |
@@ -203,6 +210,8 @@ Die Regeln aus den Edge Cases der Spec, durchnummeriert für Tests (SC-006):
 | V20 | Wirkung auf Preis, Nachfrage, Ruf oder Kundenstrom mit Stärke 0 | Warnung |
 | V21 | Kategorie: Kennung doppelt oder leer, Farbe kein Token der Palette | Fehler |
 | V22 | Strukturfehler beim Lesen: Datei kein gültiges JSON (mit Zeile), `format` nicht 1, Pflichtfeld fehlt, falscher Typ, unbekannter Schlüssel oder Wert für `kind` oder `scope` | Fehler |
+| V23 | Kreis aus Folgeereignissen mit 100 % und Verzögerung, der bis Spielende weiterläuft | Warnung |
+| V24 | Gesetzt: Mindestabstand kürzer als die Dauer, gesetzte Termine würden sich überlappen | Fehler |
 
 Ein Ereignis ohne Wirkung ist erlaubt (reine Meldung).
 
@@ -215,9 +224,30 @@ Ein Ereignis ohne Wirkung ist erlaubt (reine Meldung).
 | `total` | int | Beginne über alle Spiele |
 | `minimum`, `maximum` | int | kleinste und größte Anzahl in einem Spiel |
 | `games_without` | int | Spiele, in denen es nie begann |
-| `games_at_max` | int | Spiele, in denen es die Höchstzahl erreichte; bei gesetzten Ereignissen die höchste Anzahl |
+| `games_at_max` | int | Spiele, in denen es seine Obergrenze erreichte: Höchstzahl bei `CHANCE`, höchste Anzahl bei `PRESET`; −1 bei Ereignissen ohne Obergrenze |
 | `per_year` | PackedInt32Array | 15 Werte, Beginne je Jahr 1985 bis 1999 über alle Spiele |
 
 Mittelwert = `total / games`; Anteile = `games_without / games` und `games_at_max / games`.
-Gezählt werden Beginne (Zustand `RUNNING` oder `OCCURRED`), nicht entfallene oder abgesagte
-Termine.
+Gezählt werden Beginne (Zustand `RUNNING`, `OCCURRED` oder `ENDED`), nicht entfallene oder
+abgesagte Termine.
+
+## WhatIfProbe (Was-wäre-wenn-Probe)
+
+Eine gespeicherte Probe aus dem Simulator (FR-051), eine JSON-Datei je Probe unter
+`src/tools/werkstatt/proben/<kennung>.json`, geschrieben nach denselben Regeln wie der Katalog.
+
+| Feld | Typ | Bedeutung |
+|---|---|---|
+| `id` | String | Kennung = Dateiname, aus dem Namen erzeugt wie bei Ereignissen |
+| `name` | String | Anzeigename, etwa „Windiger Händler ab 1990“ |
+| `seed` | int | Seed des Durchlaufs |
+| `modifiers` | Array[ChanceModifier] | wie im Lauf |
+| `schedulings` | Array | `{ event_id, day, reason }`, eingeplante Ereignisse |
+| `cancellations` | Array | `{ event_id, day, reason }`, abgesagte Termine |
+| `moves` | Array | `{ event_id, day, new_day, reason }`, verschobene Termine |
+
+Absagen und Verschiebungen merken sich Ereignis und Tag statt der laufenden Nummer, denn die
+Nummer kann sich ändern, wenn sich der Katalog ändert. Beim Laden sucht die Werkstatt den
+geplanten Termin dieses Ereignisses an diesem Tag; fehlt er, ist der Eingriff nicht anwendbar und
+wird genannt. Dasselbe gilt für Modifikatoren und Einplanungen mit unbekannter Kennung. In die
+Statistik gehen nur `modifiers` und `schedulings` ein (FR-045).

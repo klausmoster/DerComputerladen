@@ -33,7 +33,8 @@ src/
 │       ├── timeline_run.gd           # TimelineRun
 │       ├── schedule_text.gd          # ScheduleText
 │       ├── timeline_statistics.gd    # TimelineStatistics
-│       └── event_statistic.gd        # EventStatistic
+│       ├── event_statistic.gd        # EventStatistic
+│       └── schedule_diff.gd          # ScheduleDiff: Vergleich zweier Läufe (FR-043)
 ├── data/
 │   ├── event_catalog.json            # neu: der Ereigniskatalog
 │   └── event_database.gd             # entfällt
@@ -117,7 +118,7 @@ func to_dict() -> Dictionary
 class_name CatalogIssue extends RefCounted
 enum Severity { ERROR, WARNING }
 var severity: Severity
-var rule: String                        # "V01" … "V22"
+var rule: String                        # "V01" … "V24"
 var event_id: String
 var field: String
 var message: String
@@ -149,7 +150,7 @@ func duplicate_catalog() -> EventCatalog           # tiefe Kopie über to_dict()
 func sort_events() -> void                         # nach Kennung
 
 class_name CatalogValidator extends RefCounted
-## Alle Regeln V01 bis V21 aus data-model.md; Reihenfolge der Meldungen: Ereignisse nach
+## Alle Regeln aus data-model.md außer V22, die beim Lesen entsteht; Reihenfolge der Meldungen: Ereignisse nach
 ## Kennung, je Ereignis nach Regel.
 static func validate(catalog: EventCatalog) -> Array[CatalogIssue]
 static func has_errors(issues: Array[CatalogIssue]) -> bool
@@ -176,10 +177,10 @@ Zwecke und Würfe (verbindlich, sonst bricht FR-015):
 ```gdscript
 class_name ScheduleEntry extends RefCounted
 enum Origin { FIXED, YEARLY, PRESET, ROLLED, FOLLOW_UP, INTERVENTION }
-enum State { PLANNED, RUNNING, OCCURRED, SKIPPED, CANCELLED }
+enum State { PLANNED, RUNNING, OCCURRED, ENDED, SKIPPED, CANCELLED }
 # Felder wie data-model.md
 func origin_label() -> String     # „fix“, „jährlich“, „gesetzt“, „gewürfelt“, „Folge von <titel>“, „Eingriff“
-func state_label() -> String      # „geplant“, „läuft“, „eingetreten“, „entfallen“, „abgesagt“
+func state_label() -> String      # „geplant“, „läuft“, „eingetreten“, „beendet“, „entfallen“, „abgesagt“
 func explain() -> String          # Begründung in einem Satz, z. B. „Würfel 0,021 < Schwelle 0,080 (3 % + Ware vom windigen Händler +5)“
 func due_effects() -> Array[Dictionary]   # [{ "effect": EventEffect, "day": int }], nur verzögerte
 
@@ -225,10 +226,14 @@ func running_entries() -> Array[ScheduleEntry]
 ## { "base": float, "sum": float, "effective": float, "modifiers": Array[ChanceModifier] }
 func chance_info(event_id: String, day: int) -> Dictionary
 
+## Geplanter Termin des Ereignisses an diesem Tag oder null; zum Laden von Proben (data-model.md).
+func find_planned(event_id: String, day: int) -> ScheduleEntry
+
 ## Eingriffe (FR-025 bis FR-027). OK oder Error mit Grund in last_refusal:
 ## ERR_DOES_NOT_EXIST (unbekannte Kennung oder Nummer), ERR_ALREADY_EXISTS (Modifikator-Kennung
 ## doppelt), ERR_UNAVAILABLE (fix, jährlich, schon begonnen, Tag nicht nach today oder nach
-## LAST_DAY), ERR_INVALID_PARAMETER (kein Grund, kein Enddatum, falsche Art).
+## LAST_DAY), ERR_INVALID_PARAMETER (kein Grund, Ende vor Beginn, falsche Art).
+## Vor begin() ist today = -1, Eingriffe sind dann ab Tag 0 möglich.
 func add_modifier(modifier: ChanceModifier) -> Error
 func remove_modifier(id: String) -> Error
 func cancel_entry(serial: int, reason: String) -> Error
@@ -240,7 +245,7 @@ func schedule_event(event_id: String, day: int, reason: String) -> Error
 
 1. Enden: `RUNNING`-Termine mit `end_day == d`, nach `serial`. Je Termin erst `EFFECT_ENDED` für
    jede begonnene `DURING`-Wirkung in Listenreihenfolge, dann `EVENT_ENDED`; Zustand
-   `OCCURRED`.
+   `ENDED`.
 2. Fällige verzögerte Wirkungen: `EFFECT_STARTED` für jede Wirkung mit `day + delay_days == d`,
    deren Termin begonnen hat; Termine nach `serial`, Wirkungen in Listenreihenfolge.
 3. Würfelrunde, wenn d ein Monatserster ist: `CHANCE`-Ereignisse nach Kennung (R8).
@@ -256,6 +261,26 @@ func schedule_event(event_id: String, day: int, reason: String) -> Error
 
 Nach `LAST_DAY` gibt es keine Meldung mehr (FR-019). Enden oder Wirkungen, die danach fällig
 wären, bleiben mit ihrem Tag im Fahrplan stehen.
+
+## Vergleich zweier Läufe
+
+```gdscript
+class_name ScheduleDiff extends RefCounted
+enum Mark { NONE, ADDED, REMOVED, MOVED, STATE_CHANGED }
+var marks: Dictionary = {}                 # serial in with_changes → Mark
+var removed: Array[ScheduleEntry] = []     # Termine aus baseline ohne Gegenstück
+
+## Vergleicht denselben Seed ohne (baseline) und mit Eingriffen (with_changes), beide bis zum
+## selben Tag abgespielt (FR-043).
+static func compare(baseline: TimelineRun, with_changes: TimelineRun) -> ScheduleDiff
+```
+
+Paarung je Ereignis (R24):
+1. Termine am selben Tag bilden ein Paar; bei anderem Zustand `STATE_CHANGED`, sonst `NONE`.
+2. Übrige Termine werden in Tagesreihenfolge gepaart, solange beide Seiten welche haben, und
+   bekommen `MOVED`.
+3. Was dann in `with_changes` übrig ist, ist `ADDED`; was in `baseline` übrig ist, kommt nach
+   `removed`.
 
 ## Statistik
 
@@ -300,7 +325,7 @@ var clock: Node = null                     # null heißt Autoload GameClock; Tes
 var catalog: EventCatalog                  # geladen, ohne Ereignisse mit Fehlern
 var run: TimelineRun
 
-## Legt einen neuen Lauf an; seed < 0 heißt würfeln. Spielt den ersten Tag ab und sendet dessen
+## Legt einen neuen Lauf an; seed < 0 heißt würfeln, aus 0 bis 2.147.483.647 (FR-014). Spielt den ersten Tag ab und sendet dessen
 ## Meldungen.
 func start_game(seed: int = -1) -> void
 func get_seed() -> int
@@ -355,11 +380,13 @@ static func protocol_lines(run: TimelineRun) -> PackedStringArray
 | `test_game_date.gd` | geändert: `from_iso`, `to_iso`, `is_valid`; Tests zu Jahreszeit und Weihnachtsgeschäft entfallen |
 | `test_game_clock.gd` | geändert: Test zu `season_changed` entfällt |
 | `test_event_catalog.gd` | Lesen, Schreiben, Rundreise Datei → Katalog → Datei bytegleich, Zahlen als `int`, Parse-Fehler mit Zeile |
-| `test_catalog_validator.gd` | jede Regel V01 bis V22 mit einer kaputten Fixture (SC-006), Warnungen V13 und V20 |
+| `test_catalog_validator.gd` | jede Regel V01 bis V24 mit einer kaputten Fixture (SC-006), Warnungen V13, V20 und V23 |
 | `test_timeline_run.gd` | Fahrplan fix, jährlich, gesetzt; Würfelrunde inklusive Januar 1985; Dauer, Enden vor Beginnen, Winter am ersten Tag; Wirkungen `ONCE`/`DURING`; Folgeereignisse und Kettenbremse; Bedingungen; nach dem 31.12.1999 nichts mehr; Tag für Tag = Sprünge (SC-002); Unabhängigkeit der Würfel (FR-015, SC-003) |
 | `test_interventions.gd` | Modifikatoren: Summe, Begrenzung, Ablauf, einzeln entfernen; Absagen, Verschieben, Einplanen; Ablehnungen |
 | `test_timeline_statistics.gd` | 50 % pro Monat → Mittelwert 85,5 bis 94,5 (SC-008); gesetzt 30/70 → 27 bis 33 % ohne; gleiche Ergebnisse bei Wiederholung; mit Modifikatoren |
 | `test_schedule_text.gd` | gleiche Ausgabe bei gleichem Seed, Format der Zeilen |
+| `test_schedule_diff.gd` | Paarung gleicher Tag, verschoben, neu, weggefallen, anderer Zustand; Modifikator aus US6, Szenario 1 markiert nur die Reklamationswelle (US6, Szenario 2) |
+| `test_large_catalog.gd` | `fixtures/catalog_500.json` (500 Ereignisse, je zur Hälfte fix und über Wahrscheinlichkeit, einmal per Skript erzeugt und committet): Prüfung unter 100 ms, ein Spiel unter 2 s (SC-011) |
 | `test_timeline.gd` | Autoload-Hülle mit eigener Uhr: Signale in der richtigen Reihenfolge, fehlerhafte Ereignisse ausgenommen |
 | `test_shipped_catalog.gd` | echter Katalog: fehlerfrei (FR-048), 19 historische Ereignisse für 100 Seeds wie im Schnappschuss (SC-005), Kalender-Ereignisse (FR-023, SC-009) |
 
