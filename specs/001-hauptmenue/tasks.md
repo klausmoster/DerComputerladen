@@ -279,21 +279,22 @@ Phase 5.
 **Independent Test**: Das Menü einmal nur mit der Tastatur und einmal nur mit der Maus bedienen
 (quickstart.md, Abschnitt 3).
 
-- [ ] T036 [A] [US3] Maus und Fokus in `src/scenes/title/main_menu.gd`:
+- [x] T036 [A] [US3] Maus und Fokus in `src/scenes/title/main_menu.gd`:
   - `mouse_entered` ruft `grab_focus()` auf.
   - Umlauf über `focus_neighbor_top` und `focus_neighbor_bottom`.
   - Die rechte Maustaste über `gui_input` abfangen: Zeile fokussieren, nichts auslösen.
   - Kopfzeile und Lochränder ändern die Auswahl nicht (FR-009, FR-010, FR-011, Edge Cases).
-- [ ] T037 [A] [US3] Mauszeiger in `src/scenes/title/main_menu.gd`: `mouse_default_cursor_shape`
+- [x] T037 [A] [US3] Mauszeiger in `src/scenes/title/main_menu.gd`: `mouse_default_cursor_shape`
   `CURSOR_POINTING_HAND` bei verfügbaren, `CURSOR_ARROW` bei nicht verfügbaren Einträgen (FR-018)
-- [ ] T038 [A] [P] [US3] Tests in `src/test/test_main_menu.gd`:
+- [x] T038 [A] [P] [US3] Tests in `src/test/test_main_menu.gd`:
   - Pfeil runter und hoch mit Umlauf an beiden Enden.
   - Rechtsklick wählt die Zeile und sendet kein `entry_activated`.
   - Mauszeiger je Eintrag nach `available`.
-- [ ] T039 [K] [US3] Bedienung im Editor nach quickstart.md, Abschnitt 3 prüfen:
+- [x] T039 [K] [US3] Bedienung im Editor nach quickstart.md, Abschnitt 3 prüfen:
   - Pfeiltasten, Tab und Shift+Tab, Leertaste, Maus, Rechtsklick und Esc.
   - Der Hinweis erscheint sofort und bleibt stehen.
   - Jede Zeile reagiert ohne wahrnehmbare Verzögerung (SC-003).
+  - Von Klaus abgenommen am 2026-10-20; Überfahren wählt beim Betreten einer Zeile, wie im Vertrag.
 
 **Checkpoint**: Das Menü lässt sich vollständig mit Maus und mit Tastatur bedienen. Abnahme durch
 Klaus, dann Auftrag für Phase 6.

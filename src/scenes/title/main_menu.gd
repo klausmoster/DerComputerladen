@@ -8,7 +8,10 @@ extends Control
 ## Hervorhebung und Pfeil malt das Menü selbst in `_draw()`, also unter den Buttons.
 ##
 ## Die Auswahl ist Godots Fokus: Gewählt ist die Zeile, deren Button den Fokus hat. So
-## gibt es nur eine Auswahl, gleich welche Eingabe sie ändert.
+## gibt es nur eine Auswahl, gleich welche Eingabe sie ändert. Die Maus holt sich den
+## Fokus beim Überfahren und beim Rechtsklick, Pfeiltasten und Tab verschieben ihn, und
+## an beiden Enden geht es am anderen Ende weiter. Verlässt die Maus das Menü, bleibt
+## die Auswahl, wo sie ist.
 ##
 ## Das Menü führt selbst nichts aus, es meldet nur. Was ein Eintrag bewirkt, entscheidet,
 ## wer `entry_activated` hört.
@@ -51,6 +54,7 @@ func _ready() -> void:
 		var button := _make_row(index)
 		_rows.add_child(button)
 		_buttons.append(button)
+	_link_ends()
 	custom_minimum_size = Vector2(PAPER_WIDTH, ROW_HEIGHT * _row_count())
 	# Zeitversetzt: Erst ordnet der VBoxContainer die Zeilen an, dann stimmt auch das
 	# Rechteck, das selection_changed für die erste Zeile meldet.
@@ -126,9 +130,33 @@ func _make_row(index: int) -> Button:
 	button.theme_type_variation = &"MenuRow"
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.custom_minimum_size = Vector2(0, ROW_HEIGHT)
+	# Die Hand verspricht, dass ein Klick etwas tut. Über gesperrten Zeilen bleibt der
+	# Pfeil (FR-018).
+	button.mouse_default_cursor_shape = CURSOR_POINTING_HAND if entry.available else CURSOR_ARROW
+	# Überfahren wählt die Zeile: Die Maus holt sich den Fokus, Maus und Tastatur teilen
+	# sich also eine Auswahl (FR-011). Ein Gegenstück für mouse_exited gibt es bewusst
+	# nicht, sonst ginge die Auswahl verloren, sobald die Maus das Menü verlässt.
+	button.mouse_entered.connect(button.grab_focus)
 	button.focus_entered.connect(_on_row_focus_entered.bind(index))
 	button.pressed.connect(_on_row_pressed.bind(index))
+	button.gui_input.connect(_on_row_gui_input.bind(index))
 	return button
+
+
+## Verbindet die erste und die letzte Zeile, damit die Auswahl an beiden Enden umläuft:
+## Pfeil hoch und Shift+Tab springen von oben nach unten, Pfeil runter und Tab von unten
+## nach oben (FR-010). Dazwischen findet Godot den Nachbarn selbst, denn die Zeilen
+## stehen untereinander und im Baum hintereinander. Weil die Enden aufeinander zeigen,
+## verlässt Tab das Menü nie, auch wenn später andere Bedienelemente daneben stehen.
+func _link_ends() -> void:
+	if _buttons.is_empty():
+		return
+	var first := _buttons[0]
+	var last := _buttons[-1]
+	first.focus_neighbor_top = first.get_path_to(last)
+	first.focus_previous = first.get_path_to(last)
+	last.focus_neighbor_bottom = last.get_path_to(first)
+	last.focus_next = last.get_path_to(first)
 
 
 ## Die ganze Zeile [param index] in globalen Koordinaten, von Papierrand zu Papierrand.
@@ -153,3 +181,16 @@ func _on_row_focus_entered(index: int) -> void:
 ## Ein gesperrter Button sendet pressed gar nicht erst, hier kommen nur verfügbare an.
 func _on_row_pressed(index: int) -> void:
 	entry_activated.emit(entries[index].id)
+
+
+## Ein Rechtsklick wählt die Zeile und zeigt so ihren Hinweis, löst aber nichts aus
+## (FR-009). Der Button selbst reagiert nur auf die linke Taste. Das Signal gui_input
+## kommt, bevor der Button das Ereignis verarbeitet; accept_event() markiert es als
+## behandelt, und dann sieht der Button es gar nicht mehr.
+func _on_row_gui_input(event: InputEvent, index: int) -> void:
+	var click := event as InputEventMouseButton
+	if click == null or click.button_index != MOUSE_BUTTON_RIGHT:
+		return
+	if click.pressed:
+		select(index)
+	_buttons[index].accept_event()

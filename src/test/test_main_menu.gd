@@ -1,15 +1,19 @@
 extends GutTest
 
 ## Prüft das Hauptmenü: die Zeilen in ihrer Reihenfolge, welche sich auslösen lassen, die
-## Startauswahl, die Meldung, wenn eine Zeile gewählt wird, und die Meldung, wenn ein
-## Eintrag ausgelöst wird.
+## Startauswahl, die Meldung, wenn eine Zeile gewählt wird, die Meldung, wenn ein Eintrag
+## ausgelöst wird, die Bedienung mit Tastatur und Maus und den Mauszeiger je Eintrag.
 ##
 ## Die vier Einträge entstehen hier im Code, mit den Werten aus dem Datenmodell
 ## (specs/001-hauptmenue/data-model.md). Geprüft wird also das Menü, nicht die Daten,
 ## die später im Titelbildschirm stehen.
 ##
-## Das Menü steht hier allein, ohne Titelbildschirm. Auf entry_activated hört also nur
-## GUT, und ein ausgelöstes „Beenden“ beendet nicht den Testlauf.
+## Das Menü steht hier ohne Titelbildschirm. Auf entry_activated hört also nur GUT, und
+## ein ausgelöstes „Beenden“ beendet nicht den Testlauf.
+##
+## Tasten und Klicks gehen wie echte Eingaben über push_input in den Viewport des Menüs,
+## nicht über select(). So prüfen die Tests mit, was Godot daraus macht: die Aktionen
+## ui_up, ui_focus_next und so weiter und den Weg des Fokus.
 
 const MENU_SCENE := preload("res://scenes/title/main_menu.tscn")
 
@@ -20,7 +24,19 @@ func before_each() -> void:
 	_menu = MENU_SCENE.instantiate() as MainMenu
 	# Die Einträge müssen vor add_child stehen, denn _ready() baut aus ihnen die Zeilen.
 	_menu.entries = _eintraege()
-	add_child_autofree(_menu)
+	# Ein eigener Viewport, wie ein kleiner Bildschirm nur für diesen Test: Im
+	# Haupt-Viewport liegt GUTs Oberfläche über allem und finge jeden Mausklick ab. Der
+	# eigene Viewport hat seine eigene Eingabe und seinen eigenen Fokus.
+	var eigener_viewport := SubViewport.new()
+	add_child_autofree(eigener_viewport)
+	# Das Menü steht nicht allein: Oben rechts daneben liegt ein fremder Button, wie
+	# später andere Bedienelemente. Pfeiltasten und Tab dürfen trotzdem nie dorthin.
+	var buehne := Control.new()
+	eigener_viewport.add_child(buehne)
+	buehne.add_child(_menu)
+	var fremder_button := Button.new()
+	fremder_button.position = Vector2(MainMenu.PAPER_WIDTH + 40, 0)
+	buehne.add_child(fremder_button)
 	# Einen Frame warten: Die Startauswahl kommt zeitversetzt (call_deferred), und auch
 	# der VBoxContainer ordnet die Zeilen erst dann an.
 	await wait_process_frames(1)
@@ -104,12 +120,135 @@ func test_nicht_verfuegbarer_eintrag_meldet_nichts() -> void:
 		"Ein nicht verfügbarer Eintrag darf nichts melden, auch wenn er gewählt ist.")
 
 
+# --- Tastatur -------------------------------------------------------------
+
+func test_pfeil_runter_laeuft_reihum() -> void:
+	# Arrange: Gewählt ist „Neues Spiel“, die Startauswahl.
+
+	# Act
+	var auswahl := _auswahl_nach_jedem_druck(KEY_DOWN)
+
+	# Assert
+	assert_eq(auswahl, [1, 2, 3, 0], "Nach der letzten Zeile folgt wieder die erste.")
+
+
+func test_pfeil_hoch_laeuft_reihum() -> void:
+	# Arrange: Gewählt ist „Neues Spiel“, die Startauswahl.
+
+	# Act
+	var auswahl := _auswahl_nach_jedem_druck(KEY_UP)
+
+	# Assert
+	assert_eq(auswahl, [3, 2, 1, 0],
+		"Vor der ersten Zeile kommt die letzte, nicht der fremde Button oben rechts.")
+
+
+func test_tab_laeuft_wie_pfeil_runter() -> void:
+	# Arrange: Gewählt ist „Neues Spiel“, die Startauswahl.
+
+	# Act
+	var auswahl := _auswahl_nach_jedem_druck(KEY_TAB)
+
+	# Assert
+	assert_eq(auswahl, [1, 2, 3, 0],
+		"Tab wählt wie Pfeil runter und springt nach der letzten Zeile nicht aus dem Menü.")
+
+
+func test_shift_tab_laeuft_wie_pfeil_hoch() -> void:
+	# Arrange: Gewählt ist „Neues Spiel“, die Startauswahl.
+
+	# Act
+	var auswahl := _auswahl_nach_jedem_druck(KEY_TAB, true)
+
+	# Assert
+	assert_eq(auswahl, [3, 2, 1, 0],
+		"Shift+Tab wählt wie Pfeil hoch und springt vor der ersten Zeile nicht aus dem Menü.")
+
+
+# --- Maus -----------------------------------------------------------------
+
+func test_rechtsklick_waehlt_die_zeile_und_loest_nichts_aus() -> void:
+	# Arrange: Die Maus steht schon auf „Beenden“, gewählt ist aber „Spiel laden“. So
+	# kann nur der Rechtsklick die Zeile wählen, nicht schon das Überfahren.
+	var beenden := _mitte(3)
+	_maus_nach(beenden)
+	_menu.select(1)
+	watch_signals(_menu)
+
+	# Act
+	_klick(beenden, MOUSE_BUTTON_RIGHT)
+
+	# Assert
+	assert_eq(_menu.selected_index(), 3, "Der Rechtsklick wählt die Zeile unter der Maus.")
+	assert_signal_not_emitted(_menu, "entry_activated",
+		"Ein Rechtsklick löst nichts aus, auch nicht auf einem verfügbaren Eintrag.")
+
+
+func test_mauszeiger_zeigt_die_hand_nur_ueber_verfuegbaren_eintraegen() -> void:
+	# Act
+	var zeiger := _zeilen().map(
+		func(zeile: Button) -> Control.CursorShape: return zeile.mouse_default_cursor_shape)
+
+	# Assert
+	assert_eq(zeiger, [Control.CURSOR_ARROW, Control.CURSOR_ARROW, Control.CURSOR_ARROW,
+		Control.CURSOR_POINTING_HAND], "Die Hand nur über „Beenden“, sonst der Pfeil.")
+
+
 # --- Helfer ---------------------------------------------------------------
 
 ## Die Buttons des Menüs, in der Reihenfolge, in der sie im Baum stehen. Sie entstehen
 ## im Code und haben deshalb keinen Owner; ohne owned = false fände die Suche keinen.
 func _zeilen() -> Array[Node]:
 	return _menu.find_children("*", "Button", true, false)
+
+
+## Die Mitte von Zeile [param index], in Viewport-Koordinaten.
+func _mitte(index: int) -> Vector2:
+	return (_zeilen()[index] as Button).get_global_rect().get_center()
+
+
+## Drückt [param taste] so oft, wie das Menü Zeilen hat, also eine ganze Runde, und merkt
+## sich nach jedem Druck die gewählte Zeile.
+func _auswahl_nach_jedem_druck(taste: Key, shift := false) -> Array[int]:
+	var auswahl: Array[int] = []
+	for _druck in _menu.entries.size():
+		_taste(taste, shift)
+		auswahl.append(_menu.selected_index())
+	return auswahl
+
+
+## Drückt [param taste] und lässt sie los. Die Ereignisse gehen über push_input in den
+## Viewport, denselben Eingang, über den auch das Fenster echte Tastendrücke weitergibt.
+## Godot macht daraus ui_down, ui_focus_next und so weiter und verschiebt den Fokus selbst.
+func _taste(taste: Key, shift := false) -> void:
+	for gedrueckt: bool in [true, false]:
+		var ereignis := InputEventKey.new()
+		ereignis.keycode = taste
+		ereignis.physical_keycode = taste
+		ereignis.shift_pressed = shift
+		ereignis.pressed = gedrueckt
+		_menu.get_viewport().push_input(ereignis)
+
+
+## Fährt mit der Maus nach [param ziel], ebenfalls über push_input. Das zweite Argument
+## true sagt: Die Koordinaten gelten schon im Viewport, so wie get_global_rect() sie
+## liefert, und müssen nicht erst aus Fensterpixeln umgerechnet werden.
+func _maus_nach(ziel: Vector2) -> void:
+	var ereignis := InputEventMouseMotion.new()
+	ereignis.position = ziel
+	ereignis.global_position = ziel
+	_menu.get_viewport().push_input(ereignis, true)
+
+
+## Klickt mit [param taste] bei [param ziel]: drücken und loslassen.
+func _klick(ziel: Vector2, taste: MouseButton) -> void:
+	for gedrueckt: bool in [true, false]:
+		var ereignis := InputEventMouseButton.new()
+		ereignis.button_index = taste
+		ereignis.position = ziel
+		ereignis.global_position = ziel
+		ereignis.pressed = gedrueckt
+		_menu.get_viewport().push_input(ereignis, true)
 
 
 ## Die vier Einträge mit den Werten aus dem Datenmodell.

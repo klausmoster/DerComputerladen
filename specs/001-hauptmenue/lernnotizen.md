@@ -256,3 +256,38 @@ und 150) und die eigene `FontVariation` des Untertitels (er steht jetzt in `druc
 - Erst der Gegentest auf einem nicht verfügbaren Eintrag zeigt, dass `activate_selected()` die
   Verfügbarkeit prüft; ein Menü, das immer meldet, bestünde den ersten Test allein.
 - `watch_signals` steht nach `select()`, damit nur zählt, was der Act-Schritt auslöst.
+
+## Phase 5: Menü mit Maus und Tastatur (US3)
+
+### T036 Maus und Fokus (`main_menu.gd`)
+
+- `button.mouse_entered.connect(button.grab_focus)` verbindet das Signal direkt mit einer Methode,
+  ohne eigene Funktion. Ein Gegenstück für `mouse_exited` gibt es bewusst nicht, sonst ginge die
+  Auswahl verloren, sobald die Maus das Menü verlässt.
+- Kopfzeile und Lochränder brauchen keinen Code: Die Kopfzeile ist ein Label ohne Fokus, die
+  Lochränder gehören zum Menü selbst. Ein Klick auf ein Control ohne Fokus nimmt niemandem den
+  Fokus weg.
+- Pfeil hoch und runter (`ui_up`, `ui_down`) folgen `focus_neighbor_top` und
+  `focus_neighbor_bottom`, Tab und Shift+Tab (`ui_focus_next`, `ui_focus_prev`) folgen
+  `focus_next` und `focus_previous`. Ist nichts gesetzt, sucht Godot selbst; am Ende bliebe der
+  Fokus stehen oder spränge zu einem anderen Element. `_link_ends()` verbindet deshalb nur die
+  beiden Enden. Im Code gebaute Buttons heißen `@Button@5` und ähnlich, der Pfad kommt deshalb aus
+  `get_path_to()`.
+- Rechtsklick: Erst kommt das Signal `gui_input`, dann `_gui_input`, dann die eigene Verarbeitung
+  des Buttons. `accept_event()` beendet diese Kette. Bei `.bind(index)` kommen erst die Argumente
+  des Signals, dann die gebundenen.
+
+### T037 Mauszeiger
+
+- `mouse_default_cursor_shape` hat jedes Control; steht die Maus darüber, zeigt das System diesen
+  Zeiger ohne weiteren Code. Die Hand gilt nur über dem Button, auf den Lochrändern bleibt der Pfeil.
+
+### T038 Tests (`test_main_menu.gd`)
+
+- `viewport.push_input(ereignis)` ist derselbe Eingang wie für echte Tastendrücke. So prüfen die
+  Tests auch, dass Tab wirklich `ui_focus_next` ist, nicht nur `select()`.
+- GUTs Oberfläche liegt im Haupt-Viewport und schluckt Mausklicks; ein eigener `SubViewport` hat
+  eigene Eingabe und eigenen Fokus. Ein fremder Button auf der Bühne beweist, dass die Enden
+  wirklich verbunden sind: Ohne `_link_ends()` sprang Pfeil hoch zu ihm.
+- Gegenproben in einer Wegwerf-Kopie: Jede entfernte Zeile (Rechtsklick, Enden, Tab-Nachbarn,
+  Mauszeiger) ließ genau den zugehörigen Test fallen.

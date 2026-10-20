@@ -116,10 +116,11 @@ Verbindlich:
 - `focus_entered` aktualisiert die Auswahl, ruft `queue_redraw()` auf und sendet
   `selection_changed`.
 - `focus_neighbor_top` des ersten und `focus_neighbor_bottom` des letzten Buttons zeigen
-  aufeinander (Umlauf, FR-010).
+  aufeinander (Umlauf, FR-010), ebenso `focus_previous` des ersten und `focus_next` des letzten,
+  damit Tab das Menü nie verlässt, auch wenn später andere Bedienelemente daneben stehen.
 - `pressed` sendet `entry_activated(id)`. Ein gesperrter Button löst `pressed` nicht aus.
   Enter und Leertaste kommen über Godots `ui_accept`, Tab und Shift+Tab über
-  `ui_focus_next`/`ui_focus_prev`; dafür ist kein eigener Code nötig.
+  `ui_focus_next`/`ui_focus_prev`; dafür ist außer den Nachbarn an den Enden kein Code nötig.
 - `gui_input` jedes Buttons fängt die rechte Maustaste ab: Zeile fokussieren, Ereignis als
   behandelt markieren, nichts auslösen (FR-009).
 - Nach dem Aufbau wird Zeile 0 gewählt (`select(0)`, zeitversetzt per `call_deferred`).

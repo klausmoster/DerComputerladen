@@ -249,6 +249,10 @@ installierte Godot mit `--doctool` ausgibt; Beschreibungen aus der Doku 4.7
   - Darstellung, Vollbild, Symbol und Export werden nach dem Quickstart von Hand geprüft, weil
     der Headless-Modus kein Fenster und kein Bild hat.
   - Startprobe: `--headless --path src --quit-after 60` startet die Hauptszene ohne Fehler.
+  - Eingaben in Tests laufen als echte Ereignisse über `viewport.push_input()`, nicht über
+    Hilfsaufrufe; so prüfen die Tests die Zuordnung der Tasten zu den `ui_*`-Aktionen mit.
+  - GUI-Tests mit Mauseingaben brauchen einen eigenen `SubViewport`: GUTs Oberfläche liegt im
+    Haupt-Viewport über fast dem ganzen Bild und fängt sonst jeden Mausklick ab.
 
 ## R15 Anrede
 

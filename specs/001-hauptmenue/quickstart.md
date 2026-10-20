@@ -47,7 +47,7 @@ Projekt im Godot-Editor starten (F5).
 | Mauszeiger | Hand nur über „Beenden“, sonst Pfeil | FR-018 |
 | Rechtsklick | wählt die Zeile und zeigt den Hinweis, löst nichts aus | FR-009 |
 | Esc | löst nichts aus | Edge Cases |
-| „Beenden“ | per Klick, Enter und Leertaste: Spiel schließt sofort (per Tastatur bis T036: Shift+Tab, dann Enter oder Leertaste) | FR-008, FR-010 |
+| „Beenden“ | per Klick, Enter und Leertaste: Spiel schließt sofort (per Tastatur: Pfeil hoch, dann Enter oder Leertaste) | FR-008, FR-010 |
 
 ## 4. Mac-App bauen
 
