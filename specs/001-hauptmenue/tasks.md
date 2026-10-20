@@ -330,15 +330,16 @@ Abschluss.
 
 **Purpose**: Gesamtprüfung, Lernnotizen, Doku
 
-- [ ] T043 [A] Alle Tests und die Startprobe laufen lassen (quickstart.md, Abschnitte 1 und 2):
+- [x] T043 [A] Alle Tests und die Startprobe laufen lassen (quickstart.md, Abschnitte 1 und 2):
   alle grün, Exit-Code 0, keine Warnungen
-- [ ] T044 [C] Review des ganzen Features gegen Spec und Vertrag, etwa mit `/speckit-converge` als
+- [x] T044 [C] Review des ganzen Features gegen Spec und Vertrag, etwa mit `/speckit-converge` als
   Lückensuche; Lernnotizen aller Phasen in `specs/001-hauptmenue/lernnotizen.md` vollständig
-- [ ] T045 [C] Doku nachziehen: neue Pfade (`src/ui/`, `src/assets/`, `src/scenes/title/`,
+- [x] T045 [C] Doku nachziehen: neue Pfade (`src/ui/`, `src/assets/`, `src/scenes/title/`,
   `tools/raster/`, `docs/art/app_icon/`) in die Aufbau-Tabelle von `CLAUDE.md`; Feature 001 in
   `docs/features/Features.md` verlinken
-- [ ] T046 [K] Feature abnehmen: Abnahmen aus T023, T031, T034, T039 und T042 erledigt, Merge nach
+- [x] T046 [K] Feature abnehmen: Abnahmen aus T023, T031, T034, T039 und T042 erledigt, Merge nach
   `main` freigeben
+  - Von Klaus abgenommen am 2026-10-20, Merge nach `main` freigegeben.
 
 ---
 
@@ -436,3 +437,20 @@ Task: "T027 [A] Tests in src/test/test_game_window.gd"
   `specs/001-hauptmenue/lernnotizen.md` ein, eine Notiz je Task.
 - Zu vermeiden: vage Tasks, zwei Tasks gleichzeitig an derselben Datei, Abhängigkeiten zwischen
   Stories, die ihre Unabhängigkeit brechen.
+
+---
+
+## Phase 8: Convergence
+
+Ergebnis der Lückensuche in T044 (`/speckit-converge`, 2026-10-20): zwei kleine Lücken, kein Verstoß
+gegen die Verfassung.
+
+- [x] T047 [A] Versionsnummer nur an einer Stelle pflegen: `application/short_version` und
+  `application/version` im Preset so setzen, dass Godot `application/config/version` übernimmt,
+  falls 4.7.2 das bei leeren Feldern tut (am Export in `Info.plist` prüfen); sonst im Quickstart
+  festhalten, dass beide Stellen zusammen geändert werden per FR-014 (partial)
+  - Erledigt: Beide Felder sind leer, Godot übernimmt `config/version`; `CFBundleVersion` ist
+    jetzt `0.1` statt `0.1.0`. Gegenprobe mit 0.2 zeigt 0.2 an beiden Stellen.
+- [x] T048 [C] Den Wortlaut von FR-011 an das abgenommene Verhalten angleichen: Die Maus wählt eine
+  Zeile beim Betreten, die Tastatur bei jedem Druck; nur mit Klaus' OK per FR-011 (partial)
+  - Mit Klaus' OK erledigt am 2026-10-20; neuer Wortlaut in spec.md, FR-011.

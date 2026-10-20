@@ -33,9 +33,9 @@ installierte Godot mit `--doctool` ausgibt; Beschreibungen aus der Doku 4.7
   Fenstermenü abfängt, ließ sich weder aus der Doku noch aus dem Quelltext sicher klären. Die
   eigene Aktion ist trotzdem unschädlich: Fängt macOS das Kürzel ab, kommt es bei Godot nicht an.
   Geprüft wird das im Quickstart.
-- **Offen zu prüfen:** Die Doku warnt, dass ein um 1 Pixel verkleinertes Vollbild den
-  Skalierungsfaktor senken kann, und rät dann zu `MODE_EXCLUSIVE_FULLSCREEN`. Tritt das unter
-  macOS auf (SC-004), wird auf exklusives Vollbild gewechselt.
+- **Geprüft in T031:** Die Doku warnt, dass ein um 1 Pixel verkleinertes Vollbild den
+  Skalierungsfaktor senken kann, und rät dann zu `MODE_EXCLUSIVE_FULLSCREEN`. Unter macOS trat
+  das nicht auf, das Vollbild ist scharf und ganzzahlig; `MODE_FULLSCREEN` bleibt.
 - **Alternativen:** `MODE_EXCLUSIVE_FULLSCREEN` von Anfang an (verhält sich anders als der grüne
   Knopf); eine feste Fenstergröße über `window_width_override` (passt nicht auf jeden Bildschirm).
 

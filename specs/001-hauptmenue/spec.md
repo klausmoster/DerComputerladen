@@ -48,6 +48,18 @@ Entscheidungen von Klaus beim Durchgehen der Checkliste [review.md](checklists/r
   der Pfeil.
 - Q: Welche Bundle-ID bekommt die App? → A: `de.klausmoster.dercomputerladen` (steht im Plan).
 
+### Abschluss 2026-10-20
+
+Entscheidungen von Klaus bei der Umsetzung und der Lückensuche (T044):
+
+- Q: Wann wählt die Maus eine Zeile? → A: Sobald sie sie betritt; eine Bewegung innerhalb
+  derselben Zeile wählt nicht neu (abgenommen in T039). FR-011 ist entsprechend gefasst.
+- Q: Braucht der Start eine Ladeanzeige? → A: Nein. Der Start dauert rund 1 Sekunde (SC-001);
+  langsamer ist nur der erste Start nach einem Export, wenn macOS die neue App prüft.
+- Q: Wer macht den groben Feinschliff an Titelbild und Logo? → A: Auf Klaus' Wunsch eine Regel
+  (`tools/raster/cleanup.py`); von Hand nachbessern geht jederzeit.
+- Q: Kommt „Beenden“ erst in Phase 4? → A: Nein, es wurde beim ersten Test der App vorgezogen.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - App unter macOS bis zum Titelbildschirm starten (Priority: P1)
@@ -212,7 +224,8 @@ passiert nichts.
   sofern er verfügbar ist. Beim Erscheinen des Titelbildschirms ist „Neues Spiel“ gewählt.
 - **FR-011**: Es muss immer genau eine Zeile hervorgehoben sein, so wie der Menü-Baustein des
   Style-Guides es vorsieht: Zeile in `signalgelb` mit Pfeil davor, ohne zusätzliche Fokuslinie.
-  Die zuletzt benutzte Eingabe, Maus oder Tastatur, bestimmt, welche Zeile es ist.
+  Die Maus wählt eine Zeile, sobald sie sie betritt, Pfeiltasten und Tab bei jedem Druck; es
+  gilt, was zuletzt gewählt hat.
 - **FR-012**: Die Darstellung muss den Regeln des Style-Guides zu Raster und Skalierung folgen:
   nur ganzzahlig skaliert, sonst mit schwarzem Rand, nie unscharf.
 - **FR-013**: Das Fenster darf sich nicht kleiner ziehen lassen als das Oberflächenraster bei
@@ -280,7 +293,8 @@ passiert nichts.
   freigeschaltet. Die Zeitleisten-Demo bleibt in der Entwicklungsumgebung startbar, aus der App ist
   sie nicht erreichbar.
 - Titelbild und Logo werden aus den freigegebenen Leonardo-Bildern aufs Raster gebracht; den
-  groben Feinschliff macht Klaus. Das überschneidet sich mit 10-03 Pixel-Art-Pipeline, die danach
+  groben Feinschliff macht eine Regel, Klaus bessert bei Bedarf von Hand nach (Abschluss
+  2026-10-20). Das überschneidet sich mit 10-03 Pixel-Art-Pipeline, die danach
   die wiederholbare Fassung für alle weiteren Bilder liefert.
 - Vor dem Bauen wird der Style-Guide ergänzt (Verfassung, Grundsatz IV): Aussehen nicht verfügbarer
   Einträge, Hinweis, Startgrund, App-Symbol, Anrede „du“ und die Nachbearbeitung bei ungleich

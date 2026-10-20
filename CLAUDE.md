@@ -78,14 +78,19 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | Pfad | Inhalt |
 |---|---|
 | `src/` | Godot-Projekt (Projekt-Root ist `src/`, nicht das Repo-Root) |
-| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline`, Event-Resources |
+| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline`, `game_window`, Event-Resources |
 | `src/data/` | Seed-Daten in GDScript (`event_database.gd`) |
+| `src/ui/` | Theme des ganzen Spiels (`computerladen_theme.tres`) und Farben (`ui_palette.gd`) |
+| `src/scenes/title/` | Titelbildschirm, Hauptmenü, Hinweis |
+| `src/assets/` | Schriften (`fonts/`), gerasterte Bilder (`images/`), App-Symbol (`icon/`) |
+| `tools/raster/` | Python-Werkzeuge der Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol |
+| `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
 | `docs/game_bible/` | Obsidian-Vault mit den Spieldaten (Komponenten, Preise, Prospekte) |
 | `docs/game_design.md` | Game Design Document |
 | `.claude/skills/` | Projekt-Skills, Präfix `dcl-` (eigene) und `speckit-` (Spec Kit) |
 | `.claude/agents/` | Projekt-Agents, z.B. `godot-entwickler` für `[A]`-Aufgaben |
 
-`GameClock` und `Timeline` sind Autoloads (siehe `src/project.godot`).
+`GameClock`, `Timeline` und `GameWindow` sind Autoloads (siehe `src/project.godot`).
 Architekturprinzip der Timeline: sie **wendet Effekte nicht an**, sondern meldet
 sie per Signal (`Timeline.effect_applied`) — Wirtschaft, Nachfrage und
 Reputation hängen sich später dran.

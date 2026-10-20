@@ -315,3 +315,21 @@ und 150) und die eigene `FontVariation` des Untertitels (er steht jetzt in `druc
 - Den Pfeil prüft kein Test: Headless gehen die Zeichenbefehle an einen Renderer ohne Bild, und
   kein GDScript-API liest sie zurück. Ein Spy auf eine interne Funktion prüfte die Umsetzung statt
   des Ergebnisses. Den Pfeil prüft Klaus mit dem Auge (T042).
+
+## Phase 7: Abschluss
+
+### T043 Gesamtprüfung
+
+- Ein frisch geklonter Stand ohne `src/.godot/` zeigt beim allerersten `--import` Fehler wie
+  „Cannot open file … .fontdata“: Godot lädt beim Start zuerst das Projekt-Theme
+  (`gui/theme/custom`), und das verweist auf Schriften, deren importierte Daten noch fehlen. Der
+  Import legt sie danach an; der zweite Lauf ist sauber. In einem Klon, an dem Godot schon
+  gearbeitet hat, tritt das nie auf, weil `.godot/` lokal liegen bleibt.
+- Bleibt `git status` nach dem Import eines frischen Klons leer, sind alle `.uid` und `.import`
+  versioniert. Das ist die einfachste Probe dafür.
+
+### T047 Versionsnummer an einer Stelle (`export_presets.cfg`)
+
+- Ist ein Versionsfeld im Preset leer, nimmt `EditorExportPreset::get_version()` die
+  Projektversion `application/config/version`. So pflegt man die Nummer an einer Stelle, und
+  Finder und Versionszeile zeigen immer dieselbe.

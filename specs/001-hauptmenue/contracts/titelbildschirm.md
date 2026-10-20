@@ -249,7 +249,7 @@ und Linux bekommen ihre Kürzel mit 11-03.
 | `notarization/notarization` | aus |
 | `display/high_res` | an |
 | `application/bundle_identifier` | `de.klausmoster.dercomputerladen` |
-| `application/short_version` / `version` | `0.1` / `0.1.0` |
+| `application/short_version` / `version` | leer: Godot übernimmt `application/config/version` (0.1) in beide Felder der `Info.plist`; die Nummer wird nur in `project.godot` gepflegt |
 | `application/icon` | `res://assets/icon/app_icon.png` |
 | `application/liquid_glass_icon` | `res://assets/icon/app_icon.icon` |
 | `exclude_filter` | `addons/gut/*, test/*`: GUT und die Tests kommen nicht in die App |
