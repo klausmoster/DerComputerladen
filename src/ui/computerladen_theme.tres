@@ -1,0 +1,74 @@
+[gd_resource type="Theme" format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/ark-pixel-10px-proportional-latin.otf" id="1_ark_pixel_10"]
+[ext_resource type="FontFile" path="res://assets/fonts/Doto-Variable.ttf" id="2_doto"]
+[ext_resource type="FontFile" path="res://assets/fonts/ark-pixel-12px-proportional-latin.woff2" id="3_ark_pixel_12"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hint"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.9607843, 0.9411765, 0.8862745, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+anti_aliasing = false
+
+[sub_resource type="FontVariation" id="FontVariation_drucker"]
+base_font = ExtResource("2_doto")
+variation_opentype = {
+2003265652: 600
+}
+spacing_glyph = 1
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_menu_row"]
+content_margin_left = 12.0
+
+[resource]
+default_font = ExtResource("1_ark_pixel_10")
+default_font_size = 10
+HintLabel/base_type = &"Label"
+HintLabel/colors/font_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+HintLabel/constants/line_spacing = 0
+HintLabel/font_sizes/font_size = 10
+HintLabel/fonts/font = ExtResource("1_ark_pixel_10")
+HintPanel/base_type = &"PanelContainer"
+HintPanel/styles/panel = SubResource("StyleBoxFlat_hint")
+MenuHeader/base_type = &"Label"
+MenuHeader/colors/font_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+MenuHeader/font_sizes/font_size = 10
+MenuHeader/fonts/font = SubResource("FontVariation_drucker")
+MenuRow/base_type = &"Button"
+MenuRow/colors/font_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+MenuRow/colors/font_disabled_color = Color(0.43529412, 0.4, 0.32941177, 1)
+MenuRow/colors/font_focus_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+MenuRow/colors/font_hover_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+MenuRow/colors/font_hover_pressed_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+MenuRow/colors/font_pressed_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+MenuRow/font_sizes/font_size = 12
+MenuRow/fonts/font = ExtResource("3_ark_pixel_12")
+MenuRow/styles/disabled = SubResource("StyleBoxEmpty_menu_row")
+MenuRow/styles/focus = SubResource("StyleBoxEmpty_menu_row")
+MenuRow/styles/hover = SubResource("StyleBoxEmpty_menu_row")
+MenuRow/styles/hover_pressed = SubResource("StyleBoxEmpty_menu_row")
+MenuRow/styles/normal = SubResource("StyleBoxEmpty_menu_row")
+MenuRow/styles/pressed = SubResource("StyleBoxEmpty_menu_row")
+Subtitle/base_type = &"Label"
+Subtitle/colors/font_color = Color(0.9607843, 0.9411765, 0.8862745, 1)
+Subtitle/colors/font_shadow_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+Subtitle/constants/shadow_offset_x = 1
+Subtitle/constants/shadow_offset_y = 1
+Subtitle/constants/shadow_outline_size = 0
+Subtitle/font_sizes/font_size = 10
+Subtitle/fonts/font = SubResource("FontVariation_drucker")
+VersionLine/base_type = &"Label"
+VersionLine/colors/font_color = Color(0.9607843, 0.9411765, 0.8862745, 1)
+VersionLine/colors/font_shadow_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+VersionLine/constants/shadow_offset_x = 1
+VersionLine/constants/shadow_offset_y = 1
+VersionLine/constants/shadow_outline_size = 0
+VersionLine/font_sizes/font_size = 10
+VersionLine/fonts/font = SubResource("FontVariation_drucker")

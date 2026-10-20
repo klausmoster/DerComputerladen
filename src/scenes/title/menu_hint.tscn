@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/title/menu_hint.gd" id="1_menu_hint"]
+
+[node name="MenuHint" type="PanelContainer"]
+visible = false
+grow_horizontal = 0
+mouse_filter = 2
+theme_type_variation = &"HintPanel"
+script = ExtResource("1_menu_hint")
+
+[node name="Text" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+autowrap_mode = 3

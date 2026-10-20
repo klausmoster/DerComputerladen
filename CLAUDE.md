@@ -17,28 +17,38 @@ Android, iOS, Mobile, Touch oder Web. Das ist dauerhaft entschieden, nicht
 - Android-Build-Templates werden nie installiert.
 
 **Rollenverteilung.** Gearbeitet wird featureweise: „wir arbeiten jetzt an
-Feature xy", und darüber wird geredet. Dabei gilt:
+Feature xy", und darüber wird geredet. Es gibt drei Rollen:
 
-- **Claude** schreibt Specs, beschafft Informationen (Recherche, Godot-Doku,
-  Fachquellen), bereitet den Weg vor, erklärt Konzepte, gibt Review und
-  erstellt auf Wunsch Beispielcode zum Lernen.
-- **Klaus** arbeitet in Godot — Szenen, Nodes, GDScript. Das ist ausdrücklich
-  seine Arbeit und wird ihm nicht abgenommen; er will Godot dabei lernen.
+- **Klaus** entscheidet und nimmt ab. Er gibt jede Umsetzung frei und baut
+  selbst, was er in Godot lernen will, dazu alles, was nur im Godot-Editor, in
+  Grafikprogrammen oder mit seiner Entscheidung geht. Solche Aufgaben tragen
+  `[K]`.
+- **Der Godot-Agent** (`.claude/agents/godot-entwickler.md`) setzt
+  `[A]`-Aufgaben um — Szenen, Nodes, GDScript, Tests. Für Arbeit in Godot ist
+  er der Standard.
+- **Claude** schreibt Specs und Pläne, beschafft Informationen (Recherche,
+  Godot-Doku, Fachquellen), verteilt die Aufgaben, übernimmt `[C]`-Aufgaben
+  (Werkzeuge außerhalb von Godot, Style-Guide, Doku), beauftragt den Agent und
+  prüft sein Ergebnis.
 
-Die Grenze ist fließend: einzelne Tasks gehen im Gespräch an Claude über, das
-ist der Normalfall. Aber **nicht eigenmächtig implementieren** — ein
-Feature-Dokument ist eine Beschreibung, keine Beauftragung. Bei unklarer Lage
+**Nicht eigenmächtig umsetzen** — ein Feature-Dokument oder eine Taskliste ist
+eine Beschreibung, keine Beauftragung. Umgesetzt wird nur, was Klaus freigibt,
+und zwar phasenweise, nie das ganze Feature in einem Zug. Bei unklarer Lage
 eine Aufteilung vorschlagen und nachfragen.
 
-Alles, was Claude an Code erzeugt, sieht Klaus sich **vorher** an. Es ist
-Lern- und Vorlagenmaterial, kein Ergebnis, das ungesehen ins Projekt wandert.
+Alles, was der Agent oder Claude an Code erzeugt, sieht Klaus sich **vorher**
+an: Claude prüft es zuerst, dann bekommt Klaus Diff und Erklärung, und erst
+nach seinem OK wird committet.
 
-**Git:** Claude committet, **Klaus pusht.** Nicht versuchen zu pushen — auf
-diesem Rechner liegen keine GitHub-Zugangsdaten.
+**Git:** Claude committet, **Klaus pusht.** Der Godot-Agent committet nicht.
+Nicht versuchen zu pushen — auf diesem Rechner liegen keine
+GitHub-Zugangsdaten.
 
-Erklären statt nur liefern: warum diese Node-Struktur, warum Signal statt
-direktem Zugriff, was ein Autoload/Resource tut — an der konkreten Stelle im
-Projekt, kein Tutorial-Vortrag. Kleine, überprüfbare Schritte.
+Erklären statt nur liefern: Zu jeder umgesetzten Aufgabe gibt es eine
+Lernnotiz — warum diese Node-Struktur, warum Signal statt direktem Zugriff, was
+ein Autoload/Resource tut — an der konkreten Stelle im Projekt, kein
+Tutorial-Vortrag. Gelernt wird über Lernnotizen, Review und die `[K]`-Aufgaben,
+die Klaus sich aussucht. Kleine, überprüfbare Schritte.
 
 Ausgenommen von alldem: die Daten in `docs/game_bible/`, die Feature-Docs und
 die Skills dürfen selbstständig befüllt werden.
@@ -57,7 +67,8 @@ für Struktur und Felder.
 - Drei Phasen: `spec` (was und woran erkennbar fertig) → `plan` (technischer
   Vertrag, Schritte) → `tasks` (Umsetzung, Entscheidungen, Lernnotizen).
   Das Dokument wächst mit, es wird nicht auf einmal geschrieben.
-- In `## + Schritte` trägt jeder Schritt einen Besitzer: `[K]` Klaus, `[C]` Claude.
+- In `## + Schritte` (bei Spec Kit in `tasks.md`) trägt jeder Schritt einen
+  Besitzer: `[K]` Klaus, `[A]` Godot-Agent, `[C]` Claude.
 
 Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 `docs/features/` der Bauplan (*wie*), `docs/game_bible/` der Spielinhalt.
@@ -67,13 +78,19 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | Pfad | Inhalt |
 |---|---|
 | `src/` | Godot-Projekt (Projekt-Root ist `src/`, nicht das Repo-Root) |
-| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline`, Event-Resources |
+| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline`, `game_window`, Event-Resources |
 | `src/data/` | Seed-Daten in GDScript (`event_database.gd`) |
+| `src/ui/` | Theme des ganzen Spiels (`computerladen_theme.tres`) und Farben (`ui_palette.gd`) |
+| `src/scenes/title/` | Titelbildschirm, Hauptmenü, Hinweis |
+| `src/assets/` | Schriften (`fonts/`), gerasterte Bilder (`images/`), App-Symbol (`icon/`) |
+| `tools/raster/` | Python-Werkzeuge der Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol |
+| `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
 | `docs/game_bible/` | Obsidian-Vault mit den Spieldaten (Komponenten, Preise, Prospekte) |
 | `docs/game_design.md` | Game Design Document |
-| `.claude/skills/` | Projekt-Skills, Präfix `dcl-` |
+| `.claude/skills/` | Projekt-Skills, Präfix `dcl-` (eigene) und `speckit-` (Spec Kit) |
+| `.claude/agents/` | Projekt-Agents, z.B. `godot-entwickler` für `[A]`-Aufgaben |
 
-`GameClock` und `Timeline` sind Autoloads (siehe `src/project.godot`).
+`GameClock`, `Timeline` und `GameWindow` sind Autoloads (siehe `src/project.godot`).
 Architekturprinzip der Timeline: sie **wendet Effekte nicht an**, sondern meldet
 sie per Signal (`Timeline.effect_applied`) — Wirtschaft, Nachfrage und
 Reputation hängen sich später dran.
