@@ -37,7 +37,7 @@ Datum außerhalb des Spielzeitraums erkennt die Prüfung am Index (V06).
 |---|---|---|
 | `id` | String | Kennung, `[a-z0-9_]+`, eindeutig; entsteht beim Anlegen aus dem Namen und bleibt fest |
 | `name` | String | Anzeigename, deutsch; Umbenennen ändert nur ihn |
-| `color` | StringName | Token aus `UiPalette`, etwa `&"petrol"`; nur Tokens, die der Style-Guide für Kategorien erlaubt; neue Kategorien bekommen das erste noch freie davon |
+| `color` | StringName | Token aus `UiPalette`, etwa `&"petrol"`; nur Tokens aus `UiPalette.CATEGORY_TOKENS`, die der Style-Guide für Kategorien erlaubt; neue Kategorien bekommen das erste noch freie davon, sind alle vergeben, das am seltensten benutzte, bei Gleichstand das frühere |
 
 Bei der Übernahme: `hardware`, `software`, `tech`, `wirtschaft`, `lokal`, `konkurrenz`, `kunde`,
 `reklamation`, `lieferung` (aus dem bisherigen Enum) und neu `kalender`. Gelöscht werden kann eine

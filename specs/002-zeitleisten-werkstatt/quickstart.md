@@ -41,7 +41,8 @@ Export nach.
 /Applications/Godot.app/Contents/MacOS/Godot --headless -d --path src --quit-after 60
 ```
 
-Erwartet: Exit-Code 0, keine Ausgabe, auch keine Warnung. Die Zeitleiste lädt den Katalog still.
+Erwartet: Exit-Code 0 und außer der Kopfzeile der Engine („Godot Engine v4.7.2 …“) keine
+Ausgabe, auch keine Warnung. Die Zeitleiste lädt den Katalog still.
 
 ## 3. Textausgabe (ab Phase 3)
 
@@ -68,7 +69,7 @@ Im Editor `src/tools/werkstatt/werkstatt.tscn` öffnen und F6 drücken.
 
 | Prüfung | Erwartet | Bezug |
 |---|---|---|
-| Start | maximiertes Fenster in voller Auflösung, gut lesbare Schrift, Farben des Computerladens | FR-029 |
+| Start | maximiertes Fenster in voller Auflösung, Schrift auch auf dem Retina-Bildschirm scharf und in normaler Größe, Farben des Computerladens nach dem Style-Guide-Abschnitt „Werkzeuge“ | FR-029 |
 | Suche „pentium“, Filter Art und Kategorie | Liste schrumpft passend | FR-030 |
 | „Neu …“, Titel „Neubaugebiet am Stadtrand“, Art „beim Start gesetzt“ | Dialog schlägt `neubaugebiet_am_stadtrand` vor; danach zeigt das Formular Zeitfenster, Anzahl mit Wahrscheinlichkeit je Anzahl und Mindestabstand | US2, Szenario 1; FR-032 |
 | Fixes Datum 12.05.2001 eingeben | Meldung am Feld Datum, Prüfung zählt einen Fehler mehr | US2, Szenario 3 |
@@ -77,7 +78,7 @@ Im Editor `src/tools/werkstatt/werkstatt.tscn` öffnen und F6 drücken.
 | Ein Feld mit Enter bestätigen, dann sofort Cmd+Z | Fokus ist aus dem Feld, Cmd+Z nimmt die Änderung im Katalog zurück | FR-034, R15 |
 | Art von „über Wahrscheinlichkeit“ auf „beim Start gesetzt“, dann Cmd+Z | Zeitfenster, Mindestabstand und Dauer bleiben; Chance und Höchstzahl fallen weg, Anzahl und Gewichte bekommen Vorgaben; Cmd+Z bringt Chance und Höchstzahl zurück | FR-031 |
 | Bei einem gesetzten Ereignis „Anzahl bis“ von 1 auf 3 stellen, dann Cmd+Z | Gewichte neu verteilt, alle gleich; ein Cmd+Z nimmt Anzahl und Gewichte zusammen zurück | FR-004, FR-031 |
-| Kategorie anlegen, umbenennen, eine belegte Kategorie löschen | neue Kategorie hat eine freie der erlaubten Farben, Umbenennen ändert nur den Namen, Löschen gesperrt | FR-031 |
+| Kategorie anlegen, umbenennen, eine belegte Kategorie löschen | die elfte Kategorie bekommt `kassenrot`, die erste der am seltensten benutzten Farben; Umbenennen ändert nur den Namen; Löschen gesperrt | FR-031 |
 | Ein Ereignis mit Verweis löschen, dann Cmd+Z | Rückfrage nennt den Verweis; Ereignis und Verweis sind weg; Cmd+Z holt beide zurück | US2, Szenario 4; FR-036 |
 | Kennung ändern, speichern | Verweise zeigen auf die neue Kennung | US2, Szenario 6 |
 | Ein Feld ändern, speichern, `git diff src/data/event_catalog.json` | genau eine geänderte Zeile | US2, Szenario 2; FR-035 |

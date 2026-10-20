@@ -557,7 +557,8 @@ Verhalten im Lauf:
     Zeitfenster, Mindestabstand, Dauer). Die übrigen Felder der neuen Art bekommen Vorgaben, Werte
     der alten Art fallen weg; Cmd+Z stellt den alten Stand wieder her.
   - Eine Kategorie lässt sich nur löschen, wenn kein Ereignis mehr zu ihr gehört. Eine neue
-    Kategorie bekommt die erste noch freie der Farben, die der Style-Guide für Kategorien erlaubt.
+    Kategorie bekommt die erste noch freie der Farben, die der Style-Guide für Kategorien erlaubt;
+    sind alle vergeben, die am seltensten benutzte, bei Gleichstand die frühere in seiner Liste.
     Ihre Kennung entsteht beim Anlegen aus dem Namen und bleibt danach fest; Umbenennen ändert nur
     den Namen.
   - Zahlen nimmt die Werkstatt mit Komma oder Punkt an und zeigt sie mit Komma. Wahrscheinlichkeiten

@@ -44,6 +44,8 @@ src/test/
   bevor die Szene in den Baum kommt.
 - `Werkstatt._ready()` richtet, außer headless, das Fenster ein (R13):
   - `get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED`;
+  - `get_window().content_scale_factor = DisplayServer.screen_get_scale()`, damit Text auf dem
+    Retina-Bildschirm scharf und in normaler Größe steht (Style-Guide „Werkzeuge“);
   - `get_window().mode = Window.MODE_MAXIMIZED`, außer bei `Engine.is_embedded_in_editor()`;
   - `GameWindow.set_process(false)` und `GameWindow.set_process_unhandled_input(false)`.
 
@@ -166,7 +168,8 @@ func remove_item(id: String, list: StringName, index: int) -> void
 func set_item_field(id: String, list: StringName, index: int, field: StringName, value: Variant) -> void
 
 ## Kategorien: Kennung aus dem Namen, danach fest; Farbe = erstes noch freies Token aus
-## UiPalette.CATEGORY_TOKENS
+## UiPalette.CATEGORY_TOKENS, sind alle vergeben, das am seltensten benutzte, bei Gleichstand
+## das frühere
 func add_category(name: String) -> EventCategory
 func set_category_field(id: String, field: StringName, value: Variant) -> void   # &"name" oder &"color"
 func delete_category(id: String) -> Error     # ERR_UNAVAILABLE, solange Ereignisse dazugehören

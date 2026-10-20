@@ -146,7 +146,7 @@ Keine Einträge, die Prüfung der Verfassung zeigt keine Verstöße.
 1. **Style-Guide, Abschnitt „Werkzeuge“** (Grundsatz IV), vor dem Bau der Werkstatt. Der
    Abschnitt legt fest:
    - Werkzeuge laufen in voller Auflösung, nicht im 640 × 360-Raster;
-   - eine Schrift ohne Pixelraster, vorgeschlagen Godots eingebaute Schrift (R14);
+   - eine Schrift ohne Pixelraster: Godots eingebaute Open Sans SemiBold (R14);
    - Farbrollen aus der Hauptpalette: Grund, Fläche, Text, gedämpfter Text, Auswahl, Fehler,
      Warnung, Ziehen;
    - die Farben, die Kategorien tragen dürfen, mit mindestens 3 : 1 Kontrast zum Grund des
@@ -154,7 +154,7 @@ Keine Einträge, die Prüfung der Verfassung zeigt keine Verstöße.
    - Text mit mindestens 4,5 : 1 Kontrast zu seinem Grund (FR-029); Titel im Zeitstrahl stehen in
      Textfarbe auf dem Grund, nicht auf der Kategorienfarbe.
 
-   Claude entwirft ihn, Klaus gibt ihn frei.
+   Claude hat ihn entworfen, Klaus hat ihn am 2026-10-20 freigegeben (T001, T002).
 2. **Schnappschuss der alten Daten** (R19), bevor der alte Code fällt. Er hält die 19 historischen
    Ereignisse so fest, wie die alte Engine sie liefert, als Prüfmaßstab für SC-005.
 
@@ -241,5 +241,5 @@ Alles Übrige betraf Plan, Verträge, Datenmodell, Recherche, Quickstart und Tas
 - **Startwerte der Kalender-Ereignisse** (R19): Weihnachtsgeschäft „Kundenstrom alles +30 %“
   während, CeBIT vom 15. bis 21. März mit einer Pressemeldung, Jahreszeiten ohne Wirkung. Das
   blockiert nichts, Klaus ändert die Werte jederzeit in der Werkstatt.
-- **Schrift und Farbrollen der Werkstatt** werden mit dem Style-Guide-Abschnitt in Phase 1
-  entschieden.
+- Entschieden sind **Schrift und Farbrollen der Werkstatt**: Abschnitt „Werkzeuge“ im
+  Style-Guide, von Klaus am 2026-10-20 freigegeben.

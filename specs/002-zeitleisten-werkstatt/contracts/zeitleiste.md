@@ -87,7 +87,7 @@ Sonst bleibt die Uhr unverändert.
 ## Token-Name aus dem Style-Guide → Farbe, für alle 15 Farben, z. B. &"gehaeuse-hell".
 const TOKENS := { &"tusche": TUSCHE, … }
 ## Tokens, die der Style-Guide für Kategorien erlaubt, in seiner Reihenfolge; jedes mit
-## mindestens 3 : 1 Kontrast zum Grund des Zeitstrahls, die Grundfarbe ist nicht dabei (R14).
+## mindestens 3 : 1 Kontrast zu papier und endlos-gruen, den Gründen des Zeitstrahls (R14).
 const CATEGORY_TOKENS: Array[StringName] = [ … ]
 ## Farbe zum Token; Color(1, 0, 1) (Magenta) für unbekannte Tokens, damit Fehler auffallen.
 static func by_token(token: StringName) -> Color
@@ -160,7 +160,7 @@ func write_file(path: String) -> Error
 func get_event(id: String) -> TimelineEvent        # null, wenn unbekannt
 func get_category(id: String) -> EventCategory     # null, wenn unbekannt
 func duplicate_catalog() -> EventCatalog           # tiefe Kopie über to_dict()/from_dict()
-func sort_events() -> void                         # nach Kennung
+func sort_events() -> void                         # nach Kennung, verglichen mit < (Unicode-Codepunkte)
 ## Kopie ohne die Ereignisse, zu denen eine Meldung der Stufe ERROR gehört, samt der
 ## Folgeereignisse, die auf sie zeigen (data-model.md, „Fehlerhafte Ereignisse ausnehmen“).
 func without_faulty(issues: Array[CatalogIssue]) -> EventCatalog

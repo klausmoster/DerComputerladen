@@ -12,12 +12,12 @@ Textausgabe und Tests.
 {
 	"categories": [
 		{
-			"color": "anzeige",
+			"color": "nacht-hell",
 			"id": "hardware",
 			"name": "Hardware"
 		},
 		{
-			"color": "signalgelb",
+			"color": "nacht",
 			"id": "kalender",
 			"name": "Kalender"
 		}
@@ -44,6 +44,14 @@ Textausgabe und Tests.
 					"note": "Pentium-Systeme wollen Speicher.",
 					"scope": "once",
 					"target": "ram"
+				},
+				{
+					"delay_days": 0,
+					"kind": "presse",
+					"magnitude": 0.0,
+					"note": "Fachpresse berichtet groß.",
+					"scope": "once",
+					"target": "cpu"
 				}
 			],
 			"follow_ups": [],
@@ -138,8 +146,11 @@ Textausgabe und Tests.
 ```
 
 Das Beispiel zeigt jede Art einmal, gekürzt auf zwei Kategorien. „Neubaugebiet am Stadtrand“ und
-der Zeitungsartikel sind Beispiele für das Format, kein Teil der Übernahme. Listen stehen, wie
-`JSON.stringify` sie mit Einrückung schreibt, mit einem Eintrag je Zeile; leere Listen als `[]`.
+der Zeitungsartikel sind Beispiele für das Format, kein Teil der Übernahme. Die Reklamationswelle
+zeigt, wie ein Folgeereignis aussieht; übernommen wird sie mit ihren zwei alten Wirkungen und ohne
+Folgeereignis. Listen stehen, wie `JSON.stringify` sie mit Einrückung schreibt, mit einem Eintrag
+je Zeile; leere Listen als `[]`. Die Farben der Kategorien stammen aus dem Style-Guide, Abschnitt
+„Werkzeuge“.
 
 ## Felder
 

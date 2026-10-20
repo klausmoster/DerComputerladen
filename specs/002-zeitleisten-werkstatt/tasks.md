@@ -51,7 +51,7 @@ je Phase“.
 **Purpose**: Style-Guide-Abschnitt „Werkzeuge“, Schnappschuss der alten Daten und Übernahme in den
 Katalog, solange der alte Code noch da ist
 
-- [ ] T001 [C] Style-Guide um den Abschnitt „Werkzeuge“ ergänzen (plan.md, Vorarbeit 1) im
+- [x] T001 [C] Style-Guide um den Abschnitt „Werkzeuge“ ergänzen (plan.md, Vorarbeit 1) im
   Artifact https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX:
   - Werkzeuge laufen in voller Auflösung, nicht im 640 × 360-Raster.
   - Schrift ohne Pixelraster: Vorschlag `ThemeDB.fallback_font`, dazu eine Größe (research.md,
@@ -64,14 +64,14 @@ Katalog, solange der alte Code noch da ist
     Daraus die Startfarben der zehn Kategorien `hardware`, `software`, `tech`, `wirtschaft`,
     `lokal`, `konkurrenz`, `kunde`, `reklamation`, `lieferung` und `kalender`.
   - Titel im Zeitstrahl stehen in Textfarbe auf dem Grund, nie auf der Kategorienfarbe.
-- [ ] T002 [K] Abschnitt „Werkzeuge“ aus T001 im Style-Guide ansehen und freigeben
-- [ ] T003 [A] [P] Schnappschuss der alten Daten (research.md, R19). Ein Einmal-Skript schreibt mit
+- [x] T002 [K] Abschnitt „Werkzeuge“ aus T001 im Style-Guide ansehen und freigeben
+- [x] T003 [A] [P] Schnappschuss der alten Daten (research.md, R19). Ein Einmal-Skript schreibt mit
   `EventDatabase.build_fixed_events()` die Datei `src/test/fixtures/historische_ereignisse.txt`:
   - je fixes Ereignis eine Zeile `JJJJ-MM-TT|kennung|wirkung;wirkung;…`;
   - jede Wirkung als `kind:target:magnitude:delay_days`; `kind` klein aus dem bisherigen Enum,
     etwa `preis`; `magnitude` mit `str()`;
   - Wirkungen in Listenreihenfolge, Zeilen nach Datum, dann Kennung.
-- [ ] T004 [A] Übernahme in `src/data/event_catalog.json` (research.md, R19). Ein Einmal-Skript
+- [x] T004 [A] Übernahme in `src/data/event_catalog.json` (research.md, R19). Ein Einmal-Skript
   schreibt den Katalog nach [ereigniskatalog.md](contracts/ereigniskatalog.md), Tabelle „Übernahme
   aus EventDatabase“:
   - die 25 Ereignisse, 19 mit `"kind": "fixed"` und 6 mit `"kind": "chance"`, alle Wirkungen mit
@@ -82,12 +82,12 @@ Katalog, solange der alte Code noch da ist
     ganze Zahlen als `int`, `"format": 1`. Die endgültige kanonische Form entsteht in T012.
 
   Hängt an T002.
-- [ ] T005 [A] [P] `src/export_presets.cfg`: `exclude_filter` von `"addons/gut/*, test/*"` auf
+- [x] T005 [A] [P] `src/export_presets.cfg`: `exclude_filter` von `"addons/gut/*, test/*"` auf
   `"addons/gut/*, test/*, tools/*"` setzen; die Datei vor der Abgabe auf Zugangsdaten durchsehen
   (Verfassung, Arbeitsweise)
-- [ ] T006 [K] Phase 1 abnehmen:
+- [x] T006 [K] Phase 1 abnehmen:
   - `src/test/fixtures/historische_ereignisse.txt` ansehen: 19 Zeilen, darunter der Pentium am
-    1993-03-22 mit beiden Wirkungen.
+    1993-03-22 mit seinen drei Wirkungen.
   - `src/data/event_catalog.json` im Diff ansehen: 25 Ereignisse, zehn Kategorien mit den
     Startfarben aus T001.
   - `src/export_presets.cfg` nach quickstart.md, Abschnitt 6, erste Zeile.
@@ -379,8 +379,9 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
 
 - [ ] T031 [A] [P] [US2] `src/tools/werkstatt/werkstatt_theme.tres` nach dem Abschnitt
   „Werkzeuge“ (T002): Farbrollen mit den Werten aus `UiPalette`, StyleBoxes für Panel, Button,
-  LineEdit, ItemList, Tree und TabContainer. Die Schrift legt der Style-Guide fest (Vorschlag
-  `ThemeDB.fallback_font`); die Werkstatt setzt sie per Code als `default_font` (R14).
+  LineEdit, ItemList, Tree und TabContainer. Schrift laut Style-Guide: Open Sans SemiBold aus
+  `ThemeDB.fallback_font` in der Größe 14 (`default_font_size`), Titel 16, Zeitachse 12; die
+  Werkstatt setzt die Schrift per Code als `default_font` (R14).
 - [ ] T032 [A] [US2] `src/tools/werkstatt/catalog_editor.gd` (`CatalogEditor`) laut Vertrag:
   - **Datei:** `open()`; `save(force)` gibt ohne `force` `ERR_FILE_ALREADY_IN_USE` bei fremder
     Änderung oder beim Öffnen unlesbarer Datei; `revert()` liest neu, leert den Verlauf und löscht
@@ -399,7 +400,8 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
   - **Listen und Kategorien:**
     - `add_item()`, `remove_item()`, `set_item_field()`.
     - `add_category()`: Kennung aus dem Namen, danach fest; die erste freie Farbe aus
-      `UiPalette.CATEGORY_TOKENS`.
+      `UiPalette.CATEGORY_TOKENS`, sind alle vergeben, die am seltensten benutzte, bei Gleichstand
+      die frühere.
     - `set_category_field()`; `delete_category()` gibt `ERR_UNAVAILABLE`, solange Ereignisse
       dazugehören.
   - **Verlauf:** `undo()`, `redo()`, `can_undo()`, `can_redo()`, je Änderung genau eine Aktion
@@ -415,6 +417,8 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
     (Szenario 6); `set_event_fields()` ist ein Schritt.
   - **Löschen und Art:** Löschen mit Verweisen ist ein Schritt; ein Artwechsel behält gemeinsame
     Werte; eine belegte Kategorie lässt sich nicht löschen.
+  - **Kategorienfarben:** Neben den zehn Kategorien der Übernahme bekommt eine elfte `kassenrot`,
+    die erste der am seltensten benutzten Farben.
   - **Speichern und Verwerfen:** Eine Feldänderung ändert genau eine Zeile der Datei (Szenario 2,
     FR-035); eine fremde Änderung wird erkannt; eine unlesbare Datei bleibt unberührt;
     `revert()` stellt den Stand der Datei her und leert den Verlauf. Ein unbekannter Schlüssel
@@ -426,8 +430,9 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
   - **Aufbau:** Toolbar mit Speichern, Verwerfen, Rückgängig, Wiederholen und Statuszeile;
     `Main` mit `EventList`, `Center` (Platz für `TimelineView`, `Tabs` vorerst mit „Prüfung“) und
     `FormScroll`; Theme aus T031, die Schrift per Code.
-  - **Fenster** (außer headless): `CONTENT_SCALE_MODE_DISABLED`, maximiert außer bei
-    `Engine.is_embedded_in_editor()`, Verarbeitung von `GameWindow` aus.
+  - **Fenster** (außer headless): `CONTENT_SCALE_MODE_DISABLED`, `content_scale_factor` aus
+    `DisplayServer.screen_get_scale()`, maximiert außer bei `Engine.is_embedded_in_editor()`,
+    Verarbeitung von `GameWindow` aus.
   - **Start:** `catalog_path` mit der Vorgabe `EventCatalog.DEFAULT_PATH`, `--katalog` nach `--`
     setzt ihn. Die Sicherungskopie wird nur angeboten, wenn `backup_matches()`, sonst nennt ein
     Hinweis ihren Pfad. Fehlende Datei → leeren Katalog anbieten; unlesbare Datei → Dialog mit

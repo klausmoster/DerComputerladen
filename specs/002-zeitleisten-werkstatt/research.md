@@ -273,6 +273,11 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     `CONTENT_SCALE_MODE_DISABLED` und schaltet das Fenster auf `MODE_MAXIMIZED`, außer es läuft
     eingebettet im Editor (`Engine.is_embedded_in_editor()`). Sie schaltet die Verarbeitung von
     `GameWindow` ab, damit dessen Ganzzahl-Größe das Fenster nicht zurücksetzt.
+  - **Bildschirmfaktor:** Dazu setzt sie `content_scale_factor` auf
+    `DisplayServer.screen_get_scale()`, auf einem Retina-Bildschirm also 2. Ohne das stünde Text
+    in physischen Pixeln da, eine Schrift der Größe 14 wäre dort nur halb so groß (Style-Guide,
+    Abschnitt „Werkzeuge“). **Probe:** Der Faktor wirkt auch mit `CONTENT_SCALE_MODE_DISABLED`;
+    die Transformation des Fensters hat dann den Maßstab 2.
   - **Headless:** Läuft Godot ohne Fenster, lässt die Werkstatt das Fenster in Ruhe; das braucht
     der Rauchtest.
   - **Export:** Der Export schließt `tools/*` aus wie heute `test/*`.
@@ -287,10 +292,11 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 
 - **Entscheidung:** Eigenes Theme `werkstatt_theme.tres` auf dem Wurzelknoten der Werkstatt. Es
   verdeckt für alles darunter das Projekt-Theme. Die Farben kommen aus `UiPalette`, ihre Rollen
-  (Grund, Fläche, Text, Auswahl, Fehler, Warnung) legt der neue Abschnitt „Werkzeuge“ im
-  Style-Guide fest. Als Schrift schlägt der Plan Godots eingebaute Schrift
-  (`ThemeDB.fallback_font`) vor, gesetzt per Code als `default_font`; dafür braucht es keine neue
-  Datei und keine Lizenz. Die endgültige Wahl trifft der Style-Guide-Abschnitt.
+  (Grund, Fläche, Text, Auswahl, Fehler, Warnung und weitere) legt der Abschnitt „Werkzeuge“ im
+  Style-Guide fest, von Klaus am 2026-10-20 freigegeben. Die Schrift ist laut diesem Abschnitt
+  Godots eingebaute Open Sans SemiBold (`ThemeDB.fallback_font`, Probe in 4.7.2), gesetzt per Code
+  als `default_font`, in den Größen 14 für Text, 12 für die Zeitachse und 16 für Titel. Dafür
+  braucht es keine neue Datei und keine Lizenz.
 - **Wichtig:** Das Theme muss `default_font` selbst setzen. Ohne eigene Schrift fällt Godot auf
   das Projekt-Theme zurück, und dort steht Ark Pixel.
 - **Kategorienfarben:** Im Katalog stehen Token-Namen der Palette (`"petrol"`). `UiPalette`
@@ -300,8 +306,12 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     wie für farbige Flächen ohne Text üblich.
   - Titel stehen in Textfarbe auf dem Grund neben der Marke, nie auf der farbigen Fläche; so gilt
     für sie der Kontrast aus FR-029.
-  - Eine neue Kategorie bekommt das erste noch freie Token dieser Liste. Die Grundfarbe steht nicht
-    darin und kann deshalb nie zur Kategorienfarbe werden.
+  - Eine neue Kategorie bekommt das erste noch freie Token dieser Liste; sind alle vergeben, das am
+    seltensten benutzte, bei Gleichstand das frühere. Die Grundfarbe steht nicht darin und kann
+    deshalb nie zur Kategorienfarbe werden.
+  - Auf `papier` erreichen nur sieben der 15 Farben 3 : 1. Für die zehn Kategorien kommen drei
+    deshalb doppelt vor; eine Marke gehört über ihre beschriftete Zeile zur Kategorie, die Farbe
+    hilft nur.
 - **Alternativen:** Godots Standard-Theme (von Klaus verworfen, Option „nüchternes Werkzeug“);
   Pixelschriften der Spieloberfläche (bei voller Auflösung winzig).
 
