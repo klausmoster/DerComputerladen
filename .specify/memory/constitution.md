@@ -87,6 +87,9 @@ bedienbar.
 - `Templates/TEMPLATE_*.md` ist die alleinige Autorität für Struktur und Feldnamen. Eine
   vorhandene Datei ist nie Strukturvorlage.
 - Bezug ist der deutsche Markt der 1990er, in DM und mit dem Datumsformat `JJJJ-MM`.
+- Ausnahme Ereigniskatalog: Die Ereignisse der Zeitleiste liegen als Datei im Spielprojekt und
+  werden mit der Zeitleisten-Werkstatt gepflegt, nicht in der game_bible. Die Werkstatt muss den
+  Katalog lesen und schreiben können, und Ereignisse brauchen tagesgenaue Daten statt `JJJJ-MM`.
 
 Begründung: Die Daten sind der Spielinhalt. Sie müssen maschinell lesbar bleiben und dürfen beim
 Regenerieren der Tabellen nicht verloren gehen.
@@ -130,4 +133,4 @@ Regenerieren der Tabellen nicht verloren gehen.
   ein Grundsatz wegfällt oder neu definiert wird; MINOR, wenn ein Grundsatz oder Abschnitt
   hinzukommt oder deutlich erweitert wird; PATCH für Klarstellungen und Wortlaut.
 
-**Version**: 2.0.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-19
+**Version**: 2.1.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-20
