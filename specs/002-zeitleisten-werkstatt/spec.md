@@ -302,8 +302,8 @@ Der Mittelwert über 1.000 Spiele liegt nahe bei 90.
 3. **Given** ein Test-Katalog mit genau einem Ereignis zu 50 % pro Monat ohne Zeitfenster,
    Höchstzahl und Mindestabstand, **When** 1.000 Spiele gerechnet werden, **Then** liegt der
    Mittelwert zwischen 85,5 und 94,5 (180 Monate, Erwartung 90).
-4. **Given** Klaus hat im Simulator Eingriffe gesetzt, **When** er die Statistik mit Eingriffen
-   startet, **Then** rechnet sie jedes Spiel mit diesen Eingriffen.
+4. **Given** Klaus hat im Simulator Modifikatoren gesetzt und Ereignisse eingeplant, **When** er
+   die Statistik mit diesen Eingriffen startet, **Then** rechnet sie jedes Spiel mit ihnen.
 5. **Given** dieselben Einstellungen, **When** die Statistik zweimal gerechnet wird, **Then** sind
    beide Ergebnisse gleich.
 6. **Given** ein Test-Katalog mit einem Ereignis „beim Start gesetzt“, das zu 30 % keinmal und zu
@@ -469,9 +469,10 @@ Verhalten im Lauf:
   plus Summe, begrenzt auf 0 % bis 100 %. Abgelaufene Modifikatoren wirken nicht. Jeder lässt sich
   einzeln entfernen, und die Grundchance im Katalog bleibt unberührt.
 - **FR-026**: Geplante Termine, die nicht fix oder jährlich sind, müssen sich mit Grund absagen oder
-  auf ein Datum zwischen dem aktuellen Spieltag und dem 31.12.1999 verschieben lassen. Ein Ereignis
-  aus dem Katalog, das nicht fix oder jährlich ist, muss sich mit Grund als neuer Termin einplanen
-  lassen. Fixe und jährliche Termine lassen sich weder absagen noch verschieben.
+  auf ein Datum nach dem aktuellen Spieltag bis zum 31.12.1999 verschieben lassen. Ein Ereignis
+  aus dem Katalog, das nicht fix oder jährlich ist, muss sich mit Grund als neuer Termin auf einen
+  solchen Tag einplanen lassen. Der aktuelle Spieltag ist schon abgespielt und scheidet deshalb
+  aus. Fixe und jährliche Termine lassen sich weder absagen noch verschieben.
 - **FR-027**: Eingriffe dürfen nur ab dem aktuellen Spieltag wirken; Vergangenes bleibt, wie es war.
   Jeder Eingriff steht mit Zeitpunkt und Grund im Protokoll. Die Eingriffe stehen später allen
   Spielteilen offen; in diesem Feature nutzen sie die Werkstatt und die automatischen Tests.
@@ -543,7 +544,9 @@ Verhalten im Lauf:
   Anzahl, den Anteil der Spiele ohne Eintreten und mit erreichter Höchstzahl und die Verteilung auf
   die Jahre zeigen.
 - **FR-045**: Die Statistik muss ihren Fortschritt zeigen und sich abbrechen lassen. Wahlweise
-  rechnet sie jedes Spiel mit den Eingriffen aus dem Simulator.
+  rechnet sie jedes Spiel mit den Modifikatoren und Einplanungen aus dem Simulator. Absagen und
+  Verschiebungen betreffen Termine eines bestimmten Seeds und gelten deshalb nicht für die
+  Statistik.
 
 **Textausgabe**
 
