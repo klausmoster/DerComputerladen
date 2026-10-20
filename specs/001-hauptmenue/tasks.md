@@ -309,16 +309,17 @@ nichts und erklären im Hinweis, warum.
 **Independent Test**: Alle drei Einträge überfahren und auslösen: Es erscheint der Hinweis, sonst
 passiert nichts.
 
-- [ ] T040 [A] [US4] Darstellung „nicht verfügbar“ nach dem Style-Guide aus T001:
+- [x] T040 [A] [US4] Darstellung „nicht verfügbar“ nach dem Style-Guide aus T001:
   - In `src/ui/computerladen_theme.tres`: `font_disabled_color` von `MenuRow` in
     `gehaeuse-dunkel`.
   - In `src/scenes/title/main_menu.gd`: Pfeil bei ausgewähltem nicht verfügbarem Eintrag in
     `gehaeuse-dunkel` (FR-007).
-- [ ] T041 [A] [P] [US4] Tests in `src/test/test_main_menu.gd`: `activate_selected()` sendet bei
+- [x] T041 [A] [P] [US4] Tests in `src/test/test_main_menu.gd`: `activate_selected()` sendet bei
   „Neues Spiel“, „Spiel laden“ und „Einstellungen“ nichts; nach dem Erscheinen ist „Neues Spiel“
   gewählt, und Auslösen bewirkt nichts
-- [ ] T042 [K] [US4] Im Editor prüfen: Hinweistexte wie FR-016, Lesbarkeit der nicht verfügbaren
+- [x] T042 [K] [US4] Im Editor prüfen: Hinweistexte wie FR-016, Lesbarkeit der nicht verfügbaren
   Einträge in Ruhe und ausgewählt, kein Fehler beim Auslösen
+  - Von Klaus abgenommen am 2026-10-20.
 
 **Checkpoint**: Alle vier User Stories sind erfüllt. Abnahme durch Klaus, dann Auftrag für den
 Abschluss.

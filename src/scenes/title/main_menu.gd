@@ -78,7 +78,8 @@ func _draw() -> void:
 		draw_circle(Vector2(paper.size.x - HOLE_INSET, hole_y), HOLE_RADIUS, UiPalette.TUSCHE)
 		hole_y += HOLE_SPACING
 	# Die gewählte Zeile: signalgelb im Innenbereich, davor der Pfeil.
-	if selected_entry() == null:
+	var entry := selected_entry()
+	if entry == null:
 		return
 	var row_top := ROW_HEIGHT * (_selected_index + 1)
 	var highlight := Rect2(ROW_INSET, row_top, paper.size.x - 2 * ROW_INSET, ROW_HEIGHT)
@@ -86,7 +87,11 @@ func _draw() -> void:
 	# (20 − 7) / 2 geht nicht auf. Abgerundet belegt der Pfeil die Pixelreihen 6 bis 12
 	# der Zeile.
 	var arrow_top := row_top + floori((ROW_HEIGHT - ARROW_HEIGHT) / 2.0)
-	_draw_arrow(Vector2(ARROW_X, arrow_top), UiPalette.TUSCHE)
+	# Bei einem nicht verfügbaren Eintrag ist der Pfeil gedämpft wie sein Text, dem das
+	# Theme font_disabled_color in gehaeuse-dunkel gibt. So sieht die Zeile ausgewählt
+	# genauso gedämpft aus wie in Ruhe (FR-007).
+	var arrow_color := UiPalette.TUSCHE if entry.available else UiPalette.GEHAEUSE_DUNKEL
+	_draw_arrow(Vector2(ARROW_X, arrow_top), arrow_color)
 
 
 ## Wählt Zeile [param index], indem ihr Button den Fokus bekommt. Außerhalb der Liste
@@ -126,6 +131,9 @@ func _make_row(index: int) -> Button:
 	var entry := entries[index]
 	var button := Button.new()
 	button.text = entry.label
+	# Nicht verfügbar heißt gesperrt: Der Button lässt sich wählen, aber nicht drücken.
+	# Seine Schrift nimmt dann immer font_disabled_color aus dem Theme, auch mit Fokus;
+	# gesperrt geht in Godot vor allen anderen Zuständen.
 	button.disabled = not entry.available
 	button.theme_type_variation = &"MenuRow"
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT

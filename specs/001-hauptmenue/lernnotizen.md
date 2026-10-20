@@ -291,3 +291,27 @@ und 150) und die eigene `FontVariation` des Untertitels (er steht jetzt in `druc
   wirklich verbunden sind: Ohne `_link_ends()` sprang Pfeil hoch zu ihm.
 - Gegenproben in einer Wegwerf-Kopie: Jede entfernte Zeile (Rechtsklick, Enden, Tab-Nachbarn,
   Mauszeiger) ließ genau den zugehörigen Test fallen.
+
+## Phase 6: Noch nicht verfügbare Einträge (US4)
+
+### T040 Darstellung „nicht verfügbar“ (`computerladen_theme.tres`, `main_menu.gd`)
+
+- Ein Button hat sechs Schriftfarben, je eine für Normal, Fokus, Überfahren, Gedrückt, Überfahren
+  und gedrückt, Gesperrt. Welche gilt, entscheidet `get_draw_mode()`, und „gesperrt“ geht vor
+  allen anderen Zuständen. Eine einzige Theme-Zeile (`font_disabled_color`) reicht deshalb für
+  „in Ruhe wie ausgewählt“.
+- Eine `.tres` kann `UiPalette` nicht lesen; der Farbwert steht als Zahl darin. Die Schreibweise
+  liefert Godot selbst: `var_to_str(UiPalette.GEHAEUSE_DUNKEL)`.
+- Den Pfeil malt das Menü selbst, das Theme erreicht ihn nicht. `_draw()` wählt seine Farbe nach
+  `entry.available`; es läuft bei jeder Auswahländerung neu, weil `queue_redraw()` kommt.
+
+### T041 Tests (`test_main_menu.gd`)
+
+- Der Gegentest aus T033 deckt jetzt alle drei gesperrten Einträge ab, statt gedoppelt zu werden.
+- Die gedämpfte Schrift prüft der Test über öffentliche Schnittstellen: `get_draw_mode()` zeigt
+  `DRAW_DISABLED`, `get_theme_color(&"font_disabled_color")` liefert `gehaeuse-dunkel`, genau wie
+  der Button sie beim Zeichnen nimmt. Der Vergleich mit `UiPalette` sichert, dass Theme und Pfeil
+  dieselbe Farbe behalten.
+- Den Pfeil prüft kein Test: Headless gehen die Zeichenbefehle an einen Renderer ohne Bild, und
+  kein GDScript-API liest sie zurück. Ein Spy auf eine interne Funktion prüfte die Umsetzung statt
+  des Ergebnisses. Den Pfeil prüft Klaus mit dem Auge (T042).

@@ -2,7 +2,8 @@ extends GutTest
 
 ## Prüft das Hauptmenü: die Zeilen in ihrer Reihenfolge, welche sich auslösen lassen, die
 ## Startauswahl, die Meldung, wenn eine Zeile gewählt wird, die Meldung, wenn ein Eintrag
-## ausgelöst wird, die Bedienung mit Tastatur und Maus und den Mauszeiger je Eintrag.
+## ausgelöst wird, die Bedienung mit Tastatur und Maus, den Mauszeiger je Eintrag und die
+## gedämpfte Schrift gesperrter Zeilen.
 ##
 ## Die vier Einträge entstehen hier im Code, mit den Werten aus dem Datenmodell
 ## (specs/001-hauptmenue/data-model.md). Geprüft wird also das Menü, nicht die Daten,
@@ -107,17 +108,35 @@ func test_beenden_meldet_quit_genau_einmal() -> void:
 	assert_signal_emitted_with_parameters(_menu, "entry_activated", [&"quit"])
 
 
-func test_nicht_verfuegbarer_eintrag_meldet_nichts() -> void:
-	# Arrange: „Einstellungen“ steht direkt über „Beenden“, ist aber nicht verfügbar.
-	_menu.select(2)
+func test_nicht_verfuegbare_eintraege_melden_nichts() -> void:
+	# Arrange
 	watch_signals(_menu)
 
-	# Act
-	_menu.activate_selected()
+	# Act und Assert für jeden der drei gesperrten Einträge. Die Zählung läuft über alle
+	# drei weiter; meldet einer doch, nennt die Meldung ihn beim Namen.
+	for index: int in [0, 1, 2]:
+		var bezeichnung := _menu.entries[index].label
+		_menu.select(index)
+		_menu.activate_selected()
+		assert_signal_emit_count(_menu, "entry_activated", 0,
+			"„%s“ ist nicht verfügbar und darf nichts melden, auch gewählt nicht." % bezeichnung)
 
-	# Assert
-	assert_signal_not_emitted(_menu, "entry_activated",
-		"Ein nicht verfügbarer Eintrag darf nichts melden, auch wenn er gewählt ist.")
+
+func test_enter_leertaste_und_klick_bewirken_nach_dem_erscheinen_nichts() -> void:
+	# Arrange: Gewählt ist „Neues Spiel“, die Startauswahl, und der Eintrag ist nicht
+	# verfügbar.
+	watch_signals(_menu)
+	var neues_spiel := _mitte(0)
+
+	# Act und Assert je Eingabe, als echte Ereignisse über push_input.
+	_taste(KEY_ENTER)
+	assert_signal_emit_count(_menu, "entry_activated", 0, "Enter löst nichts aus.")
+	_taste(KEY_SPACE)
+	assert_signal_emit_count(_menu, "entry_activated", 0, "Die Leertaste löst nichts aus.")
+	_maus_nach(neues_spiel)
+	_klick(neues_spiel, MOUSE_BUTTON_LEFT)
+	assert_signal_emit_count(_menu, "entry_activated", 0, "Ein Linksklick löst nichts aus.")
+	assert_eq(_menu.selected_index(), 0, "Die Auswahl bleibt auf „Neues Spiel“.")
 
 
 # --- Tastatur -------------------------------------------------------------
@@ -192,6 +211,31 @@ func test_mauszeiger_zeigt_die_hand_nur_ueber_verfuegbaren_eintraegen() -> void:
 	# Assert
 	assert_eq(zeiger, [Control.CURSOR_ARROW, Control.CURSOR_ARROW, Control.CURSOR_ARROW,
 		Control.CURSOR_POINTING_HAND], "Die Hand nur über „Beenden“, sonst der Pfeil.")
+
+
+# --- Darstellung ----------------------------------------------------------
+
+# Geprüft wird die Schrift, über den Zustand des Buttons und die Farbe aus dem Theme. Den
+# Pfeil malt _draw(); headless entsteht dabei kein Bild, das ein Test ansehen könnte.
+# Seine Farbe prüft Klaus mit dem Auge (T042).
+func test_gesperrte_zeilen_sind_ausgewaehlt_so_gedaempft_wie_in_ruhe() -> void:
+	for index: int in [0, 1, 2]:
+		# Arrange: in Ruhe, gewählt ist „Beenden“.
+		var zeile := _zeilen()[index] as Button
+		_menu.select(3)
+		var in_ruhe := zeile.get_draw_mode()
+
+		# Act
+		_menu.select(index)
+
+		# Assert: Ein gesperrter Button bleibt auch mit Fokus im Zustand DRAW_DISABLED,
+		# und darin nimmt Godot font_disabled_color aus dem Theme.
+		assert_true(zeile.has_focus(), "Voraussetzung: „%s“ ist gewählt." % zeile.text)
+		assert_eq([in_ruhe, zeile.get_draw_mode()],
+			[BaseButton.DRAW_DISABLED, BaseButton.DRAW_DISABLED],
+			"„%s“ wird in Ruhe und ausgewählt als gesperrt gezeichnet." % zeile.text)
+		assert_eq(zeile.get_theme_color(&"font_disabled_color"), UiPalette.GEHAEUSE_DUNKEL,
+			"Die Schrift gesperrter Zeilen ist gehaeuse-dunkel.")
 
 
 # --- Helfer ---------------------------------------------------------------
