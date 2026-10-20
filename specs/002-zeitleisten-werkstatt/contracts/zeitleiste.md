@@ -203,7 +203,7 @@ enum State { PLANNED, RUNNING, OCCURRED, ENDED, SKIPPED, CANCELLED }
 # Felder wie data-model.md
 func origin_label() -> String     # „fix“, „jährlich“, „gesetzt“, „gewürfelt“, „Folge von <titel>“, „Eingriff“
 func state_label() -> String      # „geplant“, „läuft“, „eingetreten“, „beendet“, „entfallen“, „abgesagt“
-func explain() -> String          # Begründung in einem Satz aus den Feldern des Termins, z. B. „Würfel 0,021 < Schwelle 0,080 (3 % + Ware vom windigen Händler +5)“, bei Folgen „Würfel 0,412 < 50 %, Folge von Reklamationswelle“
+func explain() -> String          # Begründung in einem Satz aus den Feldern des Termins, z. B. „Würfel 0,0213 < Schwelle 0,0800 (3 % + Ware vom windigen Händler +5)“, bei Folgen „Würfel 0,4120 < 50 %, Folge von Reklamationswelle“; Würfel auf vier Stellen abgerundet, damit er nie gleich der Schwelle aussieht
 func due_effects() -> Array[Dictionary]   # [{ "effect": EventEffect, "day": int }], nur verzögerte
 
 class_name ChanceModifier extends RefCounted
@@ -246,7 +246,8 @@ func advance_to(day: int) -> Array[TimelineMessage]
 func is_finished() -> bool                 # today == LAST_DAY
 func get_entry(serial: int) -> ScheduleEntry
 func running_entries() -> Array[ScheduleEntry]
-## { "base": float, "sum": float, "effective": float, "modifiers": Array[ChanceModifier] }
+## { "base": float, "sum": float, "effective": float, "modifiers": Array[ChanceModifier] }:
+## sum = Grundchance plus die geltenden Modifikatoren, unbegrenzt; effective = sum auf 0 bis 1
 func chance_info(event_id: String, day: int) -> Dictionary
 
 ## Geplanter Termin des Ereignisses an diesem Tag oder null; zum Laden von Proben (data-model.md).
@@ -404,7 +405,9 @@ Ablauf:
 - Ausgabe auf stdout, gebaut von `ScheduleText`, Exit-Code 0.
 - Hat der Katalog Fehler, stehen die Meldungen auf stderr; die Ausgabe läuft ohne die
   fehlerhaften Ereignisse (`without_faulty()`), Exit-Code 1. Ist der Katalog unlesbar, gibt es nur
-  die Meldung auf stderr, Exit-Code 1.
+  die Meldung auf stderr, Exit-Code 1; ebenso bei einem falschen Argument, dann mit Aufrufhilfe.
+- Godot druckt vor dem Skript seine Kopfzeile „Godot Engine v4.7.2 …“; `--no-header` vor `-s`
+  lässt sie weg.
 
 ```gdscript
 class_name ScheduleText extends RefCounted

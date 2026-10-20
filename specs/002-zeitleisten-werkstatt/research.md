@@ -161,9 +161,11 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
   - Die Bedingungen sind erfüllt.
   - Die Höchstzahl ist nicht erreicht; dabei zählen alle Termine außer entfallenen und
     abgesagten.
-  - Der gewürfelte Tag liegt mindestens den Mindestabstand hinter dem Beginn des letzten Termins,
-    der weder entfallen noch abgesagt ist (FR-005).
-  - w liegt unter der wirksamen Chance.
+  - Der gewürfelte Tag liegt mindestens den Mindestabstand von jedem Termin dieses Ereignisses
+    entfernt, der weder entfallen noch abgesagt ist, auch von einem schon geplanten (FR-005). Bei
+    Mindestabstand 0 gibt es keine Prüfung.
+  - w liegt unter der wirksamen Chance; eine Chance von 100 % trifft immer. `randf()` kann laut
+    Doku genau 1,0 liefern, und „Wurf < Schwelle“ verfehlte dann.
 
   Der Tag ist der t-te Teil der Tage dieses Monats, die im Zeitfenster liegen. Als Begründung
   bekommt der Termin Würfelwert, Schwelle und Grundchance, dazu die Modifikatoren mit Grund und
@@ -204,7 +206,8 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 ## R10 Folgeereignisse und Ketten
 
 - **Entscheidung:** Beginnt ein Ereignis, entscheidet je Folgeereignis ein eigener Würfel über
-  ob (Wahrscheinlichkeit) und wann (Tag aus der Verzögerungsspanne). Die Prüfung im Katalog sucht
+  ob (Wahrscheinlichkeit) und wann (Tag aus der Verzögerungsspanne); mit 100 % kommt es immer
+  (R8). Die Prüfung im Katalog sucht
   Kreise über Kanten mit 100 % und Verzögerung 0 und meldet sie als Fehler.
 - **Kettenbremse:** Gezählt wird je Kette (FR-018):
   - Ein Termin, den der Tag von sich aus beginnt, ist das erste Glied seiner Kette.

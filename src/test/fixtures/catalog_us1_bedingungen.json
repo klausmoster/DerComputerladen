@@ -1,0 +1,157 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		},
+		{
+			"color": "holz-dunkel",
+			"id": "lokal",
+			"name": "Lokal"
+		},
+		{
+			"color": "petrol",
+			"id": "kunde",
+			"name": "Kunde"
+		}
+	],
+	"events": [
+		{
+			"category": "hardware",
+			"date": "1990-05-10",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "basis",
+			"kind": "fixed",
+			"title": "Basis"
+		},
+		{
+			"category": "kunde",
+			"conditions": [
+				{
+					"event": "basis",
+					"occurred": true
+				}
+			],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "braucht_basis",
+			"kind": "follow_only",
+			"title": "Braucht Basis"
+		},
+		{
+			"category": "lokal",
+			"conditions": [
+				{
+					"event": "basis",
+					"occurred": true
+				}
+			],
+			"count_min": 1,
+			"count_weights": [
+				100
+			],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "gesetzt_am_basistag",
+			"kind": "preset",
+			"min_gap_days": 0,
+			"title": "Gesetzt am Basistag",
+			"window": {
+				"from": "1990-05-10",
+				"to": "1990-05-10"
+			}
+		},
+		{
+			"category": "lokal",
+			"conditions": [
+				{
+					"event": "basis",
+					"occurred": true
+				}
+			],
+			"count_min": 1,
+			"count_weights": [
+				100
+			],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "gesetzt_danach",
+			"kind": "preset",
+			"min_gap_days": 0,
+			"title": "Gesetzt am Tag danach",
+			"window": {
+				"from": "1990-05-11",
+				"to": "1990-05-11"
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [
+				{
+					"event": "basis",
+					"occurred": false
+				}
+			],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "ohne_basis",
+			"kind": "follow_only",
+			"title": "Nur ohne Basis"
+		},
+		{
+			"category": "hardware",
+			"date": "1990-05-01",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "braucht_basis"
+				},
+				{
+					"chance": 1.0,
+					"delay_max": 9,
+					"delay_min": 9,
+					"target": "braucht_basis"
+				},
+				{
+					"chance": 1.0,
+					"delay_max": 10,
+					"delay_min": 10,
+					"target": "braucht_basis"
+				},
+				{
+					"chance": 1.0,
+					"delay_max": 9,
+					"delay_min": 9,
+					"target": "ohne_basis"
+				},
+				{
+					"chance": 1.0,
+					"delay_max": 10,
+					"delay_min": 10,
+					"target": "ohne_basis"
+				}
+			],
+			"id": "start",
+			"kind": "fixed",
+			"title": "Start"
+		}
+	],
+	"format": 1
+}

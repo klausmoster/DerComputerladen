@@ -436,9 +436,10 @@ Verhalten im Lauf:
   Zeitfenster, eine Höchstzahl (0 heißt unbegrenzt), ein Mindestabstand in Tagen und Bedingungen.
   Gewürfelt wird zu Beginn jedes Monats im Spielzeitraum, auch im Januar 1985. Bei Erfolg tritt das
   Ereignis an einem gewürfelten Tag dieses Monats ein. Ein Monat, den das Zeitfenster nur teilweise
-  überdeckt, wird gewürfelt, der Tag aber nur unter den Tagen im Fenster. Der Mindestabstand zählt
-  vom Beginn des letzten Termins dieses Ereignisses, der weder entfallen noch abgesagt ist. Bei der
-  Höchstzahl zählen ebenfalls alle Termine außer entfallenen und abgesagten.
+  überdeckt, wird gewürfelt, der Tag aber nur unter den Tagen im Fenster. Der Mindestabstand gilt
+  zu jedem Termin dieses Ereignisses, der weder entfallen noch abgesagt ist, auch zu einem schon
+  geplanten; 0 heißt kein Abstand. Bei der Höchstzahl zählen ebenfalls alle Termine außer
+  entfallenen und abgesagten. Eine Chance von 100 % trifft immer.
 - **FR-006**: Ereignisse, die nicht fix oder jährlich sind, müssen Bedingungen haben können: Ein
   anderes Ereignis ist schon eingetreten oder noch nicht eingetreten. Bei Ereignissen über
   Wahrscheinlichkeit werden sie vor dem Würfeln geprüft, bei geplanten Terminen am Tag ihrer

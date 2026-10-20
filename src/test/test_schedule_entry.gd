@@ -47,20 +47,39 @@ func test_folge_ohne_titel_nennt_die_kennung() -> void:
 
 
 func test_gewuerfelt_nennt_wurf_schwelle_grundchance_und_modifikatoren() -> void:
-	# Arrange: 3 % Grundchance und +5 Prozentpunkte, gewürfelt 0,021 (US6, Szenario 1).
+	# Arrange: 3 % Grundchance und +5 Prozentpunkte, gewürfelt 0,02137 (US6, Szenario 1).
 	var entry := ScheduleEntry.new()
 	entry.origin = ScheduleEntry.Origin.ROLLED
-	entry.roll = 0.021
+	entry.roll = 0.02137
 	entry.threshold = 0.08
 	entry.base_chance = 0.03
 	entry.modifier_notes = PackedStringArray(["Ware vom windigen Händler +5"])
 
-	# Act und Assert
-	assert_eq(entry.explain(), "Würfel 0,021 < Schwelle 0,080 (3 % + Ware vom windigen Händler +5)")
+	# Act und Assert: vier Stellen, der Würfel abgerundet
+	assert_eq(entry.explain(),
+		"Würfel 0,0213 < Schwelle 0,0800 (3 % + Ware vom windigen Händler +5)")
 	entry.modifier_notes = PackedStringArray()
 	entry.base_chance = 0.025
 	entry.threshold = 0.025
-	assert_eq(entry.explain(), "Würfel 0,021 < Schwelle 0,025 (2,5 %)", "Ohne Modifikator.")
+	entry.roll = 0.021
+	assert_eq(entry.explain(), "Würfel 0,0210 < Schwelle 0,0250 (2,5 %)", "Ohne Modifikator.")
+
+
+func test_gewuerfelt_sieht_nie_gleich_der_schwelle_aus() -> void:
+	# Arrange: knapp unter 3 %; aufgerundet stünde dort „0,0300 < 0,0300“.
+	var entry := ScheduleEntry.new()
+	entry.origin = ScheduleEntry.Origin.ROLLED
+	entry.roll = 0.02999
+	entry.threshold = 0.03
+	entry.base_chance = 0.03
+
+	# Act und Assert
+	assert_eq(entry.explain(), "Würfel 0,0299 < Schwelle 0,0300 (3 %)")
+	# Nur 100 % trifft auch mit dem Wurf 1,0, den randf() liefern kann (R8).
+	entry.roll = 1.0
+	entry.threshold = 1.0
+	entry.base_chance = 1.0
+	assert_eq(entry.explain(), "Würfel 1,0000 ≤ Schwelle 1,0000 (100 %)")
 
 
 func test_folge_nennt_wurf_wahrscheinlichkeit_und_ausloeser() -> void:
@@ -74,9 +93,9 @@ func test_folge_nennt_wurf_wahrscheinlichkeit_und_ausloeser() -> void:
 	entry.base_chance = 0.5
 
 	# Act und Assert: mit Titel der Titel, ohne Titel die Kennung.
-	assert_eq(entry.explain(), "Würfel 0,412 < 50 %, Folge von Reklamationswelle")
+	assert_eq(entry.explain(), "Würfel 0,4120 < 50 %, Folge von Reklamationswelle")
 	entry.source_title = ""
-	assert_eq(entry.explain(), "Würfel 0,412 < 50 %, Folge von reklamationswelle")
+	assert_eq(entry.explain(), "Würfel 0,4120 < 50 %, Folge von reklamationswelle")
 
 
 func test_verschiebung_entfall_und_absage_haengen_ihren_grund_an() -> void:

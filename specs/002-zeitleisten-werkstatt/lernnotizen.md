@@ -179,3 +179,100 @@ Der Agent schreibt die Notizen, Claude trägt sie je Phase hier ein.
   sichert gegen Hängen ab. Das gilt auch für die Textausgabe in T026.
 - **T018:** `test_shipped_catalog.gd` prüft am echten Katalog nur, dass er fehlerfrei ist;
   `test_uebernahme.gd` prüft an der eingefrorenen Kopie, was die Übernahme enthielt.
+
+## Phase 3
+
+### T020 Ein Würfel je Entscheidung
+
+- Ein `RandomNumberGenerator` ist ein Objekt mit eigenem Zustand: Gleicher `seed` heißt gleiche
+  Zahlenfolge. Das globale `randf()` teilt eine einzige Folge mit dem ganzen Spiel; ein
+  zusätzlicher Wurf irgendwo würfelte alles danach neu. Deshalb bekommt in
+  `src/core/timeline/event_dice.gd` jedes Ereignis und jede Folge-Entscheidung einen eigenen
+  Generator.
+- Ähnliche Seeds ergeben laut Doku ähnliche Folgen. SHA-256 über
+  `"4711|chance|reklamationswelle"` mischt sie gründlich; `decode_u64(0)` liest die ersten 8 Byte
+  als Zahl.
+- Das Feld heißt laut Vertrag `seed`, wie die globale Funktion `seed()`. Mit `-d` warnt Godot
+  dann; `@warning_ignore("shadowed_global_identifier")` hält den Start still.
+
+### T021 Meldungen als Daten
+
+- `TimelineMessage` hält Verweise auf Termin, Ereignis und Wirkung, keine Kopien. `to_line()`
+  baut die Zeile nur aus Tag, Art und Text, etwa `22.03.1993  Beginn  Intel Pentium erscheint`.
+  So lassen sich zwei Läufe Zeile für Zeile vergleichen (SC-002).
+
+### T022 Der Kern ohne Node
+
+- `TimelineRun` in `src/core/timeline/timeline_run.gd` erbt von `RefCounted` und braucht weder
+  Szenenbaum noch Uhr. Jeder Aufruf von `begin()` und `advance_to()` gibt seine Meldungen als
+  `Array[TimelineMessage]` zurück; Tests vergleichen einfach Listen, das Autoload macht daraus
+  Signale.
+- **Zwei feste Würfe je Monat:** In `_roll_month()` kommen beide `randf()` vor jeder Prüfung.
+  Monat m nimmt also immer die Zahlen 2m und 2m+1 seines Würfels. Eine geänderte Chance,
+  Bedingung oder Höchstzahl ändert nur, ob der Wurf trifft, nie die späteren Würfe (FR-015).
+- **Stichtage statt Tagesschleife:** `_stop_days` ist ein sortiertes `PackedInt32Array` mit
+  `bsearch()` und `insert()`, dazu kommt der nächste Monatserste. `advance_to()` springt von
+  Stichtag zu Stichtag; an allen anderen Tagen geschieht nichts. Deshalb ist Tag für Tag dasselbe
+  wie in Sprüngen, und ein ganzes Spiel dauert rund 4 ms.
+- **Fahrplan sortiert halten:** `entries.bsearch_custom(entry, _comes_before)` liefert die Stelle
+  zum Einfügen; eine statische Funktion lässt sich direkt als `Callable` übergeben. Auf einem
+  typisierten Array sucht `bsearch_custom()` aber nur nach Werten des Elementtyps, deshalb gibt es
+  für die Suche nach einem Tag eine eigene Binärsuche, `_first_index_from()`.
+- **Folgen am selben Tag:** `_start_entries()` läuft mit `while` über eine Warteschlange, die
+  während der Schleife wächst. So kommen Folgetermine „hinten an“; `_chain_links` merkt sich das
+  Glied in der Kette.
+
+### T023 Tests mit Zufall
+
+- Wo der Zufall entscheidet, rechnet der Test mit demselben `EventDice` nach, statt Zahlen
+  festzuschreiben. Damit prüft er die Tabelle „Zwecke und Würfe“ aus dem Vertrag selbst.
+- Eine Fehlerprobe hat sechs typische Fehler nacheinander in eine Kopie des Laufs eingebaut, etwa
+  „Kette je Tag statt je Kette gezählt“ oder „ein gemeinsamer Würfel für alle“. Jeder ließ Tests
+  scheitern; so zeigt sich, dass die Tests das Richtige prüfen.
+
+### Korrekturen nach dem Review
+
+- **Eine Regel an einer Stelle:** `TimelineRun._hits()` entscheidet für Würfelrunde und
+  Folgeereignisse, ob ein Wurf trifft: `roll < threshold` oder `threshold >= 1.0`, denn `randf()`
+  kann genau 1,0 liefern. So kann die Regel nicht an einer Stelle anders sein als an der anderen.
+- **Abrunden auf vier Stellen:** `floorf(x * 10000.0 + 1e-11) / 10000.0`. 0,412 liegt als float
+  knapp unter 0,412; ohne den winzigen Zuschlag stünde dort „0,4119“.
+- **Seltene Fälle testen:** Ein Wurf von genau 1,0 kommt etwa einmal in 33 Millionen Würfen vor.
+  Der Agent hat Godots Würfel nachgebaut, Bit für Bit gegen Godot geprüft und Seeds gesucht, die
+  ihn liefern. Der Test prüft zuerst diese Voraussetzung, damit er nach einem Godot-Update mit
+  klarer Meldung scheitert, statt falsch grün zu sein.
+
+### T024 und T025 Das Autoload
+
+- **Signale aus Meldungen:** Der Lauf liefert Daten (`TimelineMessage`). Erst `_send()` in
+  `src/core/timeline.gd` macht daraus Signale, an genau einer Stelle, per `match` über `Kind`.
+- **`call_deferred()`:** `start_game.call_deferred()` ruft die Methode erst am Ende des Bilds
+  auf, nach dem `_ready()` der Hauptszene. So ist jeder Abnehmer schon verbunden, wenn der
+  01.01.1985 gemeldet wird.
+- `clock.connect(&"day_passed", …)` nimmt den Signalnamen als Text, weil `game_clock.gd` kein
+  `class_name` hat und `clock` nur als `Node` bekannt ist.
+- **Autoload ohne Autoload testen:** `preload("res://core/timeline.gd").new()` ergibt in
+  `test_timeline.gd` eine eigene Zeitleiste mit Test-Katalog und eigener Uhr. Erwartete Fehler
+  hakt `assert_push_error()` ab; die Knoten entstehen dafür im Test selbst, nicht in
+  `before_each()`.
+
+### T026 und T027 Die Textausgabe
+
+- **SceneTree-Skript mit eigenen Argumenten:** In `src/tools/werkstatt/fahrplan_ausgabe.gd`
+  liefert `OS.get_cmdline_user_args()` alles nach `--`. `quit(code)` wird zum Exit-Code der
+  Shell, `print()` geht nach stdout, `printerr()` nach stderr. So kann ein Aufrufer `$?` prüfen
+  und die Ausgabe ohne Meldungen umleiten.
+- Katalog und Lauf sind `RefCounted`; das Skript braucht keinen Knoten und erledigt alles in
+  `_initialize()`.
+- Die Kopfzeile „Godot Engine v4.7.2 …“ druckt die Engine vor dem Skript; nur `--no-header`
+  unterdrückt sie.
+- In `test_schedule_text.gd` stehen die erwarteten Zeilen mit ausdrücklichen Zählern im Test,
+  nicht mit derselben `rpad()`-Logik wie im Code; sonst prüfte der Test sich selbst.
+
+### T028 und T029 Übernahme und Export
+
+- `test_uebernahme.gd` baut aus dem Protokoll genau das Format des Schnappschusses nach und
+  vergleicht es für die Seeds 1 bis 100 Zeile für Zeile mit `historische_ereignisse.txt`.
+- **Export-Filter:** `export_filter="all_resources"` packt alles, was Godot als Ressource kennt;
+  JSON gehört dazu und liegt unverändert im Paket. Eine Gegenprobe mit `data/*` im
+  `exclude_filter` zeigte, dass das Spiel einen fehlenden Katalog meldet.

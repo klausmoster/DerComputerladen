@@ -1,0 +1,93 @@
+{
+	"categories": [
+		{
+			"color": "petrol",
+			"id": "kunde",
+			"name": "Kunde"
+		}
+	],
+	"events": [
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "Kommt sicher, aber nur dreimal.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "dreimal",
+			"kind": "chance",
+			"max_occurrences": 3,
+			"min_gap_days": 0,
+			"monthly_chance": 1.0,
+			"title": "Höchstens dreimal",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "100 % pro Monat.",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "presse",
+					"magnitude": 0.0,
+					"note": "Kommt jeden Monat.",
+					"scope": "once",
+					"target": "test"
+				}
+			],
+			"follow_ups": [],
+			"id": "immer",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 1.0,
+			"title": "Jeden Monat",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "3 % pro Monat, wie die Reklamationswelle.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "selten",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 0.03,
+			"title": "Selten",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "Das Zeitfenster überdeckt nur einen Teil eines Monats.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "teilmonat",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 1.0,
+			"title": "Nur Mitte März 1990",
+			"window": {
+				"from": "1990-03-10",
+				"to": "1990-03-20"
+			}
+		}
+	],
+	"format": 1
+}

@@ -1,0 +1,158 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		},
+		{
+			"color": "holz-dunkel",
+			"id": "lokal",
+			"name": "Lokal"
+		},
+		{
+			"color": "petrol",
+			"id": "kunde",
+			"name": "Kunde"
+		}
+	],
+	"events": [
+		{
+			"category": "lokal",
+			"conditions": [],
+			"count_min": 1,
+			"count_weights": [
+				100
+			],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "a_preset",
+			"kind": "preset",
+			"min_gap_days": 0,
+			"title": "A gesetzt",
+			"window": {
+				"from": "1990-04-01",
+				"to": "1990-04-01"
+			}
+		},
+		{
+			"category": "hardware",
+			"date": "1990-03-18",
+			"description": "",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 14,
+					"kind": "nachfrage",
+					"magnitude": 0.1,
+					"note": "Kommt zwei Wochen später.",
+					"scope": "once",
+					"target": "ram"
+				}
+			],
+			"follow_ups": [],
+			"id": "a_verzoegert",
+			"kind": "fixed",
+			"title": "A mit Verzögerung"
+		},
+		{
+			"category": "hardware",
+			"date": "1990-04-01",
+			"description": "",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "presse",
+					"magnitude": 0.0,
+					"note": "Sofort.",
+					"scope": "once",
+					"target": "messe"
+				}
+			],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "folge_b"
+				}
+			],
+			"id": "b_fix",
+			"kind": "fixed",
+			"title": "B fix"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "c_wuerfel",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 1.0,
+			"title": "C gewürfelt",
+			"window": {
+				"from": "1990-04-01",
+				"to": "1990-04-01"
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "folge_b",
+			"kind": "follow_only",
+			"title": "Folge von B"
+		},
+		{
+			"category": "hardware",
+			"date": "1990-04-01",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "z_fix",
+			"kind": "fixed",
+			"title": "Z fix"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "zz_folge",
+			"kind": "follow_only",
+			"title": "ZZ Folge"
+		},
+		{
+			"category": "hardware",
+			"date": "1990-03-25",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 7,
+					"delay_min": 7,
+					"target": "zz_folge"
+				}
+			],
+			"id": "zz_vorher",
+			"kind": "fixed",
+			"title": "ZZ vorher"
+		}
+	],
+	"format": 1
+}

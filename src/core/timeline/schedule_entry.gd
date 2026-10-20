@@ -81,9 +81,13 @@ func state_label() -> String:
 
 
 ## Die Begründung in einem Satz, nur aus den Feldern des Termins, etwa
-## „Würfel 0,021 < Schwelle 0,080 (3 % + Ware vom windigen Händler +5)“ oder
-## „Würfel 0,412 < 50 %, Folge von Reklamationswelle“. Dahinter stehen, falls es sie gibt, die
+## „Würfel 0,0213 < Schwelle 0,0800 (3 % + Ware vom windigen Händler +5)“ oder
+## „Würfel 0,4120 < 50 %, Folge von Reklamationswelle“. Dahinter stehen, falls es sie gibt, die
 ## Verschiebung und der Grund aus [member note].
+##
+## Würfel und Schwelle stehen mit vier Nachkommastellen. Der Würfel wird dabei abgerundet, damit
+## er nie gleich der Schwelle aussieht: 0,02997 unter 3 % heißt „Würfel 0,0299 < Schwelle
+## 0,0300“. Nur eine Chance von 100 % trifft auch mit dem Wurf 1,0; dann steht dort „≤“.
 func explain() -> String:
 	var text := _origin_reason()
 	if moved_from_day >= 0:
@@ -125,11 +129,11 @@ func _origin_reason() -> String:
 		Origin.ROLLED:
 			var parts := PackedStringArray([_percent(base_chance)])
 			parts.append_array(modifier_notes)
-			return "Würfel %s < Schwelle %s (%s)" % [_three_places(roll), _three_places(threshold),
-				" + ".join(parts)]
+			return "Würfel %s %s Schwelle %s (%s)" % [_four_places_down(roll), _relation(),
+				_four_places(threshold), " + ".join(parts)]
 		Origin.FOLLOW_UP:
-			return "Würfel %s < %s, Folge von %s" % [_three_places(roll), _percent(threshold),
-				_source_name()]
+			return "Würfel %s %s %s, Folge von %s" % [_four_places_down(roll), _relation(),
+				_percent(threshold), _source_name()]
 		Origin.INTERVENTION:
 			return "Per Eingriff eingeplant"
 	return ""
@@ -140,9 +144,23 @@ func _source_name() -> String:
 	return source_title if not source_title.is_empty() else source_event_id
 
 
-## Zahl mit drei Nachkommastellen und deutschem Komma, etwa „0,080“.
-static func _three_places(value: float) -> String:
-	return ("%.3f" % value).replace(".", ",")
+## „<“ zwischen Würfel und Schwelle; „≤“ nur, wenn eine Chance von 100 % mit dem Wurf 1,0 traf.
+func _relation() -> String:
+	return "<" if roll < threshold else "≤"
+
+
+## Zahl mit vier Nachkommastellen und deutschem Komma, etwa „0,0800“.
+static func _four_places(value: float) -> String:
+	return ("%.4f" % value).replace(".", ",")
+
+
+## Zahl auf vier Nachkommastellen abgerundet, mit deutschem Komma: 0,02997 wird „0,0299“.
+##
+## Der winzige Zuschlag vor floorf() gleicht aus, dass eine Dezimalzahl wie 0,412 als float knapp
+## darunter liegt; ohne ihn stünde dort „0,4119“. Würfe aus randf() liegen nie so dicht unter
+## einer vierten Stelle, für sie ändert er nichts.
+static func _four_places_down(value: float) -> String:
+	return _four_places(floorf(value * 10000.0 + 1e-11) / 10000.0)
 
 
 ## Anteil als Prozent mit höchstens zwei Nachkommastellen, etwa 0.03 als „3 %“ und 0.025 als

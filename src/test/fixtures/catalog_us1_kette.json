@@ -1,0 +1,369 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		},
+		{
+			"color": "petrol",
+			"id": "kunde",
+			"name": "Kunde"
+		}
+	],
+	"events": [
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "danach",
+			"kind": "follow_only",
+			"title": "Danach, mit einem Tag Verzögerung"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_02"
+				}
+			],
+			"id": "kette_01",
+			"kind": "follow_only",
+			"title": "Kette 01"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_03"
+				}
+			],
+			"id": "kette_02",
+			"kind": "follow_only",
+			"title": "Kette 02"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_04"
+				}
+			],
+			"id": "kette_03",
+			"kind": "follow_only",
+			"title": "Kette 03"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_05"
+				}
+			],
+			"id": "kette_04",
+			"kind": "follow_only",
+			"title": "Kette 04"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_06"
+				}
+			],
+			"id": "kette_05",
+			"kind": "follow_only",
+			"title": "Kette 05"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_07"
+				}
+			],
+			"id": "kette_06",
+			"kind": "follow_only",
+			"title": "Kette 06"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_08"
+				}
+			],
+			"id": "kette_07",
+			"kind": "follow_only",
+			"title": "Kette 07"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_09"
+				}
+			],
+			"id": "kette_08",
+			"kind": "follow_only",
+			"title": "Kette 08"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_10"
+				}
+			],
+			"id": "kette_09",
+			"kind": "follow_only",
+			"title": "Kette 09"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_11"
+				}
+			],
+			"id": "kette_10",
+			"kind": "follow_only",
+			"title": "Kette 10"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_12"
+				}
+			],
+			"id": "kette_11",
+			"kind": "follow_only",
+			"title": "Kette 11"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_13"
+				}
+			],
+			"id": "kette_12",
+			"kind": "follow_only",
+			"title": "Kette 12"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_14"
+				}
+			],
+			"id": "kette_13",
+			"kind": "follow_only",
+			"title": "Kette 13"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_15"
+				}
+			],
+			"id": "kette_14",
+			"kind": "follow_only",
+			"title": "Kette 14"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_16"
+				},
+				{
+					"chance": 1.0,
+					"delay_max": 1,
+					"delay_min": 1,
+					"target": "danach"
+				}
+			],
+			"id": "kette_15",
+			"kind": "follow_only",
+			"title": "Kette 15"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_17"
+				}
+			],
+			"id": "kette_16",
+			"kind": "follow_only",
+			"title": "Kette 16"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "kette_17",
+			"kind": "follow_only",
+			"title": "Kette 17"
+		},
+		{
+			"category": "hardware",
+			"date": "1990-05-10",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_01"
+				}
+			],
+			"id": "start_a",
+			"kind": "fixed",
+			"title": "Start A"
+		},
+		{
+			"category": "hardware",
+			"date": "1990-05-10",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "kette_01"
+				}
+			],
+			"id": "start_b",
+			"kind": "fixed",
+			"title": "Start B"
+		}
+	],
+	"format": 1
+}

@@ -47,19 +47,20 @@ Ausgabe, auch keine Warnung. Die Zeitleiste lädt den Katalog still.
 ## 3. Textausgabe (ab Phase 3)
 
 ```bash
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed 4711 > /tmp/fahrplan_a.txt
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed 4711 > /tmp/fahrplan_b.txt
+/Applications/Godot.app/Contents/MacOS/Godot --headless --no-header --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed 4711 > /tmp/fahrplan_a.txt
+/Applications/Godot.app/Contents/MacOS/Godot --headless --no-header --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed 4711 > /tmp/fahrplan_b.txt
 diff /tmp/fahrplan_a.txt /tmp/fahrplan_b.txt
 ```
 
 | Prüfung | Erwartet | Bezug |
 |---|---|---|
-| `diff` der beiden Läufe | keine Ausgabe | US1, Szenario 2; SC-002 |
+| `diff` der beiden Läufe | keine Ausgabe; `--no-header` lässt die Kopfzeile der Engine weg, die erste Zeile ist „# Seed 4711, bis 31.12.1999“ | US1, Szenario 2; SC-002 |
 | Zeile „Intel Pentium erscheint“ | am 22.03.1993, darunter am 05.04.1993 „Nachfrage · ram · +20%“ | US1, Szenarien 1 und 5 |
 | `--seed 1` und `--seed 2` mit `--katalog res://test/fixtures/catalog_us1_preset.json` | verschiedene gesetzte Termine, je Seed bei Wiederholung gleich | US1, Szenario 4 |
 | `--bis 1990-12-31` | Kopfzeile „bis 31.12.1990“, kein Termin danach | FR-046 |
 | `--katalog res://test/fixtures/catalog_v04_titel_leer.json`, danach `echo $?` | Meldung auf stderr, Ausgabe ohne das fehlerhafte Ereignis, Exit-Code 1 | FR-046, R18 |
 | `--katalog res://test/fixtures/catalog_v22_kaputt.json` | nur die Meldung mit Zeile auf stderr, Exit-Code 1 | FR-046, R18 |
+| `--seed abc` | Meldung und Aufrufhilfe auf stderr, Exit-Code 1 | FR-046 |
 
 ## 4. Werkstatt von Hand
 
@@ -96,7 +97,7 @@ Im Editor `src/tools/werkstatt/werkstatt.tscn` öffnen und F6 drücken.
 ### 4.2 Kalender und Dauer (ab Phase 5)
 
 ```bash
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed 4711 | grep -E "weihnachtsgeschaeft|winter|cebit"
+/Applications/Godot.app/Contents/MacOS/Godot --headless --no-header --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed 4711 | grep -E "weihnachtsgeschaeft|winter|cebit"
 ```
 
 | Prüfung | Erwartet | Bezug |
@@ -175,7 +176,7 @@ Wahrscheinlichkeit. `test_large_catalog.gd` misst die Prüfung, eine Änderung s
 und ein ganzes Spiel; von Hand bleibt:
 
 ```bash
-time /Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed 1 --katalog res://test/fixtures/catalog_500.json > /dev/null
+time /Applications/Godot.app/Contents/MacOS/Godot --headless --no-header --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed 1 --katalog res://test/fixtures/catalog_500.json > /dev/null
 /Applications/Godot.app/Contents/MacOS/Godot --path src res://tools/werkstatt/werkstatt.tscn -- --katalog res://test/fixtures/catalog_500.json
 ```
 

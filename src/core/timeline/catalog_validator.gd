@@ -15,9 +15,8 @@ extends RefCounted
 
 ## Regeln, die nur warnen; alle anderen sind Fehler.
 const WARNING_RULES := ["V13", "V20", "V23"]
-## Der Spielzeitraum: Tag 0 ist der 01.01.1985, Tag 5477 der 31.12.1999.
-const FIRST_DAY := 0
-const LAST_DAY := 5477
+## Die Jahre des Spielzeitraums. Seine Tage, 0 für den 01.01.1985 bis 5477 für den 31.12.1999,
+## stehen in TimelineRun.FIRST_DAY und TimelineRun.LAST_DAY.
 const FIRST_YEAR := 1985
 const LAST_YEAR := 1999
 ## Jahr ohne 29. Februar, in dem jährliche Tage geprüft und Dauern gezählt werden (V09, V19).
@@ -112,7 +111,7 @@ static func _check_texts(event: TimelineEvent, category_ids: Dictionary,
 ## V06: ein Tag im Spielzeitraum.
 static func _check_day(day: int, p_field: String, what: String,
 		issues: Array[CatalogIssue]) -> void:
-	if day < FIRST_DAY or day > LAST_DAY:
+	if day < TimelineRun.FIRST_DAY or day > TimelineRun.LAST_DAY:
 		issues.append(_issue("V06", p_field,
 			"%s %s liegt außerhalb von 01.01.1985 bis 31.12.1999." % [what, _date(day)]))
 

@@ -274,15 +274,15 @@ Seed 1 und 2 mit `catalog_us1_preset.json` vergleichen (quickstart.md, Abschnitt
 
 ### Implementation for User Story 1
 
-- [ ] T020 [A] [P] [US1] `src/core/timeline/event_dice.gd` (`EventDice`): `make(seed, purpose,
+- [x] T020 [A] [P] [US1] `src/core/timeline/event_dice.gd` (`EventDice`): `make(seed, purpose,
   key)` liefert einen `RandomNumberGenerator` mit `seed = "<seed>|<purpose>|<key>"
   .sha256_buffer().decode_u64(0)` (research.md, R5)
-- [ ] T021 [A] [P] [US1] Zwei kleine Klassen unter `src/core/timeline/`:
+- [x] T021 [A] [P] [US1] Zwei kleine Klassen unter `src/core/timeline/`:
   - `chance_modifier.gd`: `ChanceModifier` mit den Feldern aus dem Datenmodell und
     `is_active(day)` als „from_day ≤ day ≤ to_day“.
   - `timeline_message.gd`: `TimelineMessage` mit `Kind`, den Feldern und einem deterministischen
     `to_line()`.
-- [ ] T022 [A] [US1] `src/core/timeline/timeline_run.gd` (`TimelineRun`), Teil 1, laut Vertrag:
+- [x] T022 [A] [US1] `src/core/timeline/timeline_run.gd` (`TimelineRun`), Teil 1, laut Vertrag:
   - `_init()` kopiert den Katalog und legt den Fahrplan an: fixe Termine und gesetzte über den
     `preset`-Würfel nach R7. Erst `rand_weighted()` über die Gewichte als `PackedFloat32Array`,
     die Anzahl ist k = `count_min` + Index. Dann k Zahlen aus `randi_range(0, L − (k − 1) · g)`
@@ -295,8 +295,8 @@ Seed 1 und 2 mit `catalog_us1_preset.json` vergleichen (quickstart.md, Abschnitt
       Ereignis (zeitleiste.md, Tabelle „Zwecke und Würfe“);
     - Bedingungen (FR-006: „eingetreten“ heißt, bis zum Vortag begonnen);
     - Höchstzahl und Mindestabstand: Es zählen alle Termine außer entfallenen und abgesagten,
-      der Abstand ab dem Beginn des letzten solchen Termins (FR-005); Teilmonate mit Tag nur im
-      Fenster;
+      auch geplante; der Abstand gilt zu jedem solchen Termin, 0 heißt keine Prüfung (FR-005);
+      Teilmonate mit Tag nur im Fenster; eine Chance von 100 % trifft immer;
     - wirksame Chance nach FR-025. Der Termin hält Würfelwert, Schwelle, Grundchance und
       `modifier_notes` fest (R8).
   - Folgeereignisse mit eigenem Würfel je Entscheidung; ihr Termin hält Wurf und
@@ -309,7 +309,7 @@ Seed 1 und 2 mit `catalog_us1_preset.json` vergleichen (quickstart.md, Abschnitt
     Konstanten.
 
   Dauer und jährliche Ereignisse folgen in Phase 5, Eingriffe in Phase 8.
-- [ ] T023 [A] [US1] `src/test/test_timeline_run.gd`, Teil 1, mit Fixtures
+- [x] T023 [A] [US1] `src/test/test_timeline_run.gd`, Teil 1, mit Fixtures
   `src/test/fixtures/catalog_us1_*.json`:
   - Fixe Termine liegen an ihrem Tag.
   - Gesetzte Termine liegen im Fenster und halten den Mindestabstand; Seed 1 und 2 unterscheiden
@@ -322,7 +322,7 @@ Seed 1 und 2 mit `catalog_us1_preset.json` vergleichen (quickstart.md, Abschnitt
   - Der Mindestabstand zählt ab dem letzten Termin, der nicht entfallen ist.
   - Bedingungen; Folgeereignis mit Chance und Spanne, sein Wurf steht im Termin; Kettenbremse je
     Kette, zwei Ketten am selben Tag werden getrennt gezählt; nichts nach dem 31.12.1999.
-- [ ] T024 [A] [US1] Autoload `src/core/timeline.gd` fertigstellen (Vertrag):
+- [x] T024 [A] [US1] Autoload `src/core/timeline.gd` fertigstellen (Vertrag):
   - `clock` und `run`; Verbindung mit `day_passed` der Uhr.
   - `start_game(seed)`: ohne Seed wird aus 0 bis 2.147.483.647 gewürfelt.
   - `get_seed()`, `get_event()` und `running_entries()`, das an `run` durchreicht (R12).
@@ -331,13 +331,13 @@ Seed 1 und 2 mit `catalog_us1_preset.json` vergleichen (quickstart.md, Abschnitt
   - `start_game()` per `call_deferred()` aus `_ready()` (R12); ein gültiger Katalog erzeugt keine
     Ausgabe.
   - Die fünf Signale senden jetzt; `@warning_ignore("unused_signal")` aus T017 entfällt.
-- [ ] T025 [A] [US1] `src/test/test_timeline.gd`, eigene Instanz mit `catalog_path` auf eine
+- [x] T025 [A] [US1] `src/test/test_timeline.gd`, eigene Instanz mit `catalog_path` auf eine
   Fixture und eigener Uhr (Vertrag, Ablauf):
   - Signale in der Reihenfolge des Tagesablaufs.
   - Ein Ereignis mit Fehler fehlt im Lauf und wird gemeldet.
   - Ein fehlender Katalog ergibt einen leeren Lauf und eine Fehlermeldung mit Pfad (FR-049).
   - Die Kettenbremse kommt als `entry_skipped` mit Warnung.
-- [ ] T026 [A] [P] [US1] Textausgabe nach Vertrag, Abschnitt Textausgabe:
+- [x] T026 [A] [P] [US1] Textausgabe nach Vertrag, Abschnitt Textausgabe:
   - `src/core/timeline/schedule_text.gd` (`ScheduleText`) mit Kopfzeile und Zeilenformat
     „TT.MM.JJJJ  <bis, 14>  <kennung, 28>  <herkunft, 12>  <zustand, 12>  <titel>“, dahinter die
     Zusätze „(Folge von …)“, „(lief schon vor Spielbeginn)“ und „(Ende nach Spielende)“;
@@ -348,23 +348,23 @@ Seed 1 und 2 mit `catalog_us1_preset.json` vergleichen (quickstart.md, Abschnitt
     1; bei unlesbarem Katalog nur die Meldung, Exit-Code 1 (R18).
 
   Hängt an T022.
-- [ ] T027 [A] [US1] `src/test/test_schedule_text.gd`:
+- [x] T027 [A] [US1] `src/test/test_schedule_text.gd`:
   - Kopfzeile, Spaltenbreiten, Spalte „bis“ und die Zusätze; verzögerte Wirkung unter ihrem
     Termin.
   - SC-002: 10 Läufe mit gleichem Seed, fünf Tag für Tag und fünf in Sprüngen, ergeben 10 gleiche
     Ausgaben.
-- [ ] T028 [A] [US1] `src/test/test_uebernahme.gd`, Teil 2, an der eingefrorenen Übernahme:
+- [x] T028 [A] [US1] `src/test/test_uebernahme.gd`, Teil 2, an der eingefrorenen Übernahme:
   - Für die Seeds 1 bis 100 entsprechen die fixen Termine Zeile für Zeile
     `fixtures/historische_ereignisse.txt` (SC-005).
   - „Intel Pentium erscheint“ am 22.03.1993 meldet „Preis cpu_486 −30 %“, am 05.04.1993 folgt
     „Nachfrage ram +20 %“ (US1, Szenario 5).
   - Seed 4711 enthält alle 19 historischen Termine (Szenario 1).
-- [ ] T029 [A] [US1] Probe-Export (research.md, R4): macOS-App nach `build/macos/` exportieren,
+- [x] T029 [A] [US1] Probe-Export (research.md, R4): macOS-App nach `build/macos/` exportieren,
   das Programm in der App im Terminal starten und prüfen, dass keine Meldung zum Ereigniskatalog
   erscheint. Falls doch, `*.json` in `include_filter` von `src/export_presets.cfg` aufnehmen und
   erneut prüfen. Danach `src/export_presets.cfg` auf Zugangsdaten durchsehen, die der Export
   eingetragen haben könnte (Verfassung, Arbeitsweise). Hängt an T024.
-- [ ] T030 [K] [US1] Phase 3 abnehmen nach quickstart.md, Abschnitte 1, 2, 3 und 6
+- [x] T030 [K] [US1] Phase 3 abnehmen nach quickstart.md, Abschnitte 1, 2, 3 und 6
 
 **Checkpoint**: Das Spiel spult einen wiederholbaren Fahrplan ab, die Textausgabe zeigt ihn. Abnahme
 durch Klaus, dann Auftrag für Phase 4.
