@@ -19,6 +19,17 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   Zeitstrahl in der Vorgabe 48 px abgeben (378 statt 426 px). Empfehlung: die Vorgabe lassen. Den
   Teiler ziehst du einmal dorthin, wo er dir passt, und die Werkstatt merkt ihn sich (T091).
 
+### Feature 003, Plan (2026-10-21)
+
+Beides blockiert nichts.
+- **Startwerte der Profile (R18):** Claudes Vorschlag für die sechs Ereignisse über
+  Wahrscheinlichkeit steht in `specs/003-schwierigkeitsgrade/research.md`, R18. Klaus legt die
+  Profile zur Abnahme von Phase 3 in der Werkstatt an und stellt sie mit der Statistik nach.
+- **Verfassung, Grundsatz V:** Die Ausnahme Ereigniskatalog nennt „die Ereignisse der
+  Zeitleiste“. Die Profile sind keine Ereignisse, stehen aber in derselben Datei und werden
+  genauso gepflegt. Empfehlung: so lassen, denn die Ausnahme deckt das. Klarer würde es mit einem
+  PATCH 2.1.2: „die Ereignisse und die Profile der Schwierigkeitsgrade“.
+
 ### Ältere Punkte aus Claudes bisherigem lokalem Gedächtnis
 
 - **Spielfenster ragt 6 Pixel in den Bereich des Docks** (Feature 002, Abnahme von Phase 4,
@@ -96,8 +107,44 @@ Lernnotizen.
   6 % ab 01.01.1995“. Das folgt aus zwei Antworten von Klaus, Zeitraum und Anzeige nur zum Lesen;
   die Form hat Claude gewählt.
 
+### Feature 003, Plan (2026-10-21)
+
+Festlegungen, die nicht aus den Dokumenten folgten. Einzelheiten und verworfene Alternativen
+stehen in `specs/003-schwierigkeitsgrade/research.md`.
+- **Aufbau des Abschnitts (R2):** Die Katalogdatei hat den Abschnitt `"profiles"` mit `"leicht"`
+  und `"schwer"`. Ein Start-Modifikator hat dieselben Schlüssel wie ein Modifikator in einer
+  Probe. Die Listen behalten ihre Reihenfolge und werden nicht sortiert.
+- **Formatnummer (R3):** Sie bleibt 1, Dateien aus Feature 002 laden weiter. Zur Abnahme von
+  Phase 1 speichert Klaus den echten Katalog einmal in der Werkstatt, damit er den leeren
+  Abschnitt hat. So gilt „eine Änderung, eine Zeile“ dort weiter.
+- **Profil für Mittel oder einen unbekannten Grad (R4):** ein Strukturfehler V22, wie jeder
+  unbekannte Schlüssel.
+- **Kennungen (R5):** Start-Modifikatoren und Eingriffe stehen im Lauf in zwei Listen, die
+  Kennungen sind je Liste eindeutig. Eine Vorsilbe in der Kennung braucht es nicht.
+- **V30 (R8):** Die Regel prüft auch eine leere Kennung und falsche Zeichen, über FR-012 hinaus.
+- **Ganze Profile im Verlauf (R10):** Jede Änderung an einem Start-Modifikator ersetzt in der
+  Werkstatt das ganze Profil durch eine Kopie. So stimmt Rückgängig auch, wenn ein Löschen zwei
+  Start-Modifikatoren eines Profils mitnimmt.
+- **Reiter (R11):**
+  - Er steht als vierter hinter „Statistik“.
+  - „Neu“ legt ohne Dialog an.
+  - „Löschen“ fragt nicht nach, Cmd+Z holt den Start-Modifikator zurück.
+- **Wechsel des Grads im Simulator (R13):** Der Lauf wird so neu gebaut, wie er war: derselbe
+  Seed und Tag, dieselben angewandten Eingriffe. Nur der Grad ändert sich. Der Text „Stand: …“
+  nennt den Grad nicht, das tut die Auswahl daneben. Die Texte der Markierungen ändern sich nur
+  beim Vergleich mit Mittel.
+- **Probe mit unbekanntem Grad (R14):** Sie ist unlesbar, wie bei einem Seed außerhalb des
+  Bereichs.
+- **Statistik (R15):** Beim Vergleich stehen kleinste und größte Anzahl als „Spanne“ in einer
+  Spalte, und die Verteilung auf die Jahre ist ausgeblendet. Der Ergebnistext nennt den Grad
+  immer, auch Mittel.
+- **Kopfzeile der Textausgabe (R16):** Sie nennt den Grad immer, auch bei Mittel.
+
 ## Erledigt
 
+- **Verweise beim Umbenennen (Feature 003, FR-017):** Klaus, 2026-10-21, im Plan: Start-Modifikatoren
+  ziehen still mit wie Folgen und Bedingungen; genannt wird nur beim Löschen. Steht in der Spec
+  und in `specs/003-schwierigkeitsgrade/research.md`, R9.
 - **`CLAUDE.md` verweist auf `docs/ki_dev.md`** (Claudes Ergänzung nach Klaus' Satz „ki_dev ist in
   claude.md“): Klaus hat den Absatz „Arbeitsweise“ mit dem Merge von Feature 002 nach `main`
   freigegeben (2026-10-21).

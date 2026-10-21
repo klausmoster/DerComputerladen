@@ -44,6 +44,12 @@ Startkapital, Preise oder Kundenstrom, gehört nicht zu diesem Feature.
   → A: Wahlweise wie FR-045 von Feature 002; ist der Schalter an, rechnen alle drei Grade jedes
   Spiel mit denselben Modifikatoren und Einplanungen.
 
+### Plan 2026-10-21
+
+- Q: Was geschieht mit den Start-Modifikatoren, wenn Klaus ein Ereignis umbenennt, auf das ein
+  Profil verweist? → A: Sie ziehen still mit, wie Folgeereignisse und Bedingungen seit Feature
+  002; genannt werden Verweise nur beim Löschen (FR-017, Edge Case „Kaputter Verweis“).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ein Spiel startet mit einem Schwierigkeitsgrad (Priority: P1)
@@ -202,8 +208,11 @@ nahe 5,4 und bei „Schwer“ nahe 14,4.
 - **Mehrere Start-Modifikatoren auf dasselbe Ereignis** in einem Profil addieren sich.
 - **Falsches Ziel**: Ein Start-Modifikator auf ein fixes, jährliches, beim Start gesetztes oder nur
   als Folge vorkommendes Ereignis ist ein Prüffehler.
-- **Kaputter Verweis**: Wird ein Ereignis umbenannt oder gelöscht, zeigt die Werkstatt die
-  betroffenen Start-Modifikatoren; ein Spielstart überspringt sie und meldet sie.
+- **Kaputter Verweis**: Löscht Klaus ein Ereignis, nennt die Werkstatt vorher die
+  Start-Modifikatoren, die darauf verweisen, und entfernt sie mit; benennt er es um, ziehen sie
+  mit (FR-017). Verweist ein Start-Modifikator trotzdem auf ein unbekanntes Ereignis, etwa nach
+  einer Änderung an der Datei von Hand, zeigt die Werkstatt ihn als Fehler, und ein Spielstart
+  überspringt ihn und meldet ihn (präzisiert im Plan, Klaus, 2026-10-21).
 - **Unbekannter Grad**: Verlangt ein Spielstart einen Grad, den es nicht gibt, beginnt kein neues
   Spiel; die Zeitleiste meldet den Fehler, und ein laufendes Spiel bleibt, wie es ist.
 - **Zeitraum außerhalb des Spiels**: Ein Start-Modifikator vor dem 01.01.1985 oder nach dem
@@ -278,8 +287,11 @@ nahe 5,4 und bei „Schwer“ nahe 14,4.
 - **FR-016**: Die Werkstatt muss Profile laufend prüfen und Fehler mit Grad und Start-Modifikator
   zeigen. Gespeichert wird zusammen mit dem Katalog, auch mit Cmd+S, und ungespeicherte Änderungen
   an Profilen zählen wie ungespeicherte Änderungen am Katalog.
-- **FR-017**: Löscht oder benennt Klaus ein Ereignis um, auf das ein Profil verweist, muss die
-  Werkstatt diese Verweise vorher nennen, wie die übrigen Verweise (FR-036 von Feature 002).
+- **FR-017**: Löscht Klaus ein Ereignis, auf das ein Profil verweist, muss die Werkstatt diese
+  Verweise vorher nennen und mit entfernen, wie die übrigen Verweise (FR-036 von Feature 002).
+  Benennt er es um, ziehen die Start-Modifikatoren still mit, wie Folgeereignisse und Bedingungen
+  (präzisiert im Plan, Klaus, 2026-10-21; bis dahin sollte die Werkstatt die Verweise auch vor dem
+  Umbenennen nennen).
 - **FR-018**: Im Simulator muss Klaus neben dem Seed einen Grad wählen können. Der Durchlauf beginnt
   mit dessen Start-Modifikatoren; ein Wechsel des Grads startet den Durchlauf mit demselben Seed
   neu, und Klaus' Eingriffe bleiben dabei erhalten wie bei einem Neustart in Feature 002. Der
