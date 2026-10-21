@@ -240,6 +240,140 @@ func test_datum_ohne_kalendertag_ist_v22_mit_vorgabe() -> void:
 	assert_eq(catalog.get_event("reklamationswelle").window_from, 0, "Vorgabe ist Tag 0.")
 
 
+func test_falscher_typ_ist_v22_mit_vorgabe() -> void:
+	# Arrange (T085; data-model.md, V22): eine Zahl statt eines Datums, ein Text statt einer Zahl
+	# und eine Kommazahl, wo eine ganze Zahl hingehört.
+	var pentium := _fixes("intel_pentium", {"date": 5})
+	var welle := _zufall("reklamationswelle",
+		{"monthly_chance": "drei Prozent", "min_gap_days": 1.5})
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_json(_text([pentium, welle]), issues)
+
+	# Assert: je Wert eine Meldung an seiner Stelle, die sagt, was dort stehen muss.
+	assert_eq(_felder(issues), ["intel_pentium date", "reklamationswelle min_gap_days",
+		"reklamationswelle monthly_chance"], "%s" % [issues])
+	assert_eq(_texte(issues), [
+		"Ereignis „intel_pentium“, Feld „date“: Erwartet wird ein Datum als Text, in der Datei "
+			+ "steht die Zahl 5.",
+		"Ereignis „reklamationswelle“, Feld „min_gap_days“: Erwartet wird eine ganze Zahl, in der "
+			+ "Datei steht die Zahl 1.5.",
+		"Ereignis „reklamationswelle“, Feld „monthly_chance“: Erwartet wird eine Zahl, in der "
+			+ "Datei steht der Text „drei Prozent“.",
+	])
+	for issue in issues:
+		assert_eq([issue.rule, issue.severity], ["V22", CatalogIssue.Severity.ERROR])
+	# Das Ereignis bleibt mit den Vorgaben im Katalog, damit die Werkstatt es zeigt.
+	assert_eq(catalog.get_event("intel_pentium").date, 0, "Vorgabe ist der 01.01.1985.")
+	var gelesen := catalog.get_event("reklamationswelle")
+	assert_eq([gelesen.monthly_chance, gelesen.min_gap_days], [0.0, 0])
+
+
+func test_unbekannter_wert_fuer_kind_und_scope_ist_v22() -> void:
+	# Arrange (T085): „monatlich“ ist keine Art, „immer“ kein Scope; die Messe dauert eine Woche.
+	var welle := _zufall("reklamationswelle", {"kind": "monatlich"})
+	var messe := _fixes("messe", {"duration_days": 7, "effects": [_wirkung({"scope": "immer"})]})
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_json(_text([welle, messe]), issues)
+
+	# Assert: je eine Meldung mit den erlaubten Werten. Für die Schlüssel der unbekannten Art,
+	# etwa window und monthly_chance, kommt keine weitere.
+	assert_eq(_felder(issues), ["messe effects[0].scope", "reklamationswelle kind"],
+		"%s" % [issues])
+	assert_eq(_texte(issues), [
+		"Ereignis „reklamationswelle“, Feld „kind“: Unbekannter Wert „monatlich“, erlaubt sind: "
+			+ "fixed, yearly, preset, chance, follow_only.",
+		"Ereignis „messe“, Feld „effects[0].scope“: Unbekannter Wert „immer“, erlaubt sind: once, "
+			+ "during.",
+	])
+	for issue in issues:
+		assert_eq([issue.rule, issue.severity], ["V22", CatalogIssue.Severity.ERROR])
+	# Vorgaben: ohne lesbare Art „fix“, ohne lesbaren Scope bei Dauer „während“ (FR-007).
+	assert_eq(catalog.get_event("reklamationswelle").kind, TimelineEvent.Kind.FIXED)
+	assert_eq(catalog.get_event("messe").effects[0].scope, EventEffect.Scope.DURING)
+
+
+func test_monat_ausserhalb_von_01_bis_12_ist_v22() -> void:
+	# Arrange (T098; ereigniskatalog.md, Feld end): Einen Monat 00 gibt es nicht. „00-00“ und
+	# „00-ende“ ergaben bisher (0, 0), also still „ohne Dauer“, und beim Speichern „“. Ein Monat 13
+	# ist ebenso keiner, und beim Beginn gilt dasselbe.
+	var events := [
+		_jaehrlich("beginn_null", {"start": "00-05"}),
+		_jaehrlich("beginn_null_null", {"start": "00-00"}),
+		_jaehrlich("ende_dreizehn", {"end": "13-ende"}),
+		_jaehrlich("ende_null", {"end": "00-00"}),
+		_jaehrlich("ende_null_ende", {"end": "00-ende"}),
+	]
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_json(_text(events), issues)
+
+	# Assert: je Wert eine Meldung an seiner Stelle, wie bei anderen ungültigen Werten.
+	assert_eq(_felder(issues), ["beginn_null yearly.start", "beginn_null_null yearly.start",
+		"ende_dreizehn yearly.end", "ende_null yearly.end", "ende_null_ende yearly.end"],
+		"%s" % [issues])
+	for issue in issues:
+		assert_eq([issue.rule, issue.severity], ["V22", CatalogIssue.Severity.ERROR])
+	assert_has(_texte(issues), "Ereignis „ende_null“, Feld „yearly.end“: „00-00“ ist kein Tag im "
+		+ "Jahr wie 11-01 oder 12-ende.")
+	assert_has(_texte(issues), "Ereignis „beginn_null“, Feld „yearly.start“: „00-05“ ist kein Tag "
+		+ "im Jahr wie 11-01 oder 12-ende.")
+	# Das Ereignis bleibt mit den Vorgaben im Katalog: ohne Dauer, Beginn am 01.01.
+	assert_eq(catalog.get_event("ende_null").yearly_end, Vector2i.ZERO)
+	assert_eq(catalog.get_event("beginn_null").yearly_start, Vector2i(1, 1))
+
+
+func test_tag_00_ist_v22() -> void:
+	# Arrange (T098; Klaus, 2026-10-21): Einen Tag 00 gibt es nicht; das Format kennt nur „MM-TT“,
+	# „MM-ende“ und „“. „05-00“ ergab bisher (5, 0), also still „Monatsende“, und beim Speichern
+	# „05-ende“. Beim Beginn gilt dasselbe.
+	var events := [
+		_jaehrlich("beginn_tag_null", {"start": "12-00"}),
+		_jaehrlich("ende_tag_null", {"end": "05-00"}),
+	]
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_json(_text(events), issues)
+
+	# Assert: je Wert eine Meldung an seiner Stelle, wie bei anderen ungültigen Werten.
+	assert_eq(_felder(issues), ["beginn_tag_null yearly.start", "ende_tag_null yearly.end"],
+		"%s" % [issues])
+	for issue in issues:
+		assert_eq([issue.rule, issue.severity], ["V22", CatalogIssue.Severity.ERROR])
+	assert_has(_texte(issues), "Ereignis „ende_tag_null“, Feld „yearly.end“: „05-00“ ist kein "
+		+ "Tag im Jahr wie 11-01 oder 12-ende.")
+	assert_has(_texte(issues), "Ereignis „beginn_tag_null“, Feld „yearly.start“: „12-00“ ist "
+		+ "kein Tag im Jahr wie 11-01 oder 12-ende.")
+	# Das Ereignis bleibt mit den Vorgaben im Katalog: ohne Dauer, Beginn am 01.01.
+	assert_eq(catalog.get_event("ende_tag_null").yearly_end, Vector2i.ZERO)
+	assert_eq(catalog.get_event("beginn_tag_null").yearly_start, Vector2i(1, 1))
+
+
+func test_monate_01_bis_12_und_ohne_dauer_sind_kein_v22() -> void:
+	# Arrange: die Gegenprobe zu T098, mit dem ersten und dem letzten Monat
+	var events := [
+		_jaehrlich("dezember", {"end": "12-ende", "start": "12-01"}),
+		_jaehrlich("januar", {"end": "01-31", "start": "01-01"}),
+		_jaehrlich("ohne_dauer", {"end": ""}),
+	]
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_json(_text(events), issues)
+
+	# Assert
+	assert_eq(issues.size(), 0, "%s" % [issues])
+	var dezember := catalog.get_event("dezember")
+	assert_eq([dezember.yearly_start, dezember.yearly_end], [Vector2i(12, 1), Vector2i(12, 0)])
+	assert_eq(catalog.get_event("januar").yearly_end, Vector2i(1, 31))
+	assert_eq(catalog.get_event("ohne_dauer").yearly_end, Vector2i.ZERO)
+
+
 func test_fehlende_felder_bekommen_die_vorgaben() -> void:
 	# Arrange: ein Ereignis über Wahrscheinlichkeit, dem alles Eigene seiner Art fehlt.
 	var welle := _zufall("reklamationswelle")
@@ -411,6 +545,17 @@ func _gesetzt(id: String, overrides: Dictionary = {}) -> Dictionary:
 	return data
 
 
+## Ein jährliches Ereignis wie der Winter, vom 01.12. bis Ende Februar; [param yearly] ersetzt
+## Schlüssel im Objekt "yearly".
+func _jaehrlich(id: String, yearly: Dictionary = {}) -> Dictionary:
+	var tage := {"end": "02-ende", "from": 1985, "start": "12-01", "to": 1999}
+	tage.merge(yearly, true)
+	return {
+		"category": "hardware", "description": "", "effects": [], "follow_ups": [], "id": id,
+		"kind": "yearly", "title": "Test %s" % id, "yearly": tage,
+	}
+
+
 ## Ein Ereignis „nur als Folge“.
 func _folge(id: String, overrides: Dictionary = {}) -> Dictionary:
 	var data := {
@@ -443,3 +588,11 @@ func _felder(issues: Array[CatalogIssue]) -> Array:
 		felder.append("%s %s" % [issue.event_id, issue.field])
 	felder.sort()
 	return felder
+
+
+## Die Texte der Meldungen in ihrer Reihenfolge.
+func _texte(issues: Array[CatalogIssue]) -> Array:
+	var texte := []
+	for issue in issues:
+		texte.append(issue.message)
+	return texte

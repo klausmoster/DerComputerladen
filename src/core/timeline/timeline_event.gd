@@ -324,8 +324,11 @@ static func _read_day(data: Dictionary, key: String, issues: Array[CatalogIssue]
 
 
 ## data[key] als (Monat, Tag) aus "MM-TT", "MM-ende" (Tag 0) oder "" (0, 0), sonst V22 und
-## [param fallback]. Ob es den Tag im Jahr gibt, etwa beim 02-30, prüft erst der Validator
-## (V09); hier zählt nur die Form, damit nichts verloren geht, was sich zurückschreiben lässt.
+## [param fallback]. Ob es den Tag im Monat gibt, etwa beim 02-30, prüft erst der Validator
+## (V09); hier zählen die Form, ein Monat von 01 bis 12 und ein Tag ab 01, damit nichts verloren
+## geht, was sich zurückschreiben lässt. Ein Monat oder Tag 00 ließe sich nicht zurückschreiben:
+## „00-00“ und „00-ende“ ergäben (0, 0), also still „ohne Dauer“, und beim Speichern „“; „05-00“
+## ergäbe (5, 0), also still „Monatsende“, und beim Speichern „05-ende“ (T098).
 static func _read_day_of_year(data: Dictionary, key: String, issues: Array[CatalogIssue],
 		fallback: Vector2i) -> Vector2i:
 	var text: Variant = CatalogIssue.fetch(data, key, [TYPE_STRING], "ein Tag im Jahr als Text",
@@ -337,10 +340,11 @@ static func _read_day_of_year(data: Dictionary, key: String, issues: Array[Catal
 		return Vector2i.ZERO
 	var month_text := value.substr(0, 2)
 	var day_text := value.substr(3)
-	if value.length() >= 5 and value[2] == "-" and _is_digits(month_text):
+	if value.length() >= 5 and value[2] == "-" and _is_digits(month_text) \
+			and month_text.to_int() >= 1 and month_text.to_int() <= 12:
 		if day_text == "ende":
 			return Vector2i(month_text.to_int(), 0)
-		if day_text.length() == 2 and _is_digits(day_text):
+		if day_text.length() == 2 and _is_digits(day_text) and day_text.to_int() >= 1:
 			return Vector2i(month_text.to_int(), day_text.to_int())
 	issues.append(CatalogIssue.structure_error(key,
 		"„%s“ ist kein Tag im Jahr wie 11-01 oder 12-ende." % value))

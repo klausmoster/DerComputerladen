@@ -290,6 +290,42 @@ func test_neu_abspielen_bis_zum_gespeicherten_tag() -> void:
 		"Eine Probe vor dem 01.01.1985 spielt nichts ab.")
 
 
+func test_eingriffe_werden_nach_ihrem_tag_nachgespielt() -> void:
+	# Arrange (T075): So sammelt der Simulator, wenn nach „Fahrplan erzeugen“ ein Eingriff vor
+	# Spielbeginn dazukommt: erst die Absage vom 01.01.1992, dann der Modifikator aus Szenario 1
+	# vom Tag −1. Er gilt ab 1990; nachgespielt am 01.01.1992 fehlten ihm zwei Jahre.
+	var mit_absage := TimelineRun.new(_katalog(), 4711)
+	mit_absage.advance_to(_tag(1992, 1, 1))
+	var konkurrent := mit_absage.find_planned("konkurrent_eroeffnet", _tag(1992, 6, 1))
+	assert_eq(mit_absage.cancel_entry(konkurrent.serial, "Laden nebenan selbst gemietet"), OK)
+	var vor_dem_start := TimelineRun.new(_katalog(), 4711)
+	assert_eq(vor_dem_start.add_modifier(_windiger_haendler()), OK)
+	var probe := WhatIfProbe.new()
+	probe.seed = 4711
+	probe.until_day = _tag(1992, 1, 1)
+	probe.interventions = [mit_absage.interventions[0], vor_dem_start.interventions[0]]
+	var gesammelt := probe.interventions.duplicate(true)
+	# So sähe der Lauf aus, in dem beide an ihrem Tag geschahen.
+	var erwartet := TimelineRun.new(_katalog(), 4711)
+	assert_eq(erwartet.add_modifier(_windiger_haendler()), OK)
+	erwartet.advance_to(_tag(1992, 1, 1))
+	konkurrent = erwartet.find_planned("konkurrent_eroeffnet", _tag(1992, 6, 1))
+	assert_eq(erwartet.cancel_entry(konkurrent.serial, "Laden nebenan selbst gemietet"), OK)
+
+	# Act
+	var neu := probe.build_run(_katalog())
+
+	# Assert
+	assert_eq(probe.not_applicable, PackedStringArray(), "Beide ließen sich anwenden.")
+	var tage := neu.interventions.map(func(eingriff: Dictionary) -> int: return eingriff["at_day"])
+	assert_eq(tage, [-1, _tag(1992, 1, 1)],
+		"Erst der Modifikator vor Spielbeginn, dann die Absage.")
+	assert_eq(neu.today, _tag(1992, 1, 1))
+	assert_eq(ScheduleText.plan_lines(neu), ScheduleText.plan_lines(erwartet))
+	assert_eq(ScheduleText.protocol_lines(neu), ScheduleText.protocol_lines(erwartet))
+	assert_eq(probe.interventions, gesammelt, "Die Probe behält die Reihenfolge der Aktionen.")
+
+
 func test_proben_nach_name_auflisten_und_loeschen() -> void:
 	# Arrange: fünf Proben und eine Datei, die keine ist
 	var run := TimelineRun.new(_katalog(), 4711)
@@ -347,6 +383,60 @@ func test_unlesbare_probe_wird_gemeldet_und_uebersprungen() -> void:
 		+ "gültiges Datum JJJJ-MM-TT.")
 	assert_null(fehlt)
 	assert_push_error("Die Probe user://test_what_if_probe/gibt_es_nicht.json fehlt.")
+
+
+func test_seed_ausserhalb_von_0_bis_zum_groessten_ist_ein_lesefehler() -> void:
+	# Arrange (T099; FR-014): Einen anderen Seed hat kein Spiel. Bisher las read_file() ihn.
+	var falsch := {"seed_negativ": -5, "seed_zu_gross": 2147483648,
+		"seed_viel_zu_gross": 3000000000}
+	var richtig := {"seed_null": 0, "seed_groesster": WhatIfProbe.MAX_SEED}
+	for datei: String in falsch.keys() + richtig.keys():
+		var seed_wert: int = falsch.get(datei, richtig.get(datei))
+		_schreibe(ORDNER + datei + ".json", JSON.stringify({"format": 1, "interventions": [],
+			"name": datei, "seed": seed_wert, "until_day": "1990-01-01"}, "\t", true))
+
+	# Act und Assert: außerhalb ein Lesefehler mit Meldung, wie bei den anderen …
+	for datei: String in falsch:
+		assert_null(WhatIfProbe.read_file(ORDNER + datei + ".json"), datei)
+		assert_push_error("%s.json lässt sich nicht lesen: „seed“ liegt außerhalb von 0 bis "
+			% datei + "2.147.483.647.")
+	# … an den Grenzen eine Probe mit diesem Seed.
+	for datei: String in richtig:
+		var probe := WhatIfProbe.read_file(ORDNER + datei + ".json")
+		assert_not_null(probe, datei)
+		if probe != null:
+			assert_eq(probe.seed, richtig[datei])
+
+
+func test_modifikator_ohne_lesbaren_wert_oder_beginn_ist_nicht_anwendbar() -> void:
+	# Arrange (T099): eine Probe von Hand, wie sie jemand im Texteditor ändert: einmal der Wert
+	# mit Komma, also als Text, einmal ohne Wert, einmal ohne Beginn, dazu ein richtiger
+	# Modifikator.
+	var eintraege := []
+	for teil: Array in [["komma", {"value": "0,05"}], ["ohne_wert", {}],
+			["ohne_beginn", {"value": 0.05}], ["windiger_haendler", {"value": 0.05}]]:
+		var modifikator := {"event_id": "reklamationswelle", "from_day": "1990-01-01",
+			"id": teil[0], "reason": "Ware vom windigen Händler", "to_day": "1993-12-31"}
+		modifikator.merge(teil[1], true)
+		if teil[0] == "ohne_beginn":
+			modifikator.erase("from_day")
+		eintraege.append({"at_day": "1984-12-31", "kind": "add_modifier",
+			"modifier": modifikator})
+	_schreibe(ORDNER + "von_hand.json", JSON.stringify({"format": 1, "interventions": eintraege,
+		"name": "Von Hand", "seed": 4711, "until_day": "1999-12-31"}, "\t", true))
+
+	# Act
+	var geladen := WhatIfProbe.read_file(ORDNER + "von_hand.json")
+	var neu := geladen.build_run(_katalog())
+
+	# Assert: Die drei sind genannt, statt still mit 0 bzw. ab 1985 zu gelten; der vierte gilt.
+	assert_eq(geladen.not_applicable, PackedStringArray([
+		"Modifikator: Der Wert des Modifikators („value“) fehlt oder ist keine Zahl.",
+		"Modifikator: Der Wert des Modifikators („value“) fehlt oder ist keine Zahl.",
+		"Modifikator: Der Beginn des Modifikators („from_day“) fehlt oder ist kein Tag.",
+	]))
+	assert_eq(_kennungen(neu.modifiers), ["windiger_haendler"])
+	assert_eq(geladen.interventions.size(), 4, "Die Probe selbst behält alle vier.")
 
 
 func test_kennung_muss_als_dateiname_taugen() -> void:

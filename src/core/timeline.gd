@@ -56,13 +56,24 @@ func _ready() -> void:
 # ist abgeschaltet, sonst wäre der Start mit -d nicht still.
 
 ## Legt einen neuen Lauf an; [param seed] < 0 heißt würfeln, aus 0 bis 2.147.483.647 (FR-014).
-## Spielt den ersten Tag ab, den 01.01.1985, und sendet dessen Meldungen. Ein laufendes Spiel
-## wird dabei ersetzt.
+## Spielt den ersten Tag ab, den 01.01.1985, sendet dessen Meldungen und gibt OK zurück. Ein
+## laufendes Spiel wird dabei ersetzt.
+##
+## Ein Seed über MAX_SEED gehört nicht zum Wertebereich: Es gibt ERR_INVALID_PARAMETER und eine
+## Meldung, und ein laufendes Spiel bleibt, wie es ist. Textausgabe und Simulator lassen so einen
+## Seed gar nicht erst zu; hier prüft es die Zeitleiste selbst, bevor „Neues Spiel“ (01-05) eigene
+## Seeds übergibt. Den Rückgabewert braucht nur, wer selbst einen Seed vorgibt; der Start am Ende
+## des ersten Bilds würfelt und geht immer.
 @warning_ignore("shadowed_global_identifier")
-func start_game(seed: int = -1) -> void:
+func start_game(seed: int = -1) -> Error:
+	if seed > MAX_SEED:
+		push_error(("Zeitleiste: Der Seed %d ist zu groß, erlaubt sind 0 bis 2.147.483.647. Es "
+			+ "beginnt kein neues Spiel.") % seed)
+		return ERR_INVALID_PARAMETER
 	var game_seed := seed if seed >= 0 else randi_range(0, MAX_SEED)
 	run = TimelineRun.new(catalog, game_seed)
 	_send(run.begin())
+	return OK
 
 
 ## Der Seed des laufenden Spiels; −1, solange keins läuft.

@@ -224,10 +224,11 @@ Quickstart.
 
 Die Analyse mit `/speckit-analyze` fand 40 Befunde, alle von Klaus zur Einarbeitung freigegeben.
 An der Spec haben sich dadurch geändert:
-- **Präzisiert:** Mindestabstand ab dem letzten Termin, der weder entfallen noch abgesagt ist
-  (FR-005). Begründungen nennen jeden Wurf, auch bei Folgeereignissen, mit den Modifikatoren, wie
-  sie beim Wurf galten (FR-012). Die Kettenbremse zählt je Kette und warnt im Spiel (FR-018). Das
-  Seed-Feld nimmt nur Ziffern an (FR-040).
+- **Präzisiert:** Mindestabstand zu jedem Termin, der weder entfallen noch abgesagt ist, auch zu
+  geplanten (FR-005; Wortlaut hier angeglichen 2026-10-21). Begründungen nennen jeden Wurf, auch
+  bei Folgeereignissen, mit den Modifikatoren, wie sie beim Wurf galten (FR-012; seit 2026-10-21
+  präzisiert: gesetzte Termine ohne Würfelwert). Die Kettenbremse zählt je Kette und warnt im Spiel
+  (FR-018). Das Seed-Feld nimmt nur Ziffern an (FR-040).
 - **Messbar gemacht:** SC-001 hat fünf Ereignisse und als Endpunkt den erzeugten Fahrplan.
   SC-005 prüft an einer eingefrorenen Kopie der Übernahme. SC-006 unterscheidet Fehler- und
   Warnregeln. SC-011 misst auch Änderung samt Prüfung. US7, Szenario 6 erlaubt 25 % bis 35 %.

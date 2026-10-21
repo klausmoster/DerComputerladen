@@ -204,7 +204,10 @@ enum State { PLANNED, RUNNING, OCCURRED, ENDED, SKIPPED, CANCELLED }
 func origin_label() -> String     # „fix“, „jährlich“, „gesetzt“, „gewürfelt“, „Folge von <titel>“, „Eingriff“
 func state_label() -> String      # „geplant“, „läuft“, „eingetreten“, „beendet“, „entfallen“, „abgesagt“
 func explain() -> String          # Begründung in einem Satz aus den Feldern des Termins, z. B. „Würfel 0,0213 < Schwelle 0,0800 (3 % + Ware vom windigen Händler +5)“, bei Folgen „Würfel 0,4120 < 50 %, Folge von Reklamationswelle“; Würfel auf vier Stellen abgerundet, damit er nie gleich der Schwelle aussieht
-func due_effects() -> Array[Dictionary]   # [{ "effect": EventEffect, "day": int }], nur verzögerte
+func due_effects() -> Array[Dictionary]   # [{ "effect": EventEffect, "day": int }], nur verzögerte, ohne die, die nie beginnen (T079); leer bei entfallenen und abgesagten Terminen (Klaus, 2026-10-21, T097)
+func effect_day(effect: EventEffect) -> int        # Beginn des Termins plus Verzögerung, eine negative gilt als 0
+func is_during(effect: EventEffect) -> bool        # „während“, und der Termin hat eine Dauer
+func effect_begins(effect: EventEffect) -> bool    # false bei „während“, wenn der Tag aufs Ende fiele oder danach (V19); Lauf und due_effects() fragen hier
 
 class_name ChanceModifier extends RefCounted
 # Felder wie data-model.md
@@ -251,6 +254,7 @@ func running_entries() -> Array[ScheduleEntry]
 func chance_info(event_id: String, day: int) -> Dictionary
 
 ## Geplanter Termin des Ereignisses an diesem Tag oder null; zum Laden von Proben (data-model.md).
+## Bei mehreren der erste in der Reihenfolge des Fahrplans (Grenze, T100).
 func find_planned(event_id: String, day: int) -> ScheduleEntry
 
 ## Eingriffe (FR-025 bis FR-027). OK oder Error mit Grund in last_refusal:
@@ -268,8 +272,15 @@ func cancel_entry(serial: int, reason: String) -> Error
 func move_entry(serial: int, new_day: int, reason: String) -> Error
 func schedule_event(event_id: String, day: int, reason: String) -> Error
 ## Wendet einen Eintrag des Eingriffsprotokolls an, mit denselben Prüfungen wie oben. Absagen und
-## Verschiebungen finden ihren Termin über find_planned(); fehlt er, ERR_DOES_NOT_EXIST.
+## Verschiebungen finden ihren Termin über find_planned(); fehlt er, ERR_DOES_NOT_EXIST. Ein
+## Modifikator mit unlesbarem value oder from_day ergibt ERR_INVALID_PARAMETER (T099).
 func apply_intervention(record: Dictionary) -> Error
+## at_day eines Eintrags als ganze Zahl, 2556.0 aus einer Datei zählt als 2556; ohne lesbaren Tag
+## [param fallback]. advance_to(-1) spielt nichts ab (T075).
+static func intervention_day(record: Dictionary, fallback: int = FIRST_DAY - 1) -> int
+## Das Protokoll in der Reihenfolge des Nachspielens: nach at_day, stabil, ohne lesbaren Tag hinter
+## dem Vorgänger. Neue Liste, das Original bleibt (data-model.md, „Neu abspielen“; T075).
+static func in_replay_order(records: Array[Dictionary]) -> Array[Dictionary]
 ```
 
 Jeder angenommene Eingriff hängt einen Eintrag an `interventions` an, mit `at_day = today`.
@@ -332,8 +343,13 @@ var first_seed: int = 1
 var game_count: int = 1000
 var games_done: int = 0
 ## Eingriffsprotokoll aus dem Simulator; angewandt werden nur add_modifier, remove_modifier und
-## schedule, je Spiel an ihrem at_day über TimelineRun.apply_intervention() (R11, FR-045).
+## schedule, je Spiel an ihrem at_day über TimelineRun.apply_intervention(), geordnet wie beim
+## Neu abspielen (TimelineRun.in_replay_order(); R11, FR-045, T075). Geordnet wird das ganze
+## Protokoll, erst dann ausgesucht; bis zu Absagen und Verschiebungen wird abgespielt, angewandt
+## werden sie nicht. So gilt ein Eintrag ohne lesbaren Tag wie im Simulator hinter seinem Vorgänger.
 var interventions: Array[Dictionary] = []
+var accepted: int                          # nach dem ersten Spiel: so viele Eingriffe hat es angenommen (T082)
+var refused: Array[Dictionary] = []        # je {"record", "reason"}: im ersten Spiel abgelehnt; das hängt nie am Seed (T082)
 
 func _init(p_catalog: EventCatalog, p_game_count: int = 1000, p_first_seed: int = 1) -> void
 ## Rechnet weiter, bis [param budget_msec] verbraucht sind: das laufende Spiel monatsweise, dann
@@ -364,8 +380,10 @@ var catalog: EventCatalog                  # geladen, über without_faulty() ohn
 var run: TimelineRun
 
 ## Legt einen neuen Lauf an; seed < 0 heißt würfeln, aus 0 bis 2.147.483.647 (FR-014). Spielt
-## den ersten Tag ab und sendet dessen Meldungen.
-func start_game(seed: int = -1) -> void
+## den ersten Tag ab, sendet dessen Meldungen und gibt OK zurück. Ein Seed über MAX_SEED ergibt
+## ERR_INVALID_PARAMETER und ein push_error(); das laufende Spiel bleibt (T083; bis 2026-10-21:
+## -> void ohne Prüfung).
+func start_game(seed: int = -1) -> Error
 func get_seed() -> int
 func get_event(id: String) -> TimelineEvent
 func running_entries() -> Array[ScheduleEntry]   # reicht an run durch (R12)
@@ -446,16 +464,16 @@ Beispiel, das Weihnachtsgeschäft 1999 nach einem Lauf bis zum Spielende:
 | `test_game_date.gd` | geändert: `from_iso`, `to_iso`, `is_valid`; Tage vor 1985 (31.12.1984 = −1, 01.12.1984 = −31, Rundreise über Index und zurück); Tests zu Jahreszeit und Weihnachtsgeschäft entfallen |
 | `test_game_clock.gd` | geändert: Test zu `season_changed` entfällt |
 | `test_ui_palette.gd` | alle 15 Tokens, `by_token()` mit Magenta für Unbekanntes, Kategorienfarben mit mindestens 3 : 1 zu `papier` und `endlos-gruen` |
-| `test_event_catalog.gd` | Lesen, Schreiben, Rundreise Datei → Katalog → Datei bytegleich an der eingefrorenen Übernahme und an `fixtures/catalog_alle_arten.json` (jede Art einmal), Zahlen als `int`, Rundung auf vier bzw. zwei Stellen, Parse-Fehler mit Zeile, unbekannter Schlüssel als V22, `without_faulty()` |
-| `test_catalog_validator.gd` | jede Regel V01 bis V24 mit einer kaputten Fixture (SC-006): Fehlerregeln als `ERROR`, V13, V20 und V23 als `WARNING`; `validate_event()` |
-| `test_timeline_run.gd` | Fahrplan fix, jährlich, gesetzt; Würfelrunde inklusive Januar 1985; Dauer, Enden vor Beginnen, Winter am ersten Tag, keine CeBIT 1985; Wirkungen `ONCE`/`DURING`; Folgeereignisse und Kettenbremse je Kette; Bedingungen; nach dem 31.12.1999 nichts mehr; Tag für Tag = Sprünge; Unabhängigkeit der Würfel bei geänderten, neuen und gelöschten Ereignissen (FR-015) |
-| `test_schedule_entry.gd` | Beschriftungen von Herkunft und Zustand, `explain()` mit deutschem Komma für gewürfelte Termine und Folgen, `due_effects()` |
-| `test_interventions.gd` | Modifikatoren: Summe, Begrenzung, Ablauf, einzeln entfernen; Absagen, Verschieben, Einplanen; Ablehnungen; Eingriffsprotokoll und `apply_intervention()`; SC-003 |
-| `test_timeline_statistics.gd` | 50 % pro Monat → Mittelwert 85,5 bis 94,5 (SC-008); gesetzt 30/70 → 25 bis 35 % ohne; gleiche Ergebnisse bei Wiederholung; Eingriffe an ihrem Tag; `run_for()` hält sein Budget ungefähr ein |
-| `test_schedule_text.gd` | Format der Zeilen samt Spalte „bis“ und Zusätzen; 10 Läufe mit gleichem Seed, Tag für Tag und in Sprüngen, ergeben 10 gleiche Ausgaben (SC-002) |
+| `test_event_catalog.gd` | Lesen, Schreiben, Rundreise Datei → Katalog → Datei bytegleich an der eingefrorenen Übernahme und an `fixtures/catalog_alle_arten.json` (jede Art einmal), Zahlen als `int`, Rundung auf vier bzw. zwei Stellen, Parse-Fehler mit Zeile, unbekannter Schlüssel, falscher Typ und unbekannter Wert für `kind` und `scope` als V22 (T085), Monat oder Tag 00 bei jährlichem Beginn und Ende als V22 (T098), `without_faulty()` |
+| `test_catalog_validator.gd` | jede Regel V01 bis V24 mit einer kaputten Fixture (SC-006): Fehlerregeln als `ERROR`, V13, V20 und V23 als `WARNING`; `validate_event()`; dazu V15 mit Bedingung auf das eigene Ereignis und V21 mit falschen Zeichen in der Kennung (T084) |
+| `test_timeline_run.gd` | Fahrplan fix, jährlich, gesetzt; Würfelrunde inklusive Januar 1985; Dauer, Enden vor Beginnen, Winter am ersten Tag, keine CeBIT 1985; Wirkungen `ONCE`/`DURING`; Folgeereignisse und Kettenbremse je Kette; Bedingungen; nach dem 31.12.1999 nichts mehr; Tag für Tag = Sprünge; Unabhängigkeit der Würfel bei geänderten, neuen und gelöschten Ereignissen (FR-015); keine Wirkung „während“ im Fahrplan, die im gekürzten Winter 1984/85 nie beginnt (T079) |
+| `test_schedule_entry.gd` | Beschriftungen von Herkunft und Zustand, `explain()` mit deutschem Komma für gewürfelte Termine und Folgen, `due_effects()`, leer bei entfallenen und abgesagten Terminen (T097) |
+| `test_interventions.gd` | Modifikatoren: Summe, Begrenzung, Ablauf, einzeln entfernen; Absagen, Verschieben, Einplanen; Ablehnungen; Eingriffsprotokoll und `apply_intervention()`; SC-003; `in_replay_order()` stabil, bei gleichem Tag und ohne lesbaren Tag (T075); Modifikator mit unlesbarem Wert oder Beginn abgelehnt (T099) |
+| `test_timeline_statistics.gd` | 50 % pro Monat → Mittelwert 85,5 bis 94,5 (SC-008); gesetzt 30/70 → 25 bis 35 % ohne; gleiche Ergebnisse bei Wiederholung; Eingriffe an ihrem Tag, auch außer der Reihe gesammelt (T075); `run_for()` hält sein Budget ungefähr ein |
+| `test_schedule_text.gd` | Format der Zeilen samt Spalte „bis“ und Zusätzen; 10 Läufe mit gleichem Seed, Tag für Tag und in Sprüngen, ergeben 10 gleiche Ausgaben (SC-002), auch mit demselben Eingriffsprotokoll (T085) |
 | `test_schedule_diff.gd` | Paarung gleicher Tag, verschoben (nur mit `moved_from_day`), neu, weggefallen, anderer Zustand; Modifikator aus US6, Szenario 1 markiert nur die Reklamationswelle (US6, Szenario 2) |
 | `test_large_catalog.gd` | `fixtures/catalog_500.json` (500 Ereignisse, je zur Hälfte fix und über Wahrscheinlichkeit, einmal per Skript erzeugt und committet): Prüfung unter 100 ms, eine Änderung über den `CatalogEditor` samt neuer Prüfung unter 100 ms, ein Spiel unter 2 s (SC-011) |
-| `test_timeline.gd` | Autoload-Hülle mit eigener Uhr: Signale in der richtigen Reihenfolge, fehlerhafte Ereignisse ausgenommen und gemeldet, fehlender Katalog ergibt leeren Lauf und Fehlermeldung (FR-049), Kettenbremse als `entry_skipped` mit Warnung |
+| `test_timeline.gd` | Autoload-Hülle mit eigener Uhr: Signale in der richtigen Reihenfolge, fehlerhafte Ereignisse ausgenommen und gemeldet, fehlender Katalog ergibt leeren Lauf und Fehlermeldung (FR-049), Kettenbremse als `entry_skipped` mit Warnung; `event_ended` und `effect_ended` mit `catalog_us3_kalender.json` (T085); Seed bis `MAX_SEED` angenommen, darüber abgelehnt (T083) |
 | `test_shipped_catalog.gd` | echter Katalog, nur was dauerhaft gilt: keine Meldung der Stufe `ERROR` (FR-048), Kalender-Ereignisse vorhanden (FR-023), Weihnachtsgeschäft in allen 15 Jahren (SC-009) |
 | `test_uebernahme.gd` | eingefrorene Übernahme `fixtures/event_catalog_uebernahme.json`: 25 Ereignisse, davon 19 fix und 6 über Wahrscheinlichkeit, zehn Kategorien; für die Seeds 1 bis 100 die 19 historischen Termine wie im Schnappschuss (SC-005); Pentium mit seinen Wirkungen (US1, Szenarien 1 und 5) |
 

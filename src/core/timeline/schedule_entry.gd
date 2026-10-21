@@ -105,14 +105,43 @@ func explain() -> String:
 
 ## Die verzögerten Wirkungen mit ihrem Fälligkeitstag, [{ "effect": EventEffect, "day": int }],
 ## in der Reihenfolge der Wirkungen (FR-013). Wirkungen ohne Verzögerung gehören zum Beginn.
+##
+## Eine Wirkung, die nie beginnt, steht nicht darin, nach derselben Regel wie im Lauf
+## (effect_begins()). Beispiel: der Winter 1984/85, der im Fahrplan erst am 01.01.1985 beginnt und
+## am 01.03.1985 endet. Eine Wirkung „während“ mit 70 Tagen Verzögerung käme am 12.03.1985, nach
+## dem Ende; der Lauf meldet sie nie, also zeigen sie auch Textausgabe und Simulator nicht.
+##
+## Ein entfallener oder abgesagter Termin beginnt nie, also kommt auch keine seiner Wirkungen; die
+## Liste ist dann leer (T097). Geplante, laufende, eingetretene und beendete Termine nennen sie.
 func due_effects() -> Array[Dictionary]:
 	var due: Array[Dictionary] = []
-	if event == null:
+	if event == null or state == State.SKIPPED or state == State.CANCELLED:
 		return due
 	for effect in event.effects:
-		if effect.delay_days > 0:
-			due.append({"effect": effect, "day": day + effect.delay_days})
+		if effect.delay_days > 0 and effect_begins(effect):
+			due.append({"effect": effect, "day": effect_day(effect)})
 	return due
+
+
+## Der Tag, an dem [param effect] bei diesem Termin beginnt: sein Beginn plus die Verzögerung der
+## Wirkung. Eine negative Verzögerung (V14) gilt als 0.
+func effect_day(effect: EventEffect) -> int:
+	return day + maxi(effect.delay_days, 0)
+
+
+## Ob [param effect] nur während dieses Termins gilt: Sie ist „während“, und der Termin hat eine
+## Dauer. Bei Terminen ohne Dauer wirkt „während“ wie „einmal“ (FR-021).
+func is_during(effect: EventEffect) -> bool:
+	return effect.scope == EventEffect.Scope.DURING and end_day > day
+
+
+## Ob [param effect] bei diesem Termin je beginnt. Eine Wirkung „während“, deren Tag auf das Ende
+## fiele oder danach, beginnt nie (V19). Die Prüfung rechnet dafür mit der vollen Dauer; ein
+## jährliches Vorkommen, das auf den Spielbeginn gekürzt ist, ist kürzer, und nur hier fällt das
+## auf. Der Lauf, der Fahrplan (due_effects()) und das Ende der Wirkung fragen alle hier, damit
+## sie nicht auseinanderlaufen.
+func effect_begins(effect: EventEffect) -> bool:
+	return not (is_during(effect) and effect_day(effect) >= end_day)
 
 
 ## Woher der Termin kommt, bei Zufall mit Würfelwert und Schwelle.

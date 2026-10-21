@@ -113,9 +113,10 @@ abgleichen. Die Werkstatt wird dafür nicht gebraucht.
    am 05.04.1993 die verzögerte Wirkung „Nachfrage ram +20 %“, wie bisher.
 6. **Given** ein Ereignis über Wahrscheinlichkeit mit 100 % Chance pro Monat, **When** das Spiel
    beginnt, **Then** tritt es schon im Januar 1985 ein.
-7. **Given** ein Ereignis über Wahrscheinlichkeit tritt ein, **When** Klaus den Fahrplan ansieht,
-   **Then** steht es dort mit der Herkunft „gewürfelt“, dem Würfelwert und der Schwelle, die er
-   unterschreiten musste.
+7. **Given** ein Ereignis über Wahrscheinlichkeit tritt ein, **When** Klaus den Fahrplan im
+   Simulator ansieht, **Then** steht es dort mit der Herkunft „gewürfelt“, und die Begründung nennt
+   den Würfelwert und die Schwelle, die er unterschreiten musste. Die Textausgabe nennt nur die
+   Herkunft (präzisiert 2026-10-21).
 8. **Given** derselbe Seed, **When** die Spieluhr einmal Tag für Tag und einmal in Monats- und
    Jahressprüngen bis zum Spielende geschaltet wird, **Then** sind beide Protokolle gleich.
 
@@ -219,9 +220,10 @@ Textausgabe des Fahrplans zeigt das neue Datum.
    Hinweis Titel, Art, Datum oder Zeitfenster und gegebenenfalls die Chance.
 4. **Given** Klaus klickt mit rechts auf ein Ereignis, **When** das Menü erscheint, **Then** bietet
    es Bearbeiten, Duplizieren und Löschen.
-5. **Given** Klaus doppelklickt in der Zeile „Hardware“ auf einen Tag im März 1996, **When** das
-   neue Ereignis erscheint, **Then** ist es fix, liegt an diesem Tag und gehört zur Kategorie
-   Hardware.
+5. **Given** Klaus doppelklickt in der Zeile „Hardware“ auf einen Tag im März 1996, **When** der
+   Dialog „Neu …“ erscheint, **Then** ist er mit „fix“, diesem Tag und der Kategorie Hardware
+   vorbelegt; angelegt wird das Ereignis erst mit „Anlegen“, und eine andere Art ist wählbar
+   (Klaus, 2026-10-21, R16; bis dahin legte der Doppelklick das Ereignis sofort an).
 6. **Given** der Zeitstrahl, **When** Klaus vergrößert und verschiebt, **Then** lässt er sich vom
    ganzen Zeitraum bis auf einen einzelnen Monat mit sichtbaren Tagen aufziehen.
 7. **Given** Klaus hat den Pentium versehentlich verschoben, **When** er Cmd+Z drückt, **Then**
@@ -366,7 +368,10 @@ automatische Prüfung schlägt bei Fehlern fehl:
 - Bei einem Ereignis „beim Start gesetzt“ ist der Mindestabstand kürzer als die Dauer: Fehler, denn
   sonst überlappten sich gesetzte Termine, und einer fiele weg.
 - Eine Wirkung, die nur während ihres Ereignisses gelten soll, beginnt wegen ihrer Verzögerung erst
-  nach dessen Ende: Fehler.
+  nach dessen Ende: Fehler. Geprüft wird mit der vollen Dauer. Ist das erste Vorkommen eines
+  jährlichen Ereignisses auf den Spielbeginn gekürzt, wie der Winter 1984/85 mit 59 statt 90 Tagen,
+  kann eine solche Wirkung dort trotzdem ausfallen; sie beginnt dann nicht und steht auch nicht im
+  Fahrplan (präzisiert 2026-10-21; data-model, V19).
 - Die Grundchance ist 0 %: Warnung, das Ereignis tritt ohne Modifikator nie ein. Das ist erlaubt,
   etwa für Ereignisse, die erst durch Spieleraktionen möglich werden.
 - Eine Wirkung auf Preis, Nachfrage, Ruf oder Kundenstrom hat die Stärke 0: Warnung.
@@ -386,8 +391,9 @@ Verhalten im Lauf:
   auf 0 % bis 100 % begrenzt; die Werkstatt zeigt Summe und Begrenzung.
 - Das Enddatum eines Modifikators ist erreicht: Ab dem Folgetag wirkt er nicht mehr, ohne dass ihn
   jemand entfernt.
-- Ein Eingriff träfe einen Termin, der schon eingetreten ist, oder verschöbe einen Termin auf den
-  aktuellen Spieltag, davor oder hinter den 31.12.1999: Das ist nicht möglich.
+- Ein Eingriff träfe einen Termin, der schon eingetreten ist oder hinter dem 31.12.1999 liegt, etwa
+  eine Folge am 04.01.2000, oder verschöbe einen Termin auf den aktuellen Spieltag, davor, hinter
+  den 31.12.1999 oder auf seinen eigenen Tag: Das ist nicht möglich.
 - Beim Spielstart enthält der Katalog fehlerhafte Einträge: Sie werden übersprungen und mit
   Kennung und Grund gemeldet, der Rest läuft.
 - Der Katalog fehlt oder ist nicht lesbar: Das Spiel startet trotzdem mit leerer Zeitleiste und
@@ -407,8 +413,9 @@ Verhalten im Lauf:
   Wert 0 ist erlaubt.
 - Es gibt noch keine Katalogdatei: Die Werkstatt bietet an, einen leeren Katalog mit den zehn
   Kategorien anzulegen; geschrieben wird er erst beim Speichern.
-- Die Werkstatt stürzt mit ungespeicherten Änderungen ab: Beim nächsten Start bietet sie die
-  Sicherungskopie an (FR-050).
+- Die Werkstatt stürzt mit ungespeicherten Änderungen ab: Beim nächsten Start mit demselben Katalog
+  bietet sie dessen Sicherungskopie an (FR-050); die Kopien anderer Kataloge bleiben liegen, bis
+  deren Katalog wieder geöffnet wird (präzisiert 2026-10-21, T078).
 - Eine gespeicherte Was-wäre-wenn-Probe verweist auf ein Ereignis, das es nicht mehr gibt, oder auf
   einen Termin, der im neuen Fahrplan fehlt: Die Werkstatt nennt diese Eingriffe als nicht
   anwendbar und setzt die übrigen.
@@ -470,9 +477,11 @@ Verhalten im Lauf:
 - **FR-012**: Jeder Termin muss Datum, Ereignis, Herkunft (fix, jährlich, gesetzt, gewürfelt,
   Folge von …, Eingriff), Zustand, bei Dauer das Ende und eine Begründung tragen. Zustände sind
   geplant, läuft, eingetreten (ohne Dauer), beendet (mit Dauer, nach dem Ende), entfallen und
-  abgesagt. Die Begründung nennt bei jedem Zufall, auch bei Folgeereignissen, Würfelwert und
+  abgesagt. Die Begründung nennt bei gewürfelten Terminen und bei Folgeereignissen Würfelwert und
   Schwelle, dazu die beteiligten Modifikatoren mit Grund und Wert, wie sie beim Wurf galten; bei
-  Entfall, Absage und Verschiebung den Grund.
+  gesetzten Terminen, dass sie beim Spielstart gesetzt wurden. Bei Entfall, Absage und Verschiebung
+  nennt sie den Grund; trifft einen Termin mehreres, steht dort der letzte Grund, die früheren
+  stehen im Protokoll (präzisiert 2026-10-21, wie im Datenmodell).
 - **FR-013**: Verzögerte Wirkungen müssen mit ihrem Fälligkeitstag beim auslösenden Termin im
   Fahrplan stehen.
 - **FR-014**: Jedes Spiel muss einen Seed haben, eine ganze Zahl von 0 bis 2.147.483.647; ist
@@ -532,7 +541,9 @@ Verhalten im Lauf:
   auf ein Datum nach dem aktuellen Spieltag bis zum 31.12.1999 verschieben lassen. Ein Ereignis
   aus dem Katalog, das nicht fix oder jährlich ist, muss sich mit Grund als neuer Termin auf einen
   solchen Tag einplanen lassen. Der aktuelle Spieltag ist schon abgespielt und scheidet deshalb
-  aus. Fixe und jährliche Termine lassen sich weder absagen noch verschieben.
+  aus. Fixe und jährliche Termine lassen sich weder absagen noch verschieben, ebenso Termine nach
+  dem 31.12.1999, etwa eine Folge am 04.01.2000; ein Verschieben auf denselben Tag wird abgelehnt
+  (präzisiert 2026-10-21, wie im Vertrag seit T056).
 - **FR-027**: Eingriffe dürfen nur ab dem aktuellen Spieltag wirken; Vergangenes bleibt, wie es war.
   Vor dem Abspielen des 01.01.1985 wirken sie ab diesem Tag. Jeder Eingriff steht mit Zeitpunkt und
   Grund im Protokoll. Die Eingriffe stehen später allen Spielteilen offen; in diesem Feature nutzen
@@ -594,15 +605,20 @@ Verhalten im Lauf:
   ihrer Chance. Überlappen sich Ereignisse einer Zeile, stapelt der Zeitstrahl sie in Unterzeilen;
   Titel stehen daneben, wenn Platz ist, sonst nur im Hinweis. Ereignisse der Art „nur als Folge“
   haben keine Marke auf der Achse; sie stehen in der Liste und erscheinen im Simulator, sobald sie
-  geplant sind.
+  geplant sind. Sucht oder filtert Klaus die Liste, zeigt der Zeitstrahl nur die passenden
+  Ereignisse, blendet Zeilen ohne Treffer aus und nennt, wie viele er zeigt, etwa „Filter: 11 von
+  500“ (Klaus, 2026-10-21, T074).
 - **FR-038**: Der Zeitstrahl muss sich vom ganzen Zeitraum bis auf einen einzelnen Monat mit
-  sichtbaren Tagen vergrößern und seitlich verschieben lassen.
+  sichtbaren Tagen vergrößern und seitlich verschieben lassen: mit dem Mausrad, auf dem Trackpad
+  durch Kneifen und Wischen mit zwei Fingern (Klaus, Phase 6, R16), mit den Knöpfen „+“, „−“ und
+  „Alles“ und mit einer waagerechten Leiste unter der Zeitfläche (Wünsche von Klaus bei T055).
 - **FR-039**: Klaus muss mit der Maus eintakten können: fixe Ereignisse auf ein anderes Datum
   ziehen und Beginn und Ende von Zeitfenstern und Dauern ziehen; beim Ziehen zeigt die Werkstatt das
   Datum tagesgenau. Überfahren zeigt einen Hinweis mit den wichtigsten Angaben, ein Rechtsklick ein
-  Menü mit Bearbeiten, Duplizieren und Löschen, ein Doppelklick auf eine leere Stelle legt dort ein
-  fixes Ereignis in der Kategorie der Zeile an. Jährliche Ereignisse lassen sich nicht ziehen, nur
-  im Formular ändern; ihr Hinweis sagt das.
+  Menü mit Bearbeiten, Duplizieren und Löschen, ein Doppelklick auf eine leere Stelle öffnet
+  „Neu …“, vorbelegt mit „fix“, dem Tag und der Kategorie der Zeile (Klaus, 2026-10-21, R16; bis
+  dahin legte er dort sofort ein fixes Ereignis an). Jährliche Ereignisse lassen sich nicht
+  ziehen, nur im Formular ändern; ihr Hinweis sagt das.
 
 **Werkstatt: Simulator**
 
@@ -620,7 +636,10 @@ Verhalten im Lauf:
   verschieben und einplanen können, wie in FR-025 bis FR-027, und die Folgen sofort im Fahrplan
   sehen. Einen Durchlauf kann er mit demselben Seed neu starten, mit oder ohne seine Eingriffe.
   Seine Eingriffe bleiben erhalten, solange die Werkstatt offen ist, auch über Neustarts und
-  Änderungen am Katalog hinweg. Läuft ein Durchlauf mit Eingriffen, markiert der Fahrplan jeden
+  Änderungen am Katalog hinweg; nur das Laden einer Probe ersetzt sie durch deren Eingriffe
+  (FR-051). Beim Neustart mit Eingriffen gilt jeder an seinem Tag, nach Tagen geordnet; der Lauf
+  steht danach auf dem alten Tag, mindestens aber auf dem Tag des letzten Eingriffs (präzisiert
+  2026-10-21, T075). Läuft ein Durchlauf mit Eingriffen, markiert der Fahrplan jeden
   Termin, der gegenüber demselben Seed ohne Eingriffe neu ist, wegfällt, auf einem anderen Tag
   liegt oder einen anderen Zustand hat.
 
@@ -655,16 +674,21 @@ Verhalten im Lauf:
 
 **Sicherungskopie und Was-wäre-wenn-Proben**
 
-- **FR-050**: Hat Klaus ungespeicherte Änderungen, muss die Werkstatt spätestens alle 2 Minuten
-  eine Sicherungskopie des Katalogs anlegen, außerhalb des Projekts. Findet sie beim Start eine
-  Sicherungskopie, bietet sie an, diese zu übernehmen oder zu verwerfen, und nennt dabei, wann
-  Kopie und Katalogdatei zuletzt geändert wurden. Nach dem Speichern und nach dem regulären
-  Schließen löscht sie die Kopie.
+- **FR-050**: Hat Klaus ungespeicherte Änderungen, muss die Werkstatt spätestens alle 2 Minuten eine
+  Sicherungskopie des Katalogs anlegen, außerhalb des Projekts und je Katalog eine eigene (Klaus,
+  2026-10-21, T078; bis dahin eine für alle, und die Kopie eines anderen Katalogs verhinderte die
+  Sicherung). Findet sie beim Start eine Sicherungskopie des geöffneten Katalogs, bietet sie an,
+  diese zu übernehmen, zu verwerfen oder auf später zu verschieben, und nennt dabei, wann Kopie und
+  Katalogdatei zuletzt geändert wurden. Kopien anderer Kataloge bleiben unberührt. Lässt sich die
+  Kopie nicht schreiben, sagt die Werkstatt es. Nach dem Speichern, nach dem Verwerfen und nach dem
+  regulären Schließen löscht sie die Kopie, beim Schließen nicht, solange „später“ gilt (R23).
 - **FR-051**: Klaus muss die Eingriffe eines Durchlaufs samt Seed als Was-wäre-wenn-Probe unter
-  einem Namen speichern, später laden und löschen können. Die Proben liegen als lesbare Dateien im
-  Projekt neben der Werkstatt und gehören nicht zum ausgelieferten Spiel. Beim Laden setzt die
-  Werkstatt Seed und Eingriffe wieder; Eingriffe, die im neuen Fahrplan nicht anwendbar sind, nennt
-  sie, statt sie stillschweigend wegzulassen.
+  einem Namen speichern, später laden und löschen können. Als Stand speichert die Werkstatt den Tag
+  des Laufs, mindestens aber den des letzten Eingriffs (präzisiert 2026-10-21, T075). Die Proben
+  liegen als lesbare Dateien im Projekt neben der Werkstatt und gehören nicht zum ausgelieferten
+  Spiel. Beim Laden setzt die Werkstatt Seed und Eingriffe wieder, die Eingriffe der Probe ersetzen
+  die gesammelten. Eingriffe, die im neuen Fahrplan nicht anwendbar sind, nennt sie, statt sie
+  stillschweigend wegzulassen.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -766,6 +790,8 @@ Verhalten im Lauf:
   der Abgleich mit echten Warengruppen kommt mit 02-02.
 - Die Werkstatt bearbeitet den Katalog des Spiels. Nur für Prüfungen, etwa SC-011, lässt sie sich
   mit einem anderen Katalog starten.
+- Die Werkstatt merkt sich zwischen zwei Starts, wo Klaus ihre Teiler hingezogen hat, in einer
+  Einstellungsdatei außerhalb des Projekts (Wunsch von Klaus, Phase 10).
 - Die Statistik rechnet die Seeds ab 1 fortlaufend, damit sie wiederholbar ist.
 - Nicht dazu gehören: Speichern und Laden von Seed, Fahrplan und Eingriffen (11-01; das Modell
   ist so angelegt, dass diese drei genügen), ein späterer Spielstart (01-05), das Anwenden der

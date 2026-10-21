@@ -1,8 +1,9 @@
 extends GutTest
 
 ## Prüft das Autoload Timeline als Hülle um den Lauf (Feature 002, T025): Es lädt einen Katalog,
-## hängt sich an eine Uhr und macht aus den Meldungen des Laufs Signale. Dazu die Eingriffe, die
-## es an den Lauf durchreicht (T058).
+## hängt sich an eine Uhr und macht aus den Meldungen des Laufs Signale, auch aus den Enden von
+## Ereignissen und Wirkungen (T085). Dazu die Eingriffe, die es an den Lauf durchreicht (T058),
+## und die Grenze des Seeds (T083).
 ##
 ## Wie in test_game_clock.gd arbeiten die Tests nicht mit den Autoloads. Jeder baut sich eine
 ## eigene Zeitleiste mit Test-Katalog und eigener Uhr. Die Knoten entstehen im Test selbst, nicht
@@ -44,6 +45,66 @@ func test_signale_kommen_in_der_reihenfolge_des_tagesablaufs() -> void:
 	# Die Signale tragen die Ereignisse des Laufs; get_event() liefert dieselben Objekte.
 	assert_same(ereignisse[ereignisse.size() - 1], zeitleiste.get_event("folge_b"))
 	assert_eq(zeitleiste.running_entries().size(), 0, "Ohne Dauer läuft nichts.")
+
+
+func test_enden_kommen_als_event_ended_und_effect_ended() -> void:
+	# Arrange (T085; US3, Szenarien 1 und 5): Das Weihnachtsgeschäft 1993 läuft vom 01.11.1993
+	# bis zum 31.12.1993, seine Wirkung auf den Kundenstrom gilt nur während. Beide Enden kommen
+	# am 01.01.1994.
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us3_kalender", uhr)
+	var spur := []
+	var ereignisse := []
+	_mitschreiben(zeitleiste, spur, ereignisse)
+	zeitleiste.start_game(4711)
+
+	# Act
+	_vorspulen(uhr, _tag(1994, 1, 1))
+
+	# Assert: erst endet die Wirkung, dann das Ereignis (Tagesablauf, Schritt 1).
+	var weihnachten := spur.filter(func(zeile: String) -> bool:
+		return zeile.contains("weihnachtsgeschaeft") and (zeile.begins_with("01.11.1993")
+			or zeile.begins_with("01.01.1994")))
+	assert_eq(weihnachten, [
+		"01.11.1993 event_fired weihnachtsgeschaeft",
+		"01.11.1993 effect_applied weihnachtsgeschaeft kundenstrom *",
+		"01.01.1994 effect_ended weihnachtsgeschaeft kundenstrom *",
+		"01.01.1994 event_ended weihnachtsgeschaeft",
+	])
+	# Jede Meldung des Laufs wurde zu genau ihrem Signal, auch jedes Ende von Herbst und Winter.
+	assert_eq(spur, _erwartete_signale(zeitleiste.run))
+	var enden := spur.filter(func(zeile: String) -> bool: return zeile.contains("_ended "))
+	assert_gt(enden.size(), 30, "Neun Jahre Jahreszeiten und Weihnachtsgeschäft enden.")
+
+
+func test_seed_bis_zur_grenze_und_darueber() -> void:
+	# Arrange (T083; FR-014): ein laufendes Spiel mit Seed 4711 am 01.06.1990
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us1_tagesablauf", uhr)
+	assert_eq(zeitleiste.start_game(4711), OK)
+	_vorspulen(uhr, _tag(1990, 6, 1))
+	var laufendes := zeitleiste.run
+	watch_signals(zeitleiste)
+
+	# Act und Assert: ein Seed über 2.147.483.647 wird abgelehnt.
+	var zu_gross: Error = zeitleiste.start_game(ZEITLEISTE.MAX_SEED + 1)
+	assert_eq(zu_gross, ERR_INVALID_PARAMETER)
+	assert_push_error("Zeitleiste: Der Seed 2147483648 ist zu groß, erlaubt sind 0 bis "
+		+ "2.147.483.647. Es beginnt kein neues Spiel.", "Die Meldung nennt Seed und Grenze.")
+	assert_same(zeitleiste.run, laufendes, "Das laufende Spiel bleibt.")
+	assert_eq([zeitleiste.get_seed(), zeitleiste.run.today], [4711, _tag(1990, 6, 1)])
+	for signal_name in ["event_fired", "effect_applied", "event_ended", "effect_ended",
+			"entry_skipped"]:
+		assert_signal_not_emitted(zeitleiste, signal_name, "Kein neuer erster Tag.")
+
+	# Act und Assert: der größte Seed geht.
+	assert_eq(zeitleiste.start_game(ZEITLEISTE.MAX_SEED), OK)
+	assert_not_same(zeitleiste.run, laufendes, "Ein neues Spiel …")
+	assert_eq([zeitleiste.get_seed(), zeitleiste.run.today], [ZEITLEISTE.MAX_SEED, 0],
+		"… mit diesem Seed, am 01.01.1985 abgespielt.")
+	# Ohne Seed oder mit negativem wird weiter gewürfelt.
+	assert_eq(zeitleiste.start_game(-5), OK)
+	assert_between(zeitleiste.get_seed(), 0, ZEITLEISTE.MAX_SEED)
 
 
 func test_ohne_seed_wird_gewuerfelt() -> void:
@@ -249,6 +310,11 @@ func _erwartete_signale(run: TimelineRun) -> Array:
 				zeilen.append("%s event_fired %s" % [datum, meldung.event.id])
 			TimelineMessage.Kind.EFFECT_STARTED:
 				zeilen.append("%s effect_applied %s" % [datum,
+					_wirkung(meldung.event, meldung.effect)])
+			TimelineMessage.Kind.EVENT_ENDED:
+				zeilen.append("%s event_ended %s" % [datum, meldung.event.id])
+			TimelineMessage.Kind.EFFECT_ENDED:
+				zeilen.append("%s effect_ended %s" % [datum,
 					_wirkung(meldung.event, meldung.effect)])
 			TimelineMessage.Kind.ENTRY_SKIPPED, TimelineMessage.Kind.CHAIN_STOPPED:
 				zeilen.append("%s entry_skipped %s" % [datum, meldung.event.id])

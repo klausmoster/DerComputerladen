@@ -1131,3 +1131,205 @@ Der Agent schreibt die Notizen, Claude trägt sie je Phase hier ein.
 - **Messung** mit catalog_500 im Fenster bis zum nächsten Bild: Kategorie wählen 8,7 ms, ein
   Zeichen tippen 5,0 ms (höchstens 7,3), zurück auf „Alle Kategorien“ 20,7 ms; dort baut die Liste
   alle 500 Zeilen neu.
+
+## Phase 11
+
+### T075 Eingriffe nach ihrem Tag nachspielen
+
+- **Warum sortieren:** Ein Lauf spielt nur vorwärts (`advance_to()`). Nach „Fahrplan erzeugen“
+  steht er wieder vor dem 01.01.1985, die gesammelten Eingriffe bleiben, und ein neuer Eingriff
+  vor Spielbeginn kommt hinter einen vom 01.01.1992. Der Reihe nach gespielt, gälte er erst 1992;
+  eine Einplanung mit früherem Tag würde sogar abgelehnt.
+- **Erst beim Nachspielen:** Sammlung und Probe-Datei bleiben die Geschichte dessen, was Klaus
+  wann getan hat. Die Ordnung ist eine Regel des Nachspielens, keine Eigenschaft der Daten.
+- **Eine Stelle im Kern:** `TimelineRun.in_replay_order()` ist `static`, denn zwei Stellen
+  brauchen sie, `WhatIfProbe` im Werkzeug und `TimelineStatistics` im Kern. Abhängigkeiten zeigen
+  nur von `tools/` nach `core/`, nie umgekehrt.
+- **Godot-Falle, nicht stabil:** `Array.sort_custom()` ist laut Doku nicht stabil; Einträge vom
+  selben Tag könnten tauschen, etwa Setzen und Entfernen desselben Modifikators. Sortiert werden
+  deshalb die Stellen 0 bis n−1, und bei gleichem Tag entscheidet die Stelle, wie schon in
+  `EventCatalog._sorted_by_id()`. Die Fehlerprobe zeigt es: Ohne diesen Gleichstand geraten 60
+  Einträge auf drei Tagen durcheinander.
+- **Eintrag ohne lesbaren Tag:** Er bekommt beim Sortieren den Tag seines Vorgängers und wandert
+  mit ihm. `TimelineRun.intervention_day()` gibt dann −1, und weil `advance_to(-1)` nichts
+  abspielt, gilt er dort, wo der Lauf steht, ohne Sonderfall.
+- **Endtag:** Um einen Eingriff nachzuspielen, muss der Lauf bis zu dessen Tag kommen. Deshalb
+  nehmen „Neu starten mit Eingriffen“ und „Probe speichern“ den späteren Tag aus dem Stand des
+  Laufs und dem letzten `at_day` (`SimulatorPanel._end_day()`); gespeicherte und geladene Probe
+  stimmen so überein.
+
+### T079 Wirkungen, die nie beginnen
+
+- **Vorher:** Die Regel „eine Wirkung ‚während‘, deren Tag auf das Ende fiele oder danach,
+  beginnt nie“ stand zweimal im Lauf, in `_start_entry()` und `_end_entries()`, und
+  `due_effects()` kannte sie nicht. Zwei Fassungen einer Regel laufen früher oder später
+  auseinander.
+- **Jetzt:** Lauf und Fahrplan fragen dieselbe Methode, `ScheduleEntry.effect_begins()`. Sie
+  braucht nur Felder des Termins (`day`, `end_day`) und die Wirkung; deshalb sind `is_during()`
+  und `effect_day()` aus `TimelineRun` an den Termin gewandert, und der Termin ruft nie den Lauf.
+- **Warum V19 das nicht fängt:** Die Prüfung sieht den Katalog mit der vollen Dauer, beim Winter
+  90 Tage. Gekürzt wird erst im Fahrplan auf 59 Tage, und das sieht nur der Termin.
+
+### T083 Seed-Grenze im Autoload
+
+- **Rückgabe `Error`:** wie bei den Eingriffen. `OK` oder `ERR_INVALID_PARAMETER` sagen dem
+  Aufrufer, was passiert ist; ein `void` kann das nicht.
+- **Erst prüfen, dann ändern:** Die Prüfung steht vor `run = …`, deshalb bleibt ein laufendes Spiel
+  unberührt.
+- **`push_error()`:** Ein zu großer Seed ist ein Programmierfehler eines späteren Spielteils
+  (01-05) und soll im Log auffallen. Der Start am Ende des ersten Bilds läuft über
+  `call_deferred()`, das den Rückgabewert verwirft; er würfelt und geht immer.
+- **Test:** `assert_push_error()` hakt die erwartete Meldung ab, sonst zählte GUT sie als
+  unerwarteten Fehler.
+
+### T084 Prüfregeln für Dateien, die jemand von Hand geändert hat
+
+- **Warum im Validator:** Die Werkstatt lässt beides gar nicht zu; sie bildet Kennungen von
+  Kategorien aus dem Namen, und die Auswahl der Bedingung bietet das eigene Ereignis nicht an. Die
+  Regeln schützen vor Änderungen von Hand und gehören deshalb in den Validator, den Spiel,
+  Werkstatt und Tests gleich nutzen (FR-048).
+- **Eine Definition:** `_is_id()` aus V03 prüft jetzt auch Kategorien. Es gibt nur eine Definition
+  von „gültige Kennung“.
+- **Je Feld eine Meldung:** eine `elif`-Kette. Zwei Kategorien „Konkurrenz“ melden erst die
+  falschen Zeichen; heißen sie danach „konkurrenz“, folgt „haben mehrere Kategorien“.
+- **Fixtures:** Jede weicht an genau einer Stelle von `catalog_minimal.json` ab, damit die
+  Meldung eindeutig dieser Stelle gehört.
+
+### T085 Fehlende Tests
+
+- **`_erwartete_signale()`:** die Übersetzung „Meldung → Signal“ aus dem Vertrag, im Test
+  nachgebaut. Der Test vergleicht die ganze Spur; so fällt jede fehlende Meldung auf, jetzt auch
+  die Enden.
+- **SC-002 mit Eingriffen:** Kein Schritt springt über den nächsten `at_day` hinweg, wie im
+  Simulator, wo Klaus bis zu einem Tag spielt und dann eingreift. Dass Tag für Tag und Sprünge
+  gleich ausgehen, folgt aus den Stichtagen (R6) und dem eigenen Würfel je Ereignis (R5).
+- **V22:** Bei unbekannter Art liest `TimelineEvent.from_dict()` die Felder der Art gar nicht;
+  sonst käme je Schlüssel noch eine Meldung.
+
+### T076 Fokus vor Klick, Neubau am Ende des Bilds
+
+- **Was Godot tut:** Beim Linksklick ruft der Viewport `grab_focus()` auf, bevor das Control den
+  Klick in `_gui_input()` bekommt. Das alte Feld meldet dabei `focus_exited` und übernimmt seine
+  Eingabe. Signale laufen synchron: `catalog_changed` baute die Liste mitten im Klick neu, und der
+  Tree verarbeitete den Klick auf den neuen Zeilen.
+- **Die Lösung:** `call_deferred()` legt den Neubau in die Nachrichtenschlange, die Godot am Ende
+  des Bilds abarbeitet. Bis dahin zeigen die Zeilen, was Klaus gesehen hat, und der Klick trifft
+  es. Ein Merker (`_rows_queued`) fasst `catalog_changed` und `issues_changed` zu einem Neubau
+  zusammen.
+- **Schutz für eine neue Kennung:** Hat das Übernehmen die Kennung geändert, gibt es die
+  angeklickte Zeile im Katalog nicht mehr; die Liste übergeht sie, denn die Werkstatt hat das
+  Ereignis schon unter der neuen Kennung gewählt.
+
+### T077 Fokus nur beim Linksklick
+
+- **Was Godot tut:** Den Fokus gibt es nur beim Linksklick weiter, und nur an Controls mit
+  `focus_mode`; der Zeitstrahl hat keinen. Beim Rechtsklick nahm erst der Neubau des Formulars
+  das Feld heraus, und dessen `focus_exited` kam während `_building` und wurde verworfen.
+- **„Erst treffen, dann übernehmen“:** `_hit_and_commit()` merkt sich die Marke unter der Maus,
+  dann übernimmt das Feld seine Eingabe, und erst dann wird gewählt. Gezogen wird nur, wenn an der
+  Stelle noch dasselbe Ereignis steht: Ein neu getipptes Datum verschiebt die Marke, und sonst
+  zöge der Klick ein anderes Ereignis mit.
+
+### T078 Eine Sicherungskopie je Katalog
+
+- **Name aus dem Pfad:** `ProjectSettings.globalize_path()` macht aus `res://` und `user://` echte
+  Pfade, `simplify_path()` entfernt `..` und `//`, und aus dem Ergebnis entsteht über
+  `sha256_text()` ein kurzer, stabiler Name. Davor steht der Dateiname, damit man im Ordner sieht,
+  wessen Kopie es ist: `event_catalog_57442f211163.json`.
+- **Fehler aus Rückgabewerten:** Der Timer wertet den `Error` von `write_backup()` aus, statt ihn
+  zu verwerfen; `_backup_failed` sorgt dafür, dass der Hinweis einmal je Fehlerserie kommt und
+  nicht alle 2 Minuten.
+- **`prepare_quit()`:** Was vor dem Beenden geschieht, steht in einer eigenen Funktion, weil
+  `get_tree().quit()` im Test den ganzen Testlauf beenden würde.
+
+### T080 Die Liste einer Auswahl ist ein eigenes Fenster
+
+- Die Liste eines `OptionButton` ist ein `PopupMenu`, ein eigenes Fenster und internes Kind der
+  Auswahl. Gibt der Neubau die Auswahl frei, verschwindet ihre Liste mit.
+- `popup_hide` mit `CONNECT_ONE_SHOT` meldet das Zugehen genau einmal. Gebaut wird danach wieder
+  per `call_deferred()`, damit die Wahl (`index_pressed` → `item_selected`) zuerst ankommt.
+
+### T081 Theme-Varianten für Felder mit Fehler
+
+- Godot sucht einen Stil zuerst in der Variante, dann in ihrem `base_type`, dann entlang der
+  Klassenkette, bei einer Auswahl OptionButton → Button. `ErrorOptionButton` überschreibt deshalb
+  nur `normal`, `hover` und `pressed`; der Stil für den Fokus kommt weiter von Button und bleibt so
+  in `tusche`.
+- `ReliefStyleBox` hat dafür `outline` und `outline_width` bekommen, die Farbe weiter als
+  Palette-Token. Die Innenabstände bleiben gleich, damit der Text nicht springt, wenn ein Fehler
+  kommt oder geht.
+
+### T082 Abgelehnte Eingriffe in der Statistik
+
+- **Kern ohne Werkzeug-Klassen:** `TimelineStatistics` merkt sich Eintrag und Grund
+  (`refused`); erst das Panel macht daraus Text, mit `WhatIfProbe.KIND_LABELS`.
+- **Ein Spiel genügt:** Ob ein Lauf einen Eingriff ablehnt, hängt nur an Katalog und Tag, nie am
+  Seed. Was das erste Spiel ablehnt, lehnt jedes ab.
+
+### T086 Obergrenze für Felder, nicht für Daten
+
+- Das Formular legt höchstens `MAX_COUNTS` Felder an. Die Daten bleiben ganz, weil
+  `_set_weight()` die ganze Liste kopiert und nur eine Stelle ersetzt.
+
+### Nacharbeiten aus dem Review von Teil 1
+
+- **Erst ordnen, dann aussuchen:** Die Statistik spielt das ganze geordnete Protokoll nach und
+  wendet Absagen und Verschiebungen nur nicht an. Bis zu ihrem Tag wird trotzdem abgespielt; das
+  ändert am Spiel nichts, denn `advance_to()` in Stücken ergibt dasselbe wie in einem Zug
+  (SC-002).
+- **Tooltips über zwei Zeilen:** In einer `.tscn` steht ein mehrzeiliger Text mit echtem
+  Zeilenumbruch in den Anführungszeichen; so schreibt ihn auch der Editor.
+- **„die Zahl 5“:** `JSON.parse()` liefert jede Zahl als float. Ganze Zahlen gibt die Meldung
+  deshalb mit `%d` aus.
+
+## Phase 12
+
+### T093 Kontur und Hinweis aus einer Quelle
+
+- Das Feld wechselt nur `theme_type_variation` auf `ErrorLineEdit` bzw. `ErrorOptionButton`; den
+  Stil liefert das Theme. Gesetzt wird die Variante genau dort, wo der Hinweis gesetzt wird, etwa
+  in `_check_new()` oder `_set_hint()`. So gehen Hinweis und Kontur zusammen weg.
+- Im Eingriff-Dialog füllt `_read(values, faulty)` ein `Array[Control]`. Arrays werden als Verweis
+  übergeben; das ergibt einen Ausgabeparameter ohne zweiten Rückgabewert.
+
+### T094 Eine Linie außerhalb des Rechtecks
+
+- Der Fokus-Stil zeichnet mit `expand_margin` 4 Pixel außen. Jeder Vorfahr, der beschneidet, etwa
+  ein `ScrollContainer` mit `clip_contents`, braucht deshalb 4 Pixel Platz. Die Theme-Variante
+  `FormScroll` gibt ihn über `content_margin` und `scrollbar_h_separation`; die Doku von 4.7
+  vertauscht hier h und v, eine Probe hat es geklärt.
+- Godots `follow_focus` rollt ein Feld nur bis an den Rand, die Linie fiele dann heraus. Die
+  Werkstatt rollt deshalb selbst, über `gui_focus_changed` und ein Bild später
+  (`process_frame` mit `CONNECT_ONE_SHOT`), weil Container ihre Kinder erst am Ende des Bilds
+  anordnen.
+
+### T095 Übernehmen, bevor etwas freigegeben wird
+
+- `free()` auf ein Feld mit Fokus löst `focus_exited` aus, aber während `_building`, wo es nichts
+  mehr zählt. Das Formular übernimmt deshalb vorher selbst, an einer Stelle (`_commit_focused()`),
+  vor jedem Neubau und vor dem Wechsel zu einem anderen Ereignis.
+- Doppelt übernimmt es nichts: Danach zeigt das Feld genau den Text aus `_shown`. Für die
+  Beschreibung gilt jetzt dieselbe Regel.
+- Signale laufen synchron: Ein Umbenennen beim Wechsel sendet `event_renamed` mitten im Wechsel.
+  Die Werkstatt folgt deshalb nur, solange das umbenannte Ereignis noch gewählt ist.
+
+### T096 bis T099
+
+- **T096:** Ein offener Dialog heißt „noch nicht entschieden“, und das gilt wie „Später“.
+  `prepare_quit()` ist die Stelle vor `get_tree().quit()`, die sich testen lässt.
+- **T097:** Die Regel steht an einer Stelle im Kern, `due_effects()`; Textausgabe und Simulator
+  fragen dort. Ein entfallener oder abgesagter Termin beginnt nie, also kommt auch keine seiner
+  Wirkungen.
+- **T098:** `Vector2i(0, 0)` ist der Platzhalter für „ohne Dauer“ und darf nicht aus einer kaputten
+  Eingabe entstehen. Der Leser prüft deshalb Monat und Tag, der Validator weiter den Tag im Monat
+  (V09).
+- **T099:** Vorgabewerte wie `value = 0` und `from_day = 0` sind gültige Werte. Ob ein Feld fehlt,
+  sieht man deshalb nur am Dictionary, vor dem Umwandeln, mit `typeof()`.
+
+### T101 Mindesthöhen wandern nach oben
+
+- Ein SplitContainer gibt dem Kind mit EXPAND den Rest und dem anderen seine Mindesthöhe. War die
+  Summe der Mindesthöhen größer als der Reiter, wuchs der TabContainer, und der VSplitContainer
+  darüber nahm die Höhe dem Zeitstrahl.
+- Der TabContainer misst nur den aktuellen Reiter; deshalb sprang der Zeitstrahl beim Wechsel der
+  Reiter. Mit kleineren Mindesthöhen passen beide Panels wieder in ihren Reiter.

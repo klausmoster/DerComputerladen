@@ -7,6 +7,11 @@ extends VBoxContainer
 ## vielen Spielen gar nicht oder bis zur Obergrenze, und für die gewählte Zeile die Verteilung auf
 ## die Jahre als Balken.
 ##
+## In der Vorgabe-Teilung, ohne gespeicherten Teiler, bekommt die Tabelle den Platz zuerst; die
+## Verteilung darunter hat nur ihre Mindesthöhe, mit Werten über und Jahren unter Balken von bis zu
+## 21 Pixeln (Klaus, 2026-10-21, T101). Mehr Mindesthöhe machte das Panel mit der Warnung über
+## abgelehnte Eingriffe höher als seinen Reiter, und der Reiter nähme die Höhe dem Zeitstrahl.
+##
 ## Gerechnet wird in Häppchen (research.md, R17): Je Bild rechnet TimelineStatistics.run_for()
 ## 15 ms, dann wartet _calculate() mit await auf das nächste Bild. Dazwischen zeichnet Godot die
 ## Werkstatt und nimmt Maus und Tastatur an; sie bleibt bedienbar, und „Abbrechen“ wirkt sofort. Ein
@@ -21,7 +26,9 @@ extends VBoxContainer
 ## Mit dem Häkchen bekommt die Statistik das Eingriffsprotokoll des Simulators. Modifikatoren und
 ## Einplanungen gelten dann in jedem Spiel an ihrem Tag, Absagen und Verschiebungen nicht (FR-045).
 ## Das Protokoll holt das Panel beim Start über [member interventions_source]; die Werkstatt setzt
-## es, denn die Teile der Werkstatt kennen sich untereinander nicht.
+## es, denn die Teile der Werkstatt kennen sich untereinander nicht. „mit N Eingriffen“ zählt nur,
+## was die Spiele angenommen haben; was sie ablehnen, etwa einen Modifikator auf ein inzwischen
+## gelöschtes Ereignis, nennt eine Warnung (TimelineStatistics.refused).
 
 enum Column { EVENT, MEAN, MINIMUM, MAXIMUM, WITHOUT, AT_MAX }
 
@@ -75,8 +82,12 @@ var _run_key := ""
 var _stale := false
 ## Die Titel der Ereignisse, die die Statistik wegen Fehlern auslässt.
 var _excluded := PackedStringArray()
-## Wie viele Eingriffe aus dem Simulator in der Rechnung gelten.
+## Wie viele Eingriffe aus dem Simulator in der Rechnung gelten: die, die die Spiele angenommen
+## haben (TimelineStatistics.accepted). Bekannt, sobald ein Spiel fertig ist.
 var _applied := 0
+## Je Eingriff, den jedes Spiel abgelehnt hat, ein Satz wie „Modifikator: Das Ereignis „x“ gibt es
+## im Katalog nicht.“; leer, solange gerechnet wird.
+var _refusals := PackedStringArray()
 var _refresh_queued := false
 ## Ob das Panel die Tabelle gerade selbst füllt; ihre Signale zählen dann nicht.
 var _syncing := false
@@ -92,6 +103,7 @@ var _zebra: Zebra
 @onready var _count_hint: Label = %CountHint
 @onready var _catalog_notice: Label = %CatalogNotice
 @onready var _excluded_notice: Label = %ExcludedNotice
+@onready var _refused_notice: Label = %RefusedNotice
 @onready var _result_label: Label = %ResultLabel
 @onready var _table: Tree = %ResultTable
 @onready var _year_title: Label = %YearTitle
@@ -153,7 +165,9 @@ func start() -> void:
 	if _with_interventions.button_pressed:
 		records = _simulator_records()
 	statistics.interventions = records
-	_applied = _count_kinds(records, TimelineStatistics.SEED_FREE_KINDS)
+	# Was davon gilt, steht erst nach dem ersten Spiel fest (_finish()).
+	_applied = 0
+	_refusals.clear()
 	_run_key = _catalog_key()
 	_stale = false
 	_excluded = _excluded_titles()
@@ -252,14 +266,22 @@ func _calculate(current: TimelineStatistics) -> void:
 
 ## Die Rechnung ist fertig oder abgebrochen: Die Tabelle zeigt das Ergebnis der fertigen Spiele.
 ## Ist noch keins fertig, bleibt sie leer, statt lauter Nullen zu zeigen; mit einem großen Katalog
-## kann schon das erste Spiel länger dauern als ein Häppchen.
+## kann schon das erste Spiel länger dauern als ein Häppchen. Mit dem ersten fertigen Spiel steht
+## auch fest, welche Eingriffe gelten: Ob ein Lauf einen ablehnt, hängt nie am Seed.
 func _finish(aborted: bool) -> void:
 	_running = false
 	_aborted = aborted
 	_elapsed_msec = (Time.get_ticks_usec() - _started_usec) / 1000.0
 	_results = []
+	_applied = 0
+	_refusals.clear()
 	if statistics.games_done > 0:
 		_results = statistics.results()
+		_applied = statistics.accepted
+		for refusal in statistics.refused:
+			var record: Dictionary = refusal["record"]
+			_refusals.append("%s: %s" % [WhatIfProbe.KIND_LABELS.get(record.get("kind"),
+				"Eingriff"), refusal["reason"]])
 	_fill_results()
 	_show_progress()
 	_update_all()
@@ -360,6 +382,9 @@ func _update_controls() -> void:
 	_with_interventions.disabled = _running
 	_count_hint.visible = not count_ok
 	_count_hint.text = "Gib eine Anzahl von 1 bis %s ein." % _grouped(MAX_GAMES)
+	# Solange der Hinweis dasteht, hat das Feld die Kontur des Fehlers (Style-Guide,
+	# „Bedienelemente“, T093).
+	_count_edit.theme_type_variation = &"" if count_ok else &"ErrorLineEdit"
 
 
 func _apply_refresh() -> void:
@@ -371,13 +396,18 @@ func _apply_refresh() -> void:
 
 
 ## Die Hinweise über der Tabelle wie im Simulator: eine Warnung als Text in holz mit „?“, ein Fehler
-## als gefülltes Feld in kassenrot mit „!“ (Style-Guide, „Farbrollen“).
+## als gefülltes Feld in kassenrot mit „!“ (Style-Guide, „Farbrollen“). Abgelehnte Eingriffe sind
+## eine Warnung wie „Nicht anwendbar“ im Simulator: Gerechnet wird trotzdem, nur ohne sie.
 func _update_notices() -> void:
 	_catalog_notice.visible = statistics != null and _stale
 	_excluded_notice.visible = statistics != null and not _excluded.is_empty()
 	if _excluded_notice.visible:
 		_excluded_notice.text = ("! Ausgenommen, weil fehlerhaft: %s. Die Gründe stehen in der "
 			+ "Prüfung.") % ", ".join(_excluded)
+	_refused_notice.visible = statistics != null and not _refusals.is_empty()
+	if _refused_notice.visible:
+		_refused_notice.text = "? In jedem Spiel abgelehnt, deshalb nicht gezählt:\n%s" \
+			% "\n".join(_refusals)
 
 
 ## Was das Häkchen mitnimmt, etwa „Aus dem Simulator: 1 Modifikator, 1 Einplanung. 1 Absage gilt

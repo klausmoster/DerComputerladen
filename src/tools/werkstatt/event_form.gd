@@ -13,9 +13,10 @@ extends VBoxContainer
 ##
 ## Welche Eingaben es gibt, hängt an der Art und an der Länge der Listen. Das Formular baut sie
 ## deshalb im Code und nach jeder Änderung am Katalog neu, am Ende des Bilds: So lebt das Feld noch,
-## in das der Fokus gerade wandert, und bekommt ihn nach dem Neubau zurück. Jede Eingabe steht unter
-## der Stelle, die Prüfmeldungen nennen, etwa "date", "window.from" oder "effects[1].delay_days";
-## darüber findet focus_field() sie.
+## in das der Fokus gerade wandert, und bekommt ihn nach dem Neubau zurück. Ist dabei die Liste
+## einer Auswahl offen, wartet der Neubau, bis sie zu ist; er gäbe sonst die Auswahl samt Liste frei
+## (T080). Jede Eingabe steht unter der Stelle, die Prüfmeldungen nennen, etwa "date",
+## "window.from" oder "effects[1].delay_days"; darüber findet focus_field() sie.
 
 ## Die Kennung des gezeigten Ereignisses hat sich geändert; die Werkstatt wählt es unter der neuen.
 signal event_renamed(old_id: String, new_id: String)
@@ -26,7 +27,12 @@ const LABEL_WIDTH := 120
 const DATE_WIDTH := 100
 const NUMBER_WIDTH := 64
 ## Mehr Anzahlen nimmt „Anzahl von–bis“ nicht an; ein Tippfehler wie 100 legte sonst 101 Felder an.
+## Hat ein Ereignis aus der Datei mehr, zeigt das Formular davon die ersten MAX_COUNTS Gewichte und
+## einen Hinweis; die Gewichte selbst kürzt es nie (T086).
 const MAX_COUNTS := 20
+## Unter dieser Stelle steht der Hinweis auf mehr als MAX_COUNTS Anzahlen (get_hint()). Keine
+## Prüfmeldung nennt sie, sie bleibt also, wie sie ist.
+const COUNT_LIMIT_HINT := "count_limit"
 const SCOPE_LABELS: Array[String] = ["einmaliger Anstoß", "gilt nur während"]
 const OCCURRED_LABELS: Array[String] = ["schon eingetreten", "noch nicht eingetreten"]
 ## Wie ein jährliches Ereignis endet: an einem Tag, am Ende eines Monats oder gar nicht.
@@ -50,12 +56,15 @@ var _building := false
 var _refresh_queued := false
 ## Stelle → Eingabe, etwa "date" → LineEdit.
 var _inputs := {}
-## Stelle → Hinweis unter der Zeile.
+## Stelle → Hinweis unter der Zeile; dazu COUNT_LIMIT_HINT, wenn es den Hinweis auf mehr als
+## MAX_COUNTS Anzahlen gibt.
 var _hints := {}
 ## Stelle → { "parse", "format", "apply" } für LineEdits.
 var _specs := {}
 ## Stelle → Text, den das Feld zuletzt zeigte; eine ungültige Eingabe stellt ihn wieder her.
 var _shown := {}
+## Die Listen aller Auswahlen und Menüs im Formular; ist eine davon offen, wartet der Neubau.
+var _menus: Array[PopupMenu] = []
 
 @onready var _title: Label = %Title
 @onready var _subtitle: Label = %Subtitle
@@ -88,11 +97,13 @@ func _ready() -> void:
 # --- Für die Werkstatt ------------------------------------------------------------------------
 
 ## Zeigt das Ereignis [param id] sofort; leer heißt keins. Ist es schon das gezeigte, baut das
-## Formular erst am Ende des Bilds neu, wie nach jeder Änderung.
+## Formular erst am Ende des Bilds neu, wie nach jeder Änderung. Was Klaus im Feld mit dem Fokus
+## getippt hat, gehört noch zum bisher gezeigten Ereignis und wird vorher übernommen (T095).
 func show_event(id: String) -> void:
 	if id == _event_id:
 		refresh()
 		return
+	_commit_focused()
 	_event_id = id
 	_build()
 
@@ -261,14 +272,46 @@ static func spread_weights(count: int) -> Array[float]:
 
 ## Der vorgemerkte Neubau. Hat das Formular inzwischen sofort neu gebaut, etwa für ein anderes
 ## Ereignis, ist er schon erledigt.
+##
+## Ist gerade die Liste einer Auswahl offen, wartet er, bis sie zugeht. Das geschieht, wenn Klaus
+## eine Auswahl anklickt, während ein anderes Feld eine offene Eingabe hat: Der Klick nimmt dem
+## Feld den Fokus, es übernimmt, und die Liste geht im selben Bild auf. Ein Neubau jetzt gäbe die
+## Auswahl samt ihrer Liste frei. popup_hide kommt, sobald die Liste zugeht, mit einer Wahl oder
+## ohne; erst am Ende jenes Bilds wird gebaut, wenn die Auswahl ihre Wahl gemeldet hat.
 func _rebuild() -> void:
-	if _refresh_queued:
-		_build()
+	if not _refresh_queued:
+		return
+	var open := _open_menu()
+	if open != null:
+		if not open.popup_hide.is_connected(_on_menu_closed):
+			open.popup_hide.connect(_on_menu_closed, CONNECT_ONE_SHOT)
+		return
+	_build()
+
+
+func _on_menu_closed() -> void:
+	_rebuild.call_deferred()
+
+
+## Die offene Liste einer Auswahl oder eines Menüs im Formular; null, wenn keine offen ist.
+func _open_menu() -> PopupMenu:
+	for menu in _menus:
+		if is_instance_valid(menu) and menu.visible:
+			return menu
+	return null
 
 
 ## Baut alle Eingaben neu. Wer gerade den Fokus hatte, bekommt ihn danach in der neuen Eingabe
 ## derselben Stelle zurück.
+##
+## Zuerst übernimmt das Formular, was im Feld mit dem Fokus getippt ist (T095). Der Neubau gibt das
+## Feld frei, und dessen focus_exited käme während _building und zählte nicht mehr. So ging eine
+## Eingabe still verloren, wenn etwas neu bauen ließ, ohne dem Feld den Fokus zu nehmen: ein
+## Rechtsklick in die Tabelle des Simulators oder eine Wahl im Menü „…“ am Wirkungsziel. Ändert
+## das Übernehmen den Katalog, merkt refresh() einen Neubau vor; diesen hier erledigt er gleich mit.
+## Ging die Eingabe nicht, steht ihr Hinweis danach wieder am neuen Feld (FR-031).
 func _build() -> void:
+	var refused := _commit_focused()
 	_refresh_queued = false
 	var focused := _focused_key()
 	_building = true
@@ -285,6 +328,8 @@ func _build() -> void:
 	_build_categories()
 	_show_issues()
 	_building = false
+	for key: String in refused:
+		_set_hint(key, refused[key])
 	if not focused.is_empty():
 		focus_field(focused)
 
@@ -301,6 +346,7 @@ func _clear() -> void:
 	_hints.clear()
 	_specs.clear()
 	_shown.clear()
+	_menus.clear()
 	_general_hint.visible = false
 	_conditions_hint.visible = false
 
@@ -364,11 +410,21 @@ func _add_description_row(event: TimelineEvent) -> void:
 	text.focus_exited.connect(func() -> void:
 		if _building or text.is_queued_for_deletion() or _inputs.get("description") != text:
 			return
-		var shown := _event()
-		if shown != null and shown.description != text.text:
-			editor.set_event_field(_event_id, &"description", text.text))
+		_commit_description(text))
 	_inputs["description"] = text
+	_shown["description"] = event.description
 	_row(_fields, "Beschreibung", [text], ["description"])
+
+
+## Übernimmt die Beschreibung, wenn sie sich seit dem Neubau geändert hat und es das Ereignis noch
+## gibt. Verglichen wird mit dem Text, den das Feld zuletzt zeigte, wie bei den Textfeldern: So
+## übernimmt ein zweiter Aufruf nichts doppelt, auch wenn inzwischen ein anderes Ereignis gezeigt
+## wird.
+func _commit_description(text: TextEdit) -> void:
+	if _event() == null or text.text == _shown.get("description"):
+		return
+	_shown["description"] = text.text
+	editor.set_event_field(_event_id, &"description", text.text)
 
 
 ## Die Kategorien zur Wahl. Gibt es die Kategorie des Ereignisses nicht (V05), steht sie als
@@ -445,6 +501,12 @@ func _add_window_row(event: TimelineEvent) -> void:
 
 
 ## „Anzahl von–bis“ und darunter das Gewicht je Anzahl in Prozent.
+##
+## Mehr als MAX_COUNTS Anzahlen legt das Formular nie an, eine Datei kann sie aber haben. Dann zeigt
+## es die ersten MAX_COUNTS Gewichte, die Summe über alle und darunter einen Hinweis als Warnung.
+## Die Gewichte bleiben, wie sie sind, auch beim Speichern: Ein geändertes Gewicht ersetzt nur sich
+## selbst (_set_weight()), und ein neues „von“ oder „bis“ mit mehr als MAX_COUNTS Anzahlen lehnt
+## _set_counts() mit Hinweis ab.
 func _add_count_rows(event: TimelineEvent) -> void:
 	var low := event.count_min
 	var high := event.count_min + event.count_weights.size() - 1
@@ -461,7 +523,9 @@ func _add_count_rows(event: TimelineEvent) -> void:
 	flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var keys: Array[String] = ["count_weights"]
 	var total := 0.0
-	for i in event.count_weights.size():
+	for weight in event.count_weights:
+		total += weight
+	for i in mini(event.count_weights.size(), MAX_COUNTS):
 		var key := "count_weights[%d]" % i
 		var piece := HBoxContainer.new()
 		piece.add_child(_muted("%d×" % (low + i)))
@@ -473,9 +537,17 @@ func _add_count_rows(event: TimelineEvent) -> void:
 		keys.append(key)
 		if i == 0:
 			_inputs["count_weights"] = edit
-		total += event.count_weights[i]
 	flow.add_child(_muted("Summe %s %%" % format_number(total)))
 	_row(_fields, "je Anzahl", [flow], keys)
+	if event.count_weights.size() > MAX_COUNTS:
+		var notice := Label.new()
+		notice.theme_type_variation = &"WarningLabel"
+		notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		notice.text = ("? Das Ereignis hat %d Anzahlen, das Formular zeigt höchstens %d. Die "
+			+ "übrigen Gewichte änderst du in der Katalogdatei.") % [event.count_weights.size(),
+			MAX_COUNTS]
+		_fields.add_child(notice)
+		_hints[COUNT_LIMIT_HINT] = notice
 
 
 func _current_high() -> int:
@@ -526,6 +598,7 @@ func _build_effects(event: TimelineEvent) -> void:
 		menu.text = "…"
 		menu.tooltip_text = "Ein schon benutztes Ziel wählen"
 		menu.flat = false
+		_menus.append(menu.get_popup())
 		for used in targets:
 			menu.get_popup().add_item(used)
 		menu.get_popup().index_pressed.connect(func(index: int) -> void:
@@ -814,6 +887,7 @@ func _choice(key: String, labels: Array[String], selected: int, pick: Callable) 
 		if not _building:
 			pick.call(index))
 	_inputs[key] = choice
+	_menus.append(choice.get_popup())
 	return choice
 
 
@@ -862,18 +936,50 @@ func _rename(value: Variant) -> String:
 
 
 func _on_line_focus_exited(key: String, edit: LineEdit) -> void:
-	# Alte Eingaben, die der Neubau gerade herausnimmt, übernehmen nichts mehr.
+	# Alte Eingaben, die der Neubau gerade herausnimmt, übernehmen nichts mehr; was in ihnen stand,
+	# hat _commit_focused() vor dem Neubau übernommen.
 	if _building or edit.is_queued_for_deletion() or _inputs.get(key) != edit:
 		return
+	_commit_line(key, edit)
+
+
+## Übernimmt die offene Eingabe im Feld mit dem Fokus, wie es dessen focus_exited täte, und lässt
+## den Fokus, wo er ist; vor jedem Neubau und vor dem Wechsel zu einem anderen Ereignis (T095).
+## Schon Übernommenes übernimmt es nicht noch einmal: Danach zeigt das Feld genau den Text aus
+## _shown. Gibt es das Ereignis nicht mehr, bleiben seine Felder, wie sie sind; die Kategorien
+## gehören zu keinem Ereignis. Gibt { Stelle: Grund } zurück, wenn die Eingabe nicht ging, sonst
+## ein leeres Dictionary.
+func _commit_focused() -> Dictionary:
+	if _building or not is_inside_tree():
+		return {}
+	var focus := get_viewport().gui_get_focus_owner()
+	if focus == null:
+		return {}
+	if focus == _inputs.get("description"):
+		_commit_description(focus as TextEdit)
+		return {}
+	for key: String in _specs:
+		if _inputs.get(key) == focus:
+			if _event() == null and not key.begins_with("categories["):
+				return {}
+			var problem := _commit_line(key, focus as LineEdit)
+			return {} if problem.is_empty() else {key: problem}
+	return {}
+
+
+## Übernimmt, was in [param edit] steht, falls es sich geändert hat: lesen, zeigen, an den Katalog.
+## Lässt es sich nicht lesen oder nicht übernehmen, bleibt der alte Wert stehen, und ein Hinweis
+## am Feld sagt, warum (FR-031). Gibt diesen Grund zurück, sonst einen leeren Text.
+func _commit_line(key: String, edit: LineEdit) -> String:
 	var before: String = _shown[key]
 	if edit.text == before:
-		return
+		return ""
 	var spec: Dictionary = _specs[key]
 	var parsed: Array = spec["parse"].call(edit.text)
 	if not parsed[0]:
 		edit.text = before
 		_set_hint(key, parsed[1])
-		return
+		return parsed[1]
 	var shown: String = spec["format"].call(parsed[1])
 	edit.text = shown
 	_shown[key] = shown
@@ -882,8 +988,12 @@ func _on_line_focus_exited(key: String, edit: LineEdit) -> void:
 		edit.text = before
 		_shown[key] = before
 		_set_hint(key, problem)
+	return problem
 
 
+## Zeigt unter dem Feld [param key], warum seine Eingabe nicht ging, und gibt ihm die Kontur des
+## Fehlers (Style-Guide, „Bedienelemente“, T093). Beides bleibt bis zum nächsten Neubau, wie die
+## Meldungen der Prüfung.
 func _set_hint(key: String, text: String) -> void:
 	var hint: Label = _hints.get(key)
 	if hint == null:
@@ -891,6 +1001,8 @@ func _set_hint(key: String, text: String) -> void:
 	hint.theme_type_variation = &"ErrorLabel"
 	hint.text = text
 	hint.visible = not text.is_empty()
+	if hint.visible:
+		_mark_error(_inputs.get(key))
 
 
 ## Die Stelle der Eingabe, die gerade den Fokus hat; leer, wenn es keine des Formulars ist.
@@ -909,7 +1021,7 @@ func _focused_key() -> String:
 # --- Meldungen --------------------------------------------------------------------------------
 
 ## Schreibt die Meldungen der Prüfung unter ihre Felder. Ein Feld mit Fehler bekommt die rote
-## Kontur (ErrorLineEdit). Meldungen ohne passendes Feld, etwa zu einem unbekannten Schlüssel,
+## Kontur (_mark_error()). Meldungen ohne passendes Feld, etwa zu einem unbekannten Schlüssel,
 ## stehen oben unter dem Titel.
 func _show_issues() -> void:
 	if editor == null or editor.catalog == null:
@@ -933,15 +1045,29 @@ func _show_issues() -> void:
 			lines[hint] = PackedStringArray()
 		lines[hint].append(text)
 		has_error[hint] = has_error.get(hint, false) or is_error
-		var input: Control = _inputs.get(issue.field)
-		if input is LineEdit and is_error:
-			input.theme_type_variation = &"ErrorLineEdit"
+		if is_error:
+			_mark_error(_inputs.get(issue.field))
 	for hint: Label in lines:
 		hint.text = "\n".join(lines[hint])
 		hint.theme_type_variation = &"ErrorLabel" if has_error[hint] else &"WarningLabel"
 		hint.visible = true
 	_general_hint.text = "\n".join(general)
 	_general_hint.visible = not general.is_empty()
+
+
+## Gibt einem Feld mit Fehler die Kontur von 2 Pixeln in kassenrot (Style-Guide, „Bedienelemente“:
+## „Ein Feld mit Fehler, ob Eingabe- oder Auswahlfeld …“), über eine Variante im Theme je Art:
+## ErrorLineEdit, ErrorOptionButton für Auswahlfelder wie „Kategorie“ (V05) und ErrorTextEdit für
+## die Beschreibung, etwa wenn dort in der Datei eine Zahl steht (V22). Die Fokuslinie in tusche
+## liegt außen um das Feld und bleibt sichtbar. Andere Eingaben sind keine Felder, etwa der Knopf
+## „+“ der Bedingungen; sie bleiben, wie sie sind, und der Hinweis steht trotzdem darunter.
+static func _mark_error(input: Control) -> void:
+	if input is LineEdit:
+		input.theme_type_variation = &"ErrorLineEdit"
+	elif input is OptionButton:
+		input.theme_type_variation = &"ErrorOptionButton"
+	elif input is TextEdit:
+		input.theme_type_variation = &"ErrorTextEdit"
 
 
 ## Der Grund einer Meldung ohne den Ort davor: aus „Ereignis „x“, Feld „date“: Das Datum …“ wird

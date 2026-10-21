@@ -24,8 +24,14 @@ extends RefCounted
 ##
 ## Eingriffe: [member interventions] nimmt das Eingriffsprotokoll des Simulators. Davon gelten nur
 ## Modifikatoren, gesetzte wie entfernte, und Einplanungen, in jedem Spiel an ihrem at_day über
-## TimelineRun.apply_intervention(), wie beim Neu abspielen einer Probe. Absagen und Verschiebungen
-## meinen einen Termin eines bestimmten Seeds und gelten deshalb nicht (R11, FR-045).
+## TimelineRun.apply_intervention(), wie beim Neu abspielen einer Probe und in derselben
+## Reihenfolge (TimelineRun.in_replay_order()). Absagen und Verschiebungen meinen einen Termin
+## eines bestimmten Seeds und gelten deshalb nicht (R11, FR-045).
+##
+## Ob ein Lauf einen Eingriff ablehnt, hängt nie am Seed, nur an Katalog und Tag: Einen
+## Modifikator auf ein gelöschtes Ereignis lehnt jedes Spiel ab, einen gültigen keins. Was das erste
+## Spiel annimmt und ablehnt, zählt die Statistik deshalb einmal mit, in [member accepted] und
+## [member refused].
 
 ## Die Arten im Eingriffsprotokoll, die sich auf jeden Seed übertragen lassen (R11).
 const SEED_FREE_KINDS: Array[String] = [
@@ -45,11 +51,21 @@ var games_done: int = 0
 ## schedule, je Spiel an ihrem at_day über TimelineRun.apply_intervention() (R11, FR-045). Setzen
 ## vor dem ersten run_for(); danach gilt, was das erste Spiel vorgefunden hat.
 var interventions: Array[Dictionary] = []
+## Wie viele Modifikatoren und Einplanungen in jedem Spiel gelten: die, die das erste Spiel
+## angenommen hat. Fertig gezählt, sobald das erste Spiel fertig ist (games_done ≥ 1).
+var accepted: int = 0
+## Die Modifikatoren und Einplanungen, die das erste Spiel abgelehnt hat und deshalb keins annimmt,
+## in der Reihenfolge des Nachspielens; je { "record": der Eintrag des Protokolls, "reason": der
+## Grund aus TimelineRun.last_refusal }, etwa „Das Ereignis „reklamationswelle“ gibt es im Katalog
+## nicht.“ So nennt die Werkstatt sie, statt sie still mitzuzählen (FR-045). Fertig wie accepted.
+var refused: Array[Dictionary] = []
 
 ## Das angefangene Spiel; null zwischen zwei Spielen.
 var _run: TimelineRun
-## Die Eingriffe, die für jeden Seed gelten, ausgesucht beim Start des ersten Spiels, und welcher
-## davon im laufenden Spiel als nächster an der Reihe ist.
+## Das ganze Eingriffsprotokoll als Kopien, nach at_day geordnet beim Start des ersten Spiels, und
+## welcher Eintrag davon im laufenden Spiel als nächster an der Reihe ist. Auch Absagen und
+## Verschiebungen stehen darin: Sie gelten nicht, aber bis zu ihrem Tag spielt das Spiel ab, wie in
+## WhatIfProbe.build_run().
 var _records: Array[Dictionary] = []
 var _records_chosen := false
 var _next_record := 0
@@ -131,35 +147,54 @@ static func upper_limit(event: TimelineEvent) -> int:
 
 # --- Ein Spiel --------------------------------------------------------------------------------
 
-## Beginnt das nächste Spiel, mit dem Seed first_seed + games_done. Vor dem ersten Spiel sucht die
-## Statistik aus dem Eingriffsprotokoll heraus, was für jeden Seed gilt.
+## Beginnt das nächste Spiel, mit dem Seed first_seed + games_done. Vor dem ersten Spiel ordnet die
+## Statistik das ganze Eingriffsprotokoll nach at_day, wie beim Neu abspielen einer Probe. Erst
+## ordnen, dann aussuchen: Ein Eintrag ohne lesbaren Tag gilt so hinter seinem Vorgänger im ganzen
+## Protokoll, auch wenn der eine Absage ist, die hier nicht gilt (siehe _play_month()).
 func _start_game() -> void:
 	if not _records_chosen:
-		_records = _seed_free(interventions)
+		_records = _copies(TimelineRun.in_replay_order(interventions))
 		_records_chosen = true
 	_run = TimelineRun.new(catalog, first_seed + games_done)
 	_next_record = 0
 
 
 ## Spielt das laufende Spiel einen Monat weiter, bis zum letzten Tag des Monats nach today. Davor
-## wendet es die Eingriffe an, die in diesem Monat geschahen, jeden an seinem at_day und in der
-## Reihenfolge des Protokolls, wie WhatIfProbe.build_run() (data-model.md, „Neu abspielen“). Liegt
-## at_day schon zurück, etwa −1 vor Spielbeginn, gilt der Eingriff dort, wo das Spiel gerade steht.
+## spielt es die Eingriffe nach, die in diesem Monat geschahen, jeden an seinem at_day und nach
+## at_day geordnet wie WhatIfProbe.build_run() (data-model.md, „Neu abspielen“): bis zu seinem Tag
+## abspielen, dann anwenden. Ein Eingriff vor Spielbeginn (−1) gilt vor dem ersten Tag, einer ohne
+## lesbaren Tag dort, wo das Spiel nach seinem Vorgänger steht.
+##
+## Absagen und Verschiebungen wendet es nicht an (R11), bis zu ihrem Tag spielt es trotzdem: Im
+## Protokoll [Einplanung am Tag 100, Absage am Tag 3000, Modifikator ohne Tag] gilt der Modifikator
+## so am Tag 3000, wie im Simulator, nicht am Tag 100. Ein Spiel in Stücken abzuspielen ändert
+## nichts an ihm (TimelineRun.advance_to()).
 func _play_month() -> void:
 	var month_end := _month_end_after(_run.today)
 	while _next_record < _records.size():
 		var record := _records[_next_record]
-		var at_day := _at_day(record)
+		var at_day := TimelineRun.intervention_day(record)
 		# Im letzten Monat kommen auch Eingriffe mit einem Tag nach dem 31.12.1999 an die Reihe;
 		# das Spiel steht dann am Ende, wie beim Neu abspielen.
 		if at_day > month_end and month_end < TimelineRun.LAST_DAY:
 			break
 		_run.advance_to(at_day)
-		# Ob der Lauf einen Eingriff ablehnt, hängt nie am Seed, sondern an Katalog und Tag; eine
-		# Ablehnung trifft also jedes Spiel gleich, und der Eingriff gilt nirgends.
-		_run.apply_intervention(record)
+		if SEED_FREE_KINDS.has(str(record.get("kind", ""))):
+			var error := _run.apply_intervention(record)
+			# Ob der Lauf ablehnt, hängt nie am Seed (siehe oben); das erste Spiel spricht für alle.
+			if games_done == 0:
+				_note(record, error)
 		_next_record += 1
 	_run.advance_to(month_end)
+
+
+## Merkt sich, ob das erste Spiel den Eingriff [param record] angenommen hat: [member accepted]
+## zählt mit, [member refused] bekommt ihn samt Grund.
+func _note(record: Dictionary, error: Error) -> void:
+	if error == OK:
+		accepted += 1
+	else:
+		refused.append({"record": record, "reason": _run.last_refusal})
 
 
 ## Zählt das fertige Spiel: je Ereignis die Beginne und das Jahr jedes Beginns.
@@ -225,25 +260,13 @@ static func _first_days_of_months() -> PackedInt32Array:
 	return days
 
 
-## Die Einträge des Eingriffsprotokolls, die für jeden Seed gelten, als Kopien in ihrer
-## Reihenfolge (SEED_FREE_KINDS).
-static func _seed_free(records: Array[Dictionary]) -> Array[Dictionary]:
-	var usable: Array[Dictionary] = []
+## Kopien der Einträge in ihrer Reihenfolge. Ändert der Simulator sein Protokoll während einer
+## Rechnung, erreicht es die Rechnung nicht.
+static func _copies(records: Array[Dictionary]) -> Array[Dictionary]:
+	var copies: Array[Dictionary] = []
 	for record in records:
-		if SEED_FREE_KINDS.has(str(record.get("kind", ""))):
-			usable.append(record.duplicate(true))
-	return usable
-
-
-## at_day eines Eintrags als ganze Zahl; aus einer Datei kommt jede Zahl als float. Fehlt der Tag,
-## gilt −1, und der Eingriff gilt dort, wo das Spiel gerade steht, wie in WhatIfProbe.build_run().
-static func _at_day(record: Dictionary) -> int:
-	var value: Variant = record.get("at_day")
-	if typeof(value) == TYPE_INT:
-		return int(value)
-	if typeof(value) == TYPE_FLOAT and value == floorf(value) and absf(value) < 1e15:
-		return int(value)
-	return TimelineRun.FIRST_DAY - 1
+		copies.append(record.duplicate(true))
+	return copies
 
 
 static func _copy(statistic: EventStatistic) -> EventStatistic:

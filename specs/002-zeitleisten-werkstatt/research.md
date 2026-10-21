@@ -25,7 +25,9 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 - **Entscheidung:** `TimelineEvent` und `EventEffect` bleiben als Klassennamen erhalten, werden
   aber von `Resource` auf `RefCounted` umgestellt und bekommen das neue Modell (data-model.md).
   Neu sind `EventCategory`, `FollowUp`, `EventCondition`, `ScheduleEntry`, `ChanceModifier` und
-  `TimelineMessage`. Jede Datenklasse hat `static func from_dict()` und `func to_dict()`.
+  `TimelineMessage`. Die Klassen des Katalogs haben `static func from_dict()` und
+  `func to_dict()`; `ScheduleEntry`, `ChanceModifier` und `TimelineMessage` nicht, denn Fahrplan
+  und Eingriffe zu speichern gehört zu 11-01 (eingegrenzt 2026-10-21).
 - **Begründung:** Die Signale `event_fired(event: TimelineEvent, …)` und
   `effect_applied(effect: EventEffect, …)` behalten so ihre Signaturen (FR-017). `Resource` lohnt
   sich, wenn Daten als `.tres` gespeichert oder im Inspector bearbeitet werden; beides fällt weg,
@@ -513,11 +515,14 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 
 - **Entscheidung:** Je Probe eine JSON-Datei unter `src/tools/werkstatt/proben/`, kanonisch
   geschrieben wie der Katalog (data-model.md, WhatIfProbe).
-  - Gespeichert werden der Seed, der Tag, bis zu dem der Lauf abgespielt war, und das
-    Eingriffsprotokoll (R11): jeder Eingriff mit dem Tag, an dem er geschah.
+  - Gespeichert werden der Seed, der Tag, bis zu dem der Lauf abgespielt war, mindestens aber der
+    Tag des letzten Eingriffs (seit T075, 2026-10-21), und das Eingriffsprotokoll (R11): jeder
+    Eingriff mit dem Tag, an dem er geschah, in der Reihenfolge der Aktionen.
   - Absagen und Verschiebungen merken sich Ereignis und Tag statt der laufenden Nummer.
-  - Beim Laden legt `WhatIfProbe.build_run()` einen Lauf mit dem Seed der Probe an, spielt ihn bis
-    zum Tag jedes Eingriffs ab und wendet ihn dort an. Die nicht anwendbaren Eingriffe gibt sie als
+  - Beim Laden legt `WhatIfProbe.build_run()` einen Lauf mit dem Seed der Probe an, spielt ihn,
+    nach `at_day` geordnet (seit T075), bis zum Tag jedes Eingriffs ab und wendet ihn dort an. Gibt
+    es an einem Tag zwei geplante Termine desselben Ereignisses, trifft eine Absage den ersten
+    (Grenze, Klaus, 2026-10-21, T100). Die nicht anwendbaren Eingriffe gibt sie als
     Sätze zurück (FR-051). Genauso startet der Simulator „mit Eingriffen“ neu.
   - Der Ordner hat eine Vorgabe und lässt sich angeben; die Tests schreiben in einen eigenen.
 - **Begründung:** Im Projektordner landen die Proben in der Versionsverwaltung. So lässt sich eine
@@ -532,23 +537,35 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
 ## R23 Sicherungskopie der Werkstatt
 
 - **Entscheidung:** Ein `Timer` ruft alle 120 Sekunden `CatalogEditor.write_backup()` auf. Gibt es
-  ungespeicherte Änderungen, schreibt die Methode nach `user://werkstatt_sicherung.json`, kanonisch
-  wie den Katalog: `{"catalog": {…}, "format": 1, "path": "<Pfad des Katalogs>", "saved":
-  <Unix-Zeit>}`.
+  ungespeicherte Änderungen, schreibt die Methode kanonisch wie den Katalog: `{"catalog": {…},
+  "format": 1, "path": "<Pfad des Katalogs>", "saved": <Unix-Zeit>}`.
+  - Jeder Katalog hat seine eigene Datei unter `user://werkstatt_sicherungen/`. Ihr Name
+    (`CatalogEditor.backup_name()`) ist der Dateiname des Katalogs als Kennung und die ersten
+    zwölf Zeichen des SHA-256 seines normalisierten Pfads, etwa `event_catalog_57442f211163.json`
+    (Klaus, 2026-10-21, T078). Bis dahin gab es eine Datei `user://werkstatt_sicherung.json` für
+    alle; lag dort die Kopie eines anderen Katalogs, unterblieb die Sicherung ganz, still
+    (Lückensuche T071). Eine Datei unter dem alten Namen liest, bietet und löscht die Werkstatt
+    nicht mehr; bei Klaus gibt es keine (T092).
   - Beim Start fragt die Werkstatt, ob sie die Kopie übernehmen oder verwerfen soll. Dabei nennt
     sie die Zeiten von Kopie (`saved`) und Katalogdatei (`FileAccess.get_modified_time()`).
     „Später“ (auch Esc) lässt die Kopie liegen, bis Klaus speichert oder nach seiner ersten
     Änderung die nächste Sicherung sie ersetzt; bis dahin bleibt sie auch beim Schließen.
-  - Angeboten wird nur eine Kopie, deren `path` zum geöffneten Katalog passt. Die Kopie eines
-    anderen Katalogs bleibt liegen, und ein Hinweis nennt ihren Pfad.
+  - Angeboten wird nur die Kopie des geöffneten Katalogs. Die Kopien anderer Kataloge bleiben in
+    ihren Dateien und unberührt; der Hinweis auf sie entfällt seit T078. Eine Datei unter dem
+    eigenen Namen, die nicht lesbar ist oder zu einem anderen Pfad gehört, wird nicht angeboten,
+    und die nächste Sicherung ersetzt sie.
+  - Lässt sich die Kopie nicht schreiben, sagt die Werkstatt es einmal je Fehlerserie und versucht
+    es alle 2 Minuten wieder (T078).
   - Nach dem Speichern, nach dem Verwerfen und beim regulären Schließen löscht sie die Kopie
     (FR-050).
-  - Der Pfad der Kopie hat diese Vorgabe und lässt sich ändern; die Tests nutzen eine eigene Datei.
+  - Der Ordner der Kopien (`backup_folder`) hat diese Vorgabe und lässt sich ändern; die Tests
+    nutzen einen eigenen.
 - **Begründung:** `user://` liegt außerhalb des Projekts, die Kopie gerät also nie aus Versehen in
   einen Commit. Zwei Minuten begrenzen den Verlust bei einem Absturz und kosten bei einem kleinen
   Katalog nichts.
 - **Alternativen:** Kopie neben dem Katalog (könnte mitcommittet werden); Kopie nach jeder Änderung
-  (bei 500 Ereignissen unnötige Schreiblast).
+  (bei 500 Ereignissen unnötige Schreiblast); eine Datei für alle Kataloge (bis 2026-10-21, siehe
+  oben); eine Warnung beim Start statt eigener Dateien (von Klaus bei T078 verworfen).
 
 ## R24 Vergleich zweier Durchläufe
 

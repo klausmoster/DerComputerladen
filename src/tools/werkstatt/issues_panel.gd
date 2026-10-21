@@ -14,6 +14,11 @@ extends Tree
 ## „Farbrollen“): Ein Fehler ist ein gefülltes Feld in kassenrot mit „!“ in papier, eine Warnung
 ## Text in holz mit „?“ davor. Die Zeilen sind gestreift wie alle Tabellen der Werkstatt (Zebra);
 ## die Zelle der Stufe behält dabei ihren Grund.
+##
+## Neue Meldungen zeigt das Panel erst am Ende des Bilds, wie die Liste der Ereignisse: Ein Klick in
+## die Prüfung nimmt einem Feld im Formular den Fokus, bevor der Tree den Klick verarbeitet. Das
+## Feld übernimmt seine Eingabe, die Meldungen ändern sich, und bauten die Zeilen sofort neu, träfe
+## der Klick die neue Belegung statt der Meldung, die unter der Maus stand (T076).
 
 signal issue_activated(event_id: String, field: String)
 
@@ -25,6 +30,9 @@ const WIDTHS: Array[int] = [112, 200, 200, 0]
 
 ## Streifen, Auswahl und Überfahren der Prüfung.
 var _zebra: Zebra
+## Die Meldungen, die das Panel am Ende des Bilds zeigt, und ob das vorgemerkt ist.
+var _pending: Array[CatalogIssue] = []
+var _queued := false
 
 
 func _ready() -> void:
@@ -51,8 +59,19 @@ func _ready() -> void:
 
 
 ## Zeigt [param issues] in ihrer Reihenfolge: zuerst die Meldungen beim Lesen, dann die der
-## Prüfung, darin nach Ereignis und Regel, Kategorien zuletzt (CatalogValidator).
+## Prüfung, darin nach Ereignis und Regel, Kategorien zuletzt (CatalogValidator). Gebaut wird am
+## Ende des Bilds, einmal, mit den zuletzt übergebenen Meldungen (siehe oben).
 func show_issues(issues: Array[CatalogIssue]) -> void:
+	_pending = issues
+	if _queued:
+		return
+	_queued = true
+	_fill.call_deferred()
+
+
+func _fill() -> void:
+	_queued = false
+	var issues := _pending
 	_zebra.forget()
 	clear()
 	var root := create_item()

@@ -214,7 +214,7 @@ func _werkstatt(groesse: Vector2 = GROSS) -> Werkstatt:
 	_schreiben(ziel, FileAccess.get_file_as_string(MINIMAL))
 	var werkstatt: Werkstatt = SZENE.instantiate()
 	werkstatt.catalog_path = ziel
-	werkstatt.editor.backup_path = ORDNER + "sicherung.json"
+	werkstatt.editor.backup_folder = ORDNER
 	werkstatt.settings_path = EINSTELLUNGEN
 	# Headless ist das Fenster winzig; die Werkstatt bekommt deshalb selbst eine Größe. Mit
 	# Ankern über das ganze Fenster legte Godot die Größe nach dem Fenster fest, nicht nach size.

@@ -268,7 +268,11 @@ static func _check_follow_ups(event: TimelineEvent, index: Dictionary,
 				+ "sonst an seinem Datum und zusätzlich als Folge.") % follow_up.target))
 
 
-## V17 Bedingungen an fixen und jährlichen Ereignissen, sonst V15 unbekanntes Ereignis.
+## V17 Bedingungen an fixen und jährlichen Ereignissen, sonst V15: Die Bedingung nennt kein
+## Ereignis, das Ereignis selbst oder eines, das es nicht gibt. Auf sich selbst zeigen darf sie
+## nicht (data-model.md, EventCondition; FR-006): „schon eingetreten“ hielte das Ereignis für immer
+## zurück, „noch nicht eingetreten“ ließe es nur einmal zu. Die Werkstatt bietet das gar nicht an;
+## es kann nur in einer Datei stehen, die jemand von Hand geändert hat.
 static func _check_conditions(event: TimelineEvent, index: Dictionary,
 		issues: Array[CatalogIssue]) -> void:
 	if event.kind == TimelineEvent.Kind.FIXED or event.kind == TimelineEvent.Kind.YEARLY:
@@ -282,6 +286,9 @@ static func _check_conditions(event: TimelineEvent, index: Dictionary,
 		var p_field := "conditions[%d].event" % i
 		if condition.event.is_empty():
 			issues.append(_issue("V15", p_field, "Die Bedingung nennt kein Ereignis."))
+		elif condition.event == event.id:
+			issues.append(_issue("V15", p_field,
+				"Die Bedingung verweist auf das Ereignis selbst; nimm ein anderes."))
 		elif not index.has(condition.event):
 			issues.append(_issue("V15", p_field,
 				"Die Bedingung verweist auf „%s“, das es nicht gibt." % condition.event))
@@ -389,7 +396,10 @@ static func _cycle_has_delay(arrows: Dictionary, cache: Dictionary, delayed_arro
 	return false
 
 
-## V21: Kennung leer oder doppelt, Farbe nicht unter den Kategorienfarben.
+## V21: Kennung leer, mit anderen Zeichen als a–z, 0–9 und _ oder doppelt; Farbe nicht unter den
+## Kategorienfarben. Die Zeichen prüft dieselbe Regel wie bei Ereignissen (V03). Die Werkstatt
+## bildet Kennungen von Kategorien selbst aus dem Namen; „Konkurrenz“ mit großem K kann nur in
+## einer Datei stehen, die jemand von Hand geändert hat.
 static func _category_issues(catalog: EventCatalog) -> Array[CatalogIssue]:
 	var count := {}
 	for category in catalog.categories:
@@ -401,6 +411,9 @@ static func _category_issues(catalog: EventCatalog) -> Array[CatalogIssue]:
 		var issues: Array[CatalogIssue] = []
 		if category.id.is_empty():
 			issues.append(_issue("V21", prefix + "id", "Die Kennung ist leer."))
+		elif not _is_id(category.id):
+			issues.append(_issue("V21", prefix + "id",
+				"Die Kennung „%s“ enthält andere Zeichen als a–z, 0–9 und _." % category.id))
 		elif int(count[category.id]) > 1:
 			issues.append(_issue("V21", prefix + "id",
 				"Die Kennung „%s“ haben mehrere Kategorien." % category.id))

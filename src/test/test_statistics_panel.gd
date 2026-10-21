@@ -3,8 +3,9 @@ extends GutTest
 ## Prüft die Statistik in der Werkstatt (Feature 002, T066; FR-042, FR-044, FR-045; US7,
 ## Szenarien 1, 2 und 4): den Reiter „Statistik“, das Rechnen in Häppchen mit Fortschritt, das
 ## Abbrechen, die Tabelle mit „–“ ohne Obergrenze, die Verteilung auf die Jahre, das Häkchen für
-## die Eingriffe des Simulators, den Hinweis auf ausgenommene Ereignisse und auf einen geänderten
-## Katalog. Die Zählung selbst prüft test_timeline_statistics.gd.
+## die Eingriffe des Simulators samt der Warnung über abgelehnte (T082), den Hinweis auf
+## ausgenommene Ereignisse und auf einen geänderten Katalog. Die Zählung selbst prüft
+## test_timeline_statistics.gd.
 ##
 ## Wie in test_simulator.gd baut jeder Test die ganze Werkstatt mit einer Kopie eines
 ## Test-Katalogs in einem eigenen Ordner unter user:// auf; after_each() räumt ab. Gerechnet werden
@@ -70,16 +71,20 @@ func test_anzahl_nimmt_ziffern_bis_100000_mit_tausenderpunkt() -> void:
 	assert_eq(feld.text, "250")
 	_anzahl(panel, "250000")
 	assert_eq(feld.text, "100.000")
-	# Ohne Anzahl geht „Starten“ nicht, und ein Hinweis sagt, warum.
+	# Ohne Anzahl geht „Starten“ nicht, und ein Hinweis sagt, warum; solange er steht, hat das
+	# Feld die rote Kontur (T093, Style-Guide „Bedienelemente“).
+	assert_eq(feld.theme_type_variation, &"", "Mit Anzahl ohne Kontur.")
 	_anzahl(panel, "")
 	assert_true(panel.get_node("%StartButton").disabled)
 	assert_true(panel.get_node("%CountHint").visible)
+	assert_eq(feld.theme_type_variation, &"ErrorLineEdit")
 	# Beim Verlassen des Felds steht die Anzahl mit Tausenderpunkt da.
 	_anzahl(panel, "2500")
 	feld.focus_exited.emit()
 	assert_eq(feld.text, "2.500")
 	assert_false(panel.get_node("%StartButton").disabled)
 	assert_false(panel.get_node("%CountHint").visible)
+	assert_eq(feld.theme_type_variation, &"", "Mit dem Hinweis geht die Kontur.")
 
 
 # --- Rechnen (US7, Szenarien 1 und 2) ---------------------------------------------------------
@@ -302,6 +307,73 @@ func test_absagen_und_verschiebungen_nennt_der_hinweis_und_zaehlt_die_statistik_
 		"Das Panel gibt alles weiter; was davon gilt, entscheidet TimelineStatistics.")
 
 
+func test_eingriff_auf_ein_geloeschtes_ereignis_wird_genannt_aber_nicht_gezaehlt() -> void:
+	# Arrange (T082): Im Simulator kommt ein Modifikator auf die Reklamationswelle; danach löscht
+	# Klaus das Ereignis im Katalog.
+	var werkstatt := await _werkstatt()
+	var simulator: SimulatorPanel = werkstatt.get_node("%SimulatorPanel")
+	var seed_feld: LineEdit = simulator.get_node("%SeedEdit")
+	seed_feld.text = "4711"
+	seed_feld.text_changed.emit("4711")
+	simulator.get_node("%GenerateButton").pressed.emit()
+	_modifikator(simulator, "Ware vom windigen Händler", "+50", "1.1.1985", "31.12.1999")
+	assert_eq(simulator.probe.interventions.size(), 1, "Der Simulator hat den Eingriff gesammelt.")
+	werkstatt.editor.delete_event("reklamationswelle")
+	var panel := _statistik(werkstatt)
+	_anzahl(panel, "3")
+	panel.get_node("%WithInterventions").button_pressed = true
+
+	# Act
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+
+	# Assert: genannt ja, gezählt nein (FR-045)
+	assert_eq(panel.get_node("%InterventionInfo").text, "Aus dem Simulator: 1 Modifikator.",
+		"Gesammelt ist er.")
+	assert_string_contains(panel.get_node("%ResultLabel").text, "ohne Eingriffe",
+		"Gezählt wird er nicht.")
+	var hinweis: Label = panel.get_node("%RefusedNotice")
+	assert_true(hinweis.visible)
+	assert_eq(hinweis.theme_type_variation, &"WarningLabel", "Eine Warnung als Text in holz.")
+	assert_eq(hinweis.text, "? In jedem Spiel abgelehnt, deshalb nicht gezählt:\n"
+		+ "Modifikator: Das Ereignis „reklamationswelle“ gibt es im Katalog nicht.")
+
+
+func test_mit_n_eingriffen_zaehlt_nur_die_angenommenen() -> void:
+	# Arrange (T082): eine Einplanung, die gilt, und ein Modifikator auf ein Ereignis, das nicht
+	# über Wahrscheinlichkeit kommt; den lehnt jedes Spiel ab.
+	var werkstatt := await _werkstatt()
+	var panel := _statistik(werkstatt)
+	var protokoll: Array[Dictionary] = [
+		{"at_day": -1, "kind": TimelineRun.INTERVENTION_SCHEDULE, "event_id": "zeitungsartikel",
+			"day": _tag(1990, 6, 1), "reason": "Pressetermin"},
+		{"at_day": -1, "kind": TimelineRun.INTERVENTION_ADD_MODIFIER, "modifier": {
+			"event_id": "intel_pentium", "from_day": 0, "id": "rabatt", "reason": "Rabatt",
+			"to_day": TimelineRun.LAST_DAY, "value": 0.05}},
+	]
+	panel.interventions_source = func() -> Array[Dictionary]: return protokoll
+	_anzahl(panel, "3")
+	panel.get_node("%WithInterventions").button_pressed = true
+
+	# Act
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+
+	# Assert
+	assert_string_contains(panel.get_node("%ResultLabel").text, "mit 1 Eingriff aus dem Simulator")
+	var hinweis: Label = panel.get_node("%RefusedNotice")
+	assert_true(hinweis.visible)
+	assert_string_contains(hinweis.text, "Modifikator: Intel Pentium erscheint ist kein Ereignis "
+		+ "über Wahrscheinlichkeit")
+
+	# Act und Assert: ohne Häkchen keine Warnung
+	panel.get_node("%WithInterventions").button_pressed = false
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+	assert_false(hinweis.visible)
+	assert_string_contains(panel.get_node("%ResultLabel").text, "ohne Eingriffe")
+
+
 # --- Katalog (FR-042) -------------------------------------------------------------------------
 
 func test_fehlerhaftes_ereignis_wird_ausgenommen_und_genannt() -> void:
@@ -374,7 +446,7 @@ func _werkstatt(fixture: String = MINIMAL) -> Werkstatt:
 	datei.close()
 	var werkstatt: Werkstatt = SZENE.instantiate()
 	werkstatt.catalog_path = ziel
-	werkstatt.editor.backup_path = ORDNER + "sicherung.json"
+	werkstatt.editor.backup_folder = ORDNER
 	werkstatt.settings_path = ORDNER + "einstellungen.cfg"
 	add_child_autofree(werkstatt)
 	await wait_process_frames(2)

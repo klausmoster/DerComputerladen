@@ -134,9 +134,10 @@ visible = false
 layout_mode = 2
 
 [node name="FormScroll" type="ScrollContainer" parent="Layout/Main"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
-follow_focus = true
+theme_type_variation = &"FormScroll"
 horizontal_scroll_mode = 0
 
 [node name="EventForm" parent="Layout/Main/FormScroll" instance=ExtResource("5_form")]
@@ -206,11 +207,6 @@ cancel_button_text = "Abbrechen"
 [node name="UnreadableDialog" type="AcceptDialog" parent="."]
 unique_name_in_owner = true
 title = "Katalog nicht lesbar"
-dialog_autowrap = true
-
-[node name="BackupNoticeDialog" type="AcceptDialog" parent="."]
-unique_name_in_owner = true
-title = "Sicherungskopie eines anderen Katalogs"
 dialog_autowrap = true
 
 [node name="NoticeDialog" type="AcceptDialog" parent="."]

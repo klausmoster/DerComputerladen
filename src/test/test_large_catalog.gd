@@ -29,7 +29,7 @@ var _editor: CatalogEditor
 func before_each() -> void:
 	DirAccess.make_dir_recursive_absolute(ORDNER)
 	_editor = CatalogEditor.new()
-	_editor.backup_path = ORDNER + "sicherung.json"
+	_editor.backup_folder = ORDNER
 
 
 func after_each() -> void:

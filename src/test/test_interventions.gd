@@ -2,8 +2,8 @@ extends GutTest
 
 ## Prüft die Eingriffe im Lauf der Zeitleiste (Feature 002, T057; US6, FR-025 bis FR-027):
 ## Modifikatoren setzen, summieren, begrenzen, ablaufen lassen und entfernen; Termine absagen,
-## verschieben und einplanen; die Ablehnungen mit ihrem Grund; das Eingriffsprotokoll und
-## apply_intervention(); SC-003.
+## verschieben und einplanen; die Ablehnungen mit ihrem Grund; das Eingriffsprotokoll,
+## apply_intervention() und die Reihenfolge beim Nachspielen (T075); SC-003.
 ##
 ## Die Tests arbeiten mit zwei Test-Katalogen:
 ## - catalog_us6_schwelle: eine Reklamationswelle mit 3 % ohne Mindestabstand, sodass jeder Treffer
@@ -651,6 +651,106 @@ func test_apply_intervention_liest_eintraege_aus_einer_datei() -> void:
 	assert_eq(run.interventions.size(), 3)
 
 
+func test_modifikator_ohne_lesbaren_wert_oder_beginn_wird_abgelehnt() -> void:
+	# Arrange (T099): der Modifikator aus Szenario 1, wie ihn jemand in einer Probe von Hand
+	# geändert hat. Mit den Vorgaben gälte er still mit 0 Prozentpunkten bzw. ab dem 01.01.1985.
+	var run := TimelineRun.new(_katalog("catalog_us6_reklamation"), 4711)
+	var mit_komma := _windiger_haendler_als_eintrag()
+	mit_komma["value"] = "0,05"
+	var ohne_wert := _windiger_haendler_als_eintrag()
+	ohne_wert.erase("value")
+	var ohne_beginn := _windiger_haendler_als_eintrag()
+	ohne_beginn.erase("from_day")
+	var halber_tag := _windiger_haendler_als_eintrag()
+	halber_tag["from_day"] = 1826.5
+	var wert := "Der Wert des Modifikators („value“) fehlt oder ist keine Zahl."
+	var beginn := "Der Beginn des Modifikators („from_day“) fehlt oder ist kein Tag."
+
+	# Act und Assert: abgelehnt mit Grund, nichts gesetzt, nichts im Eingriffsprotokoll
+	for fall: Array in [[mit_komma, wert], [ohne_wert, wert], [ohne_beginn, beginn],
+			[halber_tag, beginn]]:
+		var eintrag := {"at_day": -1, "kind": "add_modifier", "modifier": fall[0]}
+		assert_eq(run.apply_intervention(eintrag), ERR_INVALID_PARAMETER, "%s" % [fall[0]])
+		assert_eq(run.last_refusal, fall[1])
+	assert_eq(run.modifiers.size(), 0)
+	assert_eq(run.interventions.size(), 0)
+	# Gegenprobe: derselbe Eintrag mit lesbarem Wert und Beginn gilt.
+	var richtig := {"at_day": -1, "kind": "add_modifier",
+		"modifier": _windiger_haendler_als_eintrag()}
+	assert_eq(run.apply_intervention(richtig), OK)
+	assert_eq(run.modifiers.size(), 1)
+
+
+# --- Reihenfolge beim Nachspielen (T075) ----------------------------------------------
+
+func test_nachspielen_nach_at_day_bei_gleichem_tag_wie_im_protokoll() -> void:
+	# Arrange: So sammelt der Simulator nach „Fahrplan erzeugen“: erst ein Eingriff vom
+	# 01.01.1992, dann einer vor Spielbeginn. Zwei Einträge teilen sich den Tag −1, zwei den Tag
+	# 400; einer davon kommt aus einer Datei, mit at_day als float.
+	var protokoll: Array[Dictionary] = [
+		{"at_day": _tag(1992, 1, 1), "nr": 1},
+		{"at_day": -1, "nr": 2},
+		{"at_day": 400, "nr": 3},
+		{"at_day": -1, "nr": 4},
+		{"at_day": 400.0, "nr": 5},
+	]
+	var vorher := protokoll.duplicate(true)
+	var leer: Array[Dictionary] = []
+
+	# Act
+	var reihenfolge := TimelineRun.in_replay_order(protokoll)
+
+	# Assert
+	assert_eq(_nummern(reihenfolge), [2, 4, 3, 5, 1], "Nach Tag, bei gleichem Tag der Reihe nach.")
+	assert_eq(protokoll, vorher, "Das Protokoll selbst bleibt, wie es war.")
+	assert_same(reihenfolge[0], protokoll[1], "Dieselben Einträge, keine Kopien.")
+	assert_eq(TimelineRun.in_replay_order(leer).size(), 0, "Ohne Eingriffe eine leere Liste.")
+
+
+func test_nachspielen_bleibt_stabil_auch_bei_vielen_gleichen_tagen() -> void:
+	# Arrange: 60 Einträge auf drei Tagen, gemischt. sort_custom() allein ist nicht stabil; bei so
+	# vielen Einträgen gerieten gleiche Tage durcheinander, etwa Setzen und Entfernen desselben
+	# Modifikators.
+	var tage := [_tag(1990, 1, 1), -1, _tag(1986, 5, 1)]
+	var protokoll: Array[Dictionary] = []
+	for nr in 60:
+		protokoll.append({"at_day": tage[(nr * 7 + floori(nr / 5.0)) % 3], "nr": nr})
+	var erwartet := []
+	for tag: int in [-1, _tag(1986, 5, 1), _tag(1990, 1, 1)]:
+		for eintrag in protokoll:
+			if eintrag["at_day"] == tag:
+				erwartet.append(eintrag["nr"])
+
+	# Act
+	var reihenfolge := TimelineRun.in_replay_order(protokoll)
+
+	# Assert: nach Tag, und an jedem Tag die Nummern aufsteigend
+	assert_eq(_nummern(reihenfolge), erwartet)
+
+
+func test_eintrag_ohne_lesbaren_tag_bleibt_hinter_seinem_vorgaenger() -> void:
+	# Arrange: von Hand geänderte Einträge ohne at_day, mit einem Text oder einer Kommazahl. Jeder
+	# gilt dort, wo der Lauf nach seinem Vorgänger steht, und wandert deshalb mit ihm; ganz vorn
+	# gilt er vor Spielbeginn.
+	var protokoll: Array[Dictionary] = [
+		{"nr": 1},
+		{"at_day": _tag(1992, 1, 1), "nr": 2},
+		{"at_day": "1985-03-01", "nr": 3},
+		{"at_day": -1, "nr": 4},
+		{"at_day": 2556.5, "nr": 5},
+		{"at_day": _tag(1988, 1, 1), "nr": 6},
+	]
+
+	# Act
+	var reihenfolge := TimelineRun.in_replay_order(protokoll)
+
+	# Assert: 1 bleibt vorn, 3 hinter 2, 5 hinter 4.
+	assert_eq(_nummern(reihenfolge), [1, 4, 5, 6, 2, 3])
+	assert_eq(TimelineRun.intervention_day({"at_day": 2556.0}), 2556, "Aus einer Datei als float.")
+	assert_eq(TimelineRun.intervention_day({"at_day": "1992-01-01"}), -1, "Ohne lesbaren Tag −1.")
+	assert_eq(TimelineRun.intervention_day({}, 7), 7, "Oder die eigene Vorgabe.")
+
+
 # --- SC-003 ---------------------------------------------------------------------------
 
 func test_sc003_modifikator_aendert_keinen_fremden_termin(
@@ -788,6 +888,14 @@ func _naechster_geplanter_gewuerfelter(run: TimelineRun, ab: int) -> ScheduleEnt
 
 
 ## Die Kennungen von Modifikatoren.
+## Die Nummern ("nr") von Einträgen in ihrer Reihenfolge.
+func _nummern(eintraege: Array[Dictionary]) -> Array:
+	var nummern := []
+	for eintrag in eintraege:
+		nummern.append(eintrag["nr"])
+	return nummern
+
+
 func _kennungen(modifikatoren: Array[ChanceModifier]) -> Array:
 	var kennungen := []
 	for modifikator in modifikatoren:

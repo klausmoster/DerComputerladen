@@ -148,3 +148,24 @@ func test_verzoegerte_wirkungen_mit_faelligkeitstag() -> void:
 		assert_eq(faellig[0]["effect"], spaeter)
 		assert_eq(faellig[0]["day"], GameDate.new(1993, 4, 5).to_day_index())
 	assert_eq(ScheduleEntry.new().due_effects().size(), 0, "Ohne Ereignis keine Wirkung.")
+
+
+func test_entfallene_und_abgesagte_termine_haben_keine_verzoegerten_wirkungen() -> void:
+	# Arrange (T097; Klaus, 2026-10-21): der Pentium mit einer Wirkung 14 Tage nach dem Beginn
+	var spaeter := EventEffect.new()
+	spaeter.delay_days = 14
+	var pentium := TimelineEvent.new()
+	pentium.effects.assign([spaeter])
+	var entry := ScheduleEntry.new()
+	entry.event = pentium
+	entry.day = GameDate.new(1993, 3, 22).to_day_index()
+	var erwartet := {
+		ScheduleEntry.State.PLANNED: 1, ScheduleEntry.State.RUNNING: 1,
+		ScheduleEntry.State.OCCURRED: 1, ScheduleEntry.State.ENDED: 1,
+		ScheduleEntry.State.SKIPPED: 0, ScheduleEntry.State.CANCELLED: 0,
+	}
+
+	# Act und Assert: Ein Termin, der nie beginnt, hat keine Wirkung, die noch käme.
+	for zustand: int in ScheduleEntry.State.values():
+		entry.state = zustand as ScheduleEntry.State
+		assert_eq(entry.due_effects().size(), erwartet[zustand], entry.state_label())

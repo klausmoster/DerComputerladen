@@ -3,7 +3,7 @@ extends GutTest
 ## Prüft die Textausgabe des Fahrplans (Feature 002, T027): Kopfzeile, Spalten mit fester Breite,
 ## die Spalte „bis“, die Zusätze hinter dem Titel und die verzögerten Wirkungen unter ihrem Termin.
 ## Dazu SC-002: Zehn Läufe mit gleichem Seed ergeben zehn gleiche Ausgaben, ob Tag für Tag oder in
-## Sprüngen geschaltet.
+## Sprüngen geschaltet, auch mit gleichen Eingriffen (T085).
 ##
 ## Für die Spalte „bis“ und zwei der Zusätze legt ein Test Termine von Hand in einen leeren Lauf,
 ## so wie der Lauf sie anlegt. ScheduleText formatiert nur, was im Fahrplan steht; wie der Lauf
@@ -106,6 +106,44 @@ func test_folgetermine_aus_einem_lauf() -> void:
 		+ _leer(7 + 2) + "entfallen" + _leer(3 + 2) + "Kette 16 (Folge von kette_15)")
 
 
+func test_abgesagter_termin_steht_ohne_verzoegerte_wirkung_da() -> void:
+	# Arrange (T097): zweimal das Neubaugebiet per Eingriff, mit seiner Wirkung 30 Tage nach dem
+	# Beginn; der erste Termin wird abgesagt. Der Lauf meldet dessen Wirkung nie.
+	var run := TimelineRun.new(_katalog("catalog_minimal"), 4711)
+	assert_eq(run.schedule_event("neubaugebiet", _tag(1990, 3, 1), "Erster Bauabschnitt"), OK)
+	assert_eq(run.schedule_event("neubaugebiet", _tag(1994, 3, 1), "Zweiter Bauabschnitt"), OK)
+	var abgesagt := run.find_planned("neubaugebiet", _tag(1990, 3, 1))
+	assert_eq(run.cancel_entry(abgesagt.serial, "Bauamt sagt nein"), OK)
+	run.advance_to(LETZTER_TAG)
+
+	# Act
+	var zeilen := ScheduleText.plan_lines(run)
+
+	# Assert: unter dem abgesagten Termin keine Wirkung, unter dem eingetretenen seine.
+	var erster := -1
+	var zweiter := -1
+	for i in zeilen.size():
+		if zeilen[i].contains("neubaugebiet") and zeilen[i].contains("Eingriff"):
+			if zeilen[i].begins_with("01.03.1990"):
+				erster = i
+			elif zeilen[i].begins_with("01.03.1994"):
+				zweiter = i
+	assert_gt(erster, 0, "Die Zeile des abgesagten Termins steht da.")
+	assert_gt(zweiter, 0, "Die Zeile des zweiten Termins steht da.")
+	if erster > 0 and zweiter > 0:
+		assert_string_contains(zeilen[erster], "abgesagt")
+		assert_false(zeilen[erster + 1].contains("└"),
+			"Keine Wirkung unter dem abgesagten Termin: %s" % zeilen[erster + 1])
+		assert_eq(zeilen[zweiter + 1],
+			"31.03.1994    └ Kundenstrom · * · +20% — Neue Anwohner ziehen zu.",
+			"Der eingetretene zeigt sie wie bisher.")
+	var gemeldet := 0
+	for meldung in run.protocol:
+		if meldung.entry == abgesagt and meldung.kind == TimelineMessage.Kind.EFFECT_STARTED:
+			gemeldet += 1
+	assert_eq(gemeldet, 0, "Gemeldet wird sie auch nicht.")
+
+
 func test_protokollzeilen_sind_die_zeilen_der_meldungen() -> void:
 	# Arrange
 	var run := TimelineRun.new(_katalog("event_catalog_uebernahme"), 4711)
@@ -147,6 +185,31 @@ func test_zehn_laeufe_mit_gleichem_seed_ergeben_gleiche_ausgaben() -> void:
 		assert_eq(ausgaben[i], ausgaben[0], "Lauf %d gleicht Lauf 1 Zeichen für Zeichen." % (i + 1))
 
 
+func test_zehn_laeufe_mit_gleichen_eingriffen_ergeben_gleiche_ausgaben() -> void:
+	# Arrange (SC-002 mit Eingriffen, T085): catalog_us6_reklamation mit Folgen, Bedingungen,
+	# Dauer, jährlichen und gesetzten Ereignissen, dazu ein festes Eingriffsprotokoll mit jeder Art
+	# Eingriff. Jeder kommt an seinem Tag dran, wie im Simulator; nur die Schritte dazwischen sind
+	# verschieden.
+	var catalog := _katalog("catalog_us6_reklamation")
+	var protokoll := _festes_protokoll()
+	var ausgaben := []
+
+	# Act: fünf Läufe Tag für Tag, fünf in verschieden großen Sprüngen
+	for durchgang in 5:
+		ausgaben.append(_ausgabe(_mit_eingriffen(catalog, protokoll, 1)))
+	for sprung: int in [7, 30, 91, 365, 1000]:
+		ausgaben.append(_ausgabe(_mit_eingriffen(catalog, protokoll, sprung)))
+
+	# Assert
+	assert_eq(ausgaben.size(), 10)
+	for i in range(1, ausgaben.size()):
+		assert_eq(ausgaben[i], ausgaben[0], "Lauf %d gleicht Lauf 1 Zeichen für Zeichen." % (i + 1))
+	var ohne := TimelineRun.new(catalog, 4711)
+	ohne.advance_to(LETZTER_TAG)
+	assert_ne(ausgaben[0], _ausgabe(ohne),
+		"Die Eingriffe ändern den Fahrplan; der Vergleich oben sagt also etwas.")
+
+
 # --- Helfer ----------------------------------------------------------------------
 
 ## Liest einen Test-Katalog aus res://test/fixtures/.
@@ -184,3 +247,45 @@ func _termin(event: TimelineEvent, tag: int, ende: int, herkunft: ScheduleEntry.
 func _ausgabe(run: TimelineRun) -> String:
 	return "\n".join(ScheduleText.plan_lines(run)) + "\n--\n" \
 		+ "\n".join(ScheduleText.protocol_lines(run))
+
+
+## Ein festes Eingriffsprotokoll in der Form von TimelineRun.interventions, nach at_day geordnet:
+## der Modifikator aus US6, Szenario 1, vor Spielbeginn; am 30.06.1990 der Großauftrag für den
+## 15.03.1991; am 01.01.1992 „Konkurrent eröffnet“ vom 01.06. auf den 01.09.1992, am 15.03.1992
+## abgesagt; am 30.06.1993 der Modifikator wieder entfernt.
+func _festes_protokoll() -> Array[Dictionary]:
+	var modifikator := {"event_id": "reklamationswelle", "from_day": _tag(1990, 1, 1),
+		"id": "windiger_haendler", "reason": "Ware vom windigen Händler",
+		"to_day": _tag(1993, 12, 31), "value": 0.05}
+	var protokoll: Array[Dictionary] = [
+		{"at_day": -1, "kind": "add_modifier", "modifier": modifikator},
+		{"at_day": _tag(1990, 6, 30), "day": _tag(1991, 3, 15), "event_id": "grossauftrag",
+			"kind": "schedule", "reason": "Messeauftrag"},
+		{"at_day": _tag(1992, 1, 1), "day": _tag(1992, 6, 1), "event_id": "konkurrent_eroeffnet",
+			"kind": "move", "new_day": _tag(1992, 9, 1), "reason": "Bauarbeiten"},
+		{"at_day": _tag(1992, 3, 15), "day": _tag(1992, 9, 1), "event_id": "konkurrent_eroeffnet",
+			"kind": "cancel", "reason": "Laden nebenan selbst gemietet"},
+		{"at_day": _tag(1993, 6, 30), "kind": "remove_modifier", "modifier": modifikator},
+	]
+	return protokoll
+
+
+## Ein Lauf mit Seed 4711 bis zum Spielende, in Schritten von [param sprung] Tagen. Jeder Eintrag
+## des Protokolls kommt an seinem at_day dran, wie im Simulator: Kein Schritt springt über diesen
+## Tag hinweg. Dort wendet apply_intervention() ihn an.
+func _mit_eingriffen(catalog: EventCatalog, protokoll: Array[Dictionary],
+		sprung: int) -> TimelineRun:
+	var run := TimelineRun.new(catalog, 4711)
+	var naechster := 0
+	while true:
+		while naechster < protokoll.size() and int(protokoll[naechster]["at_day"]) <= run.today:
+			assert_eq(run.apply_intervention(protokoll[naechster]), OK, run.last_refusal)
+			naechster += 1
+		if run.is_finished():
+			break
+		var ziel := run.today + sprung
+		if naechster < protokoll.size():
+			ziel = mini(ziel, int(protokoll[naechster]["at_day"]))
+		run.advance_to(ziel)
+	assert_eq(run.interventions.size(), protokoll.size(), "Jeder Eingriff gilt.")
+	return run

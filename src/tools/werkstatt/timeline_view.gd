@@ -1314,19 +1314,20 @@ func _on_magnify_gesture(magnify: InputEventMagnifyGesture) -> void:
 ## Drücken: auf einer Marke wählt es das Ereignis und beginnt, sie zu ziehen; auf freier Fläche
 ## beginnt es, die Ansicht zu verschieben. Gezogen wird erst nach DRAG_THRESHOLD Pixeln.
 func _on_press(at: Vector2) -> void:
-	_release_focus()
+	var id := _hit_and_commit(at)
 	_press_position = at
 	_press_from = visible_from
 	_drag_moved = false
-	var mark := _mark_at(at)
-	if mark == null:
+	if id.is_empty():
 		_drag = Drag.PAN if time_rect().has_point(at) else Drag.NONE
 		_update_cursor()
 		return
-	event_clicked.emit(mark.event.id)
-	# Wer auf event_clicked hört, darf den Zeitstrahl neu aufbauen; die Marke kommt deshalb frisch.
-	mark = _mark_at(at)
-	if mark != null:
+	event_clicked.emit(id)
+	# Wer auf event_clicked hört, darf den Zeitstrahl neu aufbauen, das Übernehmen eben auch; die
+	# Marke kommt deshalb frisch. Gezogen wird nur, was noch dasselbe Ereignis ist: Hat das
+	# Übernehmen das Datum geändert, steht an der Stelle vielleicht ein anderes.
+	var mark := _mark_at(at)
+	if mark != null and mark.event.id == id:
 		var row := _row_at(at)
 		_start_drag(mark, row, _part_at(mark, row, at))
 
@@ -1436,12 +1437,17 @@ func _on_double_click(at: Vector2) -> void:
 	create_requested.emit(row.category.id, day)
 
 
-## Rechtsklick auf eine Marke: wählt das Ereignis und öffnet das Menü an der Maus.
+## Rechtsklick auf eine Marke: übernimmt eine offene Eingabe im Formular, wählt das Ereignis und
+## öffnet das Menü an der Maus. Den Fokus gibt Godot nur beim Linksklick weiter; ohne das
+## Übernehmen hier verwürfe das Formular beim Wechsel zum Ereignis das Getippte still, und
+## „Duplizieren“ kopierte den alten Stand (T077). Auf freier Fläche geschieht nichts.
 func _on_right_click(at: Vector2) -> void:
-	var mark := _mark_at(at)
-	if mark == null:
+	if _mark_at(at) == null:
 		return
-	_menu_event_id = mark.event.id
+	var id := _hit_and_commit(at)
+	if id.is_empty():
+		return
+	_menu_event_id = id
 	event_clicked.emit(_menu_event_id)
 	# Das Menü ist ein eigenes Fenster. get_screen_transform() rechnet die Stelle im Control in die
 	# Lage auf dem Bildschirm um, mit dem Bildschirmfaktor der Werkstatt.
@@ -1450,7 +1456,10 @@ func _on_right_click(at: Vector2) -> void:
 	_menu.popup()
 
 
+## Ein Eintrag im Menü. Auch hier übernimmt ein Feld im Formular zuerst seine Eingabe; der
+## Rechtsklick hat das schon getan, aber das Menü soll nie mit einem alten Stand arbeiten.
 func _on_menu_id_pressed(item: int) -> void:
+	_release_focus()
 	var id := _menu_event_id
 	match item:
 		MenuItem.EDIT:
@@ -1511,6 +1520,22 @@ func _update_cursor() -> void:
 					or field == &"window_to"
 				shape = CURSOR_HSIZE if edge else CURSOR_POINTING_HAND
 	mouse_default_cursor_shape = shape
+
+
+## Das Ereignis, das beim Klick bei [param at] zu sehen war, nachdem ein Feld im Formular seine
+## Eingabe übernommen hat; leer auf freier Fläche. Erst treffen, dann übernehmen, wie in Liste und
+## Prüfung (T076): Gemeint ist die Marke, die Klaus angeklickt hat, auch wenn das Übernehmen den
+## Zeitstrahl neu aufbaut. Hat es die Kennung dieses Ereignisses geändert, gilt die Marke, die
+## jetzt an der Stelle steht; ein neuer Name verschiebt keine Marke.
+func _hit_and_commit(at: Vector2) -> String:
+	var mark := _mark_at(at)
+	var id := mark.event.id if mark != null else ""
+	_release_focus()
+	if not id.is_empty() and (editor == null or editor.catalog == null
+			or editor.catalog.get_event(id) == null):
+		var now := _mark_at(at)
+		id = now.event.id if now != null else ""
+	return id
 
 
 ## Ein Feld im Formular übernimmt seine Eingabe beim Verlassen. Ein Klick in den Zeitstrahl nimmt

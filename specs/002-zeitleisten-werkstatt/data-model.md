@@ -74,7 +74,7 @@ Felder je Art (andere Felder sind leer und werden nicht gespeichert):
 | `PRESET`, `CHANCE` | `window_from`, `window_to` | int | Zeitfenster, beide Tage einschließlich |
 | `PRESET`, `CHANCE` | `min_gap_days` | int ≥ 0 | Mindestabstand zwischen zwei Beginnen |
 | `PRESET` | `count_min` | int ≥ 0 | kleinste Anzahl |
-| `PRESET` | `count_weights` | Array[float] | Gewicht je Anzahl ab `count_min` in Prozent, Summe 100; die einzige Prozentangabe in der Datei, geschrieben auf zwei Nachkommastellen |
+| `PRESET` | `count_weights` | Array[float] | Gewicht je Anzahl ab `count_min` in Prozent, Summe 100; die einzige Prozentangabe in der Datei, geschrieben auf zwei Nachkommastellen. Das Formular der Werkstatt zeigt höchstens 20 Anzahlen; eine Datei darf mehr haben, dann zeigt es einen Hinweis und lässt alle Gewichte stehen (T086) |
 | `CHANCE` | `monthly_chance` | float 0..1 | Grundchance pro Monat |
 | `CHANCE` | `max_occurrences` | int ≥ 0 | 0 heißt unbegrenzt |
 
@@ -223,14 +223,14 @@ Die Regeln aus den Edge Cases der Spec, durchnummeriert für Tests (SC-006):
 | V12 | Grundchance oder Wahrscheinlichkeit eines Folgeereignisses außerhalb 0 bis 1 | Fehler |
 | V13 | Grundchance 0 | Warnung |
 | V14 | Dauer, Verzögerung, Mindestabstand oder Höchstzahl negativ; `delay_min` > `delay_max` | Fehler |
-| V15 | Folgeereignis oder Bedingung verweist auf unbekannte Kennung | Fehler |
+| V15 | Folgeereignis oder Bedingung verweist auf unbekannte Kennung; eine Bedingung verweist auf das eigene Ereignis (T084) | Fehler |
 | V16 | Folgeereignis zeigt auf ein fixes oder jährliches Ereignis | Fehler |
 | V17 | Bedingung an einem fixen oder jährlichen Ereignis; der Schlüssel `conditions` bei `fixed` oder `yearly` ergibt V17, nicht V22. Eine leere Liste ist kein Fehler, sie fällt beim Speichern weg | Fehler |
 | V18 | Kreis aus Folgeereignissen mit 100 % und Verzögerung 0; gemeldet bei jedem Ereignis des Kreises | Fehler |
-| V19 | Wirkung `DURING` mit `delay_days` ≥ Dauer: Sie begänne erst am Tag des Endes oder danach. Bei jährlichen Ereignissen zählt die Dauer eines Vorkommens in einem Jahr ohne 29. Februar. Das erste, auf den Spielbeginn gekürzte Vorkommen ist kürzer (Winter 1984/85: 59 statt 90 Tage); dort kann eine Wirkung, die die Prüfung besteht, trotzdem ausfallen | Fehler |
+| V19 | Wirkung `DURING` mit `delay_days` ≥ Dauer: Sie begänne erst am Tag des Endes oder danach. Bei jährlichen Ereignissen zählt die Dauer eines Vorkommens in einem Jahr ohne 29. Februar. Das erste, auf den Spielbeginn gekürzte Vorkommen ist kürzer (Winter 1984/85: 59 statt 90 Tage); dort kann eine Wirkung, die die Prüfung besteht, trotzdem ausfallen. Dann beginnt sie nicht und steht auch nicht im Fahrplan (`ScheduleEntry.effect_begins()`, T079) | Fehler |
 | V20 | Wirkung auf Preis, Nachfrage, Ruf oder Kundenstrom mit Stärke 0 | Warnung |
-| V21 | Kategorie: Kennung doppelt oder leer, Farbe nicht in `UiPalette.CATEGORY_TOKENS` | Fehler |
-| V22 | Strukturfehler beim Lesen: Datei kein gültiges JSON (mit Zeile), Datei fehlt (mit Pfad), `format` nicht 1, Pflichtfeld fehlt, falscher Typ, unbekannter Schlüssel, unbekannter Wert für `kind` oder `scope`, ein Datum, das kein Kalendertag ist (etwa `1993-02-30`) | Fehler |
+| V21 | Kategorie: Kennung leer, mit anderen Zeichen als a–z, 0–9 und _ (wie V03, T084) oder doppelt; Farbe nicht in `UiPalette.CATEGORY_TOKENS` | Fehler |
+| V22 | Strukturfehler beim Lesen: Datei kein gültiges JSON (mit Zeile), Datei fehlt (mit Pfad), `format` nicht 1, Pflichtfeld fehlt, falscher Typ, unbekannter Schlüssel, unbekannter Wert für `kind` oder `scope`, ein Datum, das kein Kalendertag ist (etwa `1993-02-30`), ein Tag im Jahr mit Monat außerhalb 01 bis 12 oder Tag 00, etwa `00-ende` oder `05-00` (T098) | Fehler |
 | V23 | Kreis aus Folgeereignissen mit 100 % und Verzögerung, der bis Spielende weiterläuft; gemeldet bei jedem Ereignis des Kreises | Warnung |
 | V24 | Gesetzt: Mindestabstand kürzer als die Dauer, gesetzte Termine würden sich überlappen; nur, wenn mehr als ein Termin möglich ist | Fehler |
 
@@ -273,7 +273,7 @@ mit `"format": 1`, und alle Tage stehen als Datum `"JJJJ-MM-TT"` in der Datei, �
 | `id` | String | Kennung = Dateiname, aus dem Namen erzeugt wie bei Ereignissen (`CatalogEditor.id_from()`); eine gleichnamige Probe wird überschrieben, der Simulator fragt vorher |
 | `name` | String | Anzeigename, etwa „Windiger Händler ab 1990“ |
 | `seed` | int | Seed des Durchlaufs |
-| `until_day` | int | Tag, bis zu dem der Lauf beim Speichern abgespielt war |
+| `until_day` | int | Tag, bis zu dem `build_run()` den Lauf abspielt: beim Speichern der Tag, auf dem der Lauf stand, mindestens aber der Tag des letzten Eingriffs, höchstens der 31.12.1999 (T075) |
 | `interventions` | Array | das Eingriffsprotokoll des Laufs, siehe unten |
 
 **Eingriffsprotokoll:** `TimelineRun.interventions` hält jeden Eingriff in der Reihenfolge, in der
@@ -288,14 +288,27 @@ denn die Nummer kann sich ändern, wenn sich der Katalog ändert. Bei `move` ist
 dem Verschieben. `remove_modifier` trägt den ganzen entfernten Modifikator; seine Zeile im
 Protokoll nennt dessen Grund, denn FR-027 verlangt jeden Eingriff mit Grund.
 
-**Neu abspielen:** `WhatIfProbe.build_run(catalog)` legt einen Lauf mit `seed` an und geht das
-Protokoll der Reihe nach durch:
+**Neu abspielen:** `WhatIfProbe.build_run(catalog)` legt einen Lauf mit `seed` an und spielt das
+Protokoll nach `at_day` geordnet nach (`TimelineRun.in_replay_order()`, T075; bis 2026-10-21: der
+Reihe nach). Die Ordnung ist stabil, bei gleichem Tag gilt die Reihenfolge des Protokolls. Ein
+Eintrag ohne lesbaren Tag bleibt hinter seinem Vorgänger, ganz vorn gilt er vor Spielbeginn.
+Sammlung und Datei bleiben in der Reihenfolge der Aktionen; geordnet wird erst beim Nachspielen,
+denn ein Lauf spielt nie zurück. Nach „Fahrplan erzeugen“ kann sonst ein Eingriff vor Spielbeginn
+hinter einem vom 01.01.1992 stehen und gälte erst 1992. Je Eintrag:
 1. den Lauf bis `at_day` abspielen, bei −1 gar nicht;
 2. dort den Eingriff mit `TimelineRun.apply_intervention()` anwenden; Absagen und Verschiebungen
-   finden ihren Termin über `find_planned(event_id, day)`.
+   finden ihren Termin über `find_planned(event_id, day)`. Gibt es an dem Tag mehrere geplante
+   Termine desselben Ereignisses, nimmt es den ersten in der Reihenfolge des Fahrplans. Das kann
+   ein anderer sein als im Simulator. Fürs Spiel ändert das nichts, nur Herkunft, Zustand und
+   Begründung der beiden können vertauscht sein. Diese Grenze ist gewollt (Klaus, 2026-10-21,
+   T100).
 
 Danach spielt sie bis `until_day` weiter. So entsteht derselbe Fahrplan wie beim Speichern, auch
 für gewürfelte und Folge-Termine. Ein Eingriff, dessen Ereignis oder Termin fehlt, ist nicht
-anwendbar und wird genannt. Genauso startet der Simulator neu mit Eingriffen. In die Statistik
-gehen nur `add_modifier`, `remove_modifier` und `schedule` ein, jeweils an ihrem `at_day` wie
-beim Neu abspielen (FR-045).
+anwendbar und wird genannt, in der Reihenfolge des Nachspielens. Genauso startet der Simulator neu
+mit Eingriffen, bis zum Tag, auf dem der Lauf stand, mindestens aber bis zum letzten `at_day`. In
+die Statistik gehen nur `add_modifier`, `remove_modifier` und `schedule` ein, jeweils an ihrem
+`at_day` und in derselben Ordnung wie beim Neu abspielen (FR-045). Geordnet wird dabei das ganze
+Protokoll, erst danach ausgesucht; ein Eintrag ohne lesbaren Tag gilt so auch in der Statistik
+hinter seinem Vorgänger, selbst wenn das eine Absage ist. Was das erste Spiel ablehnt, lehnt jedes
+ab; die Statistik zählt es nicht und nennt es (T082).

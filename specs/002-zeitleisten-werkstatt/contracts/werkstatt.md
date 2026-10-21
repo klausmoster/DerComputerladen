@@ -11,7 +11,7 @@ Die Werkstatt ist ein Entwicklungswerkzeug und gehört nicht zum Spiel; ihr Look
 src/tools/werkstatt/                  # ganzer Ordner vom Export ausgeschlossen
 ├── werkstatt.tscn / werkstatt.gd     # Wurzel, class_name Werkstatt
 ├── werkstatt_theme.tres              # Theme nach Style-Guide „Werkzeuge“
-├── relief_style_box.gd               # class_name ReliefStyleBox: Relief und Pixelschatten, die StyleBoxFlat nicht kann
+├── relief_style_box.gd               # class_name ReliefStyleBox: Relief und Pixelschatten, die StyleBoxFlat nicht kann; Kontur outline/outline_width als Palette-Token (T081)
 ├── icons/schliessen.svg              # Schließen-Kreuz der Dialoge in tusche
 ├── icons/griff_h.svg, griff_v.svg    # Griffe der Split-Container in tusche
 ├── catalog_editor.gd                 # class_name CatalogEditor, ohne Oberfläche
@@ -55,8 +55,9 @@ src/test/
 - Die Werkstatt merkt sich die Lage aller Teiler (Wunsch von Klaus, Phase 10) in
   `user://werkstatt_einstellungen.cfg` (ConfigFile, Abschnitt `SPLITS_SECTION`): eine Sekunde nach
   dem letzten Ziehen (`SettingsTimer`) und beim Schließen; der Start stellt sie wieder her.
-  `Werkstatt.settings_path` lässt sich wie `backup_path` für Tests umstellen. Fehlt die Datei oder
-  ist sie kaputt, gelten still die Vorgaben. Zu große Werte begrenzt Godot beim Anordnen.
+  `Werkstatt.settings_path` lässt sich wie `CatalogEditor.backup_folder` für Tests umstellen. Fehlt
+  die Datei oder ist sie kaputt, gelten still die Vorgaben. Zu große Werte begrenzt Godot beim
+  Anordnen.
 - `Werkstatt._ready()` richtet, außer headless, das Fenster ein (R13):
   - `get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED`;
   - `get_window().content_scale_factor = DisplayServer.screen_get_scale()`, damit Text auf dem
@@ -74,10 +75,11 @@ src/test/
   - Fehlt die Datei, bietet ein Dialog an, einen leeren Katalog mit den zehn Kategorien
     anzulegen; geschrieben wird er erst beim Speichern.
   - Ist die Datei unlesbar, zeigt ein Dialog Zeile und Grund.
-  - Gehört die Kopie zu diesem Katalog (`backup_matches()`), fragt ein Dialog „Übernehmen“,
+  - Gibt es eine Kopie dieses Katalogs (`backup_matches()`), fragt ein Dialog „Übernehmen“,
     „Verwerfen“ oder „Später“ und nennt beide Zeiten. „Später“ (auch Esc) lässt die Kopie liegen,
     bis Klaus speichert oder nach seiner ersten Änderung die nächste Sicherung sie ersetzt.
-    Gehört sie zu einem anderen Katalog, bleibt sie liegen, und ein Hinweis nennt ihren Pfad.
+    Kopien anderer Kataloge liegen in eigenen Dateien und bleiben unberührt (T078; bis
+    2026-10-21 nannte ein Hinweis die Kopie eines anderen Katalogs).
 - Speichern (Knopf oder Cmd+S): Hat der Katalog Fehler (`has_errors()`), fragt ein Dialog „Der
   Katalog hat N Fehler. Trotzdem speichern?“ (FR-034). Danach `save()`; meldet es
   `ERR_FILE_ALREADY_IN_USE`, folgt die Rückfrage zur fremden Änderung und erst dann `save(true)`.
@@ -86,7 +88,10 @@ src/test/
   `NOTIFICATION_WM_CLOSE_REQUEST` ab. Bei ungespeicherten Änderungen fragt ein Dialog „Speichern“,
   „Verwerfen“ oder „Abbrechen“; „Speichern“ läuft über dieselben Rückfragen wie oben. Danach
   beendet sie mit `get_tree().quit()`. Nach dem Speichern, nach dem Verwerfen und beim regulären
-  Schließen löscht sie die Sicherungskopie, beim Schließen nicht, solange „Später“ gilt.
+  Schließen löscht sie die Sicherungskopie, beim Schließen nicht, solange „Später“ gilt. Was vor
+  dem Beenden geschieht, Kopie löschen und Teiler speichern, steht in `prepare_quit()`; Tests
+  rufen es direkt, weil `get_tree().quit()` ihren Lauf beendete (T078). Ist der Dialog zur
+  Sicherungskopie beim Schließen noch offen, gilt das wie „Später“, und die Kopie bleibt (T096).
 
 ## Szenenaufbau
 
@@ -100,7 +105,7 @@ Werkstatt (Control, volle Fläche)        werkstatt.gd; theme = werkstatt_theme.
         ├── Center (VSplitContainer)
         │   ├── TimelineView             oben
         │   └── Tabs (TabContainer)      „Prüfung“ (IssuesPanel), „Simulator“ (SimulatorPanel), „Statistik“ (StatisticsPanel)
-        └── FormScroll (ScrollContainer) rechts, Breite etwa 380
+        └── FormScroll (ScrollContainer) rechts, Breite etwa 380; Variante FormScroll mit 4 px Rand, follow_focus aus (T094)
             └── EventForm
 ```
 
@@ -113,7 +118,11 @@ unlesbaren Katalog. Den Dialog für „Neu …“ bringt `EventList` selbst mit,
 **Datenfluss:**
 - `CatalogEditor` ist der einzige, der den Katalog ändert. Liste, Formular und Zeitstrahl rufen
   seine Methoden.
-- Er meldet jede Änderung mit `catalog_changed`; daraufhin zeichnen sich alle neu.
+- Er meldet jede Änderung mit `catalog_changed`; daraufhin zeichnen sich alle neu. Liste und
+  Prüfung bauen ihre Zeilen dabei erst am Ende des Bilds neu, das Formular ebenso (T076): Ein
+  Klick nimmt einem Feld den Fokus, bevor die Liste ihn verarbeitet; das Feld übernimmt seine
+  Eingabe, und bauten die Zeilen sofort neu, träfe der Klick eine andere Zeile. Die Auswahl der
+  Kategorien im Filter füllt sich weiterhin sofort.
 - Die Auswahl gehört der Werkstatt, nicht dem Verlauf: `Werkstatt.selected_id` und das Signal
   `selection_changed(id: String)`. Ein Klick in der Liste, im Zeitstrahl oder in der Prüfung wählt
   ein Ereignis.
@@ -131,6 +140,11 @@ unlesbaren Katalog. Den Dialog für „Neu …“ bringt `EventList` selbst mit,
   vorbelegt; `event_created` wie aus der Liste; `edit_requested` wählt und setzt den Fokus in den
   Titel; `delete_requested` führt zur Rückfrage wie in der Liste. Nach `catalog_changed` ruft die
   Werkstatt `refresh()`, nach `selection_changed` `select_event()`.
+- `EventForm.event_renamed(old_id, new_id)` wählt die neue Kennung nur, solange das umbenannte
+  Ereignis noch gewählt ist; wechselt Klaus gerade zu einem anderen, bleibt dessen Wahl (T095).
+- Die Werkstatt rollt das Formular selbst zum Feld mit dem Fokus, über `gui_focus_changed` und ein
+  Bild später, wenn die Container angeordnet sind. Godots `follow_focus` rollte nur bis an den
+  Rand, und die Fokuslinie fiele heraus (T094).
 - `IssuesPanel.issue_activated(event_id, field)` ruft danach `EventForm.focus_field(field)` auf
   (FR-033).
 - `CatalogEditor.catalog_changed` zeichnet Liste, Formular und Zeitstrahl neu;
@@ -173,13 +187,16 @@ func issues() -> Array[CatalogIssue]
 func has_errors() -> bool              # CatalogValidator.has_errors(issues())
 
 ## Sicherungskopie (FR-050, R23): {"catalog", "format": 1, "path", "saved"}, kanonisch
-var backup_path: String = "user://werkstatt_sicherung.json"   # Tests setzen eine eigene Datei
-func write_backup() -> Error           # nur, wenn is_dirty()
-func has_backup() -> bool
-func backup_matches() -> bool          # ob "path" der Kopie zu path passt
+var backup_folder: String = "user://werkstatt_sicherungen/"   # je Katalog eine Datei (T078); Tests setzen einen eigenen Ordner
+func backup_path() -> String           # backup_folder + backup_name(path)
+static func backup_name(catalog_path: String) -> String   # „event_catalog_57442f211163.json“: Dateiname als Kennung, 12 Zeichen SHA-256 von normalized_path()
+static func normalized_path(p_path: String) -> String     # absolut, ohne „.“, „..“ und doppelte „/“; res://, user:// und relative Pfade derselben Datei ergeben denselben Text
+func write_backup() -> Error           # nur, wenn is_dirty(); legt den Ordner an, ersetzt, was unter backup_path() liegt
+func has_backup() -> bool              # ob unter backup_path() eine Datei liegt
+func backup_matches() -> bool          # lesbare Kopie, deren "path" nach normalized_path() zu path passt
 func backup_info() -> Dictionary       # { "path": String, "saved": int, "catalog_modified": int }
 func restore_backup() -> Error         # übernimmt die Kopie als ungespeicherten Stand
-func discard_backup() -> void
+func discard_backup() -> void         # löscht, was unter backup_path() liegt, nur das
 
 ## Ereignisse
 func suggest_id(title: String) -> String      # klein, ä→ae, ö→oe, ü→ue, ß→ss, sonst _; eindeutig mit _2, _3 …
@@ -231,7 +248,10 @@ Regeln:
 - Der Verlauf überlebt das Speichern; `open()` und `revert()` leeren ihn (FR-034).
 - `CatalogEditor` gibt sein `UndoRedo` in `NOTIFICATION_PREDELETE` frei (R15).
 - Die Werkstatt ruft `write_backup()` über einen `Timer` alle 120 Sekunden auf. Nach `save()`,
-  nach `revert()` und beim regulären Schließen ruft sie `discard_backup()` auf.
+  nach `revert()` und beim regulären Schließen ruft sie `discard_backup()` auf. Schlägt das
+  Schreiben fehl, sagt sie es einmal je Fehlerserie über `_show_notice()`: „Sicherung ging nicht“,
+  „Die Sicherungskopie <Pfad> lässt sich nicht schreiben (<Fehler>). Die Werkstatt versucht es
+  alle 2 Minuten wieder; Speichern geht weiterhin.“ (T078)
 
 ## Liste, Formular, Prüfung
 
@@ -274,6 +294,25 @@ Regeln:
   Beides schickt es mit `set_event_fields()` als eine Aktion.
 - `func focus_field(field: String) -> void` setzt den Fokus auf das Feld einer Prüfmeldung, auch
   in den Listen, etwa `effects[1].delay_days`; ein unbekanntes Feld wählt nur das Ereignis.
+- Ein Feld mit Fehler bekommt die Kontur von 2 Pixeln in `kassenrot` über eine Variante im Theme:
+  `ErrorLineEdit`, `ErrorOptionButton` für Auswahlfelder wie „Kategorie“ (V05) und `ErrorTextEdit`
+  für die Beschreibung (Style-Guide Version 17, T081). Die Fokuslinie in `tusche` bleibt. Das gilt
+  für jedes Feld, unter dem ein Fehlerhinweis steht, auch in Dialogen: die Kennung in „Neu …“,
+  Ereignis, Wert, Grund, Beginn, Ende und Tag im `InterventionDialog`
+  (`show_problem(text, faulty: Array[Control] = [])`), der Name in „Probe speichern …“ und die
+  Anzahl der Spiele in der Statistik. Kontur und Hinweis gehen zusammen weg (T093).
+- Höchstens `MAX_COUNTS` = 20 Anzahlen legt das Formular an. Hat ein Ereignis aus der Datei mehr,
+  zeigt es die ersten 20 Gewichte, die Summe über alle und darunter den Hinweis
+  `COUNT_LIMIT_HINT` als Warnung: „? Das Ereignis hat 25 Anzahlen, das Formular zeigt höchstens
+  20. Die übrigen Gewichte änderst du in der Katalogdatei.“ Die Gewichte kürzt es nie, auch nicht
+  beim Speichern (T086).
+- Ist beim Neubau die Liste einer Auswahl offen, wartet er, bis sie zugeht (`popup_hide`), sonst
+  gäbe er die Auswahl samt Liste frei (T080).
+- Vor jedem Neubau und vor dem Wechsel zu einem anderen Ereignis übernimmt das Formular die
+  offene Eingabe des Felds mit dem Fokus, für das bisher gezeigte Ereignis (`_commit_focused()`).
+  So geht nichts verloren, wenn etwas neu bauen lässt, ohne dem Feld den Fokus zu nehmen, etwa
+  ein Rechtsklick in den Fahrplan des Simulators oder das Menü „…“ am Wirkungsziel. Ging die
+  Eingabe nicht, steht ihr Hinweis nach dem Neubau wieder am Feld (T095).
 - Kategorien verwaltet ein kleiner Bereich unter dem Formular: anlegen, umbenennen, Farbe wählen,
   löschen; Löschen ist gesperrt, solange Ereignisse dazugehören. Zur Wahl stehen die Farben aus
   `UiPalette.CATEGORY_TOKENS`.
@@ -352,7 +391,9 @@ Ergänzt bei der Umsetzung (T047 bis T049):
 - Für den Doppelklick zählt die Fläche von Rahmen und Bändern als frei.
 - `event_clicked` kommt beim Drücken, auch beim Rechtsklick; ein Klick auf freie Fläche behält
   die Auswahl. Ein Klick in den Zeitstrahl nimmt einem Formularfeld den Fokus, damit es seine
-  Eingabe übernimmt.
+  Eingabe übernimmt; ebenso ein Rechtsklick auf eine Marke und jeder Eintrag des Menüs (T077).
+  Dabei gilt „erst treffen, dann übernehmen“: Gemeint ist die Marke, die beim Klick zu sehen war.
+  Gezogen wird nur, wenn an der Stelle danach noch dasselbe Ereignis steht.
 
 **Vorschau beim Ziehen (R16):** Während des Ziehens ändert sich der Katalog nicht. Die Ansicht
 prüft eine Kopie des Ereignisses mit dem neuen Wert über `CatalogValidator.validate_event()` und
@@ -380,7 +421,9 @@ nächsten Ersten bzw. 1. Januar. „Bis“ ist ein Knopf mit Datumsfeld daneben,
 ebenso ab; ein ungültiges oder schon gespieltes Datum spielt nichts ab und gibt einen Hinweis.
 „? Katalog geändert, neu starten“ steht als Warnung in der Schalterzeile, ausgenommene Ereignisse
 stehen als Fehlerfeld (Theme-Variante `ErrorNoticeLabel`) über der Tabelle. Rechts unter dem
-Protokoll hält `%InterventionBox` den Platz für die Eingriffe aus Phase 8.
+Protokoll hält `%InterventionBox` den Platz für die Eingriffe aus Phase 8. In der Vorgabe-Teilung
+bekommt die Fahrplan-Tabelle den Platz zuerst; Begründung (`DetailScroll`) und Modifikatoren
+behalten mindestens 80 bzw. 76 px (Klaus, 2026-10-21, T101).
 
 - **Oben:**
   - Seed-Feld, das nur Ziffern annimmt (0 bis 2.147.483.647, FR-040), „Würfeln“, „Fahrplan
@@ -410,9 +453,11 @@ Protokoll hält `%InterventionBox` den Platz für die Eingriffe aus Phase 8.
   Eingriff mit dem Tag, an dem er geschah, aus `TimelineRun.interventions`.
   - „Fahrplan erzeugen“ beginnt einen Lauf mit dem Seed aus dem Feld, vor dem 01.01.1985 und ohne
     Eingriffe; die gesammelten bleiben erhalten.
-  - „Neu starten mit Eingriffen“ übernimmt Seed und Tag des aktuellen Laufs in die Probe und baut
-    den Lauf mit `WhatIfProbe.build_run()` neu: bis zum Tag jedes Eingriffs abspielen, dort
-    anwenden, dann weiter bis zu dem Tag, auf dem der alte Lauf stand (R22). Nicht anwendbare
+  - „Neu starten mit Eingriffen“ übernimmt Seed und Endtag in die Probe und baut den Lauf mit
+    `WhatIfProbe.build_run()` neu: die Eingriffe nach `at_day` geordnet, je bis zu ihrem Tag
+    abspielen und dort anwenden, dann weiter bis zum Endtag (R22, T075). Der Endtag ist der Tag,
+    auf dem der alte Lauf stand, mindestens aber der Tag des letzten gesammelten Eingriffs,
+    höchstens der 31.12.1999 (bis 2026-10-21: immer der Tag des alten Laufs). Nicht anwendbare
     Eingriffe nennt ein Hinweis.
   - „Neu starten ohne Eingriffe“ spielt einen frischen Lauf mit demselben Seed bis zu diesem Tag;
     die gesammelten Eingriffe bleiben für den nächsten Neustart mit Eingriffen.
@@ -427,17 +472,18 @@ const FOLDER := "res://tools/werkstatt/proben/"
 var id: String
 var name: String
 var seed: int
-var until_day: int = -1                      # bis hierher war der Lauf beim Speichern abgespielt
+var until_day: int = -1                      # bis hierher spielt build_run(); beim Speichern der Endtag wie beim Neustart (T075)
 var interventions: Array[Dictionary] = []    # Eingriffsprotokoll wie TimelineRun.interventions
 var not_applicable: PackedStringArray = []   # nach build_run(): deutsche Sätze, etwa „Absage: Konkurrent eröffnet am 01.06.1992 nicht im Fahrplan“
 
 static func list_probes(folder: String = FOLDER) -> Array[WhatIfProbe]   # alle Dateien im Ordner, nach Name
-static func read_file(path: String) -> WhatIfProbe       # null und push_error bei unlesbarer Datei
+static func read_file(path: String) -> WhatIfProbe       # null und push_error bei unlesbarer Datei, auch bei einem Seed außerhalb von 0 bis MAX_SEED (T099)
 func write_file(folder: String = FOLDER) -> Error         # folder + id + ".json", kanonisch wie der Katalog
 func delete_file(folder: String = FOLDER) -> Error        # „Probe löschen“ (FR-051)
 static func from_run(name: String, run: TimelineRun) -> WhatIfProbe   # Seed, today und Protokoll des Laufs
-## Neuer Lauf mit seed auf catalog; spielt das Protokoll nach (data-model.md, „Neu abspielen“)
-## und dann bis until_day. Füllt not_applicable.
+## Neuer Lauf mit seed auf catalog; spielt das Protokoll nach at_day geordnet nach (data-model.md,
+## „Neu abspielen“) und dann bis until_day. Füllt not_applicable in der Reihenfolge des
+## Nachspielens. Sammlung und Datei bleiben in der Reihenfolge der Aktionen.
 func build_run(catalog: EventCatalog) -> TimelineRun
 ```
 
@@ -463,8 +509,12 @@ Umgesetzt in Phase 9 (T066): Gerechnet wird über die Seeds 1 bis Anzahl auf
 `editor.catalog.without_faulty(editor.issues())`. Ändert sich der Katalog während einer Rechnung,
 erscheint wie im Simulator „? Katalog geändert, neu starten“, und die Rechnung bleibt beim alten
 Stand. Während der Rechnung ist die Tabelle leer. Eingriffe, die ein Spiel ablehnt, gelten dort
-nicht. Der Fortschrittsbalken ist `petrol` auf `papier` mit `tusche`-Kontur (Style-Guide, Rolle
-„Fortschritt“, Version 16).
+nicht; „mit N Eingriffen“ zählt nur die angenommenen (`TimelineStatistics.accepted`), und eine
+Warnung (`%RefusedNotice`) nennt die abgelehnten mit Grund: „? In jedem Spiel abgelehnt, deshalb
+nicht gezählt:“ und je Zeile „<Art>: <Grund>“ (T082). Der Fortschrittsbalken ist `petrol` auf
+`papier` mit `tusche`-Kontur (Style-Guide, Rolle „Fortschritt“, Version 16).
+In der Vorgabe-Teilung bekommt die Tabelle den Platz zuerst; die Verteilung auf die Jahre behält
+mindestens 64 px (Klaus, 2026-10-21, T101).
 
 - **Eingaben:** Anzahl der Spiele (Vorgabe 1.000), „Mit Modifikatoren und Einplanungen aus dem
   Simulator“, „Starten“, „Abbrechen“ und ein Fortschrittsbalken.

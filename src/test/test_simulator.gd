@@ -1,8 +1,9 @@
 extends GutTest
 
 ## Prüft die Eingriffe, Unterschiede und Proben im Simulator der Werkstatt (Feature 002, T061 und
-## T062; FR-043, FR-051; US6, Szenarien 1 bis 5, 7 und 8). Die Grundfunktionen des Simulators aus
-## Phase 7 prüft test_werkstatt_scene.gd.
+## T062; FR-043, FR-051; US6, Szenarien 1 bis 5, 7 und 8), dazu Eingriffe, die außer der Reihe
+## gesammelt sind (T075). Die Grundfunktionen des Simulators aus Phase 7 prüft
+## test_werkstatt_scene.gd.
 ##
 ## Jeder Test baut die ganze Werkstatt mit einer Kopie eines Test-Katalogs in einem eigenen Ordner
 ## unter user:// auf; Proben schreibt der Simulator in dessen Unterordner proben/. after_each()
@@ -149,6 +150,116 @@ func test_ungueltige_eingabe_und_ablehnung_lassen_den_dialog_offen() -> void:
 	dialog.hide()
 
 
+func test_feld_mit_fehler_im_dialog_hat_die_rote_kontur() -> void:
+	# Arrange (T093; Style-Guide, „Bedienelemente“): Solange der Hinweis steht, hat das Feld, um
+	# das es geht, die Kontur von 2 Pixeln in kassenrot; die anderen nicht.
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	var dialog := _intervention_dialog(simulator)
+	_druecken(simulator, "%ModifierButton")
+	assert_eq(_konturen(dialog), [], "Frisch geöffnet ohne Kontur.")
+
+	# Act und Assert: je Feld, das der Dialog selbst liest, nacheinander repariert
+	for fall: Array in [
+		[{"%ValueEdit": ""}, "%ValueEdit"],
+		[{"%ValueEdit": "viel"}, "%ValueEdit"],
+		[{"%ValueEdit": "+5", "%FromEdit": "32.1.1990"}, "%FromEdit"],
+		[{"%FromEdit": "1.1.1990", "%ToEdit": ""}, "%ToEdit"],
+		[{"%ToEdit": "31.12.1993", "%ReasonEdit": " "}, "%ReasonEdit"],
+	]:
+		_ausfuellen(dialog, fall[0])
+		dialog.get_ok_button().pressed.emit()
+		assert_true(dialog.get_node("%Hint").visible, "%s" % [fall[0]])
+		assert_eq(_konturen(dialog), [fall[1]], "%s" % [fall[0]])
+	var feld: LineEdit = dialog.get_node("%ReasonEdit")
+	var kasten: StyleBoxFlat = feld.get_theme_stylebox(&"normal")
+	assert_eq([kasten.border_color, kasten.border_width_left], [UiPalette.KASSENROT, 2])
+	# Ein Ende vor dem Beginn lehnt der Lauf ab; es geht um beide Tage.
+	_ausfuellen(dialog, {"%ReasonEdit": HAENDLER, "%FromEdit": "1.1.1993", "%ToEdit": "1.1.1990"})
+	dialog.get_ok_button().pressed.emit()
+	assert_eq(dialog.get_node("%Hint").text, simulator.run.last_refusal)
+	assert_eq(_konturen(dialog), ["%FromEdit", "%ToEdit"])
+	# Angenommen: Der Dialog schließt, Hinweis und Kontur gehen.
+	_ausfuellen(dialog, {"%FromEdit": "1.1.1990", "%ToEdit": "31.12.1993"})
+	dialog.get_ok_button().pressed.emit()
+	assert_false(dialog.visible)
+	assert_false(dialog.get_node("%Hint").visible)
+	assert_eq(_konturen(dialog), [])
+
+	# Act und Assert: Verschieben auf einen Tag, der schon abgespielt ist; es geht um den Tag.
+	_bis(simulator, "1.1.1992")
+	_termin_waehlen(simulator, _termin(simulator, "konkurrent_eroeffnet",
+		ScheduleEntry.Origin.PRESET))
+	_druecken(simulator, "%MoveButton")
+	_ausfuellen(dialog, {"%DayEdit": "1.6.1990", "%ReasonEdit": "Bauamt hat Verspätung"})
+	dialog.get_ok_button().pressed.emit()
+	assert_string_contains(dialog.get_node("%Hint").text, "schon abgespielt")
+	assert_eq(_konturen(dialog), ["%DayEdit"])
+	dialog.hide()
+	# Ein fixer Termin lässt sich auf keinen Tag verschieben; das liegt an keinem Feld.
+	_termin_waehlen(simulator, _termin(simulator, "windows_95", ScheduleEntry.Origin.FIXED))
+	_druecken(simulator, "%MoveButton")
+	assert_eq(_konturen(dialog), [], "Beim Öffnen ist die Kontur weg.")
+	_ausfuellen(dialog, {"%DayEdit": "1.9.1995", "%ReasonEdit": "Ausprobiert"})
+	dialog.get_ok_button().pressed.emit()
+	assert_string_contains(dialog.get_node("%Hint").text, "ist fix")
+	assert_eq(_konturen(dialog), [])
+	dialog.hide()
+	# Einplanen nach dem Spielende: der Tag
+	_druecken(simulator, "%ScheduleButton")
+	_ausfuellen(dialog, {"%DayEdit": "1.1.2001", "%ReasonEdit": "Zu spät"})
+	dialog.get_ok_button().pressed.emit()
+	assert_string_contains(dialog.get_node("%Hint").text, "nach dem Spielende")
+	assert_eq(_konturen(dialog), ["%DayEdit"])
+	dialog.hide()
+
+
+func test_modifikator_ohne_ereignis_zur_wahl_hat_die_kontur_an_der_auswahl() -> void:
+	# Arrange (T093): Im Katalog gibt es kein Ereignis über Wahrscheinlichkeit.
+	var werkstatt := await _werkstatt("res://test/fixtures/catalog_us1_preset.json")
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	var dialog := _intervention_dialog(simulator)
+
+	# Act
+	_druecken(simulator, "%ModifierButton")
+	_ausfuellen(dialog, {"%ValueEdit": "+5", "%ReasonEdit": HAENDLER, "%ToEdit": "31.12.1993"})
+	dialog.get_ok_button().pressed.emit()
+
+	# Assert: Auswahlfelder haben ihre eigene Variante.
+	assert_eq(dialog.get_node("%Hint").text, "Wähle ein Ereignis.")
+	assert_eq(dialog.get_node("%EventChoice").theme_type_variation, &"ErrorOptionButton")
+	assert_eq(_konturen(dialog), ["%EventChoice"])
+	dialog.hide()
+
+
+func test_probe_ohne_namen_hat_die_rote_kontur() -> void:
+	# Arrange (T093)
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	var feld: LineEdit = simulator.get_node("%ProbeNameEdit")
+	var dialog: ConfirmationDialog = simulator.get_node("%SaveProbeDialog")
+
+	# Act: speichern ohne Namen
+	_druecken(simulator, "%SaveProbeButton")
+	feld.text = "  "
+	dialog.get_ok_button().pressed.emit()
+
+	# Assert
+	assert_true(dialog.visible, "Der Dialog bleibt offen.")
+	assert_true(simulator.get_node("%SaveHint").visible)
+	assert_eq(feld.theme_type_variation, &"ErrorLineEdit")
+
+	# Act und Assert: Beim nächsten Öffnen sind Hinweis und Kontur weg.
+	dialog.hide()
+	_druecken(simulator, "%SaveProbeButton")
+	assert_false(simulator.get_node("%SaveHint").visible)
+	assert_eq(feld.theme_type_variation, &"")
+	dialog.hide()
+
+
 # --- Absagen, Verschieben, Einplanen (US6, Szenarien 4 und 5) --------------------------------
 
 func test_szenario_4_absage_mit_grund() -> void:
@@ -239,6 +350,41 @@ func test_verschieben_und_einplanen() -> void:
 	for eingriff in simulator.probe.interventions:
 		arten.append(eingriff["kind"])
 	assert_eq(arten, [TimelineRun.INTERVENTION_MOVE, TimelineRun.INTERVENTION_SCHEDULE])
+
+
+func test_begruendung_eines_abgesagten_termins_nennt_keine_wirkung() -> void:
+	# Arrange (T097): ein eingeplanter Termin mit einer Wirkung 14 Tage nach dem Beginn, von Hand
+	# wie im Lauf
+	var spaeter := EventEffect.new()
+	spaeter.kind = EventEffect.Kind.NACHFRAGE
+	spaeter.target = "ram"
+	spaeter.magnitude = 0.2
+	spaeter.delay_days = 14
+	var ereignis := TimelineEvent.new()
+	ereignis.id = "speicher"
+	ereignis.title = "Speicher wird knapp"
+	ereignis.kind = TimelineEvent.Kind.CHANCE
+	ereignis.effects.assign([spaeter])
+	var termin := ScheduleEntry.new()
+	termin.serial = 1
+	termin.event = ereignis
+	termin.origin = ScheduleEntry.Origin.INTERVENTION
+	termin.day = _tag(1993, 3, 22)
+	termin.end_day = termin.day
+
+	# Act und Assert: geplant mit ihrem Tag …
+	assert_string_contains(SimulatorPanel._explanation(termin),
+		"05.04.1993  Nachfrage · ram · +20%")
+	# … abgesagt oder entfallen nicht mehr, denn sie käme nie (Klaus, 2026-10-21).
+	for zustand: ScheduleEntry.State in [ScheduleEntry.State.CANCELLED,
+			ScheduleEntry.State.SKIPPED]:
+		termin.state = zustand
+		var text := SimulatorPanel._explanation(termin)
+		assert_string_contains(text, "Verzögerte Wirkungen: entfallen mit dem Termin")
+		assert_false(text.contains("05.04.1993"), "Kein Tag einer Wirkung: %s" % text)
+	ereignis.effects.clear()
+	assert_string_contains(SimulatorPanel._explanation(termin), "Verzögerte Wirkungen: keine",
+		"Ohne verzögerte Wirkung entfällt auch keine.")
 
 
 # --- Unterschiede (US6, Szenario 2; FR-043) ---------------------------------------------------
@@ -357,6 +503,68 @@ func test_neustart_mit_und_ohne_eingriffe_behaelt_die_gesammelten() -> void:
 	assert_eq([simulator.run.seed, simulator.run.interventions.size()], [1, 0])
 	assert_eq(simulator.probe.interventions.size(), 2)
 	assert_eq(simulator.get_node("%ProbeLabel").text, "2 Eingriffe gesammelt")
+
+
+func test_eingriff_vor_spielbeginn_nach_fahrplan_erzeugen_gilt_an_seinem_tag() -> void:
+	# Arrange (T075, Ablauf aus der Lückensuche): am 01.01.1992 ein Modifikator auf die
+	# Reklamationswelle, dann „Fahrplan erzeugen“, dann vor Spielbeginn +100 Prozentpunkte auf
+	# „Nur mit Aktion“, das ohne Modifikator nie kommt. Gesammelt steht der vom 01.01.1992 vorn.
+	var werkstatt := await _werkstatt(SCHWELLE)
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	_bis(simulator, "1.1.1992")
+	_modifikator(simulator, "Werbung", "+5", "1.1.1992", "31.12.1999")
+	_erzeugen(simulator, "4711")
+	_modifikator(simulator, "Aktion im Laden", "+100", "1.1.1985", "31.12.1999", "nur_mit_aktion")
+	var gesammelt := simulator.probe.interventions.duplicate(true)
+	assert_eq(_tage_der_eingriffe(gesammelt), [_tag(1992, 1, 1), -1],
+		"Gesammelt in der Reihenfolge der Aktionen.")
+
+	# Act: speichern, solange der Lauf noch vor dem 01.01.1985 steht, dann neu starten
+	_speichern(simulator, "Reihenfolge")
+	var datei := FileAccess.get_file_as_string(PROBEN + "reihenfolge.json")
+	_druecken(simulator, "%RestartWithButton")
+
+	# Assert: Beide gelten an ihrem Tag, keiner ist nicht anwendbar.
+	assert_eq(simulator.probe.not_applicable, PackedStringArray())
+	assert_false(simulator.get_node("%ProbeNotice").visible)
+	assert_eq(_tage_der_eingriffe(simulator.run.interventions), [-1, _tag(1992, 1, 1)],
+		"Nachgespielt nach ihrem Tag.")
+	var aktion := _termin(simulator, "nur_mit_aktion", ScheduleEntry.Origin.ROLLED)
+	assert_not_null(aktion, "„Nur mit Aktion“ kommt mit dem Modifikator.")
+	if aktion != null:
+		assert_lt(aktion.day, _tag(1985, 2, 1), "Schon im Januar 1985, nicht erst 1992.")
+	assert_eq(simulator.probe.interventions, gesammelt, "Die Sammlung bleibt, wie sie war.")
+	# Der Endtag ist der letzte Eingriff, denn der Lauf stand vor dem 01.01.1985.
+	assert_eq([simulator.run.today, simulator.probe.until_day],
+		[_tag(1992, 1, 1), _tag(1992, 1, 1)])
+	assert_string_contains(datei, "\t\"until_day\": \"1992-01-01\"\n")
+	assert_lt(datei.find("\"at_day\": \"1992-01-01\""), datei.find("\"at_day\": \"1984-12-31\""),
+		"Die Datei hat die Reihenfolge der Aktionen.")
+	var fahrplan := ScheduleText.plan_lines(simulator.run)
+
+	# Act: ein anderer Lauf, dann die Probe laden
+	_erzeugen(simulator, "1")
+	_druecken(simulator, "%LoadProbeButton")
+	simulator.get_node("%ProbeList").get_root().get_child(0).select(0)
+	simulator.get_node("%LoadProbeDialog").get_ok_button().pressed.emit()
+
+	# Assert: Speichern und Laden ergeben denselben Fahrplan.
+	assert_eq([simulator.run.seed, simulator.run.today], [4711, _tag(1992, 1, 1)])
+	assert_eq(ScheduleText.plan_lines(simulator.run), fahrplan)
+
+	# Act: bis zum Ende; dazu die Statistik mit denselben Eingriffen für diesen einen Seed
+	_druecken(simulator, "%EndButton")
+	var katalog := werkstatt.editor.catalog.without_faulty(werkstatt.editor.issues())
+	var statistik := TimelineStatistics.new(katalog, 1, 4711)
+	statistik.interventions = simulator.probe.interventions
+	while not statistik.run_for(1000):
+		pass
+
+	# Assert: je Ereignis so viele Termine wie im Lauf
+	for ergebnis in statistik.results():
+		assert_eq(ergebnis.total, _begonnen(simulator.run, ergebnis.event_id), ergebnis.event_id)
+	assert_eq(_begonnen(simulator.run, "nur_mit_aktion"), 180, "Jeden Monat ab Januar 1985.")
 
 
 # --- Proben (US6, Szenarien 7 und 8; FR-051) --------------------------------------------------
@@ -547,7 +755,7 @@ func _werkstatt(fixture: String = US6) -> Werkstatt:
 	datei.close()
 	var werkstatt: Werkstatt = SZENE.instantiate()
 	werkstatt.catalog_path = ziel
-	werkstatt.editor.backup_path = ORDNER + "sicherung.json"
+	werkstatt.editor.backup_folder = ORDNER
 	werkstatt.settings_path = ORDNER + "einstellungen.cfg"
 	add_child_autofree(werkstatt)
 	await wait_process_frames(2)
@@ -583,6 +791,18 @@ func _bis(simulator: SimulatorPanel, datum: String) -> void:
 
 func _intervention_dialog(simulator: SimulatorPanel) -> InterventionDialog:
 	return simulator.get_node("%InterventionDialog")
+
+
+## Die Felder des Dialogs mit der roten Kontur eines Fehlers, als „%Name“ in ihrer Reihenfolge im
+## Dialog.
+func _konturen(dialog: InterventionDialog) -> Array:
+	var felder := []
+	for pfad: String in ["%EventChoice", "%ValueEdit", "%ReasonEdit", "%FromEdit", "%ToEdit",
+			"%DayEdit"]:
+		var feld: Control = dialog.get_node(pfad)
+		if String(feld.theme_type_variation).begins_with("Error"):
+			felder.append(pfad)
+	return felder
 
 
 ## Setzt Felder im Dialog, je eindeutiger Name → Text. Die Variablen heißen nicht „name“:
@@ -693,3 +913,21 @@ func _kennungen(modifikatoren: Array[ChanceModifier]) -> Array:
 	for modifikator in modifikatoren:
 		kennungen.append(modifikator.id)
 	return kennungen
+
+
+## Die at_day der Einträge eines Eingriffsprotokolls in ihrer Reihenfolge.
+func _tage_der_eingriffe(eingriffe: Array[Dictionary]) -> Array:
+	var tage := []
+	for eingriff in eingriffe:
+		tage.append(eingriff["at_day"])
+	return tage
+
+
+## Wie viele Termine des Ereignisses [param id] begonnen haben: laufen, eingetreten oder beendet.
+func _begonnen(run: TimelineRun, id: String) -> int:
+	var anzahl := 0
+	for termin in run.entries:
+		if termin.event.id == id and termin.state in [ScheduleEntry.State.RUNNING,
+				ScheduleEntry.State.OCCURRED, ScheduleEntry.State.ENDED]:
+			anzahl += 1
+	return anzahl

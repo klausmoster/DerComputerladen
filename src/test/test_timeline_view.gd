@@ -22,7 +22,7 @@ var _editor: CatalogEditor
 
 func before_each() -> void:
 	_editor = CatalogEditor.new()
-	_editor.backup_path = "user://test_timeline_view_sicherung.json"
+	_editor.backup_folder = "user://test_timeline_view_sicherungen/"
 	assert_eq(_editor.open(KATALOG), OK, "Der Test-Katalog lässt sich lesen.")
 	_zeitstrahl = TimelineView.new()
 	_zeitstrahl.theme = THEMA

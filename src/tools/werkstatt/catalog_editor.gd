@@ -103,9 +103,10 @@ var catalog: EventCatalog
 var path: String = ""
 ## Deutscher Text des letzten Fehlers beim Öffnen oder Speichern.
 var last_error: String = ""
-## Sicherungskopie (FR-050, R23): {"catalog", "format": 1, "path", "saved"}, kanonisch. Tests setzen
-## eine eigene Datei.
-var backup_path: String = "user://werkstatt_sicherung.json"
+## Ordner der Sicherungskopien (FR-050, R23), unter user:// und damit außerhalb des Projekts. Jeder
+## Katalog hat darin seine eigene Datei, backup_path(); so blockiert die Kopie des einen nie die
+## Sicherung des anderen. Tests setzen einen eigenen Ordner.
+var backup_folder: String = "user://werkstatt_sicherungen/"
 
 ## Der Verlauf. UndoRedo erbt von Object, nicht von RefCounted, und muss deshalb von Hand
 ## freigegeben werden (_notification()).
@@ -276,25 +277,62 @@ func content_key() -> String:
 
 
 # --- Sicherungskopie ---------------------------------------------------------------------------
+#
+# Je Katalog eine Datei im backup_folder, benannt nach seinem Pfad (backup_name()): Der echte
+# Katalog und catalog_500.json haben also zwei Kopien, und keine stört die andere. Alle Methoden
+# hier meinen die Datei des geöffneten Katalogs, backup_path(). Darin steht wie bisher auch der
+# Pfad des Katalogs; eine Datei, die nicht lesbar ist oder zu einem anderen Pfad gehört, bietet die
+# Werkstatt nicht an, und die nächste Sicherung ersetzt sie.
 
-## Schreibt die Sicherungskopie, aber nur, wenn es ungespeicherte Änderungen gibt; sonst geschieht
-## nichts, und das Ergebnis ist OK. Die Werkstatt ruft das alle 120 Sekunden auf.
-##
-## Liegt dort die lesbare Kopie eines anderen Katalogs, bleibt sie liegen (R23), und das Ergebnis
-## ist ERR_ALREADY_EXISTS. Es gibt nur die eine Datei; überschriebe sie der eine Katalog, wären die
-## ungespeicherten Änderungen am anderen verloren.
+
+## Die Sicherungsdatei des geöffneten Katalogs: backup_folder und backup_name(path).
+func backup_path() -> String:
+	return backup_folder.path_join(backup_name(path))
+
+
+## Der Name der Sicherungsdatei für den Katalog unter [param catalog_path]: der Dateiname des
+## Katalogs als Kennung, dazu die ersten zwölf Zeichen des SHA-256 seines Pfads nach
+## normalized_path(), etwa event_catalog_6d0c5a1e8b2f.json. Derselbe Katalog hat so immer
+## denselben Namen, auch wenn sein Pfad einmal als res://… und einmal absolut kommt; zwei
+## verschiedene Kataloge haben nie denselben, auch zwei event_catalog.json in zwei Ordnern nicht.
+static func backup_name(catalog_path: String) -> String:
+	var normal := normalized_path(catalog_path)
+	var base := id_from(normal.get_file().get_basename(), "katalog")
+	return "%s_%s.json" % [base, normal.sha256_text().left(12)]
+
+
+## [param p_path] als absoluter Pfad ohne „.“, „..“ und doppelte „/“: res:// und user:// werden
+## zum Pfad auf der Platte, ein relativer Pfad gilt ab dem Arbeitsordner, wie bei FileAccess. So
+## ergeben res://data/event_catalog.json und …/src/data/event_catalog.json denselben Text.
+## Verknüpfungen (Symlinks) und Groß- und Kleinschreibung gleicht das nicht an.
+static func normalized_path(p_path: String) -> String:
+	var absolute := ProjectSettings.globalize_path(p_path)
+	if absolute.is_relative_path():
+		var here := DirAccess.open(".")
+		if here != null:
+			absolute = here.get_current_dir().path_join(absolute)
+	return absolute.simplify_path()
+
+
+## Schreibt die Sicherungskopie dieses Katalogs nach backup_path(), aber nur, wenn es
+## ungespeicherte Änderungen gibt; sonst geschieht nichts, und das Ergebnis ist OK. Die Werkstatt
+## ruft das alle 120 Sekunden auf. Eine Datei, die dort schon liegt, ersetzt die neue Kopie, auch
+## eine unlesbare. Fehlt der Ordner, legt sie ihn an. Geht das Schreiben nicht, kommt der Fehler
+## zurück; die Werkstatt sagt es dann.
 func write_backup() -> Error:
 	if catalog == null or not is_dirty():
 		return OK
-	if _foreign_backup():
-		return ERR_ALREADY_EXISTS
+	if not DirAccess.dir_exists_absolute(backup_folder):
+		var made := DirAccess.make_dir_recursive_absolute(backup_folder)
+		if made != OK:
+			return made
 	var data := {
 		"catalog": _catalog_dict(),
 		"format": BACKUP_FORMAT,
 		"path": path,
 		"saved": int(Time.get_unix_time_from_system()),
 	}
-	var file := FileAccess.open(backup_path, FileAccess.WRITE)
+	var file := FileAccess.open(backup_path(), FileAccess.WRITE)
 	if file == null:
 		return FileAccess.get_open_error()
 	var stored := file.store_string(JSON.stringify(data, "\t", true) + "\n")
@@ -302,14 +340,16 @@ func write_backup() -> Error:
 	return OK if stored else ERR_FILE_CANT_WRITE
 
 
+## Ob unter backup_path() eine Datei liegt, ob lesbar oder nicht.
 func has_backup() -> bool:
-	return FileAccess.file_exists(backup_path)
+	return FileAccess.file_exists(backup_path())
 
 
-## Ob "path" der Kopie zu path passt. Eine unlesbare Kopie passt zu keinem Katalog.
+## Ob unter backup_path() eine lesbare Kopie dieses Katalogs liegt: Ihr "path" ist nach
+## normalized_path() derselbe wie path. Nur sie bietet die Werkstatt beim Start an.
 func backup_matches() -> bool:
 	var data := _read_backup()
-	return not data.is_empty() and data["path"] == path
+	return not data.is_empty() and _same_catalog(data["path"])
 
 
 ## { "path": String, "saved": int, "catalog_modified": int }: zu welchem Katalog die Kopie gehört,
@@ -333,16 +373,16 @@ func backup_info() -> Dictionary:
 func restore_backup() -> Error:
 	var data := _read_backup()
 	if data.is_empty():
-		last_error = "Die Sicherungskopie %s fehlt oder ist nicht lesbar." % backup_path
+		last_error = "Die Sicherungskopie %s fehlt oder ist nicht lesbar." % backup_path()
 		return ERR_PARSE_ERROR if has_backup() else ERR_FILE_NOT_FOUND
-	if data["path"] != path:
+	if not _same_catalog(data["path"]):
 		last_error = "Die Sicherungskopie gehört zum Katalog %s, nicht zu %s." % [data["path"],
 			path]
 		return ERR_INVALID_DATA
 	var found: Array[CatalogIssue] = []
 	var restored := EventCatalog.from_json(JSON.stringify(data["catalog"]), found)
 	if restored == null:
-		last_error = "Der Katalog in der Sicherungskopie %s ist nicht lesbar." % backup_path
+		last_error = "Der Katalog in der Sicherungskopie %s ist nicht lesbar." % backup_path()
 		return ERR_PARSE_ERROR
 	# Die Meldungen beim Lesen gelten der Datei unter path; sie bleiben, bis gespeichert wird.
 	_read_issues.append_array(found)
@@ -351,11 +391,11 @@ func restore_backup() -> Error:
 	return OK
 
 
-## Löscht die Sicherungskopie dieses Katalogs, auch eine, die sich nicht mehr lesen lässt. Die
-## lesbare Kopie eines anderen Katalogs bleibt liegen (R23).
+## Löscht die Sicherungskopie dieses Katalogs, was immer unter backup_path() liegt, auch eine
+## unlesbare Datei. Die Kopien anderer Kataloge liegen in eigenen Dateien und bleiben unberührt.
 func discard_backup() -> void:
-	if has_backup() and not _foreign_backup():
-		DirAccess.remove_absolute(backup_path)
+	if has_backup():
+		DirAccess.remove_absolute(backup_path())
 
 
 # --- Ereignisse --------------------------------------------------------------------------------
@@ -1038,18 +1078,18 @@ func _text_of(item: Object, texts: Dictionary) -> String:
 	return text
 
 
-## Ob unter backup_path die lesbare Kopie eines anderen Katalogs liegt.
-func _foreign_backup() -> bool:
-	var data := _read_backup()
-	return not data.is_empty() and data["path"] != path
+## Ob [param backup_of], der Pfad aus einer Sicherungskopie, derselbe Katalog ist wie path.
+func _same_catalog(backup_of: String) -> bool:
+	return normalized_path(backup_of) == normalized_path(path)
 
 
-## Die Sicherungskopie als Dictionary; leer, wenn sie fehlt oder nicht die erwartete Form hat.
+## Die Sicherungskopie unter backup_path() als Dictionary; leer, wenn sie fehlt oder nicht die
+## erwartete Form hat.
 func _read_backup() -> Dictionary:
 	if not has_backup():
 		return {}
 	var json := JSON.new()
-	if json.parse(FileAccess.get_file_as_string(backup_path)) != OK:
+	if json.parse(FileAccess.get_file_as_string(backup_path())) != OK:
 		return {}
 	if typeof(json.data) != TYPE_DICTIONARY:
 		return {}

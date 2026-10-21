@@ -4,7 +4,8 @@ extends StyleBox
 
 ## Kasten für Knöpfe, Leisten und Menüs der Werkzeuge (Style-Guide, Abschnitt „Werkzeuge“): eine
 ## Fläche in einer Farbe der Palette mit 1 Pixel Kontur in tusche, dazu wahlweise das Relief der
-## Knöpfe und der harte Pixelschatten der Menüs.
+## Knöpfe und der harte Pixelschatten der Menüs. Ein Auswahlfeld mit Fehler hat stattdessen eine
+## Kontur von 2 Pixeln in kassenrot (Style-Guide, „Bedienelemente“; outline, outline_width).
 ##
 ## StyleBoxFlat reicht dafür nicht. Es kennt nur eine Randfarbe, das Relief braucht aber zwei:
 ## Licht oben links in gehaeuse-hell, Schatten unten rechts in gehaeuse-dunkel, beim Drücken
@@ -25,7 +26,7 @@ enum Relief {
 	PRESSED,  ## relief-gedrueckt: Schatten oben links, Licht unten rechts
 }
 
-## Kontur und Pixelschatten.
+## Kontur, wenn nichts anderes gesetzt ist, und Pixelschatten.
 const OUTLINE := &"tusche"
 ## Lichtkante und Schattenkante des Reliefs.
 const LIGHT := &"gehaeuse-hell"
@@ -42,6 +43,16 @@ const SHADOW_OFFSET := 2
 @export var relief: Relief = Relief.RAISED:
 	set(value):
 		relief = value
+		emit_changed()
+## Farbe der Kontur, ein Token aus UiPalette.TOKENS; tusche, bei einem Feld mit Fehler kassenrot.
+@export var outline: StringName = OUTLINE:
+	set(value):
+		outline = value
+		emit_changed()
+## Breite der Kontur in Pixeln: 1, bei einem Feld mit Fehler 2. Das Relief liegt innen daran.
+@export_range(1, 4) var outline_width: int = 1:
+	set(value):
+		outline_width = value
 		emit_changed()
 ## Harter Schatten von 2 Pixeln nach rechts unten. Er liegt innerhalb des Rechtecks, denn Menüs
 ## und Tooltips sind eigene Fenster und schneiden ab, was außerhalb liegt. Der Kasten selbst
@@ -68,8 +79,8 @@ func layers(rect: Rect2) -> Array[Dictionary]:
 	if pixel_shadow:
 		box.size -= Vector2(SHADOW_OFFSET, SHADOW_OFFSET)
 		_add(result, Rect2(box.position + Vector2(SHADOW_OFFSET, SHADOW_OFFSET), box.size), OUTLINE)
-	_add(result, box, OUTLINE)
-	var inner := box.grow(-1.0)
+	_add(result, box, outline)
+	var inner := box.grow(-float(outline_width))
 	_add(result, inner, fill)
 	if relief != Relief.NONE:
 		var top_left := LIGHT if relief == Relief.RAISED else DARK

@@ -93,7 +93,13 @@ Szene noch die Pixelschrift des Spiels; die Werkstatt setzt Open Sans erst beim 
 | Komma in der Datei löschen, Werkstatt neu starten | Meldung mit Zeile und Grund, Datei unverändert | Edge Case, R4 |
 | Katalogdatei vorübergehend umbenennen, Werkstatt starten | Angebot, einen leeren Katalog anzulegen; geschrieben wird erst beim Speichern | Edge Case |
 | Ungespeicherte Änderung, 2 Minuten warten, Werkstatt im Terminal mit `pkill -9 -f werkstatt.tscn` hart beenden, neu starten | Angebot, die Sicherungskopie zu übernehmen, mit beiden Zeiten; danach ist die Änderung da | FR-050 |
-| Bei liegender Sicherungskopie die Werkstatt mit `-- --katalog res://test/fixtures/catalog_minimal.json` starten | keine Übernahme angeboten, ein Hinweis nennt den Pfad der Kopie | R23 |
+| Mit `-- --katalog res://test/fixtures/catalog_500.json` starten, etwas ändern, 2 Minuten warten, hart beenden; dann ohne `--katalog` starten, danach wieder mit catalog_500 | beim echten Katalog weder Angebot noch Hinweis auf die andere Kopie; bei catalog_500 wird dessen Kopie angeboten; dort „Verwerfen“ wählen und nichts speichern, damit die Fixture bleibt, wie sie ist (ab Phase 11; bis dahin ein Hinweis, und die andere Kopie verhinderte die Sicherung) | R23, T078 |
+| Einen Titel ändern und ohne Enter in eine andere Zeile der Liste klicken; ebenso nach einer Eingabe eine Meldung in der Prüfung anklicken | gewählt ist die angeklickte Zeile, die Eingabe ist übernommen (ab Phase 11) | FR-030, FR-033, T076 |
+| Einen Titel ändern und ohne Enter die Auswahl „Kategorie“ öffnen | die Liste der Auswahl bleibt offen (ab Phase 11) | FR-031, T080 |
+| Mit `-- --katalog res://test/fixtures/catalog_v05_kategorie_unbekannt.json` starten (nicht speichern), das Ereignis wählen | die Auswahl „Kategorie“ hat die rote Kontur, darunter der Hinweis (ab Phase 11) | Style-Guide, T081 |
+| In „Neu …“ eine schon vergebene Kennung eingeben | rote Kontur am Feld, darunter der Hinweis (ab Phase 12) | Style-Guide, T093 |
+| Mit Tab durch das ganze Formular bis zur Farbwahl der Kategorien und „Anlegen“ | die Fokuslinie ist immer ganz zu sehen, auch rechts an der Rollleiste; der Bereich rollt mit (ab Phase 12) | Style-Guide, T094 |
+| Mit liegender Sicherungskopie starten, den Dialog offen lassen und mit Cmd+Q schließen | beim nächsten Start wird die Kopie wieder angeboten (ab Phase 12) | FR-050, T096 |
 | Alle Teiler ziehen, schließen, neu starten; dann das Fenster verkleinern | die Teiler stehen wie zuletzt; jeder Bereich bleibt sichtbar (ab Phase 10) | Wunsch von Klaus |
 
 ### 4.2 Kalender und Dauer (ab Phase 5)
@@ -117,6 +123,7 @@ Szene noch die Pixelschrift des Spiels; die Werkstatt setzt Open Sans erst beim 
 | Ende eines Zeitfensters ziehen, bis Anzahl und Abstand nicht mehr passen | Fehler steht schon beim Ziehen am Mauszeiger; nach dem Loslassen meldet die Prüfung V10 | US4, Szenario 2 |
 | Maus über einem Ereignis ruhen lassen | Hinweis mit Titel, Art, Datum oder Fenster, Chance | US4, Szenario 3 |
 | Rechtsklick auf ein Ereignis | Menü Bearbeiten, Duplizieren, Löschen | US4, Szenario 4 |
+| Einen Titel ändern, ohne Enter mit rechts auf die Marke des Ereignisses klicken, „Duplizieren“ | Original und Kopie haben den neuen Titel (ab Phase 11) | FR-039, T077 |
 | Doppelklick in der Zeile Hardware, März 1996 | Dialog „Neu …“ mit Art fix, Kategorie Hardware und dem Tag; nach Titel und Enter das neue Ereignis an diesem Tag, gewählt, Fokus im Titel | US4, Szenario 5; R16 |
 | Auf dem Trackpad mit zwei Fingern waagerecht und senkrecht wischen, dann kneifen | Wischen verschiebt die Jahre bzw. rollt die Zeilen; Kneifen zoomt um den Mauszeiger | R16 |
 | Mit Cmd+Mausrad, mit Kneifen oder mit „+“ oben links hineinzoomen, dann „Alles“ | bis zu einem Monat mit Tagesstrichen, die waagerechte Leiste bekommt einen Griff; „Alles“ zeigt wieder 1985 bis 1999 | US4, Szenario 6 |
@@ -134,6 +141,8 @@ Szene noch die Pixelschrift des Spiels; die Werkstatt setzt Open Sans erst beim 
 | „+1 Tag“, „+1 Monat“, „+1 Jahr“, dann „Bis“ mit 31.12.1990 im Datumsfeld | Datum springt entsprechend, das Protokoll wächst, Zustände wechseln auf „eingetreten“ oder „läuft“ | FR-041 |
 | „Bis zum Ende“ mit dem übernommenen Katalog | in unter 1 Sekunde fertig, Protokoll in zeitlicher Reihenfolge | US5, Szenario 2; SC-004 |
 | Während eines Laufs ein Ereignis im Katalog ändern | Hinweis „Katalog geändert, neu starten“, der Lauf bleibt, wie er ist | FR-042 |
+| Einen Titel ändern und ohne Enter mit rechts auf den Termin eines anderen Ereignisses im Fahrplan klicken; ebenso eine Wahl im Menü „…“ am Wirkungsziel | die Eingabe ist übernommen (ab Phase 12) | FR-031, FR-043, T095 |
+| Zwischen den Reitern Prüfung, Simulator und Statistik wechseln | der Zeitstrahl springt nicht; die Fahrplan-Tabelle zeigt mehr Zeilen als vorher (ab Phase 12) | T101 |
 | Ein Ereignis absichtlich fehlerhaft machen, „Fahrplan erzeugen“ | Ereignis ausgenommen, Hinweis nennt es | FR-042 |
 | Einen gewürfelten Termin auswählen | Würfelwert, Grundchance, Modifikatoren, Schwelle | US5, Szenario 3; SC-007 |
 | Chance eines Ereignisses ändern, nicht speichern, mit demselben Seed „Fahrplan erzeugen“ und „Bis zum Ende“ | geänderte Chance gilt, andere Termine bleiben | US5, Szenario 4 |
@@ -147,9 +156,11 @@ Dass der Simulator die Spieluhr nicht anfasst (US5, Szenario 5), prüft `test_we
 | Modifikator „Ware vom windigen Händler: +5 Prozentpunkte vom 01.01.1990 bis 31.12.1993“ auf Reklamationswelle | Begründungen 1990–1993 nennen 8 %, sonst 3 % | US6, Szenario 1 |
 | „Neu starten mit Eingriffen“, Filter „nur Unterschiede“ | markiert sind nur Termine der Reklamationswelle und von ihr abhängige; weggefallene stehen durchgestrichen; „verschoben“ steht nur bei verschobenen Terminen | US6, Szenario 2; FR-043 |
 | Modifikatoren +4 und −6, dann +4 entfernen | „−3 % → 0 %“ angezeigt | US6, Szenario 3 |
+| Im Dialog „Modifikator setzen“ als Wert „viel“ eingeben, „Setzen“ | rote Kontur am Wert, darunter der Hinweis (ab Phase 12) | Style-Guide, T093 |
 | „Konkurrent eröffnet“ auf „beim Start gesetzt“ stellen (nicht speichern), Simulator neu starten, vor dessen Termin den Termin mit Grund absagen | Termin „abgesagt“ mit Grund, tritt nicht ein; danach Cmd+Z bis zum alten Stand | US6, Szenario 4 |
 | „Windows 95“ absagen oder verschieben | abgelehnt, mit Grund | US6, Szenario 5 |
 | Einen gewürfelten Termin absagen, dann „Neu starten mit Eingriffen“ | der Termin ist wieder abgesagt, nichts als „nicht anwendbar“ genannt | FR-043, R22 |
+| Seed 4711, „Bis“ 1.1.1992, Modifikator setzen; „Fahrplan erzeugen“, Modifikator ab 1.1.1985 setzen; „Neu starten mit Eingriffen“; dann „Probe speichern …“ | Stand 01.01.1992, im Protokoll „31.12.1984 Eingriff …“ vor „01.01.1992 Eingriff …“; in „Probe laden …“ steht der 01.01.1992 (ab Phase 11) | FR-043, FR-051, T075 |
 | Probe mit Modifikator und Absage als „Windiger Händler ab 1990“ speichern, Werkstatt schließen, wieder öffnen, Probe laden | Seed, Modifikator und Absage wieder gesetzt, Fahrplan wie vorher; Datei unter `src/tools/werkstatt/proben/` | US6, Szenario 7; FR-051 |
 | Das abgesagte Ereignis im Katalog auf eine andere Art stellen, Probe erneut laden | Absage als nicht anwendbar genannt, Modifikator gesetzt | US6, Szenario 8 |
 | „Probe löschen“ | Probe fehlt in der Liste, die Datei ist weg | FR-051 |
@@ -165,6 +176,7 @@ der Ablauf.
 | Statistik über 1.000 Spiele vom Start bis 100 %, einmal abbrechen | höchstens 30 Sekunden; abgebrochen mit Zahl der fertigen Spiele | US7, Szenario 1; SC-004 |
 | Zeile „Neubaugebiet“ und eine Zeile eines fixen Ereignisses | Mittelwert, kleinste und größte Anzahl, „ohne“, „Obergrenze“ (rund 85 %), Verteilung auf die Jahre; beim fixen Ereignis „–“ bei der Obergrenze | US7, Szenario 2; FR-044 |
 | Im Simulator +5 Prozentpunkte auf die Reklamationswelle, dann Statistik mit Häkchen „Mit Modifikatoren und Einplanungen aus dem Simulator“ und ohne | mit Häkchen höherer Mittelwert der Reklamationswelle, ohne wie vorher | US7, Szenario 4; FR-045 |
+| Danach die Reklamationswelle löschen (nicht speichern), Statistik mit Häkchen | der Modifikator wird nicht gezählt, eine Warnung nennt ihn mit Grund; Cmd+Z holt das Ereignis zurück (ab Phase 11) | FR-045, T082 |
 
 ### 4.7 Abnahme der Werkstatt (Phase 10)
 
@@ -211,3 +223,4 @@ time /Applications/Godot.app/Contents/MacOS/Godot --headless --no-header --path 
 | 8 | T063 | 1, 4.5 |
 | 9 | T067 | 1, 4.6 |
 | 10 | T069, T072 | 5; danach 1 bis 6 vollständig samt 4.7 |
+| 11 und 12 | T103 | 1; in 4.1, 4.3, 4.5 und 4.6 die Zeilen „ab Phase 11“ und „ab Phase 12“; danach T072 |

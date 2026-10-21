@@ -394,6 +394,9 @@ func apply_intervention(record: Dictionary) -> Error:
 			if typeof(data) != TYPE_DICTIONARY:
 				return _refuse(ERR_INVALID_PARAMETER, "Dem Eingriff fehlt der Modifikator.")
 			if kind == INTERVENTION_ADD_MODIFIER:
+				var unreadable := _unreadable_modifier(data)
+				if not unreadable.is_empty():
+					return _refuse(ERR_INVALID_PARAMETER, unreadable)
 				return add_modifier(_modifier_from_record(data))
 			return remove_modifier(_text_of(data, "id"))
 		INTERVENTION_CANCEL, INTERVENTION_MOVE:
@@ -414,6 +417,50 @@ func apply_intervention(record: Dictionary) -> Error:
 			return schedule_event(_text_of(record, "event_id"),
 				_int_of(record, "day", FIRST_DAY - 1), _text_of(record, "reason"))
 	return _refuse(ERR_INVALID_PARAMETER, "Einen Eingriff der Art „%s“ gibt es nicht." % kind)
+
+
+## Der Tag, an dem ein Eintrag des Eingriffsprotokolls geschah, at_day, als ganze Zahl. Aus einer
+## Datei kommt jede Zahl als float, 2556 also als 2556.0; das zählt als ganze Zahl. Fehlt der Tag
+## oder ist er keine ganze Zahl, gibt es [param fallback], als Vorgabe −1. Ein Lauf, der bis −1
+## abspielen soll, spielt nichts ab; so gilt ein Eingriff ohne lesbaren Tag dort, wo der Lauf
+## gerade steht.
+static func intervention_day(record: Dictionary, fallback: int = FIRST_DAY - 1) -> int:
+	return _int_of(record, "at_day", fallback)
+
+
+## Das Eingriffsprotokoll [param records] in der Reihenfolge, in der ein Lauf es nachspielt: nach
+## at_day, bei gleichem Tag in der Reihenfolge des Protokolls. Ein Eintrag ohne lesbaren Tag bleibt
+## hinter seinem Vorgänger und gilt dort, wo der Lauf nach ihm steht; steht er ganz vorn, gilt er
+## vor Spielbeginn. Gibt eine neue Liste mit denselben Einträgen zurück; [param records] bleibt,
+## wie es ist.
+##
+## Nötig ist das, weil der Simulator Eingriffe in der Reihenfolge der Aktionen sammelt. Nach
+## „Fahrplan erzeugen“ steht der Lauf wieder vor dem 01.01.1985, und ein neuer Eingriff mit at_day
+## −1 kommt hinter einen vom 01.01.1992. Der Reihe nach gespielt, gälte er erst 1992, denn
+## advance_to() läuft nur vorwärts. WhatIfProbe.build_run() und TimelineStatistics spielen beide
+## in dieser Reihenfolge; so steht die Regel an einer Stelle (FR-043, FR-045, R11, R22).
+static func in_replay_order(records: Array[Dictionary]) -> Array[Dictionary]:
+	# Der Tag, nach dem jeder Eintrag einsortiert wird: sein at_day, ohne lesbaren Tag der seines
+	# Vorgängers, ganz vorn −1. So wandert ein Eintrag ohne Tag mit seinem Vorgänger.
+	var keys: Array[int] = []
+	var key := FIRST_DAY - 1
+	for record in records:
+		key = intervention_day(record, key)
+		keys.append(key)
+	# sort_custom() ist nicht stabil: Einträge vom selben Tag könnten ihre Reihenfolge tauschen,
+	# etwa Setzen und Entfernen desselben Modifikators. Sortiert werden deshalb die Stellen im
+	# Protokoll, und bei gleichem Tag entscheidet die Stelle.
+	var order: Array[int] = []
+	for index in records.size():
+		order.append(index)
+	order.sort_custom(func(a: int, b: int) -> bool:
+		if keys[a] != keys[b]:
+			return keys[a] < keys[b]
+		return a < b)
+	var sorted: Array[Dictionary] = []
+	for index in order:
+		sorted.append(records[index])
+	return sorted
 
 
 ## Die Vorkommen eines jährlichen Ereignisses, die in den Fahrplan kommen (R9), aufsteigend, je als
@@ -561,8 +608,8 @@ func _end_entries(day: int, messages: Array[TimelineMessage]) -> void:
 		entry.state = ScheduleEntry.State.ENDED
 		_running.erase(entry.event.id)
 		for effect in entry.event.effects:
-			# Auch eine verzögerte Wirkung „während“ endet mit dem Ereignis.
-			if _is_during(entry, effect) and _effect_day(entry, effect) < entry.end_day:
+			# Auch eine verzögerte Wirkung „während“ endet mit dem Ereignis, wenn sie begonnen hat.
+			if entry.is_during(effect) and entry.effect_begins(effect):
 				_emit(TimelineMessage.Kind.EFFECT_ENDED, day, entry, effect, messages)
 		_emit(TimelineMessage.Kind.EVENT_ENDED, day, entry, null, messages)
 
@@ -668,10 +715,11 @@ func _start_entry(entry: ScheduleEntry, day: int, queue: Array[ScheduleEntry],
 	_emit(TimelineMessage.Kind.EVENT_STARTED, day, entry, null, messages)
 	var effects := entry.event.effects
 	for i in effects.size():
-		var effect_day := _effect_day(entry, effects[i])
 		# Eine Wirkung „während“, die erst mit dem Ende oder danach begänne, beginnt nie (V19).
-		if _is_during(entry, effects[i]) and effect_day >= entry.end_day:
+		# Die Regel steht in ScheduleEntry, damit der Fahrplan (due_effects()) dieselbe nimmt.
+		if not entry.effect_begins(effects[i]):
 			continue
+		var effect_day := entry.effect_day(effects[i])
 		if effect_day > day:
 			_plan_effect(entry, i, effect_day)
 		else:
@@ -879,18 +927,6 @@ static func _serial_before(a: ScheduleEntry, b: ScheduleEntry) -> bool:
 	return a.serial < b.serial
 
 
-## Ob die Wirkung nur während ihres Termins gilt: Sie ist „während“, und der Termin hat eine
-## Dauer. Bei Ereignissen ohne Dauer wirkt „während“ wie „einmal“ (FR-021).
-static func _is_during(entry: ScheduleEntry, effect: EventEffect) -> bool:
-	return effect.scope == EventEffect.Scope.DURING and entry.end_day > entry.day
-
-
-## Der Tag, an dem die Wirkung beginnt: der Beginn des Termins plus ihre Verzögerung. Eine
-## negative Verzögerung (V14) gilt als 0.
-static func _effect_day(entry: ScheduleEntry, effect: EventEffect) -> int:
-	return entry.day + maxi(effect.delay_days, 0)
-
-
 ## Die Modifikatoren für die Begründung, je „<grund> <wert in Prozentpunkten>“, etwa
 ## „Ware vom windigen Händler +5“. Der Termin behält den Text, auch wenn der Modifikator später
 ## entfernt wird (R8).
@@ -1049,8 +1085,10 @@ static func _modifier_record(modifier: ChanceModifier) -> Dictionary:
 	}
 
 
-## Ein Modifikator aus einem Dictionary wie von _modifier_record(); was fehlt oder nicht passt,
-## bekommt die Vorgabe von ChanceModifier, und add_modifier() lehnt ihn dann ab.
+## Ein Modifikator aus einem Dictionary wie von _modifier_record(). Fehlen Kennung, Ereignis, Grund
+## oder Ende, bekommen sie die Vorgabe von ChanceModifier, und add_modifier() lehnt ihn dann ab.
+## Wert und Beginn prüft apply_intervention() vorher mit _unreadable_modifier(): Ihre Vorgaben, 0
+## und der 01.01.1985, wären gültige Werte, und der Modifikator gälte still damit.
 static func _modifier_from_record(data: Dictionary) -> ChanceModifier:
 	var modifier := ChanceModifier.new()
 	modifier.id = _text_of(data, "id")
@@ -1064,6 +1102,20 @@ static func _modifier_from_record(data: Dictionary) -> ChanceModifier:
 	return modifier
 
 
+## Warum sich ein Modifikator aus dem Eingriffsprotokoll nicht lesen lässt; leer, wenn Wert und
+## Beginn lesbar sind. Beides prüft add_modifier() nicht, denn ein ChanceModifier hat immer einen
+## Wert und einen Beginn. Aus einer Probe, die jemand von Hand geändert hat, kann aber etwa
+## "value": "0,05" kommen, ein Text, oder der Beginn fehlen; mit den Vorgaben gälte der
+## Modifikator dann still mit 0 Prozentpunkten bzw. ab dem 01.01.1985 (T099).
+static func _unreadable_modifier(data: Dictionary) -> String:
+	var value: Variant = data.get("value")
+	if typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT:
+		return "Der Wert des Modifikators („value“) fehlt oder ist keine Zahl."
+	if not _has_int(data, "from_day"):
+		return "Der Beginn des Modifikators („from_day“) fehlt oder ist kein Tag."
+	return ""
+
+
 ## data[key] als Text; leer, wenn es fehlt oder kein Text ist.
 static func _text_of(data: Dictionary, key: String) -> String:
 	var value: Variant = data.get(key)
@@ -1075,12 +1127,15 @@ static func _text_of(data: Dictionary, key: String) -> String:
 ## data[key] als ganze Zahl. Aus einer JSON-Datei kommt jede Zahl als float, 14 also als 14.0;
 ## ein float ohne Nachkommastellen gilt deshalb als ganze Zahl. Sonst [param fallback].
 static func _int_of(data: Dictionary, key: String, fallback: int) -> int:
+	return int(data[key]) if _has_int(data, key) else fallback
+
+
+## Ob data[key] eine ganze Zahl ist, als int oder als float ohne Nachkommastellen wie aus JSON.
+static func _has_int(data: Dictionary, key: String) -> bool:
 	var value: Variant = data.get(key)
 	if typeof(value) == TYPE_INT:
-		return int(value)
-	if typeof(value) == TYPE_FLOAT and value == floorf(value) and absf(value) < 1e15:
-		return int(value)
-	return fallback
+		return true
+	return typeof(value) == TYPE_FLOAT and value == floorf(value) and absf(value) < 1e15
 
 
 ## Tagesindex als „TT.MM.JJJJ“, auch vor 1985 und nach 1999.

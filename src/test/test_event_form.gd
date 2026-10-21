@@ -2,14 +2,16 @@ extends GutTest
 
 ## Prüft das Formular der Werkstatt (Feature 002, T036; contracts/werkstatt.md, „EventForm“): die
 ## Felder je Art, Eingaben mit Komma, Punkt und Prozent, Daten auch ohne führende Nullen, den
-## Hinweis bei ungültiger Eingabe, das Verteilen der Gewichte, Meldungen am Feld, focus_field() und
-## den Bereich für Kategorien.
+## Hinweis bei ungültiger Eingabe, das Verteilen der Gewichte, Meldungen am Feld samt roter Kontur
+## auch an Auswahlfeldern (T081), die Grenze von 20 Anzahlen (T086), focus_field() und den Bereich
+## für Kategorien.
 ##
 ## Das Formular steht hier ohne die Werkstatt im Baum, mit einem eigenen CatalogEditor auf einer
 ## Kopie von catalog_minimal.json. Was die Werkstatt verdrahtet, verdrahtet der Test selbst:
 ## catalog_changed und issues_changed rufen refresh().
 
 const FORMULAR := preload("res://tools/werkstatt/event_form.tscn")
+const THEMA := preload("res://tools/werkstatt/werkstatt_theme.tres")
 const ORDNER := "user://test_event_form/"
 const MINIMAL := "res://test/fixtures/catalog_minimal.json"
 ## 01.01.1985 = 0; der 01.03.1993 ist Tag 2981.
@@ -49,7 +51,7 @@ func before_each() -> void:
 	datei.store_string(FileAccess.get_file_as_string(MINIMAL))
 	datei.close()
 	_editor = CatalogEditor.new()
-	_editor.backup_path = ORDNER + "sicherung.json"
+	_editor.backup_folder = ORDNER
 	assert_eq(_editor.open(ziel), OK)
 	_formular = FORMULAR.instantiate()
 	_formular.editor = _editor
@@ -182,6 +184,34 @@ func test_datum_ohne_fuehrende_nullen_und_ungueltige_eingabe() -> void:
 	assert_string_contains(_hinweis("date").text, "kein Datum")
 
 
+func test_ungueltige_eingabe_hat_die_rote_kontur_bis_zum_naechsten_neubau() -> void:
+	# Arrange (T093): Wie bei den Meldungen der Prüfung bekommt auch ein Feld, dessen Eingabe
+	# nicht ging, die Kontur, solange der Hinweis darunter steht.
+	_formular.show_event("intel_pentium")
+
+	# Act
+	_eingeben("date", "abc")
+
+	# Assert
+	assert_true(_hinweis("date").visible)
+	assert_eq(_formular.get_input("date").theme_type_variation, &"ErrorLineEdit")
+	assert_eq(_formular.get_input("title").theme_type_variation, &"", "Nur das Feld mit Hinweis.")
+
+	# Act und Assert: Eine gültige Eingabe baut neu, Hinweis und Kontur gehen.
+	_eingeben("date", "1.3.1993")
+	await wait_process_frames(1)
+	assert_false(_hinweis("date").visible)
+	assert_eq(_formular.get_input("date").theme_type_variation, &"")
+
+	# Act und Assert: auch bei „bis“ der Anzahl und bei einer Kennung, die es schon gibt
+	_formular.show_event("neubaugebiet")
+	_eingeben("count_max", "-1")
+	assert_eq(_formular.get_input("count_max").theme_type_variation, &"ErrorLineEdit")
+	_eingeben("id", "intel_pentium")
+	assert_string_contains(_hinweis("id").text, "gibt es schon")
+	assert_eq(_formular.get_input("id").theme_type_variation, &"ErrorLineEdit")
+
+
 func test_meldung_der_pruefung_steht_am_feld() -> void:
 	# Arrange: US2, Szenario 3.
 	_formular.show_event("intel_pentium")
@@ -194,6 +224,50 @@ func test_meldung_der_pruefung_steht_am_feld() -> void:
 	assert_string_contains(_hinweis("date").text, "außerhalb von 01.01.1985 bis 31.12.1999")
 	assert_eq(_formular.get_input("date").theme_type_variation, &"ErrorLineEdit")
 	assert_eq(_hinweis("date").theme_type_variation, &"ErrorLabel")
+
+
+func test_auswahlfeld_mit_fehler_bekommt_die_rote_kontur() -> void:
+	# Arrange (T081): Die Kategorie des Pentium gibt es nicht (V05), das Folgeereignis der
+	# Reklamationswelle auch nicht (V15). Das Theme der Werkstatt hängt sonst an der Werkstatt.
+	_formular.theme = THEMA
+	_editor.set_event_field("intel_pentium", &"category", "grafik")
+	_editor.set_item_field("reklamationswelle", &"follow_ups", 0, &"target", "gibt_es_nicht")
+
+	# Act
+	_formular.show_event("intel_pentium")
+
+	# Assert: Style-Guide, „Bedienelemente“: Kontur von 2 Pixeln in kassenrot, darunter der Hinweis
+	var auswahl: OptionButton = _formular.get_input("category")
+	assert_eq(auswahl.theme_type_variation, &"ErrorOptionButton")
+	assert_eq(_hinweis("category").theme_type_variation, &"ErrorLabel")
+	var kasten: ReliefStyleBox = auswahl.get_theme_stylebox(&"normal")
+	assert_eq([kasten.outline, kasten.outline_width], [&"kassenrot", 2])
+	var fokus: StyleBoxFlat = auswahl.get_theme_stylebox(&"focus")
+	assert_eq(fokus.border_color, UiPalette.TUSCHE, "Die Fokuslinie in tusche bleibt.")
+	assert_eq(_formular.get_input("kind").theme_type_variation, &"", "Ohne Fehler wie immer.")
+	_formular.show_event("reklamationswelle")
+	assert_eq(_formular.get_input("follow_ups[0].target").theme_type_variation,
+		&"ErrorOptionButton", "Auch das Ziel einer Folge.")
+
+
+func test_beschreibung_mit_fehler_bekommt_die_rote_kontur() -> void:
+	# Arrange (T081): In der Datei steht als Beschreibung eine Zahl (V22).
+	var ziel := ORDNER + "beschreibung.json"
+	var text := FileAccess.get_file_as_string(MINIMAL).replace(
+		"\"description\": \"Superskalare P5-Architektur, 64-Bit-Bus.\"", "\"description\": 5")
+	_schreiben(ziel, text)
+	assert_eq(_editor.open(ziel), OK)
+	_formular.theme = THEMA
+
+	# Act
+	_formular.show_event("intel_pentium")
+
+	# Assert
+	var feld: TextEdit = _formular.get_input("description")
+	assert_eq(feld.theme_type_variation, &"ErrorTextEdit")
+	var kasten: StyleBoxFlat = feld.get_theme_stylebox(&"normal")
+	assert_eq([kasten.border_color, kasten.border_width_left], [UiPalette.KASSENROT, 2])
+	assert_string_contains(_hinweis("description").text, "die Zahl 5")
 
 
 func test_enter_uebernimmt_und_gibt_den_fokus_ab() -> void:
@@ -277,6 +351,61 @@ func test_anzahl_bis_vor_von_wird_abgelehnt() -> void:
 	assert_false(_editor.can_undo())
 	assert_eq(_text("count_max"), "1")
 	assert_string_contains(_hinweis("count_max").text, "„bis“")
+
+
+func test_bis_zu_20_anzahlen_ohne_hinweis() -> void:
+	# Act
+	_formular.show_event("neubaugebiet")
+
+	# Assert
+	assert_null(_formular.get_hint(EventForm.COUNT_LIMIT_HINT))
+
+
+func test_mehr_als_20_anzahlen_zeigt_einen_hinweis_und_kuerzt_nichts() -> void:
+	# Arrange (T086): In der Datei hat das Neubaugebiet 25 Anzahlen, 0 bis 24, je 4 %.
+	var meldungen: Array[CatalogIssue] = []
+	var katalog := EventCatalog.read_file(MINIMAL, meldungen)
+	var gewichte: Array[float] = []
+	for i in 25:
+		gewichte.append(4.0)
+	katalog.get_event("neubaugebiet").count_weights = gewichte
+	var ziel := ORDNER + "anzahlen.json"
+	assert_eq(katalog.write_file(ziel), OK)
+	assert_eq(_editor.open(ziel), OK)
+
+	# Act
+	_formular.show_event("neubaugebiet")
+
+	# Assert: ein Hinweis als Warnung, die ersten 20 Gewichte, „bis“ und Summe über alle
+	var hinweis := _formular.get_hint(EventForm.COUNT_LIMIT_HINT)
+	assert_not_null(hinweis)
+	if hinweis == null:
+		return
+	assert_true(hinweis.visible)
+	assert_eq(hinweis.theme_type_variation, &"WarningLabel")
+	assert_eq(hinweis.text, "? Das Ereignis hat 25 Anzahlen, das Formular zeigt höchstens 20. "
+		+ "Die übrigen Gewichte änderst du in der Katalogdatei.")
+	assert_not_null(_formular.get_input("count_weights[19]"))
+	assert_null(_formular.get_input("count_weights[20]"), "Mehr als 20 Felder legt es nicht an.")
+	assert_eq(_text("count_max"), "24")
+
+	# Act und Assert: Ein Gewicht ändern ersetzt nur dieses eine.
+	_eingeben("count_weights[3]", "8")
+	var neubau := _editor.catalog.get_event("neubaugebiet")
+	assert_eq(neubau.count_weights.size(), 25, "Gekürzt wird nichts.")
+	assert_eq([neubau.count_weights[3], neubau.count_weights[24]], [8.0, 4.0])
+	# Ein „von“, das mehr als 20 Anzahlen ergäbe, lehnt es mit Hinweis ab.
+	_eingeben("count_min", "1")
+	assert_eq(_editor.catalog.get_event("neubaugebiet").count_min, 0)
+	assert_string_contains(_hinweis("count_min").text, "Höchstens 20")
+	await wait_process_frames(1)
+	assert_not_null(_formular.get_hint(EventForm.COUNT_LIMIT_HINT), "Nach dem Neubau wieder da.")
+
+	# Act und Assert: auch beim Speichern nicht
+	assert_eq(_editor.save(), OK)
+	var gespeichert := EventCatalog.read_file(ziel, meldungen)
+	assert_eq(gespeichert.get_event("neubaugebiet").count_weights.size(), 25)
+	assert_eq(gespeichert.get_event("neubaugebiet").count_weights[3], 8.0)
 
 
 func test_artwechsel_im_formular() -> void:
@@ -405,6 +534,12 @@ func _eingeben(feld: String, text: String) -> void:
 		return
 	eingabe.text = text
 	eingabe.focus_exited.emit()
+
+
+func _schreiben(ziel: String, text: String) -> void:
+	var datei := FileAccess.open(ziel, FileAccess.WRITE)
+	datei.store_string(text)
+	datei.close()
 
 
 func _text(feld: String) -> String:

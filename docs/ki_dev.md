@@ -13,10 +13,19 @@ eine Korrektur, die Klaus wiederholt. Eingetragen wird erst nach Klaus' OK (Klau
 **Abgrenzung:**
 - `CLAUDE.md` ist die verbindliche Arbeitsanweisung für Claude Code in diesem Projekt.
 - `.specify/memory/constitution.md` fasst die verbindlichen Grundsätze für die Spec-Kit-Abläufe.
-- Diese Datei ist die Blaupause dahinter: das Warum, die Erfahrungen, die Vorlage. Wird eine Praxis
-  hier verbindlich, wandert sie nach `CLAUDE.md` bzw. in die Verfassung.
-- Claudes Memory hält Vorlieben und Stand zwischen Sitzungen fest; es ist für Claude, nicht für
-  Menschen.
+- Diese Datei ist die Blaupause dahinter: das Warum, die Erfahrungen, die Vorlage. `CLAUDE.md`
+  verweist auf sie, ihre Regeln gelten also für Claude in diesem Projekt (Klaus, 2026-10-21).
+  Wird eine Praxis grundsätzlich, wandert sie nach `CLAUDE.md` bzw. in die Verfassung.
+- `docs/offene-punkte.md` sammelt offene Fragen, Lücken und Claudes eigene Entscheidungen, bis
+  Klaus sie entschieden oder bestätigt hat.
+
+**Kein lokales Gedächtnis** (Klaus, 2026-10-21): Nichts wird in einem lokalen Memory-Verzeichnis
+abgelegt. Was dauerhaft gelten soll, wird in eine Repo-Datei geschrieben und committet: `CLAUDE.md`,
+die Verfassung, diese Datei, die Feature-Dokumente, `docs/Ideensammlung.md` oder
+`docs/offene-punkte.md`. Dann steht es allen Sitzungen und allen Beteiligten zur Verfügung und ist
+versioniert. Fällt etwas an, das nirgends passt, gehört es in diese Datei. Bis 2026-10-21 hielt
+Claudes lokales Memory Vorlieben und Stand fest; der Inhalt ist hierher und nach
+`docs/offene-punkte.md` umgezogen.
 
 ## Rollen
 
@@ -54,6 +63,8 @@ Claude bleibt frei für Planung und Review.
 - **Claude committet, Klaus pusht.** Claude gibt keine Push-Befehle und keine Anleitungen dazu.
 - **Ein Commit je abgenommener Phase.** Die Nachricht nennt, was je Aufgabe gebaut ist, was aus
   Prüfung und Abnahme dazukam, und das Testergebnis.
+- **Nach einem Commit nur Hash und Stand nennen**, ohne Hinweis aufs Pushen. Anlass: Nach einem
+  gescheiterten Push kam einmal eine SSH-Anleitung, die Klaus nicht wollte (2026-10-19).
 - **Nur eigene Dateien committen.** Im geteilten Ordner arbeiten mehrere Sitzungen; deshalb nie
   `stash`, `reset` oder Branchwechsel.
 - **Vor dem Commit `export_presets.cfg` ansehen**, denn dort können Zugangsdaten im Klartext
@@ -71,6 +82,10 @@ Ein guter Auftrag enthält:
 - bei Oberflächen Bildschirmfotos aus einem echten Fenster in Klaus' Fenstergröße, dazu eine
   Aussage, ob der Platz reicht;
 - die Form des Berichts: Dateien, API, Testergebnis mit Zahlen, Auslegungen, offene Fragen.
+
+Steht der Agent-Typ `godot-entwickler` in einer Sitzung nicht bereit (Agents laden nur beim
+Start), nimmt Claude einen allgemeinen Agent, der zuerst `.claude/agents/godot-entwickler.md`
+liest.
 
 Bewährt: die **Fehlerprobe**. Der Agent baut in einer Kopie absichtlich Fehler ein und zeigt, dass
 die Tests sie finden. Fällt ein Fehler durch, kommt ein Test dazu.
@@ -120,7 +135,16 @@ Die Bitte um Abnahme enthält, in dieser Reihenfolge:
   bei FR-004 von Feature 001.
 - **Lernnotizen** zu jeder Aufgabe, an der konkreten Stelle im Projekt, kein Tutorial.
 - **Lose Ideen sofort festhalten**, unten in `docs/Ideensammlung.md`, ohne die Arbeit zu
-  unterbrechen.
+  unterbrechen: Datum, Kern in ein, zwei Sätzen, bei Bedarf Bezug und offene Fragen. Nicht erst
+  fragen und nicht ausarbeiten; wird eine Idee konkret, wandert sie nach
+  `docs/features/Feature_Ideas.md` oder ins GDD.
+- **Entscheidungen nicht stillschweigend treffen** (Klaus, 2026-10-21):
+  - Wo eine Festlegung nötig ist, die nicht aus den Dokumenten folgt: entscheiden, umsetzen und
+    die Entscheidung sichtbar als eigene kennzeichnen, in `docs/offene-punkte.md` und, wo sie
+    hingehört, in Spec oder Verfassung.
+  - Wo zwei Lesarten zu deutlich verschiedener Arbeit führen: fragen, bevor gebaut wird.
+  - Wo etwas in den Dokumenten fehlt oder sich widerspricht: als offenen Punkt in
+    `docs/offene-punkte.md` eintragen, statt es im Vorbeigehen zu erfinden.
 - **Verfassung und `CLAUDE.md` ändern sich nur auf Klaus' Beschluss**, die Verfassung mit
   Versionssprung über `/speckit-constitution`.
 - **Was man sieht, steht zuerst im Style-Guide:** Eine neue Farbrolle oder Darstellung kommt erst
@@ -128,10 +152,50 @@ Die Bitte um Abnahme enthält, in dieser Reihenfolge:
 
 ## Zusammenarbeit
 
-- Deutsch; Fachbegriffe mit einem Beispiel aus dem Spiel erklären.
+- Deutsch; Fachbegriffe mit einem Beispiel aus dem Spiel erklären. Anlass: Im Review von Feature
+  002 verstand Klaus „Eingriffe aus dem Simulator“ erst mit dem Beispiel „Was wäre, wenn der
+  Spieler ab 1990 beim windigen Händler kauft? Dann stellst du von Hand ein: Reklamationswelle +5
+  Prozentpunkte“ (2026-10-20).
+- Alle Texte im Spiel und in den Werkzeugen duzen den Spieler, etwa „Bald kannst du ihn
+  eröffnen.“ (Klaus, 2026-10-19, im Review von Feature 001, gegen die Empfehlung „Sie“).
 - Claude empfiehlt eine Lösung, statt nur Möglichkeiten aufzuzählen, und fragt nur, was wirklich
   Klaus' Entscheidung ist, eine Frage nach der anderen.
 - Dauert etwas länger, meldet Claude kurz den Stand.
+
+## Werkzeuge und Pfade
+
+- Godot liegt unter `/Applications/Godot.app/Contents/MacOS/Godot`, Version 4.7.2 stable, nicht
+  .NET; den Pfad direkt nutzen statt zu suchen. Kommt eine zweite Version dazu, hier nachtragen.
+- Projekt-Root ist `src/`, also immer `--path src`. Startbefehle vom Repo-Ordner aus:
+  - Spiel: `/Applications/Godot.app/Contents/MacOS/Godot --path src`
+  - Werkstatt:
+    `/Applications/Godot.app/Contents/MacOS/Godot --path src res://tools/werkstatt/werkstatt.tscn`
+  - Tests:
+    `/Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://addons/gut/gut_cmdln.gd`
+
+## Grafik
+
+- Grafik läuft über Artifacts, nicht über Dateien im Repo (seit 2026-10-19):
+  - Style-Guide, verbindlich: https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, mit Leitbild,
+    Tokens, Bausteinen, dem Abschnitt „Werkzeuge“ und dem Leonardo-Workflow samt
+    Prompt-Bibliothek.
+  - Claude Design „Computerladen Titelscreen & Cover“:
+    https://claude.ai/artifact/RHKxpTb6JfWFQdNnPYEWHH, noch mit den alten Platzhalter-Skizzen
+    vor der Pixel-Umstellung.
+- Entscheidungen von Klaus: Vorbild für Aufbau und Humor sind die deutschen
+  Wirtschaftssimulationen der 90er wie „Das Amt“. Grundstil ist VGA-Pixel-Art, Stilanker ist Bild
+  C2 aus der Leonardo-Stilprobe vom 2026-10-19 (Ladenbesitzer hinter der Theke). Zwei Raster:
+  Szenen 320 × 180 Bildpixel, Oberfläche 640 × 360, ganzzahlig skaliert. „Cooler Retro-Style, der
+  trotzdem als modernes Spiel durchgeht“; Konsistenz ist oberstes Ziel.
+- Klaus erzeugt die Bilder selbst in Leonardo.ai. Claude liefert dafür jedes Mal den fertigen
+  Prompt auf Englisch mit dem Stilblock aus dem Style-Guide, das Modell und das Seitenverhältnis
+  und trägt den Prompt in die Prompt-Bibliothek ein (Klaus, 2026-10-19). Bisher: Lucid Origin mit
+  C2 als Style Reference (Stärke High), Prompt Enhance aus, Style None. Die Modellliste von
+  Leonardo ändert sich, also vorher prüfen.
+- Leonardo bedient Claude über Claude in Chrome. Chrome startet auf Klaus' Rechner nur mit
+  `--user-data-dir="$HOME/Library/Application Support/Google/Chrome-Profil"`, weil macOS den
+  Standard-Profilordner sperrt.
+- Die Grafikstil-Zeile im GDD ändert Claude nur mit Klaus' OK.
 
 ## Offen
 

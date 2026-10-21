@@ -12,6 +12,12 @@ extends VBoxContainer
 ##
 ## Die Zeilen sind gestreift wie alle Tabellen der Werkstatt (Zebra); das Zeichen für Fehler und
 ## Warnung behält seine Farben auch in einer gestreiften oder gewählten Zeile.
+##
+## Nach einer Änderung am Katalog baut die Liste ihre Zeilen erst am Ende des Bilds neu, wie das
+## Formular. Ein Klick in die Liste nimmt einem Feld im Formular den Fokus, bevor der Tree den
+## Klick verarbeitet; das Feld übernimmt dabei seine Eingabe, und die Zeilen müssten sich neu
+## sortieren. Bauten sie sofort neu, träfe der Klick die neue Belegung, nicht die Zeile, die unter
+## der Maus stand (T076).
 
 signal event_selected(id: String)
 ## Ein Ereignis ist neu entstanden, aus dem Dialog „Neu …“ oder durch Duplizieren.
@@ -48,6 +54,9 @@ var _zebra: Zebra
 ## und show_issues(); ist der Text derselbe, bleiben die Zeilen stehen. Mit 500 Ereignissen spart
 ## das je Änderung zwei Neubauten von je rund 15 ms (SC-011).
 var _shown_rows := ""
+## Ob der Neubau der Zeilen für das Ende des Bilds vorgemerkt ist; refresh() und show_issues()
+## kommen nach jeder Änderung beide, gebaut wird trotzdem einmal.
+var _rows_queued := false
 
 @onready var _search: LineEdit = %Search
 @onready var _kind_filter: OptionButton = %KindFilter
@@ -104,11 +113,12 @@ func _ready() -> void:
 	_update_buttons()
 
 
-## Baut Filter und Zeilen aus dem aktuellen Katalog neu, etwa nach catalog_changed. Gibt es die
-## Kategorie im Filter nicht mehr, gilt wieder „Alle Kategorien“, und filter_changed meldet das.
+## Baut Filter und Zeilen aus dem aktuellen Katalog neu, etwa nach catalog_changed: die Auswahl der
+## Kategorien sofort, die Zeilen am Ende des Bilds (siehe oben). Gibt es die Kategorie im Filter
+## nicht mehr, gilt wieder „Alle Kategorien“, und filter_changed meldet das.
 func refresh() -> void:
 	var lost := _fill_category_choices()
-	_fill_rows()
+	_queue_rows()
 	if lost:
 		filter_changed.emit()
 
@@ -125,7 +135,8 @@ func passes(event: TimelineEvent) -> bool:
 	return _passes(event, _query(), _kind_filter.selected - 1, _chosen_category())
 
 
-## Zeigt an den Zeilen die schwerste Meldung je Ereignis, nach issues_changed.
+## Zeigt an den Zeilen die schwerste Meldung je Ereignis, nach issues_changed; neu gebaut wird am
+## Ende des Bilds.
 func show_issues(issues: Array[CatalogIssue]) -> void:
 	_severity_by_event.clear()
 	for issue in issues:
@@ -134,7 +145,7 @@ func show_issues(issues: Array[CatalogIssue]) -> void:
 		# ERROR ist 0, WARNING 1: Die kleinere Zahl ist die schwerere Meldung.
 		var worst: int = _severity_by_event.get(issue.event_id, CatalogIssue.Severity.WARNING)
 		_severity_by_event[issue.event_id] = mini(worst, issue.severity)
-	_fill_rows()
+	_queue_rows()
 
 
 ## Hebt das Ereignis hervor, das die Werkstatt gewählt hat, ohne event_selected zu senden.
@@ -165,11 +176,21 @@ func open_new_dialog(kind: TimelineEvent.Kind = TimelineEvent.Kind.FIXED, catego
 
 # --- Zeilen -----------------------------------------------------------------------------------
 
+## Merkt den Neubau der Zeilen für das Ende des Bilds vor, einmal, wie oft es auch kommt. Bis dahin
+## zeigen die Zeilen den Stand vor der Änderung, und ein Klick trifft, was Klaus gesehen hat.
+func _queue_rows() -> void:
+	if _rows_queued:
+		return
+	_rows_queued = true
+	_fill_rows.call_deferred()
+
+
 ## Baut die Zeilen neu, aber nur, wenn sie danach etwas anderes zeigten als jetzt. Ein Tree baut
 ## neue Zeilen nicht billig: Jede Zelle setzt ihren Text neu, und spätestens beim Rollen zur
 ## gewählten Zeile muss er jeden davon ausmessen. Das neue Datum eines Ereignisses ändert an der
 ## Liste nichts, ein neuer Titel oder ein neuer Fehler schon.
 func _fill_rows() -> void:
+	_rows_queued = false
 	var key := _rows_key()
 	if key == _shown_rows:
 		return
@@ -305,6 +326,11 @@ func _on_item_selected() -> void:
 	if item == null:
 		return
 	var id: String = item.get_metadata(Column.MARK)
+	# Bis zum Neubau am Ende des Bilds zeigen die Zeilen den Stand vor der letzten Änderung. Hat der
+	# Klick selbst ein Feld übernommen, das die Kennung dieses Ereignisses änderte, gibt es sie nicht
+	# mehr; die Werkstatt hat das Ereignis dann schon unter der neuen gewählt.
+	if editor == null or editor.catalog == null or editor.catalog.get_event(id) == null:
+		return
 	_selected_id = id
 	_update_buttons()
 	event_selected.emit(id)
@@ -378,6 +404,8 @@ func _on_new_id_changed(text: String) -> void:
 
 ## Prüft Titel und Kennung und sperrt „Anlegen“, solange etwas nicht stimmt; der Grund steht im
 ## Hinweis unter den Feldern. Ein leerer Titel braucht keinen: Das Feld zeigt, was hinein soll.
+## Jeder Grund gilt der Kennung; solange er dasteht, hat ihr Feld die Kontur des Fehlers
+## (Style-Guide, „Bedienelemente“, T093).
 func _check_new() -> void:
 	var problem := ""
 	var id := _new_id.text
@@ -390,6 +418,7 @@ func _check_new() -> void:
 		problem = "Die Kennung „%s“ gibt es schon." % id
 	_new_hint.text = problem
 	_new_hint.visible = not problem.is_empty()
+	_new_id.theme_type_variation = &"" if problem.is_empty() else &"ErrorLineEdit"
 	_new_dialog.get_ok_button().disabled = not titled or not problem.is_empty()
 	# Den Tag zeigt der Dialog nur, solange er gilt: vorbelegt und Art „fix“.
 	var dated := _new_day >= 0 and _new_kind.selected == TimelineEvent.Kind.FIXED

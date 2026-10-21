@@ -37,7 +37,8 @@ var catalog_path: String = EventCatalog.DEFAULT_PATH
 ## Teiler. Sie liegt unter user://, also außerhalb des Projekts, wie die Sicherungskopie. Tests
 ## setzen eine eigene Datei, bevor die Szene in den Baum kommt.
 var settings_path: String = "user://werkstatt_einstellungen.cfg"
-## Der einzige, der den Katalog ändert. Tests setzen hier vorher eine eigene Sicherungsdatei.
+## Der einzige, der den Katalog ändert. Tests setzen hier vorher einen eigenen Ordner für die
+## Sicherungskopien (CatalogEditor.backup_folder).
 var editor := CatalogEditor.new()
 ## Das gewählte Ereignis; leer heißt keins.
 var selected_id: String = ""
@@ -49,6 +50,9 @@ var _pending_delete := ""
 ## Ob die Sicherungskopie beim Schließen liegen bleibt: Klaus hat sie beim Start auf später
 ## verschoben und seitdem keine neue geschrieben.
 var _keep_backup := false
+## Ob die Werkstatt schon gesagt hat, dass sich die Sicherungskopie nicht schreiben lässt. Sie sagt
+## es einmal, nicht alle 2 Minuten; nach einer gelungenen Sicherung wieder beim nächsten Fehler.
+var _backup_failed := false
 ## Ergebnis von open() beim Start; nach der Frage zur Sicherungskopie kommt die zum Katalog.
 var _open_error := OK
 
@@ -63,6 +67,7 @@ var _open_error := OK
 @onready var _tabs: TabContainer = %Tabs
 @onready var _issues_panel: IssuesPanel = %IssuesPanel
 @onready var _event_form: EventForm = %EventForm
+@onready var _form_scroll: ScrollContainer = %FormScroll
 @onready var _timeline_view: TimelineView = %TimelineView
 @onready var _simulator_panel: SimulatorPanel = %SimulatorPanel
 @onready var _statistics_panel: StatisticsPanel = %StatisticsPanel
@@ -76,7 +81,6 @@ var _open_error := OK
 @onready var _backup_dialog: ConfirmationDialog = %BackupDialog
 @onready var _missing_dialog: ConfirmationDialog = %MissingDialog
 @onready var _unreadable_dialog: AcceptDialog = %UnreadableDialog
-@onready var _backup_notice_dialog: AcceptDialog = %BackupNoticeDialog
 @onready var _notice_dialog: AcceptDialog = %NoticeDialog
 
 
@@ -228,12 +232,24 @@ func _on_close_action(action: StringName) -> void:
 		_quit()
 
 
-## Beim regulären Schließen fällt die Sicherungskopie weg (FR-050), außer Klaus hat sie beim Start
-## auf später verschoben. Die Lage der Teiler kommt in die Einstellungsdatei.
-func _quit() -> void:
+## Was beim regulären Schließen geschieht, bevor das Programm endet: Die Sicherungskopie dieses
+## Katalogs fällt weg (FR-050), außer Klaus hat sie beim Start auf später verschoben (R23), und die
+## Lage der Teiler kommt in die Einstellungsdatei. Eine eigene Funktion für die Tests:
+## get_tree().quit() in _quit() beendete ihren ganzen Lauf.
+##
+## Ist der Dialog zur Sicherungskopie noch offen, hat Klaus sich nicht entschieden; er schließt
+## das Fenster per Fensterknopf oder Cmd+Q, beides kommt als NOTIFICATION_WM_CLOSE_REQUEST. Das gilt
+## wie „Später“, die Kopie bleibt liegen (T096).
+func prepare_quit() -> void:
+	if _backup_dialog.visible:
+		_keep_backup = true
 	if not _keep_backup:
 		editor.discard_backup()
 	save_settings()
+
+
+func _quit() -> void:
+	prepare_quit()
 	get_tree().quit()
 
 
@@ -246,19 +262,17 @@ func _commit_focused_field() -> void:
 
 
 # --- Start und Sicherungskopie (R23) ----------------------------------------------------------
+#
+# Jeder Katalog hat seine eigene Sicherungsdatei (CatalogEditor.backup_path()). Angeboten wird
+# deshalb nur die Kopie des Katalogs, der gerade aufgeht; die Kopien anderer Kataloge bleiben
+# unberührt und kommen erst wieder, wenn Klaus deren Katalog öffnet.
+
 
 func _start() -> void:
 	_open_error = editor.open(catalog_path)
 	_update_toolbar()
 	if editor.backup_matches():
 		_offer_backup()
-	elif editor.has_backup():
-		var info := editor.backup_info()
-		var belongs := "eines anderen Katalogs (%s)" % info["path"] if not info.is_empty() \
-			else "unbekannter Herkunft"
-		_backup_notice_dialog.dialog_text = ("Es gibt eine Sicherungskopie %s. Sie bleibt liegen, "
-			+ "unter %s.") % [belongs, ProjectSettings.globalize_path(editor.backup_path)]
-		_backup_notice_dialog.popup_centered(Vector2i(480, 0))
 	else:
 		_report_open_error()
 
@@ -310,10 +324,23 @@ func _report_open_error() -> void:
 			_unreadable_dialog.popup_centered(Vector2i(480, 0))
 
 
-## Alle 120 Sekunden, aber nur bei ungespeicherten Änderungen (CatalogEditor.write_backup()).
+## Alle 120 Sekunden, aber nur bei ungespeicherten Änderungen (CatalogEditor.write_backup()). Die
+## neue Kopie ersetzt eine, die beim Start auf später verschoben wurde. Geht das Schreiben schief,
+## sagt die Werkstatt es einmal und versucht es beim nächsten Mal still wieder.
 func _on_backup_timer() -> void:
-	if editor.is_dirty() and editor.write_backup() == OK:
+	if not editor.is_dirty():
+		return
+	var error := editor.write_backup()
+	if error == OK:
 		_keep_backup = false
+		_backup_failed = false
+		return
+	if _backup_failed:
+		return
+	_backup_failed = true
+	_show_notice("Sicherung ging nicht", ("Die Sicherungskopie %s lässt sich nicht schreiben (%s). "
+		+ "Die Werkstatt versucht es alle 2 Minuten wieder; Speichern geht weiterhin.") % [
+		ProjectSettings.globalize_path(editor.backup_path()), error_string(error)])
 
 
 # --- Teiler -----------------------------------------------------------------------------------
@@ -433,8 +460,12 @@ func _connect_signals() -> void:
 	_event_list.delete_requested.connect(_on_delete_requested)
 	_event_list.filter_changed.connect(_on_list_filter_changed)
 	_issues_panel.issue_activated.connect(_on_issue_activated)
-	_event_form.event_renamed.connect(func(_old_id: String, new_id: String) -> void:
-		select_event(new_id))
+	# Die Auswahl folgt einer neuen Kennung, solange das umbenannte Ereignis gewählt ist. Kommt das
+	# Umbenennen erst, weil schon ein anderes gewählt wird, übernimmt das Formular die offene
+	# Eingabe beim Wechsel (T095); dann bleibt das andere gewählt.
+	_event_form.event_renamed.connect(func(old_id: String, new_id: String) -> void:
+		if selected_id == old_id:
+			select_event(new_id))
 	# Der Zeitstrahl wählt wie die Liste, und ein Ziehen geht beim Loslassen als ein Schritt an den
 	# CatalogEditor; Cmd+Z nimmt es zurück.
 	_timeline_view.event_clicked.connect(select_event)
@@ -444,6 +475,7 @@ func _connect_signals() -> void:
 	_timeline_view.edit_requested.connect(_on_edit_requested)
 	_timeline_view.delete_requested.connect(_on_delete_requested)
 	_simulator_panel.event_selected.connect(_on_simulator_event_selected)
+	get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
 	_save_button.pressed.connect(request_save)
 	_revert_button.pressed.connect(request_revert)
 	_undo_button.pressed.connect(func() -> void: editor.undo())
@@ -466,8 +498,6 @@ func _connect_signals() -> void:
 	_backup_dialog.add_button("Verwerfen", true, "discard")
 	_backup_dialog.custom_action.connect(_on_backup_action)
 	_backup_dialog.canceled.connect(_on_backup_later)
-	_backup_notice_dialog.confirmed.connect(_report_open_error)
-	_backup_notice_dialog.canceled.connect(_report_open_error)
 	_missing_dialog.confirmed.connect(editor.new_catalog)
 
 
@@ -554,6 +584,49 @@ func _on_simulator_event_selected(id: String) -> void:
 ## jedem Spiel gelten, entscheidet TimelineStatistics: Modifikatoren und Einplanungen (FR-045).
 func _simulator_interventions() -> Array[Dictionary]:
 	return _simulator_panel.probe.interventions
+
+
+## Der Fokus kommt in ein Feld des Formulars: Im nächsten Bild rollt der Formularbereich so, dass
+## das Feld samt Fokuslinie zu sehen ist (T094). Vorher stünde ein Feld, das der Neubau gerade
+## angelegt hat, noch nicht an seinem Platz; Container ordnen ihre Kinder erst am Ende des Bilds an.
+##
+## Godots follow_focus ist dafür aus: Es rollt ein Feld nur bis an den Rand des Bereichs, und die
+## Linie, die der Stil „focus“ 4 Pixel außen um das Feld zeichnet, fiele dann halb heraus.
+func _on_gui_focus_changed(control: Control) -> void:
+	if _form_scroll.is_ancestor_of(control) \
+			and not get_tree().process_frame.is_connected(_reveal_focus):
+		get_tree().process_frame.connect(_reveal_focus, CONNECT_ONE_SHOT)
+
+
+## Rollt den Formularbereich so wenig wie nötig, bis die Fokuslinie des Felds mit dem Fokus ganz
+## darin liegt; oben, wenn sie höher ist als der Bereich. Gefragt wird erst jetzt nach dem Fokus:
+## Er kann inzwischen woanders sein.
+func _reveal_focus() -> void:
+	var control := get_viewport().gui_get_focus_owner()
+	if control == null or not _form_scroll.is_ancestor_of(control):
+		return
+	var ring := _focus_ring(control)
+	var area := _form_scroll.get_global_rect()
+	var shift := 0.0
+	if ring.position.y < area.position.y:
+		shift = ring.position.y - area.position.y
+	elif ring.end.y > area.end.y:
+		shift = minf(ring.end.y - area.end.y, ring.position.y - area.position.y)
+	if shift != 0.0:
+		_form_scroll.scroll_vertical += int(signf(shift) * ceilf(absf(shift)))
+
+
+## Wo die Fokuslinie um [param control] liegt, in globalen Koordinaten: sein Rechteck, vergrößert
+## um die Ränder, die sein Stil „focus“ nach außen zeichnet. Im Theme sind das 4 Pixel, 2 Abstand
+## und 2 Linie (Style-Guide, Rolle „Fokus“).
+static func _focus_ring(control: Control) -> Rect2:
+	var rect := control.get_global_rect()
+	var style := control.get_theme_stylebox(&"focus")
+	if style is StyleBoxFlat:
+		var flat: StyleBoxFlat = style
+		rect = rect.grow_individual(flat.expand_margin_left, flat.expand_margin_top,
+			flat.expand_margin_right, flat.expand_margin_bottom)
+	return rect
 
 
 ## Ein Klick in der Prüfung wählt das Ereignis und setzt den Fokus ins Feld (FR-033). Meldungen zu

@@ -319,7 +319,8 @@ Seed 1 und 2 mit `catalog_us1_preset.json` vergleichen (quickstart.md, Abschnitt
   - Tag für Tag und in Sprüngen ergibt dasselbe Protokoll (Szenario 8).
   - FR-015: Ändert sich die Chance eines Ereignisses, kommt eines hinzu oder fällt eines weg,
     behalten alle übrigen ihre Termine, außer denen, die davon abhängen.
-  - Der Mindestabstand zählt ab dem letzten Termin, der nicht entfallen ist.
+  - Der Mindestabstand gilt zu jedem Termin, der weder entfallen noch abgesagt ist, in beide
+    Richtungen, auch zu geplanten (FR-005; Wortlaut angeglichen 2026-10-21).
   - Bedingungen; Folgeereignis mit Chance und Spanne, sein Wurf steht im Termin; Kettenbremse je
     Kette, zwei Ketten am selben Tag werden getrennt gezählt; nichts nach dem 31.12.1999.
 - [x] T024 [A] [US1] Autoload `src/core/timeline.gd` fertigstellen (Vertrag):
@@ -412,7 +413,8 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
     mit Namen.
   - **Sicherung** (FR-050, R23): `backup_path` mit der Vorgabe `user://werkstatt_sicherung.json`;
     Inhalt `{"catalog", "format": 1, "path", "saved"}`; `write_backup()`, `has_backup()`,
-    `backup_matches()`, `backup_info()`, `restore_backup()` und `discard_backup()`.
+    `backup_matches()`, `backup_info()`, `restore_backup()` und `discard_backup()`. Abgelöst
+    durch T078 (2026-10-21): je Katalog eine eigene Datei im `backup_folder`.
   - `UndoRedo` in `NOTIFICATION_PREDELETE` freigeben.
 - [x] T033 [A] [US2] `src/test/test_catalog_editor.gd`, mit eigener Sicherungsdatei über
   `backup_path` und Katalogen in einem Testordner:
@@ -439,8 +441,9 @@ Rückgängig, Verwerfen und Sicherungskopie, ohne Code.
     Verarbeitung von `GameWindow` aus.
   - **Start:** `catalog_path` mit der Vorgabe `EventCatalog.DEFAULT_PATH`, `--katalog` nach `--`
     setzt ihn. Die Sicherungskopie wird nur angeboten, wenn `backup_matches()`, sonst nennt ein
-    Hinweis ihren Pfad. Fehlende Datei → leeren Katalog anbieten; unlesbare Datei → Dialog mit
-    Zeile und Grund.
+    Hinweis ihren Pfad (abgelöst durch T078: Kopien anderer Kataloge liegen in eigenen Dateien,
+    einen Hinweis auf sie gibt es nicht mehr). Fehlende Datei → leeren Katalog anbieten; unlesbare
+    Datei → Dialog mit Zeile und Grund.
   - **Speichern:** Bei `has_errors()` fragt ein Dialog „Der Katalog hat N Fehler. Trotzdem
     speichern?“; bei `ERR_FILE_ALREADY_IN_USE` folgt die Rückfrage zur fremden Änderung, dann
     `save(true)` (FR-034).
@@ -599,6 +602,9 @@ Textausgabe zeigt das neue Datum.
 - [x] T050 [A] [P] [US4] `src/test/test_timeline_view.gd`: Umrechnung Tag ↔ Pixel bei mehreren
   Zoomstufen, Stapeln überlappender Marken, kein Ziehen bei jährlichen Ereignissen; die Vorschau
   meldet V10, wenn das Fenster zu klein wird, ohne den Katalog zu ändern. Hängt an T048.
+- [x] T089 [A] [US4] Trackpad im Zeitstrahl: Wischen mit zwei Fingern verschiebt, Kneifen
+  vergrößert um die Maus (Klaus, Phase 6, R16; Verfassung 2.1.1). Gebaut mit T048, nachgetragen
+  mit T088.
 - [x] T051 [K] [US4] Phase 6 abnehmen nach quickstart.md, Abschnitte 1 und 4.3 (US4, Szenarien 1
   bis 7, FR-037, FR-039)
 
@@ -633,6 +639,8 @@ Protokoll stimmt mit der Textausgabe überein.
     Tabelle hat Zeilen.
   - Nach „Bis zum Ende“ sind `GameClock.date` und `GameClock.paused` unverändert (US5,
     Szenario 5).
+- [x] T090 [A] [US4] Waagerechte Leiste unter der Zeitfläche und Knöpfe „+“, „−“ und „Alles“ oben
+  links im Zeitstrahl (Wünsche von Klaus bei T055). Gebaut in Phase 7, nachgetragen mit T088.
 - [x] T055 [K] [US5] Phase 7 abnehmen nach quickstart.md, Abschnitte 1 und 4.4, darin SC-004
   („Bis zum Ende“ unter 1 Sekunde), SC-007, FR-041 und FR-042
 
@@ -696,10 +704,10 @@ Reklamationswelle und Abhängige; eine gespeicherte Probe ergibt nach dem Laden 
       Einplanen: Ereignis, Tag, Grund.
   - Liste der Modifikatoren mit „Entfernen“ und `chance_info()`, also Summe und Begrenzung.
   - `last_refusal` wird angezeigt.
-  - Das Panel sammelt die Eingriffe in einer `WhatIfProbe` ohne Datei. „Fahrplan erzeugen“,
-    „Neu starten mit Eingriffen“ (über `build_run()` bis zu dem Tag, auf dem der alte Lauf
-    stand) und „Neu starten ohne Eingriffe“ arbeiten wie im Vertrag. Die Eingriffe bleiben, bis
-    die Werkstatt schließt oder eine Probe geladen wird.
+  - Das Panel sammelt die Eingriffe in einer `WhatIfProbe` ohne Datei. „Fahrplan erzeugen“, „Neu
+    starten mit Eingriffen“ (über `build_run()` bis zu dem Tag, auf dem der alte Lauf stand; seit
+    T075 mindestens bis zum Tag des letzten Eingriffs) und „Neu starten ohne Eingriffe“ arbeiten wie
+    im Vertrag. Die Eingriffe bleiben, bis die Werkstatt schließt oder eine Probe geladen wird.
 
   Hängt an T056 und T060.
 - [x] T062 [A] [US6] `SimulatorPanel`, Unterschiede und Proben (FR-043, FR-051):
@@ -778,11 +786,14 @@ letzte Phase.
   Kategorie der `EventList` gelten auch für den `TimelineView`; ohne Filter zeigt er alles wie
   bisher. Anlass: Mit `catalog_500.json` füllte allein die Kategorie Hardware die ganze Höhe des
   Zeitstrahls. Hängt an T068.
+- [x] T091 [A] Die Werkstatt merkt sich die Lage ihrer Teiler in
+  `user://werkstatt_einstellungen.cfg`, eine Sekunde nach dem Ziehen und beim Schließen; Test
+  `src/test/test_werkstatt_settings.gd` (Wunsch von Klaus, Phase 10). Nachgetragen mit T088.
 - [x] T069 [K] SC-011 nach quickstart.md, Abschnitt 5 von Hand prüfen:
   - `time` der Textausgabe;
   - Werkstatt mit `--katalog`, Ändern und Ziehen ohne Verzögerung. Gemessen bei Phase 7 mit 500
     Ereignissen, headless: eine Änderung ohne Lauf 153 ms, „Fahrplan erzeugen“ 200 ms, „Bis zum
-    Ende“ 349 ms;
+    Ende“ 349 ms; nach T068 im Fenster: Feldwechsel 41 ms, Loslassen nach dem Ziehen 38 ms;
   - Statistik unter 5 Minuten.
   Erledigt (Klaus, 2026-10-21): Textausgabe mit 500 Ereignissen 0,56 s samt Start, Werkstatt und
   Statistik abgenommen.
@@ -809,32 +820,32 @@ letzte Phase.
 |---|---|
 | FR-001 Katalog als Datei | T004, T011, T012, T017, T018 |
 | FR-002 bis FR-005 Ereignis und Arten | T010, T022, T023 |
-| FR-006 Bedingungen | T009, T022, T023 |
+| FR-006 Bedingungen | T009, T022, T023, T084 |
 | FR-007 Wirkungen | T010, T041 |
 | FR-008 Folgeereignisse, „nur als Folge“ | T009, T010, T022 |
 | FR-009 Kategorien | T001, T004, T008, T009 |
-| FR-010 bis FR-013 Fahrplan und Termine | T016, T022, T026 |
-| FR-014, FR-015 Seed und Würfel | T020, T023, T024, T052; Betriebssysteme mit 11-03 |
+| FR-010 bis FR-013 Fahrplan und Termine | T016, T022, T026, T079 |
+| FR-014, FR-015 Seed und Würfel | T020, T023, T024, T052, T083; Betriebssysteme mit 11-03 |
 | FR-016, FR-018, FR-019 Tagesablauf, Kettenbremse, Spielende | T022, T023, T024, T025, T041 |
-| FR-017 Meldungen | T017, T024, T025 |
+| FR-017 Meldungen | T017, T024, T025, T085 |
 | FR-020 bis FR-022 Dauer | T041, T042 |
 | FR-023, FR-024 Kalender | T043, T044, T045 |
 | FR-025 bis FR-027 Eingriffe | T021, T022, T056, T057, T058 |
-| FR-028, FR-029 Werkstatt, Look | T001, T005, T031, T034, T040 |
-| FR-030 bis FR-032 Liste, Bearbeiten, Kennungen | T032, T033, T035, T036 |
-| FR-033 Prüfung in der Werkstatt | T014, T037, T038, T039 |
+| FR-028, FR-029 Werkstatt, Look | T001, T005, T031, T034, T040, T081 |
+| FR-030 bis FR-032 Liste, Bearbeiten, Kennungen | T032, T033, T035, T036, T076, T080, T086 |
+| FR-033 Prüfung in der Werkstatt | T014, T037, T038, T039, T076 |
 | FR-034 bis FR-036 Speichern, Rückgängig, Löschen | T011, T032, T033, T034 |
-| FR-037 bis FR-039 Zeitstrahl | T047, T048, T049, T050 |
+| FR-037 bis FR-039 Zeitstrahl | T047, T048, T049, T050, T074, T077, T089, T090 |
 | FR-040 bis FR-042 Simulator | T052, T053, T054 |
-| FR-043 Eingriffe im Simulator, Vergleich | T059, T061, T062 |
-| FR-044, FR-045 Statistik | T064, T065, T066 |
+| FR-043 Eingriffe im Simulator, Vergleich | T059, T061, T062, T075 |
+| FR-044, FR-045 Statistik | T064, T065, T066, T075, T082 |
 | FR-046 Textausgabe | T026, T027 |
 | FR-047 Übernahme | T003, T004, T012, T018, T028 |
 | FR-048, FR-049 Prüfung und Fehler beim Start | T017, T018, T025 |
-| FR-050 Sicherungskopie | T032, T033, T034 |
-| FR-051 Proben | T060, T062 |
+| FR-050 Sicherungskopie | T032, T033, T034, T078 |
+| FR-051 Proben | T060, T062, T075 |
 | SC-001, SC-010 | T072 |
-| SC-002 | T023, T027 |
+| SC-002 | T023, T027, T085 |
 | SC-003 | T057 |
 | SC-004 | T055, T067 |
 | SC-005 | T028 |
@@ -972,50 +983,102 @@ Lückensuche T071 mit `/speckit-converge` (2026-10-21): vier Prüfer lasen Spec,
 Aufgaben gegen den Code, Claude hat die Befunde nachgeprüft. Umgesetzt wird erst nach Klaus'
 Freigabe, wie jede Phase. Die Gesamtabnahme mit T072 und T073 aus Phase 10 folgt erst danach.
 
-- [ ] T075 [A] Gesammelte Eingriffe nach `at_day` stabil sortiert nachspielen, in
+- [x] T075 [A] Gesammelte Eingriffe nach `at_day` stabil sortiert nachspielen, in
   `WhatIfProbe.build_run()` und `TimelineStatistics`; den Endtag eines Neustarts bzw. einer
   gespeicherten Probe als größten Wert aus Stand des Laufs und letztem `at_day` festlegen; Test
   für den Ablauf Eingriff 1992, „Fahrplan erzeugen“, Eingriff vor Spielbeginn, Neustart mit
   Eingriffen, Probe und Statistik per FR-043, FR-045, FR-051, US6/AC2, US6/AC7, R11, R22
   (contradicts)
-- [ ] T076 [A] Ein Klick in Liste oder Prüfung trifft nach einer offenen Eingabe die gemeinte
+- [x] T076 [A] Ein Klick in Liste oder Prüfung trifft nach einer offenen Eingabe die gemeinte
   Zeile: Neubau von `EventList` und `IssuesPanel` ans Ende des Bilds schieben oder Zeilen
   behalten; Test mit echter Mauseingabe per FR-030, FR-033, Vertrag „Datenfluss“ (contradicts)
-- [ ] T077 [A] Rechtsklick und Menü im Zeitstrahl übernehmen eine offene Eingabe vorher
+- [x] T077 [A] Rechtsklick und Menü im Zeitstrahl übernehmen eine offene Eingabe vorher
   (`_release_focus()` in `_on_right_click()`); Test mit „Duplizieren“ aus dem Menü per FR-039,
   US4/AC4, Vertrag „Zeitstrahl“ (partial)
-- [ ] T078 [K] [A] Sicherungskopie trotz Kopie eines anderen Katalogs: Klaus entscheidet zwischen
-  einer Sicherungsdatei je Katalogpfad (Empfehlung) und einer festgehaltenen Ausnahme mit Warnung
-  beim Start; danach umsetzen, mit Test per FR-050, R23 (partial)
-- [ ] T079 [A] Wirkungen „während“, die nie beginnen, etwa im auf Spielbeginn gekürzten Winter
+- [x] T078 [K] [A] (Klaus, 2026-10-21: Sicherungsdatei je Katalog) Sicherungskopie trotz Kopie eines
+  anderen Katalogs: Klaus entscheidet zwischen einer Sicherungsdatei je Katalogpfad (Empfehlung) und
+  einer festgehaltenen Ausnahme mit Warnung beim Start; danach umsetzen, mit Test per FR-050, R23
+  (partial)
+- [x] T079 [A] Wirkungen „während“, die nie beginnen, etwa im auf Spielbeginn gekürzten Winter
   1984/85, weder im Fahrplan noch in der Begründung zeigen: `ScheduleEntry.due_effects()` nach
   derselben Regel wie der Lauf; Test per FR-013, FR-021, V19 (partial)
-- [ ] T080 [A] Eine Auswahl im Formular bleibt offen, auch wenn vorher ein anderes Feld eine
+- [x] T080 [A] Eine Auswahl im Formular bleibt offen, auch wenn vorher ein anderes Feld eine
   offene Eingabe hatte; Test per FR-031 (partial)
-- [ ] T081 [K] [A] Fehlerkontur an Auswahlfeldern: Klaus klärt, ob der Style-Guide sie meint
-  („Ein Feld mit Fehler bekommt eine Kontur …“); falls ja, Theme-Variante für `OptionButton` und
-  Aufruf ergänzen per Verfassung IV, Style-Guide „Bedienelemente“ (partial)
-- [ ] T082 [A] Die Statistik zählt in „mit N Eingriffen“ nur die angenommenen Eingriffe und nennt
+- [x] T081 [K] [A] (Klaus, 2026-10-21: ja, Style-Guide Version 17) Fehlerkontur an Auswahlfeldern:
+  Klaus klärt, ob der Style-Guide sie meint („Ein Feld mit Fehler bekommt eine Kontur …“); falls ja,
+  Theme-Variante für `OptionButton` und Aufruf ergänzen per Verfassung IV, Style-Guide
+  „Bedienelemente“ (partial)
+- [x] T082 [A] Die Statistik zählt in „mit N Eingriffen“ nur die angenommenen Eingriffe und nennt
   abgelehnte per FR-045 (partial)
-- [ ] T083 [A] `Timeline.start_game()` lehnt Seeds über 2.147.483.647 mit Meldung ab; Test per
+- [x] T083 [A] `Timeline.start_game()` lehnt Seeds über 2.147.483.647 mit Meldung ab; Test per
   FR-014 (partial)
-- [ ] T084 [A] Prüfregeln für von Hand geänderte Dateien: V21 prüft Kategorie-Kennungen auf
+- [x] T084 [A] Prüfregeln für von Hand geänderte Dateien: V21 prüft Kategorie-Kennungen auf
   `[a-z0-9_]+`, V15 lehnt eine Bedingung auf das eigene Ereignis ab; je eine Fixture per
   data-model (EventCategory, EventCondition), FR-006 (partial)
-- [ ] T085 [A] Fehlende Tests: Signale `event_ended` und `effect_ended` des Autoloads mit
+- [x] T085 [A] Fehlende Tests: Signale `event_ended` und `effect_ended` des Autoloads mit
   `catalog_us3_kalender.json`; SC-002 mit Eingriffsprotokoll Tag für Tag gegen Sprünge; V22 mit
   falschem Typ und unbekanntem Wert für `kind` und `scope` per FR-017, SC-002, V22 (partial)
-- [ ] T086 [A] Die Grenze von 20 Anzahlen im Formular festhalten und bei mehr Gewichten einen
+- [x] T086 [A] Die Grenze von 20 Anzahlen im Formular festhalten und bei mehr Gewichten einen
   Hinweis zeigen, statt das Feld still unbearbeitbar zu lassen per FR-004, FR-031 (unrequested)
-- [ ] T087 [C] Spec auf die datierten Entscheidungen nachziehen: FR-026 und Edge Case (Ablehnung
+- [x] T087 [C] Spec auf die datierten Entscheidungen nachziehen: FR-026 und Edge Case (Ablehnung
   nach 1999, Verschieben auf denselben Tag), FR-037 (Filter, T074), FR-038 und Annahmen
   (Trackpad, Zoom-Knöpfe, waagerechte Leiste, Teiler merken), FR-039 und US4/AC5 (vorbelegter
   Dialog), FR-043 und FR-051 (Laden einer Probe ersetzt die gesammelten Eingriffe), FR-050 und
   Edge Case Absturz („Später“, Kopie eines anderen Katalogs, nach T078), FR-012 (Würfelwert bei
   gewürfelten und Folgeterminen; am Termin steht der letzte Grund), V19 (gekürztes erstes
   Vorkommen), US1/AC7 (Würfelwert im Simulator) per spec.md (unrequested)
-- [ ] T088 [C] Übrige Dokumente nachziehen: die erledigten Wünsche (Trackpad, waagerechte Leiste,
+- [x] T088 [C] Übrige Dokumente nachziehen: die erledigten Wünsche (Trackpad, waagerechte Leiste,
   Zoom-Knöpfe, Teiler merken) als Aufgaben vermerken, T074 in die Abdeckungstabelle, Messwerte
   bei T069 aktualisieren (Änderung 41 ms, Ziehen 38 ms), Mindestabstand in plan.md und T023 wie
   FR-005, R2 auf die Katalogklassen eingrenzen, die Grenze aus T086 in Vertrag und Datenmodell per
   plan.md, tasks.md, research.md (unrequested)
+- [x] T092 [C] Zweite Lückensuche mit `/speckit-converge` über das ganze Feature, wenn T075 bis
+  T088 erledigt sind (`docs/ki_dev.md`, Ablauf je Feature, Punkt 6). Neue Lücken werden Phase 12
+  mit Klaus' Freigabe; ohne Befund folgen T072 und T073. Ergebnis (2026-10-21): 16 Befunde, als
+  Phase 12 mit T093 bis T103 angehängt
+
+## Phase 12: Convergence
+
+Zweite Lückensuche T092 mit `/speckit-converge` (2026-10-21): zwei Prüfer, Kern und Werkstatt, lasen
+Spec, Plan, Verträge und Aufgaben gegen den Code, Claude hat jeden Befund nachgeprüft. Verwandte
+Befunde sind zu einer Aufgabe zusammengefasst. Umgesetzt wird erst nach Klaus' Freigabe; die
+Gesamtabnahme mit T072 und T073 folgt danach.
+
+- [x] T093 [A] CRITICAL: Fehlerkontur an allen Feldern, unter denen ein Fehlerhinweis steht, auch in
+  Dialogen: Kennung in „Neu …“, Wert, Beginn, Ende und Tag im Eingriff-Dialog, Name in „Probe
+  speichern …“, Anzahl der Spiele in der Statistik; `ErrorLineEdit`, solange der Hinweis steht, wie
+  beim Feld „Bis“ im Simulator per Verfassung IV, Style-Guide „Bedienelemente“ (partial)
+- [x] T094 [A] CRITICAL: Fokuslinie rundum sichtbar: Formular und Farbwahl der Kategorien bekommen
+  rundum mindestens 4 Pixel Rand, damit Rollleiste und Bereichsgrenze die Linie nicht abschneiden;
+  Bild aus dem echten Fenster per Verfassung IV, Style-Guide Rolle „Fokus“ (partial)
+- [x] T095 [A] Keine offene Eingabe geht beim Neubau des Formulars verloren: Der Neubau übernimmt
+  sie zuerst. Betroffen sind der Rechtsklick in die Fahrplan-Tabelle des Simulators und die Wahl im
+  Menü „…“ am Wirkungsziel; Tests mit Rechtsklick und Menü per FR-031, FR-043, Vertrag „EventForm“
+  (partial)
+- [x] T096 [A] Schließen bei offenem Dialog zur Sicherungskopie gilt wie „Später“: Die Kopie bleibt;
+  Test per FR-050, R23 (partial)
+- [x] T097 [K] [A] (Klaus, 2026-10-21: nicht zeigen) Verzögerte Wirkungen abgesagter und entfallener
+  Termine: Klaus entscheidet, ob Fahrplan und Begründung sie zeigen (Empfehlung: nicht zeigen, sie
+  kommen nie); danach `due_effects()` nach Zustand filtern oder den Vertrag enger fassen, mit Test
+  per FR-013, Vertrag zeitleiste.md (partial)
+- [x] T098 [A] (dazu Tag 00, Entscheidung von Claude) Ein jährliches Ende „00-00“ oder „00-ende“ als
+  V22 melden, statt es still als „ohne Dauer“ zu lesen; Fixture per Vertrag ereigniskatalog.md, V22
+  (partial)
+- [x] T099 [A] Probe-Dateien, die jemand von Hand geändert hat: Ein Modifikator ohne lesbaren Wert
+  oder Beginn ist nicht anwendbar und wird genannt, ein Seed außerhalb von 0 bis 2.147.483.647 ist
+  ein Lesefehler; Tests per FR-051, FR-014 (partial)
+- [x] T100 [K] [A] (Klaus, 2026-10-21: Grenze festhalten, im Datenmodell) Zwei geplante Termine
+  eines Ereignisses am selben Tag: Klaus entscheidet zwischen „Herkunft im Eingriffsprotokoll
+  mitspeichern“ und „Grenze im Datenmodell festhalten“ (Empfehlung) per US6/AC7, data-model „Neu
+  abspielen“ (partial)
+- [x] T101 [K] [A] (Klaus, 2026-10-21: Tabelle mit Vorrang) Vorgabe-Teilung der Tabellen in
+  Statistik und Simulator: Klaus entscheidet, ob die Tabelle Vorrang vor dem Bereich darunter
+  bekommt (Empfehlung: ja); Bild aus dem echten Fenster per FR-041, FR-044 (partial)
+- [x] T102 [C] Doku nachziehen: R22 (Endtag und Nachspielen nach `at_day`, T075), R23 (die alte
+  Datei `werkstatt_sicherung.json` wird nicht mehr beachtet), Quickstart 4.1 (nach dem Test zur
+  Sicherungskopie „Verwerfen“, nicht speichern), Vermerk „abgelöst durch T078“ bzw. „durch T075“ bei
+  T032, T034 und T061, Quickstart „Abnahme je Phase“ um Phase 11 und 12 per research.md,
+  quickstart.md, tasks.md (contradicts)
+- [x] T103 [K] Phase 11 und 12 abnehmen nach quickstart.md, Zeilen „ab Phase 11“ und die von Phase
+  12; danach T072 und T073 per docs/ki_dev.md, Ablauf je Feature, Punkt 5 (missing). Erledigt
+  (Klaus, 2026-10-21): Phase 11 und 12 abgenommen

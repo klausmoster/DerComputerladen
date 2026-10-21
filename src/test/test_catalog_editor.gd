@@ -4,8 +4,8 @@ extends GutTest
 ## Wiederholen, Kennungen und Verweise, Löschen, Artwechsel, Kategorien und ihre Farben,
 ## Speichern, Verwerfen, Meldungen beim Lesen und die Sicherungskopie.
 ##
-## Jeder Test arbeitet mit einer Kopie eines Test-Katalogs in einem eigenen Ordner unter user://
-## und mit einer eigenen Sicherungsdatei; after_each() räumt beides weg. Die Fixtures unter
+## Jeder Test arbeitet mit einer Kopie eines Test-Katalogs in einem eigenen Ordner unter user://,
+## der auch der Ordner der Sicherungskopien ist; after_each() räumt beides weg. Die Fixtures unter
 ## res://test/fixtures/ bleiben unberührt, der echte Katalog unter res://data/ erst recht.
 
 const ORDNER := "user://test_catalog_editor/"
@@ -804,6 +804,9 @@ func test_unbekannter_schluessel_bleibt_v22_bis_zum_speichern() -> void:
 
 
 # --- Sicherungskopie --------------------------------------------------------------------------
+#
+# T078: Jeder Katalog hat seine eigene Sicherungsdatei im backup_folder, benannt nach seinem Pfad.
+# Die Tests setzen den Ordner auf ihren eigenen; after_each() räumt die Dateien darin mit weg.
 
 func test_sicherung_nur_bei_ungespeicherten_aenderungen() -> void:
 	# Arrange
@@ -828,7 +831,7 @@ func test_sicherung_ist_kanonisch_mit_pfad_und_zeit() -> void:
 	_editor.write_backup()
 
 	# Assert: {"catalog": …, "format": 1, "path": …, "saved": <Unix-Zeit>} (R23)
-	var text := FileAccess.get_file_as_string(_editor.backup_path)
+	var text := FileAccess.get_file_as_string(_editor.backup_path())
 	var daten: Dictionary = JSON.parse_string(text)
 	assert_eq(daten.keys(), ["catalog", "format", "path", "saved"], "Schlüssel alphabetisch.")
 	assert_eq(daten["format"], 1.0)
@@ -868,57 +871,111 @@ func test_sicherung_uebernehmen_nach_einem_absturz() -> void:
 		"Die Katalogdatei selbst ist unverändert.")
 
 
-func test_sicherung_eines_anderen_katalogs_passt_nicht() -> void:
-	# Arrange: R23. Die Kopie gehört zu katalog.json, geöffnet wird ein anderer.
-	_oeffnen(MINIMAL)
-	_editor.set_event_field("intel_pentium", &"date", NEUER_TAG)
-	_editor.write_backup()
-	var anderer := _neuer_editor()
-	assert_eq(anderer.open(_kopie(UEBERNAHME, "anderer.json")), OK)
+func test_name_der_sicherung_folgt_aus_dem_pfad() -> void:
+	# Arrange: derselbe Katalog unter drei Schreibweisen, dazu ein anderer gleichen Namens
+	var res_pfad := "res://test/fixtures/catalog_500.json"
+	var absolut := ProjectSettings.globalize_path(res_pfad)
+	var mit_umweg := "res://test/../test/fixtures//catalog_500.json"
+	var anderer_ordner := "user://irgendwo/catalog_500.json"
 
 	# Act
-	var passt := anderer.backup_matches()
-	var fehler := anderer.restore_backup()
+	var dateiname := CatalogEditor.backup_name(res_pfad)
 
 	# Assert
-	assert_true(anderer.has_backup())
-	assert_false(passt, "Angeboten wird nur eine Kopie desselben Katalogs.")
-	assert_eq(anderer.backup_info()["path"], _editor.path, "Der Hinweis nennt ihren Katalog.")
-	assert_eq(fehler, ERR_INVALID_DATA)
-	assert_eq(anderer.catalog.events.size(), 25, "Der geöffnete Katalog bleibt.")
-	assert_true(anderer.has_backup(), "Die fremde Kopie bleibt liegen.")
+	assert_string_starts_with(dateiname, "catalog_500_", "Der Name verrät den Katalog.")
+	assert_string_ends_with(dateiname, ".json")
+	assert_eq(CatalogEditor.backup_name(absolut), dateiname, "res:// und absolut: dieselbe Datei.")
+	assert_eq(CatalogEditor.backup_name(mit_umweg), dateiname, "„..“ und „//“ zählen nicht.")
+	assert_ne(CatalogEditor.backup_name(anderer_ordner), dateiname,
+		"Gleicher Dateiname in einem anderen Ordner ist ein anderer Katalog.")
+	assert_ne(CatalogEditor.backup_name("res://data/event_catalog.json"), dateiname)
+	assert_eq(CatalogEditor.normalized_path("user://a/../b.json"),
+		ProjectSettings.globalize_path("user://b.json"))
+	# Ein relativer Pfad gilt wie bei FileAccess ab dem Arbeitsordner.
+	var hier := DirAccess.open(".").get_current_dir()
+	assert_eq(CatalogEditor.normalized_path("a/../b.json"), hier.path_join("b.json"))
 
 
-func test_fremde_sicherungskopie_wird_weder_ueberschrieben_noch_geloescht() -> void:
-	# Arrange: R23, „bleibt sie liegen“. Die Kopie gehört zu katalog.json; geöffnet und geändert
-	# wird ein anderer Katalog. Es gibt nur die eine Datei für die Kopie.
+func test_zwei_kataloge_haben_zwei_dateien_und_keiner_blockiert_den_anderen() -> void:
+	# Arrange (T078): Beide Kataloge haben ungespeicherte Änderungen, etwa nach einem Absturz mit
+	# --katalog catalog_500 und danach einer Sitzung mit dem echten Katalog.
 	_oeffnen(MINIMAL)
 	_editor.set_event_field("intel_pentium", &"date", NEUER_TAG)
-	_editor.write_backup()
-	var kopie := FileAccess.get_file_as_string(_editor.backup_path)
 	var anderer := _neuer_editor()
 	assert_eq(anderer.open(_kopie(UEBERNAHME, "anderer.json")), OK)
 	anderer.set_event_field("intel_pentium", &"title", "Pentium kommt")
 
 	# Act
-	var schreiben := anderer.write_backup()
-	anderer.discard_backup()
-	anderer.revert()
+	var erste := _editor.write_backup()
+	var zweite := anderer.write_backup()
 
 	# Assert
-	assert_eq(schreiben, ERR_ALREADY_EXISTS,
-		"Die Kopie des anderen Katalogs wird nicht überschrieben.")
-	assert_eq(FileAccess.get_file_as_string(_editor.backup_path), kopie,
-		"Weder Löschen noch Verwerfen trifft die fremde Kopie.")
+	assert_eq([erste, zweite], [OK, OK], "Keiner blockiert den anderen.")
+	assert_ne(_editor.backup_path(), anderer.backup_path(), "Zwei Kataloge, zwei Dateien.")
+	assert_eq(_editor.backup_path().get_base_dir(), anderer.backup_path().get_base_dir(),
+		"Beide liegen im Ordner der Sicherungskopien.")
+	assert_true(_editor.backup_matches())
+	assert_true(anderer.backup_matches())
+	var eigene: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(_editor.backup_path()))
+	assert_eq(eigene["path"], _editor.path, "In der Datei steht ihr Katalog.")
+
+
+func test_kopie_eines_anderen_katalogs_wird_weder_angeboten_noch_beruehrt() -> void:
+	# Arrange (T078): Die Kopie gehört zu katalog.json; geöffnet, geändert, gesichert, verworfen
+	# und gespeichert wird ein anderer Katalog.
+	_oeffnen(MINIMAL)
+	_editor.set_event_field("intel_pentium", &"date", NEUER_TAG)
+	_editor.write_backup()
+	var kopie := FileAccess.get_file_as_string(_editor.backup_path())
+	var anderer := _neuer_editor()
+	assert_eq(anderer.open(_kopie(UEBERNAHME, "anderer.json")), OK)
+
+	# Act und Assert: Für den anderen gibt es keine Kopie.
+	assert_false(anderer.has_backup())
+	assert_false(anderer.backup_matches(), "Angeboten wird nur eine Kopie desselben Katalogs.")
+	assert_eq(anderer.restore_backup(), ERR_FILE_NOT_FOUND)
+	assert_eq(anderer.catalog.events.size(), 25, "Der geöffnete Katalog bleibt.")
+	anderer.set_event_field("intel_pentium", &"title", "Pentium kommt")
+	assert_eq(anderer.write_backup(), OK)
+	anderer.discard_backup()
+	assert_false(anderer.has_backup(), "Der andere löscht seine eigene Kopie …")
+	anderer.set_event_field("intel_pentium", &"title", "Pentium kommt bald")
+	anderer.write_backup()
+	assert_eq(anderer.revert(), OK)
+	assert_false(anderer.has_backup(), "… auch beim Verwerfen.")
+
+	# Assert: Die Kopie von katalog.json ist dieselbe wie vorher.
+	assert_eq(FileAccess.get_file_as_string(_editor.backup_path()), kopie,
+		"Schreiben, Löschen und Verwerfen des anderen treffen sie nicht.")
 	_editor.discard_backup()
 	assert_false(_editor.has_backup(), "Der eigene Katalog löscht seine Kopie.")
+
+
+func test_datei_eines_anderen_pfads_unter_dem_namen_wird_nicht_angeboten_und_ersetzt() -> void:
+	# Arrange: Unter dem Namen dieses Katalogs liegt eine lesbare Kopie, in der ein anderer Pfad
+	# steht, etwa von Hand kopiert. Sie gehört nicht zu diesem Katalog.
+	_oeffnen(MINIMAL)
+	var fremd := _neuer_editor()
+	assert_eq(fremd.open(_kopie(UEBERNAHME, "anderer.json")), OK)
+	fremd.set_event_field("intel_pentium", &"title", "Pentium kommt")
+	fremd.write_backup()
+	DirAccess.rename_absolute(fremd.backup_path(), _editor.backup_path())
+
+	# Act und Assert
+	assert_true(_editor.has_backup())
+	assert_false(_editor.backup_matches(), "Nicht angeboten.")
+	assert_eq(_editor.restore_backup(), ERR_INVALID_DATA)
+	_editor.set_event_field("intel_pentium", &"date", NEUER_TAG)
+	assert_eq(_editor.write_backup(), OK)
+	assert_true(_editor.backup_matches(), "Die nächste Sicherung ersetzt sie.")
 
 
 func test_unlesbare_sicherungskopie_darf_ueberschrieben_werden() -> void:
 	# Arrange: Eine abgebrochen geschriebene Kopie gehört erkennbar zu keinem Katalog.
 	_oeffnen(MINIMAL)
-	_schreiben(_editor.backup_path, "{\"catalog\": ")
+	_schreiben(_editor.backup_path(), "{\"catalog\": ")
 	_editor.set_event_field("intel_pentium", &"date", NEUER_TAG)
+	assert_false(_editor.backup_matches(), "Eine unlesbare Kopie passt zu keinem Katalog.")
 
 	# Act
 	var fehler := _editor.write_backup()
@@ -926,6 +983,38 @@ func test_unlesbare_sicherungskopie_darf_ueberschrieben_werden() -> void:
 	# Assert
 	assert_eq(fehler, OK)
 	assert_true(_editor.backup_matches(), "Jetzt liegt die eigene, lesbare Kopie dort.")
+
+
+func test_fehlt_der_ordner_legt_die_sicherung_ihn_an() -> void:
+	# Arrange
+	_oeffnen(MINIMAL)
+	_editor.backup_folder = ORDNER + "sicherungen/"
+	_editor.set_event_field("intel_pentium", &"date", NEUER_TAG)
+
+	# Act
+	var fehler := _editor.write_backup()
+
+	# Assert
+	assert_eq(fehler, OK)
+	assert_true(_editor.backup_matches())
+	assert_eq(_editor.backup_path().get_base_dir(), (ORDNER + "sicherungen/").get_base_dir())
+	_editor.discard_backup()
+	DirAccess.remove_absolute(ORDNER + "sicherungen")
+
+
+func test_sicherung_meldet_wenn_sie_nicht_schreiben_kann() -> void:
+	# Arrange: Wo der Ordner hin soll, liegt eine Datei.
+	_oeffnen(MINIMAL)
+	_schreiben(ORDNER + "keinordner", "Hier ist kein Ordner.")
+	_editor.backup_folder = ORDNER + "keinordner/"
+	_editor.set_event_field("intel_pentium", &"date", NEUER_TAG)
+
+	# Act
+	var fehler := _editor.write_backup()
+
+	# Assert
+	assert_ne(fehler, OK, "Das Ergebnis sagt, dass es nicht ging.")
+	assert_false(_editor.has_backup())
 
 
 # --- Inhalt vergleichen ----------------------------------------------------------------------
@@ -976,7 +1065,7 @@ func test_editor_wird_samt_verlauf_freigegeben() -> void:
 
 func _neuer_editor() -> CatalogEditor:
 	var editor := CatalogEditor.new()
-	editor.backup_path = ORDNER + "sicherung.json"
+	editor.backup_folder = ORDNER
 	return editor
 
 

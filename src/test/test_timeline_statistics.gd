@@ -2,8 +2,9 @@ extends GutTest
 
 ## Prüft die Statistik über viele Spiele (Feature 002, T064 und T065; FR-044, FR-045; US7,
 ## Szenarien 3 bis 6; SC-008): Mittelwert und Anteile über 1.000 Spiele, die Zählung der Beginne
-## der Seeds 1 bis N, gleiche Ergebnisse bei Wiederholung, Eingriffe an ihrem Tag, die Obergrenze
-## und das Zeitbudget von run_for().
+## der Seeds 1 bis N, gleiche Ergebnisse bei Wiederholung, Eingriffe an ihrem Tag, auch außer der
+## Reihe gesammelte (T075) und solche ohne lesbaren Tag (R1), abgelehnte Eingriffe, die nicht
+## zählen (T082), die Obergrenze und das Zeitbudget von run_for().
 ##
 ## Die Tests arbeiten mit Test-Katalogen unter fixtures/catalog_us7_*.json und
 ## catalog_us6_reklamation.json, nie mit dem echten Katalog (R20). Die Eingriffe kommen aus dem
@@ -198,6 +199,141 @@ func test_einplanung_gilt_in_jedem_spiel_absage_und_verschiebung_nicht() -> void
 	assert_eq(statistik.interventions, protokoll, "Das Protokoll selbst bleibt, wie es war.")
 
 
+func test_eingriffe_ausser_der_reihe_gelten_an_ihrem_tag() -> void:
+	# Arrange (T075): So sammelt der Simulator, wenn nach „Fahrplan erzeugen“ ein Eingriff vor
+	# Spielbeginn dazukommt: erst am 01.01.1992 der Großauftrag für den 15.03.1993, dann vor
+	# Spielbeginn +100 Prozentpunkte auf „Nur mit Aktion“.
+	var katalog := _katalog(EINGRIFFE)
+	var erster_lauf := TimelineRun.new(katalog, 4711)
+	erster_lauf.advance_to(_tag(1992, 1, 1))
+	assert_eq(erster_lauf.schedule_event("grossauftrag", _tag(1993, 3, 15), "Messeauftrag"), OK)
+	var zweiter_lauf := TimelineRun.new(katalog, 4711)
+	assert_eq(zweiter_lauf.add_modifier(_modifikator(1.0)), OK)
+	var protokoll: Array[Dictionary] = [erster_lauf.interventions[0], zweiter_lauf.interventions[0]]
+	var vorher := protokoll.duplicate(true)
+	var statistik := TimelineStatistics.new(katalog, 5)
+	statistik.interventions = protokoll
+
+	# Act
+	_bis_fertig(statistik)
+
+	# Assert: Der Modifikator gilt ab Januar 1985, nicht erst ab Februar 1992.
+	var aktion := _ergebnis(statistik, "nur_mit_aktion")
+	assert_eq([aktion.minimum, aktion.maximum], [180, 180])
+	var auftrag := _ergebnis(statistik, "grossauftrag")
+	assert_eq([auftrag.minimum, auftrag.maximum, auftrag.per_year[1993 - 1985]], [1, 1, 5])
+	assert_eq(statistik.interventions, vorher, "Das Protokoll bleibt in seiner Reihenfolge.")
+
+
+func test_eintrag_ohne_tag_gilt_hinter_seinem_vorgaenger_im_ganzen_protokoll() -> void:
+	# Arrange (R1): Einplanung am Tag 100, Absage am Tag 3000 (20.03.1993), dann ein Modifikator
+	# ohne lesbaren Tag. Die Absage gilt in der Statistik nicht, ihr Tag zählt trotzdem: Der
+	# Modifikator gilt wie im Simulator ab dem Tag 3000, nicht ab dem Tag 100.
+	var katalog := _katalog(EINGRIFFE)
+	var protokoll: Array[Dictionary] = [
+		{"at_day": 100, "kind": TimelineRun.INTERVENTION_SCHEDULE, "event_id": "grossauftrag",
+			"day": 200, "reason": "Messeauftrag"},
+		{"at_day": 3000, "kind": TimelineRun.INTERVENTION_CANCEL,
+			"event_id": "konkurrent_eroeffnet", "day": _tag(1992, 6, 1), "reason": "Bauamt"},
+		{"kind": TimelineRun.INTERVENTION_ADD_MODIFIER,
+			"modifier": _als_eintrag(_modifikator(1.0))},
+	]
+	var statistik := TimelineStatistics.new(katalog, 3)
+	statistik.interventions = protokoll
+
+	# Act
+	_bis_fertig(statistik)
+
+	# Assert: Gewürfelt wird mit 100 % ab dem 01.04.1993, 81 Monate lang, wie im Simulator.
+	var aktion := _ergebnis(statistik, "nur_mit_aktion")
+	assert_eq([aktion.minimum, aktion.maximum], [81, 81], "Ab dem Tag 3000, nicht ab dem Tag 100.")
+	for jahr in EventStatistic.YEARS:
+		var erwartet := 0
+		if jahr == 1993 - EventStatistic.FIRST_YEAR:
+			erwartet = 9 * 3
+		elif jahr > 1993 - EventStatistic.FIRST_YEAR:
+			erwartet = 12 * 3
+		assert_eq(aktion.per_year[jahr], erwartet, "%d" % (EventStatistic.FIRST_YEAR + jahr))
+	var probe := WhatIfProbe.new()
+	probe.seed = 1
+	probe.until_day = TimelineRun.LAST_DAY
+	probe.interventions = protokoll
+	var simulator := probe.build_run(katalog)
+	var beginne := 0
+	for termin in simulator.entries:
+		if termin.event.id == "nur_mit_aktion" and termin.state == ScheduleEntry.State.OCCURRED:
+			beginne += 1
+	assert_eq(beginne, 81, "Der Simulator spielt dasselbe Protokoll genauso nach.")
+	assert_eq(statistik.accepted, 2, "Einplanung und Modifikator gelten, die Absage zählt nicht.")
+
+
+# --- Abgelehnte Eingriffe (T082) --------------------------------------------------------------
+
+func test_abgelehnte_eingriffe_zaehlen_nicht_und_stehen_mit_grund_da() -> void:
+	# Arrange: ein Modifikator auf ein Ereignis, das es nicht mehr gibt, dazu das Entfernen
+	# desselben Modifikators und eine gültige Einplanung. Absage und Verschiebung gelten in der
+	# Statistik ohnehin nicht und sind deshalb auch nicht abgelehnt.
+	var katalog := _katalog(EINGRIFFE)
+	var weg := _modifikator(0.5)
+	weg.id = "weg"
+	weg.event_id = "geloescht"
+	var protokoll: Array[Dictionary] = [
+		{"at_day": -1, "kind": TimelineRun.INTERVENTION_ADD_MODIFIER,
+			"modifier": _als_eintrag(weg)},
+		{"at_day": 1000, "kind": TimelineRun.INTERVENTION_SCHEDULE, "event_id": "grossauftrag",
+			"day": 1500, "reason": "Messeauftrag"},
+		{"at_day": 1200, "kind": TimelineRun.INTERVENTION_CANCEL,
+			"event_id": "konkurrent_eroeffnet", "day": _tag(1992, 6, 1), "reason": "Bauamt"},
+		{"at_day": 2000, "kind": TimelineRun.INTERVENTION_REMOVE_MODIFIER,
+			"modifier": _als_eintrag(weg)},
+	]
+	var statistik := TimelineStatistics.new(katalog, 4)
+	statistik.interventions = protokoll
+
+	# Act
+	_bis_fertig(statistik)
+
+	# Assert: gezählt wird nur die Einplanung; die beiden abgelehnten stehen mit Grund da.
+	assert_eq(statistik.accepted, 1)
+	var gruende := []
+	for ablehnung in statistik.refused:
+		gruende.append([ablehnung["record"]["kind"], ablehnung["reason"]])
+	assert_eq(gruende, [
+		[TimelineRun.INTERVENTION_ADD_MODIFIER, "Das Ereignis „geloescht“ gibt es im Katalog nicht."],
+		[TimelineRun.INTERVENTION_REMOVE_MODIFIER,
+			"Einen Modifikator mit der Kennung „weg“ gibt es nicht."],
+	], "In der Reihenfolge des Nachspielens, einmal, nicht je Spiel.")
+	var auftrag := _ergebnis(statistik, "grossauftrag")
+	assert_eq([auftrag.minimum, auftrag.maximum], [1, 1], "Die Einplanung gilt in jedem Spiel.")
+
+
+func test_ablehnung_haengt_nicht_am_seed() -> void:
+	# Arrange: dasselbe Protokoll mit anderem ersten Seed; ein Modifikator auf ein Ereignis, das
+	# nicht über Wahrscheinlichkeit kommt, und einer, der gilt.
+	var katalog := _katalog(EINGRIFFE)
+	var falsch := _modifikator(0.5)
+	falsch.id = "falsch"
+	falsch.event_id = "konkurrent_eroeffnet"
+	var protokoll: Array[Dictionary] = [
+		{"at_day": -1, "kind": TimelineRun.INTERVENTION_ADD_MODIFIER,
+			"modifier": _als_eintrag(falsch)},
+		{"at_day": -1, "kind": TimelineRun.INTERVENTION_ADD_MODIFIER,
+			"modifier": _als_eintrag(_modifikator(1.0))},
+	]
+	var ergebnisse := []
+
+	# Act
+	for erster_seed in [1, 4711, 99999]:
+		var statistik := TimelineStatistics.new(katalog, 2, erster_seed)
+		statistik.interventions = protokoll
+		_bis_fertig(statistik)
+		ergebnisse.append([statistik.accepted, statistik.refused.size(),
+			_ergebnis(statistik, "nur_mit_aktion").minimum])
+
+	# Assert
+	assert_eq(ergebnisse, [[1, 1, 180], [1, 1, 180], [1, 1, 180]])
+
+
 # --- Obergrenze (FR-044) ----------------------------------------------------------------------
 
 func test_obergrenze_ist_hoechstzahl_oder_hoechste_anzahl_sonst_minus_eins() -> void:
@@ -359,6 +495,13 @@ func _modifikator(wert: float) -> ChanceModifier:
 	modifikator.from_day = TimelineRun.FIRST_DAY
 	modifikator.to_day = TimelineRun.LAST_DAY
 	return modifikator
+
+
+## Ein Modifikator, wie er im Eingriffsprotokoll unter "modifier" steht.
+func _als_eintrag(modifikator: ChanceModifier) -> Dictionary:
+	return {"event_id": modifikator.event_id, "from_day": modifikator.from_day,
+		"id": modifikator.id, "reason": modifikator.reason, "to_day": modifikator.to_day,
+		"value": modifikator.value}
 
 
 func _summe(zahlen: Variant) -> int:

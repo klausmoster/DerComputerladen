@@ -8,6 +8,13 @@ extends VBoxContainer
 ## Tabelle, darunter die Begründung des gewählten Termins, rechts das Protokoll und darunter die
 ## Eingriffe.
 ##
+## In der Vorgabe-Teilung, ohne gespeicherte Teiler, bekommen die Tabellen den Platz zuerst; die
+## Bereiche darunter haben nur ihre Mindesthöhe (Klaus, 2026-10-21, T101). Die Begründung zeigt dann
+## Titel und zwei Zeilen, der Rest rollt; die Eingriffe zeigen einen Modifikator. Unter 80 Pixel
+## geht kein Bereich an einem Teiler (Werkstatt, „Teiler“). Mehr Mindesthöhe machte das Panel bei
+## 1920 × 925 höher als seinen Reiter, und der Reiter nähme die Höhe dem Zeitstrahl, jedes Mal,
+## wenn der Simulator nach vorn kommt.
+##
 ## Gerechnet wird mit einem eigenen TimelineRun auf einer Kopie des Katalogs, wie er gerade in der
 ## Werkstatt steht, auch ungespeichert, und ohne die Ereignisse mit Fehlern (without_faulty()). Der
 ## Simulator kennt weder die Spieluhr noch das Autoload Timeline, und den Katalog liest er über den
@@ -73,8 +80,9 @@ var editor: CatalogEditor
 var run: TimelineRun
 ## Die gesammelten Eingriffe in der Reihenfolge, in der Klaus sie gemacht hat, jeder mit seinem
 ## Tag; dazu Seed, Tag, Kennung und Name, sobald die Probe gespeichert oder geladen ist. Ein
-## Neustart mit Eingriffen spielt sie nach (WhatIfProbe.build_run()). Sie ist nie einfach eine
-## Kopie von run.interventions: Darin stehen nach einem Neustart nur die anwendbaren.
+## Neustart mit Eingriffen spielt sie nach at_day geordnet nach (WhatIfProbe.build_run()); die
+## Liste selbst bleibt in der Reihenfolge der Aktionen. Sie ist nie einfach eine Kopie von
+## run.interventions: Darin stehen nach einem Neustart nur die anwendbaren.
 var probe := WhatIfProbe.new()
 ## Hier liegen die Proben; Tests setzen einen eigenen Ordner unter user://.
 var probe_folder: String = WhatIfProbe.FOLDER
@@ -281,21 +289,21 @@ func play_until(day: int) -> void:
 
 
 ## „Neu starten mit Eingriffen“ bzw. „ohne Eingriffe“ (FR-043): ein frischer Lauf mit dem Seed des
-## aktuellen Laufs auf dem Katalog, wie er jetzt dasteht, abgespielt bis zu dem Tag, auf dem der
-## alte Lauf stand. Mit Eingriffen spielt WhatIfProbe.build_run() die gesammelten an ihren Tagen
-## nach (R22); was nicht passt, nennt ein Hinweis. Die gesammelten Eingriffe bleiben so oder so.
+## aktuellen Laufs auf dem Katalog, wie er jetzt dasteht. Ohne Eingriffe spielt er bis zu dem Tag,
+## auf dem der alte Lauf stand. Mit Eingriffen spielt WhatIfProbe.build_run() die gesammelten an
+## ihren Tagen nach (R22), bis zum Endtag aus _end_day(); was nicht passt, nennt ein Hinweis. Die
+## gesammelten Eingriffe bleiben so oder so.
 func restart(with_interventions: bool) -> void:
 	if run == null or not _has_catalog():
 		return
-	var day := run.today
 	if with_interventions:
 		probe.seed = run.seed
-		probe.until_day = day
+		probe.until_day = _end_day()
 		run = probe.build_run(_effective_catalog())
 		_start_run(probe.not_applicable)
 		return
 	var fresh := TimelineRun.new(_effective_catalog(), run.seed)
-	fresh.advance_to(day)
+	fresh.advance_to(run.today)
 	run = fresh
 	_start_run(PackedStringArray())
 
@@ -312,10 +320,11 @@ func load_probe(loaded: WhatIfProbe) -> void:
 	_start_run(probe.not_applicable)
 
 
-## Schreibt die gesammelten Eingriffe mit dem Seed und dem Tag des aktuellen Laufs als Probe
-## [param probe_name] nach probe_folder (FR-051). Die Kennung, zugleich der Dateiname, entsteht
-## aus dem Namen; eine Probe mit derselben Kennung wird überschrieben, gefragt wird vorher im
-## Dialog. Danach gehören Name und Kennung zur Probe des Panels, „Probe löschen“ meint diese.
+## Schreibt die gesammelten Eingriffe mit dem Seed des aktuellen Laufs und dem Endtag aus
+## _end_day() als Probe [param probe_name] nach probe_folder (FR-051). Die Kennung, zugleich der
+## Dateiname, entsteht aus dem Namen; eine Probe mit derselben Kennung wird überschrieben, gefragt
+## wird vorher im Dialog. Danach gehören Name und Kennung zur Probe des Panels, „Probe löschen“
+## meint diese.
 func save_probe(probe_name: String) -> Error:
 	if run == null:
 		return ERR_UNCONFIGURED
@@ -323,7 +332,7 @@ func save_probe(probe_name: String) -> Error:
 	saved.name = probe_name.strip_edges()
 	saved.id = CatalogEditor.id_from(saved.name, "probe")
 	saved.seed = run.seed
-	saved.until_day = run.today
+	saved.until_day = _end_day()
 	saved.interventions = probe.interventions.duplicate(true)
 	var error := saved.write_file(probe_folder)
 	if error == OK:
@@ -385,6 +394,20 @@ func _after_change() -> void:
 	_fill_modifiers()
 	_show_detail()
 	_update_controls()
+
+
+## Bis wohin „Neu starten mit Eingriffen“ spielt und welchen Stand „Probe speichern“ festhält: der
+## spätere Tag aus dem Stand des Laufs und dem letzten at_day der gesammelten Eingriffe, höchstens
+## der 31.12.1999. Früher geht es nicht, denn um einen Eingriff nachzuspielen, muss der Lauf bis zu
+## dessen Tag kommen, und zurück spielt er nie. Beispiel: Gesammelt ist ein Modifikator vom
+## 01.01.1992, dann kam „Fahrplan erzeugen“; der Lauf steht vor dem 01.01.1985, der Endtag ist der
+## 01.01.1992. Nur für einen Lauf, also run != null.
+func _end_day() -> int:
+	var day := run.today
+	for record in probe.interventions:
+		# Ohne lesbaren Tag gibt es −1; das hebt den Endtag nie.
+		day = maxi(day, TimelineRun.intervention_day(record))
+	return mini(day, TimelineRun.LAST_DAY)
 
 
 func _effective_catalog() -> EventCatalog:
@@ -1012,10 +1035,13 @@ static func _explanation(entry: ScheduleEntry) -> String:
 		"Begründung: %s" % entry.explain(),
 	])
 	var due := entry.due_effects()
-	if due.is_empty():
+	if entry.state == ScheduleEntry.State.SKIPPED or entry.state == ScheduleEntry.State.CANCELLED:
+		# Ein solcher Termin beginnt nie, due_effects() nennt dann nichts (T097). Hat das Ereignis
+		# verzögerte Wirkungen, sagt die Zeile, dass sie mit dem Termin wegfallen.
+		lines.append("Verzögerte Wirkungen: entfallen mit dem Termin"
+			if _has_delayed_effects(entry.event) else "Verzögerte Wirkungen: keine")
+	elif due.is_empty():
 		lines.append("Verzögerte Wirkungen: keine")
-	elif entry.state == ScheduleEntry.State.SKIPPED or entry.state == ScheduleEntry.State.CANCELLED:
-		lines.append("Verzögerte Wirkungen: entfallen mit dem Termin")
 	else:
 		lines.append("Verzögerte Wirkungen:")
 		for item in due:
@@ -1026,6 +1052,15 @@ static func _explanation(entry: ScheduleEntry) -> String:
 				line += " (nach Spielende, wird nicht gemeldet)"
 			lines.append(line)
 	return "\n".join(lines)
+
+
+## Ob [param event] Wirkungen mit Verzögerung hat, für die Begründung eines Termins, der nie
+## beginnt.
+static func _has_delayed_effects(event: TimelineEvent) -> bool:
+	for effect in event.effects:
+		if effect.delay_days > 0:
+			return true
+	return false
 
 
 ## „22.03.1993“, mit Dauer „01.11.1993 bis 31.12.1993“: Der letzte Tag ist der vor end_day, denn
@@ -1110,9 +1145,12 @@ func _finish_save(probe_name: String) -> void:
 		% error_string(error))
 
 
+## Der Hinweis im Dialog „Probe speichern“ gilt dem Namen; solange er dasteht, hat das Feld die
+## Kontur des Fehlers (Style-Guide, „Bedienelemente“, T093). Ein leerer Text nimmt beides weg.
 func _show_save_hint(text: String) -> void:
 	_save_hint.text = text
 	_save_hint.visible = not text.is_empty()
+	_probe_name_edit.theme_type_variation = &"" if text.is_empty() else &"ErrorLineEdit"
 	if _save_dialog.visible:
 		_save_dialog.reset_size()
 

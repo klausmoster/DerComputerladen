@@ -231,6 +231,12 @@ content_margin_top = 4.0
 content_margin_right = 4.0
 content_margin_bottom = 4.0
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_form"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_h"]
 color = Color(0.43529412, 0.4, 0.32941177, 1)
 
@@ -264,6 +270,39 @@ content_margin_right = 10.0
 content_margin_bottom = 6.0
 fill = &"gehaeuse"
 relief = 2
+
+[sub_resource type="StyleBox" id="ReliefStyleBox_choice_error"]
+script = ExtResource("1_relief")
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+fill = &"gehaeuse"
+relief = 1
+outline = &"kassenrot"
+outline_width = 2
+
+[sub_resource type="StyleBox" id="ReliefStyleBox_choice_error_hover"]
+script = ExtResource("1_relief")
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+fill = &"signalgelb"
+relief = 1
+outline = &"kassenrot"
+outline_width = 2
+
+[sub_resource type="StyleBox" id="ReliefStyleBox_choice_error_pressed"]
+script = ExtResource("1_relief")
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+fill = &"gehaeuse"
+relief = 2
+outline = &"kassenrot"
+outline_width = 2
 
 [sub_resource type="StyleBox" id="ReliefStyleBox_toolbar"]
 script = ExtResource("1_relief")
@@ -387,6 +426,15 @@ ErrorLineEdit/styles/normal = SubResource("StyleBoxFlat_field_error")
 ErrorNoticeLabel/base_type = &"Label"
 ErrorNoticeLabel/colors/font_color = Color(0.9607843, 0.9411765, 0.8862745, 1)
 ErrorNoticeLabel/styles/normal = SubResource("StyleBoxFlat_error_notice")
+ErrorOptionButton/base_type = &"OptionButton"
+ErrorOptionButton/styles/hover = SubResource("ReliefStyleBox_choice_error_hover")
+ErrorOptionButton/styles/normal = SubResource("ReliefStyleBox_choice_error")
+ErrorOptionButton/styles/pressed = SubResource("ReliefStyleBox_choice_error_pressed")
+ErrorTextEdit/base_type = &"TextEdit"
+ErrorTextEdit/styles/normal = SubResource("StyleBoxFlat_field_error")
+FormScroll/base_type = &"ScrollContainer"
+FormScroll/constants/scrollbar_h_separation = 4
+FormScroll/styles/panel = SubResource("StyleBoxEmpty_form")
 GridContainer/constants/h_separation = 8
 GridContainer/constants/v_separation = 4
 HSplitContainer/icons/grabber = ExtResource("3_grip_h")

@@ -24,6 +24,9 @@ const FOLDER := "res://tools/werkstatt/proben/"
 ## read_file() nicht: Sie stammt aus einer anderen Version, und sie zu lesen und neu zu schreiben,
 ## könnte sie zerstören.
 const FORMAT := 1
+## Der größte Seed (FR-014), wie im Autoload Timeline und im Simulator. Eine Probe mit einem Seed
+## außerhalb von 0 bis MAX_SEED liest read_file() nicht (T099).
+const MAX_SEED := 2147483647
 ## Die Schlüssel im Eingriffsprotokoll, die Tage sind, auch im Modifikator darin. Dazu kommt
 ## until_day in der Probe selbst.
 const DATE_KEYS := ["at_day", "day", "new_day", "from_day", "to_day"]
@@ -45,9 +48,13 @@ var name: String = ""
 ## Seed des Laufs.
 @warning_ignore("shadowed_global_identifier")
 var seed: int = 0
-## Bis zu diesem Tag war der Lauf beim Speichern abgespielt; −1 heißt: noch vor dem 01.01.1985.
+## Bis zu diesem Tag spielt build_run() den Lauf ab; −1 heißt: noch vor dem 01.01.1985. Beim
+## Speichern ist das der Tag, auf dem der Lauf stand, mindestens aber der Tag des letzten Eingriffs,
+## denn bis dorthin muss build_run() ohnehin spielen.
 var until_day: int = -1
-## Das Eingriffsprotokoll wie TimelineRun.interventions, mit Tagesindizes.
+## Das Eingriffsprotokoll wie TimelineRun.interventions, mit Tagesindizes, in der Reihenfolge der
+## Aktionen im Simulator. So steht es auch in der Datei; nach at_day geordnet wird erst beim
+## Nachspielen in build_run().
 var interventions: Array[Dictionary] = []
 ## Je Eingriff, der sich nicht anwenden ließ, ein deutscher Satz. Nach read_file() stehen hier die
 ## Einträge, die schon beim Lesen wegfielen, weil ein Datum in der Datei nicht stimmt, etwa
@@ -181,18 +188,23 @@ static func from_run(name: String, run: TimelineRun) -> WhatIfProbe:
 ## dessen at_day ab, bei −1 gar nicht, und wendet ihn dort mit TimelineRun.apply_intervention() an.
 ## So entsteht derselbe Fahrplan wie beim Speichern.
 ##
+## Nachgespielt wird nach at_day (TimelineRun.in_replay_order()), nicht in der Reihenfolge des
+## Protokolls: Nach „Fahrplan erzeugen“ kann ein Eingriff vor Spielbeginn hinter einem vom
+## 01.01.1992 stehen. Der Reihe nach gespielt, gälte er erst 1992, denn ein Lauf spielt nie
+## zurück.
+##
 ## Hat sich der Katalog seitdem geändert, passt vielleicht ein Eingriff nicht mehr, etwa weil der
 ## abgesagte Termin fehlt. Er wird übersprungen, die übrigen gelten, und not_applicable nennt ihn
 ## mit dem Grund aus TimelineRun.last_refusal (FR-051), nach den Einträgen, die schon beim Lesen
-## wegfielen. Der Katalog selbst bleibt unberührt; der Lauf arbeitet auf einer Kopie.
+## wegfielen, und in der Reihenfolge des Nachspielens. Der Katalog selbst bleibt unberührt; der
+## Lauf arbeitet auf einer Kopie.
 func build_run(catalog: EventCatalog) -> TimelineRun:
 	not_applicable = _read_problems.duplicate()
 	var run := TimelineRun.new(catalog, seed)
-	for record in interventions:
-		# Ohne lesbaren Tag gilt der Eingriff dort, wo der Lauf gerade steht.
-		var at_day: Variant = record.get("at_day")
-		if _is_whole_number(at_day):
-			run.advance_to(int(at_day))
+	for record in TimelineRun.in_replay_order(interventions):
+		# Ohne lesbaren Tag ist der Tag −1: Der Lauf spielt nichts ab, und der Eingriff gilt dort,
+		# wo der Lauf gerade steht.
+		run.advance_to(TimelineRun.intervention_day(record))
 		if run.apply_intervention(record) != OK:
 			not_applicable.append("%s: %s" % [_label(record), run.last_refusal])
 	run.advance_to(until_day)
@@ -225,6 +237,9 @@ static func _structure_problem(data: Variant) -> String:
 		return "Der Name („name“) fehlt oder ist kein Text."
 	if not _is_whole_number(probe.get("seed")):
 		return "„seed“ fehlt oder ist keine ganze Zahl."
+	# Einen anderen Seed hat kein Spiel (FR-014); der Simulator nimmt ihn im Feld gar nicht an.
+	if probe["seed"] < 0 or probe["seed"] > MAX_SEED:
+		return "„seed“ liegt außerhalb von 0 bis 2.147.483.647."
 	if not _is_date(probe.get("until_day")):
 		return "„until_day“ fehlt oder ist kein gültiges Datum JJJJ-MM-TT."
 	if typeof(probe.get("interventions")) != TYPE_ARRAY:

@@ -76,6 +76,8 @@ func test_kaesten_sind_eckig_ohne_verlauf_und_transparenz() -> void:
 				var relief: ReliefStyleBox = kasten
 				assert_true(UiPalette.TOKENS.has(relief.fill),
 					"%s: Fläche aus der Palette." % stelle)
+				assert_true(UiPalette.TOKENS.has(relief.outline),
+					"%s: Kontur aus der Palette." % stelle)
 			elif kasten is StyleBoxFlat:
 				var flach: StyleBoxFlat = kasten
 				assert_false(flach.anti_aliasing,
@@ -145,6 +147,32 @@ func test_knoepfe_haben_relief_und_gleiche_innenabstaende() -> void:
 	for kasten: StyleBox in [ueber, gedrueckt, aus]:
 		for seite in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
 			assert_eq(kasten.get_content_margin(seite), ruhe.get_content_margin(seite))
+
+
+func test_feld_mit_fehler_hat_eine_kontur_von_2_pixeln_in_kassenrot() -> void:
+	# Style-Guide, „Bedienelemente“: „Ein Feld mit Fehler, ob Eingabe- oder Auswahlfeld, bekommt
+	# eine Kontur von 2 Pixeln in kassenrot“ (T081).
+	for typ: StringName in [&"ErrorLineEdit", &"ErrorTextEdit"]:
+		var feld: StyleBoxFlat = THEMA.get_stylebox(&"normal", typ)
+		assert_eq(feld.border_color, UiPalette.KASSENROT, "%s in kassenrot" % typ)
+		for seite in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+			assert_eq(feld.get_border_width(seite), 2, "%s: 2 Pixel" % typ)
+		assert_eq(feld.bg_color, UiPalette.PAPIER, "%s: Eingabefelder auf papier" % typ)
+	assert_eq(THEMA.get_type_variation_base(&"ErrorLineEdit"), &"LineEdit")
+	assert_eq(THEMA.get_type_variation_base(&"ErrorTextEdit"), &"TextEdit")
+	# Auswahlfelder sind Knöpfe mit Relief; nur ihre Kontur wird rot und breiter, Fläche, Relief und
+	# Innenabstände bleiben, damit der Text nicht springt.
+	assert_eq(THEMA.get_type_variation_base(&"ErrorOptionButton"), &"OptionButton")
+	for zustand: StringName in [&"normal", &"hover", &"pressed"]:
+		var knopf: ReliefStyleBox = THEMA.get_stylebox(zustand, &"Button")
+		var fehler: ReliefStyleBox = THEMA.get_stylebox(zustand, &"ErrorOptionButton")
+		assert_eq([fehler.outline, fehler.outline_width], [&"kassenrot", 2], String(zustand))
+		assert_eq([fehler.fill, fehler.relief], [knopf.fill, knopf.relief], String(zustand))
+		for seite in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+			assert_eq(fehler.get_content_margin(seite), knopf.get_content_margin(seite))
+	# Die Fokuslinie in tusche kommt weiter vom Knopf.
+	assert_false(THEMA.has_stylebox(&"focus", &"ErrorOptionButton"))
+	assert_false(THEMA.has_stylebox(&"focus", &"ErrorTextEdit"))
 
 
 func test_fokus_ist_eine_linie_von_2_pixeln_mit_2_pixeln_abstand() -> void:
@@ -219,6 +247,24 @@ func test_gedrueckt_ist_umgekehrt() -> void:
 	assert_eq(_farbe(kasten, flaeche, 4, 2), UiPalette.GEHAEUSE)
 
 
+func test_kontur_von_2_pixeln_in_kassenrot_mit_relief_innen() -> void:
+	# Arrange (T081): ein Auswahlfeld mit Fehler, 12 × 8 Pixel. Innen liegt die Fläche von (2, 2)
+	# bis (9, 5).
+	var kasten := _kasten(&"gehaeuse", ReliefStyleBox.Relief.RAISED)
+	kasten.outline = &"kassenrot"
+	kasten.outline_width = 2
+	var flaeche := Rect2(0, 0, 12, 8)
+
+	# Assert
+	for punkt: Vector2i in [Vector2i(0, 0), Vector2i(1, 1), Vector2i(11, 7), Vector2i(10, 6),
+			Vector2i(1, 4), Vector2i(6, 6)]:
+		assert_eq(_farbe(kasten, flaeche, punkt.x, punkt.y), UiPalette.KASSENROT,
+			"Kontur bei %s" % punkt)
+	assert_eq(_farbe(kasten, flaeche, 2, 2), UiPalette.GEHAEUSE_HELL, "Licht oben links")
+	assert_eq(_farbe(kasten, flaeche, 9, 5), UiPalette.GEHAEUSE_DUNKEL, "Schatten unten rechts")
+	assert_eq(_farbe(kasten, flaeche, 5, 3), UiPalette.GEHAEUSE, "Fläche")
+
+
 func test_pixelschatten_liegt_hart_2_pixel_rechts_unten() -> void:
 	# Arrange: Rechteck 12 × 8; der Kasten wird 10 × 6, der Schatten liegt um 2 Pixel versetzt.
 	var kasten := _kasten(&"papier", ReliefStyleBox.Relief.NONE, true)
@@ -277,9 +323,11 @@ func test_aenderung_einer_eigenschaft_meldet_changed() -> void:
 	kasten.fill = &"signalgelb"
 	kasten.relief = ReliefStyleBox.Relief.PRESSED
 	kasten.pixel_shadow = true
+	kasten.outline = &"kassenrot"
+	kasten.outline_width = 2
 
 	# Assert
-	assert_signal_emit_count(kasten, "changed", 3)
+	assert_signal_emit_count(kasten, "changed", 5)
 
 
 # --- Helfer -----------------------------------------------------------------------------------

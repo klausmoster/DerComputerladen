@@ -3,9 +3,11 @@ extends GutTest
 ## Prüft die Prüfregeln V01 bis V24 (Feature 002, T015; SC-006).
 ##
 ## Jede Regel hat eine kaputte Fixture unter res://test/fixtures/, die sich vom fehlerfreien
-## catalog_minimal.json in genau einer Stelle unterscheidet. Die Prüfung muss dann genau eine
-## Meldung bringen (bei Kreisen und doppelten Kennungen eine je Ereignis), mit Regel, Stufe,
-## Ereignis und Stelle. Fehlerregeln kommen als ERROR, V13, V20 und V23 als WARNING. V22
+## catalog_minimal.json in genau einer Stelle unterscheidet; V15 und V21 haben je zwei, denn zu
+## ihnen gehören Fälle, die nur in von Hand geänderten Dateien vorkommen (T084): eine Bedingung
+## auf das eigene Ereignis und eine Kategorie-Kennung mit Großbuchstaben. Die Prüfung muss dann
+## genau eine Meldung bringen (bei Kreisen und doppelten Kennungen eine je Ereignis), mit Regel,
+## Stufe, Ereignis und Stelle. Fehlerregeln kommen als ERROR, V13, V20 und V23 als WARNING. V22
 ## entsteht schon beim Lesen; dafür dient catalog_v22_kaputt.json.
 ##
 ## Danach Randfälle zu den Entscheidungen aus data-model.md, etwa dass drei gleiche Gewichte von
@@ -33,6 +35,7 @@ const FAELLE := [
 	["catalog_v13_grundchance_null", ["V13 WARNING reklamationswelle monthly_chance"]],
 	["catalog_v14_verzoegerung_negativ", ["V14 ERROR intel_pentium effects[1].delay_days"]],
 	["catalog_v15_verweis_unbekannt", ["V15 ERROR reklamationswelle follow_ups[0].target"]],
+	["catalog_v15_bedingung_selbst", ["V15 ERROR zeitungsartikel conditions[0].event"]],
 	["catalog_v16_folge_auf_fix", ["V16 ERROR reklamationswelle follow_ups[0].target"]],
 	["catalog_v17_bedingung_an_fix", ["V17 ERROR intel_pentium conditions"]],
 	["catalog_v18_kreis_ohne_verzoegerung",
@@ -40,6 +43,7 @@ const FAELLE := [
 	["catalog_v19_wirkung_nach_ende", ["V19 ERROR weihnachtsgeschaeft effects[0].delay_days"]],
 	["catalog_v20_staerke_null", ["V20 WARNING intel_pentium effects[0].magnitude"]],
 	["catalog_v21_kategorie_farbe", ["V21 ERROR - categories[3].color"]],
+	["catalog_v21_kennung_zeichen", ["V21 ERROR - categories[4].id"]],
 	["catalog_v23_kreis_mit_verzoegerung",
 		["V23 WARNING kreis_a follow_ups[0].target", "V23 WARNING kreis_b follow_ups[0].target"]],
 	["catalog_v24_abstand_kuerzer_als_dauer", ["V24 ERROR neubaugebiet min_gap_days"]],

@@ -2,16 +2,19 @@ extends GutTest
 
 ## Rauchtest der Werkstatt (Feature 002, T039; contracts/werkstatt.md): Die Szene baut headless auf
 ## und lässt das Fenster in Ruhe, und eine Prüfmeldung führt zum Ereignis und ins Feld (FR-033).
-## Dazu die Abläufe beim Start, beim Speichern, Verwerfen und Schließen, die Kürzel und die Liste
-## (T034, T035, T038), der Zeitstrahl in der Werkstatt (T049) und der Simulator (T054): Er rechnet,
-## ohne Spieluhr und Katalog anzufassen, und sein Protokoll ist das der Textausgabe.
+## Dazu die Abläufe beim Start, beim Speichern, Verwerfen und Schließen samt der Sicherungskopie je
+## Katalog (T078), die Kürzel und die Liste (T034, T035, T038), Klicks mit offener Eingabe in
+## Liste, Prüfung, Zeitstrahl und Formular (T076, T077, T080), der Zeitstrahl in der Werkstatt
+## (T049) und der Simulator (T054): Er rechnet, ohne Spieluhr und Katalog anzufassen, und sein
+## Protokoll ist das der Textausgabe.
 ##
 ## Jeder Test öffnet eine Kopie eines Test-Katalogs in einem eigenen Ordner unter user:// und setzt
-## eine eigene Sicherungsdatei und Einstellungsdatei, bevor die Szene in den Baum kommt;
-## after_each() räumt auf. Der echte Katalog, die echte Sicherungskopie und die echten
-## Einstellungen bleiben unberührt.
+## diesen Ordner auch für die Sicherungskopien, dazu eine eigene Einstellungsdatei, bevor die Szene
+## in den Baum kommt; after_each() räumt auf. Der echte Katalog, die echten Sicherungskopien und
+## die echten Einstellungen bleiben unberührt.
 ##
-## Kein Test bestätigt das Schließen: get_tree().quit() beendete den ganzen Testlauf.
+## Kein Test bestätigt das Schließen: get_tree().quit() beendete den ganzen Testlauf. Was davor
+## geschieht, prüfen die Tests über Werkstatt.prepare_quit().
 
 const SZENE := preload("res://tools/werkstatt/werkstatt.tscn")
 const ORDNER := "user://test_werkstatt_scene/"
@@ -162,27 +165,179 @@ func test_sicherungskopie_dieses_katalogs_wird_angeboten() -> void:
 	assert_true(werkstatt.editor.is_dirty())
 
 
-func test_sicherungskopie_eines_anderen_katalogs_bleibt_liegen() -> void:
-	# Arrange: R23. Die Kopie gehört zu anderer.json.
+func test_kopie_eines_anderen_katalogs_wird_nicht_erwaehnt_und_blockiert_nichts() -> void:
+	# Arrange (T078): Eine Sitzung mit anderer.json ist abgestürzt; ihre Kopie liegt im Ordner der
+	# Sicherungskopien, in ihrer eigenen Datei.
 	var anderer := _editor()
 	assert_eq(anderer.open(_kopieren(UEBERNAHME, ORDNER + "anderer.json")), OK)
 	anderer.set_event_field("intel_pentium", &"title", "Pentium kommt")
 	anderer.write_backup()
-	var kopie := FileAccess.get_file_as_string(anderer.backup_path)
+	var kopie := FileAccess.get_file_as_string(anderer.backup_path())
 
-	# Act
+	# Act: Die Werkstatt öffnet katalog.json, Klaus ändert etwas, der Timer sichert.
 	var werkstatt := await _werkstatt()
 	werkstatt.editor.set_event_field("intel_pentium", &"date", 3026)
 	_node(werkstatt, "%BackupTimer").timeout.emit()
 
+	# Assert: kein Dialog, keine Meldung; dieser Katalog ist trotzdem gesichert.
+	for dialog: Window in _dialoge(werkstatt):
+		assert_false(dialog.visible, "%s ist offen; die fremde Kopie wird nicht erwähnt."
+			% dialog.name)
+	assert_true(werkstatt.editor.backup_matches(), "Die Kopie des anderen blockiert nichts.")
+	assert_ne(werkstatt.editor.backup_path(), anderer.backup_path(), "Zwei Kataloge, zwei Dateien.")
+	assert_eq(FileAccess.get_file_as_string(anderer.backup_path()), kopie,
+		"Die Kopie des anderen bleibt, wie sie war.")
+
+	# Act und Assert: Speichern löscht nur die Kopie dieses Katalogs.
+	_node(werkstatt, "%SaveButton").pressed.emit()
+	assert_false(werkstatt.editor.has_backup(), "Nach dem Speichern ist die Kopie weg (FR-050).")
+	assert_eq(FileAccess.get_file_as_string(anderer.backup_path()), kopie)
+
+
+func test_start_bietet_nur_die_kopie_dieses_katalogs_an_und_verwerfen_loescht_sie() -> void:
+	# Arrange (T078): je eine Kopie von katalog.json und anderer.json
+	var frueher := _editor()
+	assert_eq(frueher.open(_kopieren(MINIMAL, ORDNER + "katalog.json")), OK)
+	frueher.set_event_field("intel_pentium", &"title", "Pentium kommt")
+	frueher.write_backup()
+	var anderer := _editor()
+	assert_eq(anderer.open(_kopieren(UEBERNAHME, ORDNER + "anderer.json")), OK)
+	anderer.set_event_field("intel_pentium", &"title", "Pentium kommt bald")
+	anderer.write_backup()
+	var kopie := FileAccess.get_file_as_string(anderer.backup_path())
+
+	# Act
+	var werkstatt := await _werkstatt("")
+
+	# Assert: angeboten wird die eine, die andere kommt nicht vor.
+	var dialog: ConfirmationDialog = _node(werkstatt, "%BackupDialog")
+	assert_true(dialog.visible)
+	assert_string_contains(dialog.dialog_text, "Sicherungskopie dieses Katalogs vom")
+	assert_false(dialog.dialog_text.contains("anderer"), "Von der anderen Kopie steht dort nichts.")
+
+	# Act: „Verwerfen“
+	_knopf(dialog, "Verwerfen").pressed.emit()
+
 	# Assert
-	var hinweis: AcceptDialog = _node(werkstatt, "%BackupNoticeDialog")
-	assert_false(_node(werkstatt, "%BackupDialog").visible, "Übernehmen wird nicht angeboten.")
+	assert_false(dialog.visible)
+	assert_false(FileAccess.file_exists(frueher.backup_path()), "Verwerfen löscht sie (FR-050).")
+	assert_eq(FileAccess.get_file_as_string(anderer.backup_path()), kopie,
+		"Die Kopie des anderen Katalogs bleibt unberührt.")
+	assert_eq(werkstatt.editor.catalog.get_event("intel_pentium").title, "Intel Pentium erscheint")
+
+
+func test_verwerfen_in_der_toolbar_loescht_die_kopie() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	werkstatt.editor.set_event_field("intel_pentium", &"date", 3026)
+	_node(werkstatt, "%BackupTimer").timeout.emit()
+	assert_true(werkstatt.editor.backup_matches(), "Der Timer hat gesichert.")
+
+	# Act
+	_node(werkstatt, "%RevertButton").pressed.emit()
+	_node(werkstatt, "%RevertDialog").get_ok_button().pressed.emit()
+
+	# Assert
+	assert_false(werkstatt.editor.has_backup(), "Nach dem Verwerfen ist die Kopie weg (FR-050).")
+
+
+func test_spaeter_behaelt_die_kopie_auch_ueber_das_schliessen_hinaus() -> void:
+	# Arrange (R23): Eine frühere Sitzung hat gesichert und ist dann abgestürzt.
+	var frueher := _editor()
+	assert_eq(frueher.open(_kopieren(MINIMAL, ORDNER + "katalog.json")), OK)
+	frueher.set_event_field("intel_pentium", &"title", "Pentium kommt")
+	frueher.write_backup()
+	var kopie := FileAccess.get_file_as_string(frueher.backup_path())
+
+	# Act: „Später“ mit dem Knopf, dann das reguläre Schließen ohne Änderung
+	var erste := await _werkstatt("")
+	var dialog: ConfirmationDialog = _node(erste, "%BackupDialog")
+	assert_true(dialog.visible)
+	dialog.get_cancel_button().pressed.emit()
+	await wait_process_frames(1)
+	erste.prepare_quit()
+
+	# Assert
+	assert_false(dialog.visible)
+	assert_eq(FileAccess.get_file_as_string(frueher.backup_path()), kopie,
+		"Nach „Später“ bleibt die Kopie auch beim Schließen liegen.")
+
+	# Act: der nächste Start, diesmal „Später“ mit Esc
+	remove_child(erste)
+	var zweite := await _werkstatt("")
+	dialog = _node(zweite, "%BackupDialog")
+	assert_true(dialog.visible, "Beim nächsten Start ist sie wieder da.")
+	get_viewport().push_input(_esc())
+	await wait_process_frames(1)
+	zweite.prepare_quit()
+
+	# Assert
+	assert_false(dialog.visible, "Esc schließt den Dialog wie „Später“.")
+	assert_eq(FileAccess.get_file_as_string(frueher.backup_path()), kopie)
+
+
+func test_schliessen_bei_offenem_dialog_zur_sicherungskopie_gilt_wie_spaeter() -> void:
+	# Arrange (T096): Eine frühere Sitzung hat gesichert und ist abgestürzt. Beim Start ist der
+	# Dialog offen, und Klaus schließt das Fenster, ohne zu antworten.
+	var frueher := _editor()
+	assert_eq(frueher.open(_kopieren(MINIMAL, ORDNER + "katalog.json")), OK)
+	frueher.set_event_field("intel_pentium", &"title", "Pentium kommt")
+	frueher.write_backup()
+	var kopie := FileAccess.get_file_as_string(frueher.backup_path())
+	var erste := await _werkstatt("")
+	var dialog: ConfirmationDialog = _node(erste, "%BackupDialog")
+	assert_true(dialog.visible)
+
+	# Act: Fensterknopf und Cmd+Q kommen beide als NOTIFICATION_WM_CLOSE_REQUEST. Ohne Änderung
+	# ruft request_close() _quit(), also prepare_quit() und dann get_tree().quit(). Dieses Beenden
+	# lässt der Test aus, denn es beendete seinen ganzen Lauf.
+	assert_false(erste.editor.is_dirty(), "Ohne Änderung fragt das Schließen nicht nach.")
+	erste.prepare_quit()
+
+	# Assert: Die Kopie bleibt liegen, wie nach „Später“ …
+	assert_eq(FileAccess.get_file_as_string(frueher.backup_path()), kopie,
+		"Schließen bei offenem Dialog löscht die Kopie nicht.")
+
+	# … und beim nächsten Start ist sie wieder da.
+	dialog.hide()
+	remove_child(erste)
+	var zweite := await _werkstatt("")
+	assert_true(_node(zweite, "%BackupDialog").visible, "Der nächste Start bietet sie wieder an.")
+	assert_string_contains(_node(zweite, "%BackupDialog").dialog_text,
+		"Sicherungskopie dieses Katalogs vom")
+
+
+func test_sicherung_die_nicht_geht_meldet_die_werkstatt_einmal() -> void:
+	# Arrange: Wo der Ordner der Sicherungskopien hin soll, liegt eine Datei.
+	var werkstatt := await _werkstatt()
+	_schreiben(ORDNER + "keinordner", "Hier ist kein Ordner.")
+	werkstatt.editor.backup_folder = ORDNER + "keinordner/"
+	werkstatt.editor.set_event_field("intel_pentium", &"date", 3026)
+	var timer: Timer = _node(werkstatt, "%BackupTimer")
+	var hinweis: AcceptDialog = _node(werkstatt, "%NoticeDialog")
+
+	# Act
+	timer.timeout.emit()
+
+	# Assert
 	assert_true(hinweis.visible)
-	assert_string_contains(hinweis.dialog_text, "anderer.json")
-	assert_string_contains(hinweis.dialog_text, "sicherung.json", "Der Hinweis nennt ihren Pfad.")
-	assert_eq(FileAccess.get_file_as_string(anderer.backup_path), kopie,
-		"Der Timer überschreibt die fremde Kopie nicht.")
+	assert_eq(hinweis.title, "Sicherung ging nicht")
+	assert_string_contains(hinweis.dialog_text, "lässt sich nicht schreiben")
+	assert_string_contains(hinweis.dialog_text, "versucht es alle 2 Minuten wieder")
+
+	# Act und Assert: Beim nächsten Mal versucht sie es still wieder.
+	hinweis.hide()
+	timer.timeout.emit()
+	assert_false(hinweis.visible, "Sie sagt es einmal, nicht alle 2 Minuten.")
+	werkstatt.editor.backup_folder = ORDNER
+	timer.timeout.emit()
+	assert_true(werkstatt.editor.backup_matches(), "Geht es wieder, sichert sie.")
+	assert_false(hinweis.visible)
+	# Nach einer gelungenen Sicherung meldet sie einen neuen Fehler wieder.
+	werkstatt.editor.backup_folder = ORDNER + "keinordner/"
+	timer.timeout.emit()
+	assert_true(hinweis.visible)
+	hinweis.hide()
 
 
 # --- Speichern, Verwerfen, Schließen ----------------------------------------------------------
@@ -427,10 +582,25 @@ func test_neu_sperrt_eine_vorhandene_kennung() -> void:
 	kennung.text = "intel_pentium"
 	kennung.text_changed.emit(kennung.text)
 
-	# Assert: FR-032
+	# Assert: FR-032; solange der Hinweis steht, hat die Kennung die rote Kontur (T093).
 	var dialog: ConfirmationDialog = liste.get_node("%NewDialog")
 	assert_true(dialog.get_ok_button().disabled, "„Anlegen“ ist gesperrt.")
 	assert_string_contains(liste.get_node("%NewHint").text, "gibt es schon")
+	assert_eq(kennung.theme_type_variation, &"ErrorLineEdit")
+	assert_eq(titel.theme_type_variation, &"", "Der Titel hat keinen Fehler.")
+	for falsch: String in ["", "Intel Pentium"]:
+		kennung.text = falsch
+		kennung.text_changed.emit(kennung.text)
+		assert_true(liste.get_node("%NewHint").visible, "„%s“ hat einen Hinweis." % falsch)
+		assert_eq(kennung.theme_type_variation, &"ErrorLineEdit", "„%s“ hat die Kontur." % falsch)
+
+	# Act und Assert: Mit einer freien Kennung gehen Hinweis und Kontur.
+	kennung.text = "noch_ein_pentium"
+	kennung.text_changed.emit(kennung.text)
+	assert_false(liste.get_node("%NewHint").visible)
+	assert_eq(kennung.theme_type_variation, &"")
+	assert_false(dialog.get_ok_button().disabled)
+	dialog.hide()
 
 
 func test_loeschen_fragt_nach_und_nennt_die_verweise() -> void:
@@ -469,6 +639,8 @@ func test_fehler_und_warnung_stehen_als_zeichen_in_der_liste() -> void:
 	# Arrange
 	var werkstatt := await _werkstatt(DATUM_AUSSERHALB)
 	werkstatt.editor.set_event_field("reklamationswelle", &"monthly_chance", 0.0)
+	# Die Liste baut ihre Zeilen am Ende des Bilds neu (T076).
+	await wait_process_frames(1)
 
 	# Act
 	var zeichen := {}
@@ -505,14 +677,18 @@ func test_liste_baut_nur_neu_wenn_sich_an_ihr_etwas_aendert() -> void:
 	var liste := _liste(werkstatt)
 	var erste := liste.get_root().get_child(0)
 
-	# Act: Ein neues Datum steht nicht in der Liste.
+	# Act: Ein neues Datum steht nicht in der Liste. Neu gebaut wird am Ende des Bilds (T076).
 	werkstatt.editor.set_event_field("intel_pentium", &"date", 3026)
+	await wait_process_frames(1)
 
 	# Assert: dieselben Zeilen, nicht neu gebaut (SC-011)
 	assert_same(liste.get_root().get_child(0), erste, "Ein neues Datum baut die Zeilen nicht neu.")
 
-	# Act und Assert: Ein neuer Titel steht drin; die Zeilen sind neu gebaut und sortiert.
+	# Act und Assert: Ein neuer Titel steht drin; die Zeilen sind neu gebaut und sortiert, am Ende
+	# des Bilds.
 	werkstatt.editor.set_event_field("zeitungsartikel", &"title", "Am Anfang")
+	assert_same(liste.get_root().get_child(0), erste, "Bis zum Ende des Bilds die alten Zeilen.")
+	await wait_process_frames(1)
 	assert_eq(_titel(_node(werkstatt, "%EventList"))[0], "Am Anfang")
 
 
@@ -534,6 +710,7 @@ func test_zeitstrahl_folgt_suche_art_und_kategorie_der_liste() -> void:
 	assert_eq(zeitstrahl.filter_text(), "Filter: 1 von 5")
 	# Ein neuer Titel passt nicht mehr: weg aus Liste und Zeitstrahl, Rückgängig holt ihn zurück.
 	werkstatt.editor.set_event_field("intel_pentium", &"title", "Prozessor erscheint")
+	await wait_process_frames(1)
 	assert_eq([_titel(liste).size(), zeitstrahl.marked_events().size()], [0, 0])
 	werkstatt.editor.undo()
 	assert_eq(zeitstrahl.marked_events(), PackedStringArray(["intel_pentium"]))
@@ -573,9 +750,10 @@ func test_geloeschte_kategorie_im_filter_hebt_den_filter_auf() -> void:
 	# Act: Die Kategorie fällt weg; im Filter gilt wieder „Alle Kategorien“.
 	assert_eq(werkstatt.editor.delete_category("messen"), OK)
 
-	# Assert: Liste und Zeitstrahl zeigen wieder alles.
+	# Assert: Liste und Zeitstrahl zeigen wieder alles, die Liste ab dem Ende des Bilds.
 	assert_false(liste.is_filtered())
 	assert_eq(zeitstrahl.filter_text(), "")
+	await wait_process_frames(1)
 	assert_eq(_titel(liste).size(), 5)
 
 
@@ -587,6 +765,7 @@ func test_liste_im_zebra_mit_auswahl_in_petrol() -> void:
 	var werkstatt := await _werkstatt()
 	werkstatt.editor.set_event_field("neubaugebiet", &"window_to", 0)
 	werkstatt.editor.set_event_field("reklamationswelle", &"monthly_chance", 0.0)
+	await wait_process_frames(1)
 	var zeilen: Array[TreeItem] = _liste(werkstatt).get_root().get_children()
 	var zeichen := EventList.Column.MARK
 	var titel := EventList.Column.TITLE
@@ -624,6 +803,8 @@ func test_pruefung_im_zebra_mit_auswahl_in_petrol() -> void:
 	var werkstatt := await _werkstatt(DATUM_AUSSERHALB)
 	werkstatt.editor.set_item_field("intel_pentium", &"effects", 0, &"magnitude", 0.0)
 	werkstatt.editor.set_event_field("reklamationswelle", &"monthly_chance", 0.0)
+	# Die Prüfung baut ihre Zeilen am Ende des Bilds neu (T076).
+	await wait_process_frames(1)
 	var pruefung: IssuesPanel = _node(werkstatt, "%IssuesPanel")
 	var zeilen: Array[TreeItem] = pruefung.get_root().get_children()
 	var stufe := IssuesPanel.Column.SEVERITY
@@ -801,6 +982,419 @@ func test_menue_im_zeitstrahl_bearbeiten_duplizieren_loeschen() -> void:
 	assert_string_contains(dialog.dialog_text, "„Intel Pentium erscheint“ löschen?")
 	assert_not_null(werkstatt.editor.catalog.get_event("intel_pentium"), "Erst nach der Antwort.")
 	menue.hide()
+
+
+# --- Klicks mit offener Eingabe (T076, T077, T080) -------------------------------------------
+#
+# Klaus tippt in ein Feld des Formulars und klickt dann woandershin, ohne Enter. Ein Linksklick
+# gibt den Fokus weiter, bevor das Ziel den Klick verarbeitet; das Feld übernimmt dabei seine
+# Eingabe, und das löst Neubauten aus. Gemeint ist trotzdem, was beim Klick zu sehen war. Diese
+# Tests klicken deshalb echt, über push_input in einen eigenen Viewport in Klaus' Größe: Im
+# Haupt-Viewport läge GUTs Oberfläche über allem und finge die Klicks ab (wie in
+# test_main_menu.gd).
+
+
+func test_klick_in_die_liste_trifft_die_zeile_unter_der_maus() -> void:
+	# Arrange: Klaus tippt einen neuen Titel, der die Zeitungsartikel ganz nach oben sortiert.
+	var werkstatt := await _werkstatt_im_viewport()
+	var liste := _liste(werkstatt)
+	werkstatt.select_event("zeitungsartikel")
+	await wait_process_frames(1)
+	var titel: LineEdit = _node(werkstatt, "%EventForm").get_input("title")
+	_tippen_in(titel, "AAA steht jetzt oben")
+	var erste := liste.get_root().get_child(0)
+	assert_eq(erste.get_metadata(EventList.Column.MARK), "intel_pentium", "Oben steht der Pentium.")
+
+	# Act: ohne Enter auf die oberste Zeile
+	_klicken(liste, _mitte_der_zeile(liste, erste))
+	await wait_process_frames(2)
+
+	# Assert: FR-030, Vertrag „Datenfluss“
+	assert_eq(werkstatt.selected_id, "intel_pentium", "Gewählt ist die Zeile unter der Maus.")
+	assert_eq(werkstatt.editor.catalog.get_event("zeitungsartikel").title, "AAA steht jetzt oben",
+		"Die Eingabe ist trotzdem übernommen.")
+	assert_eq(_titel(_node(werkstatt, "%EventList"))[0], "AAA steht jetzt oben",
+		"Danach ist die Liste neu sortiert …")
+	var gewaehlt := liste.get_selected()
+	assert_not_null(gewaehlt)
+	if gewaehlt != null:
+		assert_eq(gewaehlt.get_metadata(EventList.Column.MARK), "intel_pentium",
+			"… und die gewählte Zeile ist noch der Pentium.")
+	assert_eq(_node(werkstatt, "%EventForm").get_input("title").text, "Intel Pentium erscheint")
+
+
+func test_klick_in_die_pruefung_trifft_die_meldung_unter_der_maus() -> void:
+	# Arrange: zwei Meldungen, V06 am Pentium und V13 an der Reklamationswelle. Klaus tippt beim
+	# Neubaugebiet ein Gewicht, das V11 erzeugt; die neue Meldung käme an die zweite Stelle.
+	var werkstatt := await _werkstatt_im_viewport(DATUM_AUSSERHALB)
+	werkstatt.editor.set_event_field("reklamationswelle", &"monthly_chance", 0.0)
+	werkstatt.select_event("neubaugebiet")
+	await wait_process_frames(1)
+	var pruefung: IssuesPanel = _node(werkstatt, "%IssuesPanel")
+	var zweite := pruefung.get_root().get_child(1)
+	assert_eq([zweite.get_text(IssuesPanel.Column.EVENT), zweite.get_text(IssuesPanel.Column.FIELD)],
+		["reklamationswelle", "monthly_chance"])
+	var gewicht: LineEdit = _node(werkstatt, "%EventForm").get_input("count_weights[0]")
+	_tippen_in(gewicht, "10")
+
+	# Act: ohne Enter auf die zweite Meldung
+	_klicken(pruefung, _mitte_der_zeile(pruefung, zweite))
+	await wait_process_frames(2)
+
+	# Assert: FR-033
+	var formular: EventForm = _node(werkstatt, "%EventForm")
+	assert_eq(werkstatt.selected_id, "reklamationswelle", "Gesprungen wird zur geklickten Meldung.")
+	assert_same(werkstatt.get_viewport().gui_get_focus_owner(), formular.get_input("monthly_chance"),
+		"Der Fokus steht in ihrem Feld.")
+	assert_eq(werkstatt.editor.catalog.get_event("neubaugebiet").count_weights, [10.0, 70.0],
+		"Das Gewicht ist trotzdem übernommen.")
+	var felder := []
+	for zeile in pruefung.get_root().get_children():
+		felder.append(zeile.get_text(IssuesPanel.Column.FIELD))
+	assert_eq(felder, ["date", "count_weights", "monthly_chance"],
+		"Danach zeigt die Prüfung auch die neue Meldung.")
+
+
+func test_klick_auf_die_zeile_nach_neuer_kennung_waehlt_das_umbenannte_ereignis() -> void:
+	# Arrange: Klaus tippt eine neue Kennung und klickt auf die Zeile des Ereignisses. Bis zum
+	# Ende des Bilds trägt die Zeile noch die alte Kennung.
+	var werkstatt := await _werkstatt_im_viewport()
+	var liste := _liste(werkstatt)
+	werkstatt.select_event("zeitungsartikel")
+	await wait_process_frames(1)
+	_tippen_in(_node(werkstatt, "%EventForm").get_input("id"), "artikel")
+	var zeile: TreeItem = null
+	for kandidat in liste.get_root().get_children():
+		if kandidat.get_metadata(EventList.Column.MARK) == "zeitungsartikel":
+			zeile = kandidat
+	assert_not_null(zeile)
+	if zeile == null:
+		return
+
+	# Act
+	_klicken(liste, _mitte_der_zeile(liste, zeile))
+	await wait_process_frames(2)
+
+	# Assert: gewählt ist das Ereignis unter seiner neuen Kennung, nicht keins.
+	assert_null(werkstatt.editor.catalog.get_event("zeitungsartikel"))
+	assert_eq(werkstatt.selected_id, "artikel")
+	var gewaehlt := liste.get_selected()
+	assert_true(gewaehlt != null and gewaehlt.get_metadata(EventList.Column.MARK) == "artikel",
+		"Nach dem Neubau ist seine Zeile gewählt.")
+
+
+func test_rechtsklick_nach_neuer_kennung_meint_das_umbenannte_ereignis() -> void:
+	# Arrange: Klaus tippt eine neue Kennung für den Pentium und klickt mit rechts auf dessen Marke.
+	var werkstatt := await _werkstatt_im_viewport()
+	var zeitstrahl: TimelineView = _node(werkstatt, "%TimelineView")
+	werkstatt.select_event("intel_pentium")
+	await wait_process_frames(1)
+	var marke := _mitte_der_marke(zeitstrahl, "intel_pentium")
+	_tippen_in(_node(werkstatt, "%EventForm").get_input("id"), "pentium")
+
+	# Act: Rechtsklick, dann „Duplizieren“
+	_klicken(zeitstrahl, marke, MOUSE_BUTTON_RIGHT)
+	var menue := _menue(zeitstrahl)
+	assert_true(menue != null and menue.visible, "Das Menü ist offen.")
+	if menue == null:
+		return
+	menue.id_pressed.emit(TimelineView.MenuItem.DUPLICATE)
+	menue.hide()
+	await wait_process_frames(1)
+
+	# Assert: Das Menü galt dem Ereignis unter seiner neuen Kennung.
+	assert_not_null(werkstatt.editor.catalog.get_event("pentium"))
+	assert_not_null(werkstatt.editor.catalog.get_event("pentium_2"), "Kopiert ist das umbenannte.")
+	assert_eq(werkstatt.selected_id, "pentium_2")
+
+
+func test_rechtsklick_im_zeitstrahl_uebernimmt_die_offene_eingabe() -> void:
+	# Arrange: Klaus tippt den Titel des Neubaugebiets und klickt mit rechts auf den Pentium.
+	var werkstatt := await _werkstatt_im_viewport()
+	var zeitstrahl: TimelineView = _node(werkstatt, "%TimelineView")
+	werkstatt.select_event("neubaugebiet")
+	await wait_process_frames(1)
+	_tippen_in(_node(werkstatt, "%EventForm").get_input("title"), "Neue Siedlung")
+
+	# Act
+	_klicken(zeitstrahl, _mitte_der_marke(zeitstrahl, "intel_pentium"), MOUSE_BUTTON_RIGHT)
+	await wait_process_frames(1)
+
+	# Assert: FR-039, US4/AC4; vorher blieb der alte Titel.
+	assert_eq(werkstatt.editor.catalog.get_event("neubaugebiet").title, "Neue Siedlung")
+	assert_eq(werkstatt.selected_id, "intel_pentium", "Der Rechtsklick wählt.")
+	var menue := _menue(zeitstrahl)
+	assert_true(menue != null and menue.visible, "Das Menü ist offen.")
+	if menue != null:
+		menue.hide()
+
+
+func test_rechtsklick_und_duplizieren_kopieren_den_neuen_titel() -> void:
+	# Arrange: Klaus tippt den Titel des Pentium und klickt mit rechts auf dessen Marke.
+	var werkstatt := await _werkstatt_im_viewport()
+	var zeitstrahl: TimelineView = _node(werkstatt, "%TimelineView")
+	werkstatt.select_event("intel_pentium")
+	await wait_process_frames(1)
+	_tippen_in(_node(werkstatt, "%EventForm").get_input("title"), "Pentium kommt")
+	_klicken(zeitstrahl, _mitte_der_marke(zeitstrahl, "intel_pentium"), MOUSE_BUTTON_RIGHT)
+	var menue := _menue(zeitstrahl)
+	assert_true(menue != null and menue.visible, "Das Menü ist offen.")
+	if menue == null:
+		return
+
+	# Act: „Duplizieren“ aus dem Menü
+	menue.id_pressed.emit(TimelineView.MenuItem.DUPLICATE)
+	menue.hide()
+	await wait_process_frames(1)
+
+	# Assert: Original und Kopie tragen den neuen Titel; vorher beide den alten.
+	var katalog := werkstatt.editor.catalog
+	assert_eq(katalog.get_event("intel_pentium").title, "Pentium kommt")
+	assert_not_null(katalog.get_event("intel_pentium_2"))
+	if katalog.get_event("intel_pentium_2") != null:
+		assert_eq(katalog.get_event("intel_pentium_2").title, "Pentium kommt")
+	assert_eq(werkstatt.selected_id, "intel_pentium_2", "Die Kopie ist gewählt.")
+
+
+func test_auswahl_im_formular_bleibt_nach_offener_eingabe_offen() -> void:
+	# Arrange: Klaus tippt einen Titel und klickt dann auf die Auswahl „Kategorie“.
+	var werkstatt := await _werkstatt_im_viewport()
+	var formular: EventForm = _node(werkstatt, "%EventForm")
+	werkstatt.select_event("intel_pentium")
+	await wait_process_frames(1)
+	_tippen_in(formular.get_input("title"), "Pentium neu")
+	var auswahl: OptionButton = formular.get_input("category")
+
+	# Act: Die Liste geht beim Drücken auf; das Loslassen kommt gleich danach.
+	_klicken(auswahl, auswahl.get_global_rect().get_center())
+	await wait_process_frames(2)
+
+	# Assert: FR-031; vorher war die Liste nach einem Bild zu.
+	assert_same(formular.get_input("category"), auswahl, "Die Auswahl ist noch dieselbe …")
+	assert_true(auswahl.get_popup().visible, "… und ihre Liste ist offen.")
+	assert_eq(werkstatt.editor.catalog.get_event("intel_pentium").title, "Pentium neu",
+		"Der Titel ist übernommen.")
+
+	# Act: Klaus wählt „Lokal“; die Liste geht zu.
+	var lokal := -1
+	for i in auswahl.item_count:
+		if auswahl.get_item_text(i) == "Lokal":
+			lokal = i
+	assert_gt(lokal, -1, "„Lokal“ steht zur Wahl.")
+	auswahl.get_popup().index_pressed.emit(lokal)
+	auswahl.get_popup().hide()
+	await wait_process_frames(2)
+
+	# Assert: Danach baut das Formular neu, mit beidem.
+	assert_eq(werkstatt.editor.catalog.get_event("intel_pentium").category, "lokal")
+	assert_ne(formular.get_input("category"), auswahl, "Jetzt ist das Formular neu gebaut.")
+	assert_eq(formular.get_input("title").text, "Pentium neu")
+
+
+func test_rechtsklick_in_den_fahrplan_uebernimmt_die_offene_eingabe() -> void:
+	# Arrange (T095): Klaus tippt den Titel des Neubaugebiets und klickt mit rechts auf den Pentium
+	# in der Tabelle des Simulators. Die Tabelle wählt auch mit rechts, gibt den Fokus aber nur beim
+	# Linksklick weiter; der Titel behält ihn also.
+	var werkstatt := await _werkstatt_im_viewport()
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	werkstatt.select_event("neubaugebiet")
+	await wait_process_frames(2)
+	var formular: EventForm = _node(werkstatt, "%EventForm")
+	_tippen_in(formular.get_input("title"), "Neue Siedlung")
+	var tabelle: Tree = simulator.get_node("%PlanTable")
+	var zeile := _zeile_mit(tabelle, "Intel Pentium erscheint")
+	tabelle.scroll_to_item(zeile)
+	await wait_process_frames(1)
+
+	# Act
+	_klicken(tabelle, _mitte_der_zeile(tabelle, zeile), MOUSE_BUTTON_RIGHT)
+	await wait_process_frames(2)
+
+	# Assert: FR-031, FR-043; vorher blieb der alte Titel.
+	assert_eq(werkstatt.editor.catalog.get_event("neubaugebiet").title, "Neue Siedlung",
+		"Die offene Eingabe ist übernommen.")
+	assert_eq(werkstatt.selected_id, "intel_pentium", "Der Rechtsklick wählt den Termin.")
+	assert_eq(formular.get_input("title").text, "Intel Pentium erscheint",
+		"Das Formular zeigt den Pentium.")
+	var menue: PopupMenu = simulator.get_node("%PlanMenu")
+	assert_true(menue.visible, "Das Menü am Termin ist offen.")
+	menue.hide()
+
+
+func test_rechtsklick_in_den_fahrplan_nach_neuer_kennung_waehlt_den_termin() -> void:
+	# Arrange (T095): Klaus tippt eine neue Kennung für das Neubaugebiet und klickt mit rechts auf
+	# den Pentium im Fahrplan. Das Umbenennen kommt erst, wenn die Werkstatt schon den Pentium
+	# wählt.
+	var werkstatt := await _werkstatt_im_viewport()
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	werkstatt.select_event("neubaugebiet")
+	await wait_process_frames(2)
+	var formular: EventForm = _node(werkstatt, "%EventForm")
+	_tippen_in(formular.get_input("id"), "siedlung")
+	var tabelle: Tree = simulator.get_node("%PlanTable")
+	var zeile := _zeile_mit(tabelle, "Intel Pentium erscheint")
+	tabelle.scroll_to_item(zeile)
+	await wait_process_frames(1)
+
+	# Act
+	_klicken(tabelle, _mitte_der_zeile(tabelle, zeile), MOUSE_BUTTON_RIGHT)
+	await wait_process_frames(2)
+
+	# Assert: umbenannt, und gewählt bleibt, was der Rechtsklick meinte, überall dasselbe.
+	assert_not_null(werkstatt.editor.catalog.get_event("siedlung"), "Die Kennung ist übernommen.")
+	assert_null(werkstatt.editor.catalog.get_event("neubaugebiet"))
+	assert_eq(werkstatt.selected_id, "intel_pentium")
+	assert_eq(formular.get_input("id").text, "intel_pentium", "Das Formular zeigt den Pentium.")
+	var gewaehlt := _liste(werkstatt).get_selected()
+	assert_true(gewaehlt != null
+		and gewaehlt.get_metadata(EventList.Column.MARK) == "intel_pentium",
+		"Die Liste hebt den Pentium hervor.")
+	simulator.get_node("%PlanMenu").hide()
+
+
+func test_wahl_im_menue_am_wirkungsziel_uebernimmt_die_offene_eingabe() -> void:
+	# Arrange (T095): Klaus tippt den Titel des Pentium und wählt dann im Menü „…“ neben dem Ziel
+	# der ersten Wirkung ein anderes Ziel. Der Knopf „…“ nimmt dem Titel den Fokus nicht.
+	var werkstatt := await _werkstatt_im_viewport()
+	var formular: EventForm = _node(werkstatt, "%EventForm")
+	werkstatt.select_event("intel_pentium")
+	await wait_process_frames(2)
+	var knopf := _menue_am_ziel(formular)
+	_tippen_in(formular.get_input("title"), "Pentium neu")
+	_klicken(knopf, knopf.get_global_rect().get_center())
+	await wait_process_frames(1)
+	assert_true(knopf.get_popup().visible, "Das Menü ist offen.")
+	assert_same(werkstatt.get_viewport().gui_get_focus_owner(), formular.get_input("title"),
+		"Der Titel hat den Fokus noch.")
+
+	# Act: das Ziel „*“ wählen, wie mit der Maus
+	_im_menue_waehlen(knopf.get_popup(), "*")
+	await wait_process_frames(2)
+
+	# Assert: beides im Katalog; vorher ging der Titel beim Neubau verloren.
+	var pentium := werkstatt.editor.catalog.get_event("intel_pentium")
+	assert_eq(pentium.effects[0].target, "*", "Das Ziel ist gewählt …")
+	assert_eq(pentium.title, "Pentium neu", "… und der Titel übernommen.")
+	assert_eq(formular.get_input("title").text, "Pentium neu")
+
+
+func test_ungueltige_offene_eingabe_behaelt_beim_neubau_ihren_hinweis() -> void:
+	# Arrange (T095, FR-031): Klaus tippt ein Datum, das keins ist, und wählt dann im Menü „…“ ein
+	# Ziel. Übernehmen lässt sich die Eingabe nicht; nach dem Neubau steht der alte Wert da, mit
+	# dem Hinweis darunter, wie wenn Klaus das Feld verlassen hätte.
+	var werkstatt := await _werkstatt_im_viewport()
+	var formular: EventForm = _node(werkstatt, "%EventForm")
+	werkstatt.select_event("intel_pentium")
+	await wait_process_frames(2)
+	var knopf := _menue_am_ziel(formular)
+	_tippen_in(formular.get_input("date"), "abc")
+	_klicken(knopf, knopf.get_global_rect().get_center())
+	await wait_process_frames(1)
+
+	# Act
+	_im_menue_waehlen(knopf.get_popup(), "*")
+	await wait_process_frames(2)
+
+	# Assert
+	var datum: LineEdit = formular.get_input("date")
+	assert_eq(werkstatt.editor.catalog.get_event("intel_pentium").effects[0].target, "*")
+	assert_eq(datum.text, "22.03.1993", "Der alte Wert steht wieder da …")
+	assert_true(formular.get_hint("date").visible, "… mit dem Hinweis darunter …")
+	assert_string_contains(formular.get_hint("date").text, "kein Datum")
+	assert_eq(datum.theme_type_variation, &"ErrorLineEdit", "… und der Kontur (T093).")
+
+
+# --- Fokuslinie und Vorgabe-Teilung (T094, T101) ---------------------------------------------
+#
+# In Klaus' Größe, 1920 × 925, ohne gespeicherte Teiler.
+
+
+func test_fokuslinie_im_formular_bleibt_rundum_zu_sehen() -> void:
+	# Arrange (T094; Style-Guide, Rolle „Fokus“): eine Linie von 2 Pixeln mit 2 Pixeln Abstand um
+	# das Element. Geprüft wird beim Pentium jedes Element im Formular, das den Fokus bekommen kann;
+	# das Formular ist länger als der Bereich und hat eine Rollleiste, weit unten liegende rollt der
+	# Bereich mit. Beim kurzen Zeitungsartikel ohne Rollleiste genügen die an den Rändern: Titel und
+	# Kennung über die volle Breite, die Farbwahl links, das Feld für eine neue Kategorie unten.
+	var werkstatt := await _werkstatt_im_viewport()
+	var bereich: ScrollContainer = _node(werkstatt, "%FormScroll")
+	var formular: EventForm = _node(werkstatt, "%EventForm")
+	for id: String in ["intel_pentium", "zeitungsartikel"]:
+		werkstatt.select_event(id)
+		await wait_process_frames(2)
+		assert_eq(bereich.get_v_scroll_bar().visible, id == "intel_pentium", "%s: Rollleiste" % id)
+		var elemente := _fokussierbar(bereich)
+		if id == "zeitungsartikel":
+			elemente.assign([formular.get_input("title"), formular.get_input("id"),
+				formular.get_input("categories[0].color"), formular.get_node("%NewCategoryName")])
+		assert_gt(elemente.size(), 3, "%s: Felder, Auswahlen und Knöpfe" % id)
+		for element in elemente:
+			# Act: Liegt die Linie noch nicht ganz im Bereich, rollt er im nächsten Bild mit.
+			element.grab_focus()
+			if not _sichtbar(bereich).encloses(_fokuslinie(element)):
+				await wait_process_frames(2)
+
+			# Assert: ganz im Bereich, nicht unter der Rollleiste
+			var linie := _fokuslinie(element)
+			assert_true(_sichtbar(bereich).encloses(linie), "%s, %s %s: Fokuslinie %s, sichtbar %s"
+				% [id, element.get_class(), element.name, linie, _sichtbar(bereich)])
+
+
+func test_tabellen_haben_in_der_vorgabe_teilung_vorrang() -> void:
+	# Arrange (T101; Klaus, 2026-10-21): Ohne gespeicherte Teiler bekommen die Tabellen den Platz,
+	# Verteilung und Begründung darunter nur ihre Mindesthöhe. Die Statistik rechnet erst ohne
+	# Eingriffe, dann mit zwei Modifikatoren, die jedes Spiel ablehnt; dann steht die Warnung mit
+	# drei Zeilen über der Tabelle.
+	var werkstatt := await _werkstatt_im_viewport()
+	var tabs: TabContainer = _node(werkstatt, "%Tabs")
+	var hoehe := tabs.size.y
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	_druecken(simulator, "%EndButton")
+	await wait_process_frames(2)
+
+	# Assert: Fahrplan
+	var fahrplan: Tree = simulator.get_node("%PlanTable")
+	var begruendung: Control = simulator.get_node("Split/PlanSplit/DetailScroll")
+	assert_eq(begruendung.size.y, begruendung.get_combined_minimum_size().y,
+		"Die Begründung hat nur ihre Mindesthöhe …")
+	assert_gte(_ganze_zeilen(fahrplan), 2, "… und der Fahrplan zeigt mindestens 2 ganze Zeilen.")
+	assert_eq(tabs.size.y, hoehe, "Der Simulator passt in seinen Reiter, der Zeitstrahl bleibt.")
+
+	# Act: Statistik ohne Eingriffe
+	var statistik: StatisticsPanel = _node(werkstatt, "%StatisticsPanel")
+	tabs.current_tab = tabs.get_tab_idx_from_control(statistik)
+	var anzahl: LineEdit = statistik.get_node("%CountEdit")
+	anzahl.text = "3"
+	anzahl.text_changed.emit("3")
+	await _rechnen(statistik)
+
+	# Assert: Platz für alle fünf Ereignisse, die Verteilung hat ihre Mindesthöhe.
+	var tabelle: Tree = statistik.get_node("%ResultTable")
+	var verteilung: Control = statistik.get_node("Split/YearBox")
+	assert_gte(_ganze_zeilen(tabelle), 5, "Ohne Warnung zeigt die Tabelle alle fünf Zeilen.")
+	assert_eq(verteilung.size.y, verteilung.get_combined_minimum_size().y,
+		"Die Verteilung hat nur ihre Mindesthöhe, …")
+	assert_lte(verteilung.size.y, 88.0, "… Titel und 64 Pixel für Werte, Balken und Jahre.")
+
+	# Arrange: abgelehnte Eingriffe im Eingriffsprotokoll des Simulators
+	for kennung: String in ["windig", "zweiter"]:
+		simulator.probe.interventions.append({"at_day": -1, "kind": "add_modifier", "modifier": {
+			"event_id": "reklamationswelle", "from_day": 0, "id": kennung,
+			"reason": "Grund %s" % kennung, "to_day": 3000, "value": 0.05}})
+	werkstatt.editor.delete_event("reklamationswelle")
+	(statistik.get_node("%WithInterventions") as CheckBox).button_pressed = true
+
+	# Act
+	await _rechnen(statistik)
+
+	# Assert: Statistik mit Warnung
+	assert_true(statistik.get_node("%RefusedNotice").visible, "Die Warnung steht da.")
+	assert_eq(verteilung.size.y, verteilung.get_combined_minimum_size().y,
+		"Die Verteilung hat weiter nur ihre Mindesthöhe …")
+	assert_gte(_ganze_zeilen(tabelle), 2, "… und die Tabelle zeigt mindestens 2 ganze Zeilen.")
+	assert_eq(tabs.size.y, hoehe, "Auch mit der Warnung passt die Statistik in ihren Reiter.")
 
 
 # --- Simulator (T054) -------------------------------------------------------------------------
@@ -1133,7 +1727,7 @@ func _werkstatt(fixture: String = MINIMAL, datei: String = "katalog.json") -> We
 		_kopieren(fixture, ziel)
 	var werkstatt: Werkstatt = SZENE.instantiate()
 	werkstatt.catalog_path = ziel
-	werkstatt.editor.backup_path = ORDNER + "sicherung.json"
+	werkstatt.editor.backup_folder = ORDNER
 	werkstatt.settings_path = ORDNER + "einstellungen.cfg"
 	add_child_autofree(werkstatt)
 	# _start() kommt per call_deferred() am Ende des ersten Bilds.
@@ -1141,9 +1735,158 @@ func _werkstatt(fixture: String = MINIMAL, datei: String = "katalog.json") -> We
 	return werkstatt
 
 
+## Wie _werkstatt(), aber in einem eigenen Viewport von 1920 × 925 Pixeln, der Größe von Klaus'
+## Werkstatt; dort lässt sich echt klicken (siehe „Klicks mit offener Eingabe“). Dialoge und Listen
+## liegen im selben Viewport.
+func _werkstatt_im_viewport(fixture: String = MINIMAL) -> Werkstatt:
+	var ziel := _kopieren(fixture, ORDNER + "katalog.json")
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1920, 925)
+	viewport.gui_embed_subwindows = true
+	add_child_autofree(viewport)
+	var werkstatt: Werkstatt = SZENE.instantiate()
+	werkstatt.catalog_path = ziel
+	werkstatt.editor.backup_folder = ORDNER
+	werkstatt.settings_path = ORDNER + "einstellungen.cfg"
+	viewport.add_child(werkstatt)
+	# _start() kommt per call_deferred() am Ende des ersten Bilds; danach ist alles angeordnet.
+	await wait_process_frames(3)
+	return werkstatt
+
+
+## Ein Klick wie mit der Maus bei [param ziel], in Koordinaten des Viewports von [param control]:
+## hinfahren, drücken, loslassen. Godot gibt dabei selbst den Fokus weiter, beim Linksklick.
+func _klicken(control: Control, ziel: Vector2, taste: MouseButton = MOUSE_BUTTON_LEFT) -> void:
+	var viewport := control.get_viewport()
+	var fahren := InputEventMouseMotion.new()
+	fahren.position = ziel
+	fahren.global_position = ziel
+	viewport.push_input(fahren, true)
+	for gedrueckt: bool in [true, false]:
+		var knopf := InputEventMouseButton.new()
+		knopf.button_index = taste
+		knopf.button_mask = (1 << (taste - 1)) if gedrueckt else 0
+		knopf.pressed = gedrueckt
+		knopf.position = ziel
+		knopf.global_position = ziel
+		viewport.push_input(knopf, true)
+
+
+## Fokus in [param feld], alles markiert, dann [param text] Zeichen für Zeichen, wie getippt; Enter
+## kommt nicht.
+func _tippen_in(feld: LineEdit, text: String) -> void:
+	feld.grab_focus()
+	feld.select_all()
+	for zeichen in text:
+		var taste := InputEventKey.new()
+		taste.unicode = zeichen.unicode_at(0)
+		taste.pressed = true
+		feld.get_viewport().push_input(taste)
+	assert_eq(feld.text, text, "Getippt, noch nicht übernommen.")
+
+
+## Die Mitte der Zeile [param zeile] in Koordinaten des Viewports.
+func _mitte_der_zeile(tabelle: Tree, zeile: TreeItem) -> Vector2:
+	return tabelle.get_global_transform_with_canvas() * tabelle.get_item_area_rect(zeile).get_center()
+
+
+## „Starten“ in der Statistik, dann warten, bis sie fertig ist.
+func _rechnen(statistik: StatisticsPanel) -> void:
+	statistik.start()
+	while statistik.is_running():
+		await wait_process_frames(1)
+	await wait_process_frames(2)
+
+
+## Alles unter [param bereich], das den Fokus bekommen kann und zu sehen ist.
+func _fokussierbar(bereich: Control) -> Array[Control]:
+	var elemente: Array[Control] = []
+	for kind in bereich.find_children("*", "Control", true, false):
+		var element := kind as Control
+		if element.focus_mode in [Control.FOCUS_ALL, Control.FOCUS_CLICK] \
+				and element.is_visible_in_tree():
+			elemente.append(element)
+	return elemente
+
+
+## Was von [param bereich] zu sehen ist, ohne seine Rollleiste.
+func _sichtbar(bereich: ScrollContainer) -> Rect2:
+	var sichtbar := bereich.get_global_rect()
+	var leiste := bereich.get_v_scroll_bar()
+	if leiste.visible:
+		sichtbar.end = Vector2(leiste.get_global_rect().position.x, sichtbar.end.y)
+	return sichtbar
+
+
+## Wo die Fokuslinie um [param element] liegt: sein Rechteck, vergrößert um die Ränder, die sein
+## Stil „focus“ nach außen zeichnet.
+func _fokuslinie(element: Control) -> Rect2:
+	var fokus: StyleBoxFlat = element.get_theme_stylebox(&"focus")
+	return element.get_global_rect().grow_individual(fokus.expand_margin_left,
+		fokus.expand_margin_top, fokus.expand_margin_right, fokus.expand_margin_bottom)
+
+
+## Wie viele ganze Zeilen in [param tabelle] Platz haben: zwischen den Spaltenköpfen und dem unteren
+## Rand, egal wie weit sie gerade gerollt ist.
+func _ganze_zeilen(tabelle: Tree) -> int:
+	var wurzel := tabelle.get_root()
+	if wurzel == null or wurzel.get_child_count() == 0:
+		return 0
+	var erste := tabelle.get_item_area_rect(wurzel.get_first_child())
+	var oben := erste.position.y + tabelle.get_scroll().y
+	var unten := tabelle.size.y - tabelle.get_theme_stylebox(&"panel").get_margin(SIDE_BOTTOM)
+	return floori((unten - oben) / erste.size.y)
+
+
+## Der Knopf „…“ neben dem Ziel der ersten Wirkung im Formular.
+func _menue_am_ziel(formular: EventForm) -> MenuButton:
+	var ziel: LineEdit = formular.get_input("effects[0].target")
+	for nachbar in ziel.get_parent().get_children():
+		if nachbar is MenuButton:
+			return nachbar
+	fail_test("Neben dem Ziel steht kein Knopf „…“.")
+	return MenuButton.new()
+
+
+## Wählt in [param menue] den Eintrag [param text], wie mit der Maus; das Menü geht dabei zu.
+func _im_menue_waehlen(menue: PopupMenu, text: String) -> void:
+	for i in menue.item_count:
+		if menue.get_item_text(i) == text:
+			menue.index_pressed.emit(i)
+			menue.hide()
+			return
+	fail_test("„%s“ steht nicht im Menü." % text)
+
+
+## Die erste Zeile von [param tabelle], deren Spalte „Ereignis“ [param titel] zeigt.
+func _zeile_mit(tabelle: Tree, titel: String) -> TreeItem:
+	for zeile in tabelle.get_root().get_children():
+		if zeile.get_text(SimulatorPanel.PlanColumn.EVENT) == titel:
+			return zeile
+	fail_test("Keine Zeile mit „%s“." % titel)
+	return null
+
+
+## Die Mitte der ersten Marke von [param id] in Koordinaten des Viewports.
+func _mitte_der_marke(zeitstrahl: TimelineView, id: String) -> Vector2:
+	var marken := zeitstrahl.mark_rects(id)
+	assert_gt(marken.size(), 0, "%s hat eine Marke." % id)
+	if marken.is_empty():
+		return Vector2.ZERO
+	return zeitstrahl.get_global_transform_with_canvas() * marken[0].get_center()
+
+
+## Das Menü des Zeitstrahls; es hängt als internes Kind daran.
+func _menue(zeitstrahl: TimelineView) -> PopupMenu:
+	for kind in zeitstrahl.get_children(true):
+		if kind is PopupMenu:
+			return kind
+	return null
+
+
 func _editor() -> CatalogEditor:
 	var editor := CatalogEditor.new()
-	editor.backup_path = ORDNER + "sicherung.json"
+	editor.backup_folder = ORDNER
 	return editor
 
 
@@ -1186,6 +1929,24 @@ func _waehlen(auswahl: OptionButton, text: String) -> void:
 			auswahl.item_selected.emit(i)
 			return
 	fail_test("„%s“ fehlt in der Auswahl." % text)
+
+
+## Der Knopf mit dem Text [param text] in einem Dialog, auch einer, den add_button() dazugetan hat.
+func _knopf(dialog: AcceptDialog, text: String) -> Button:
+	for kind in dialog.get_ok_button().get_parent().get_children():
+		if kind is Button and kind.text == text:
+			return kind
+	fail_test("Der Dialog %s hat keinen Knopf „%s“." % [dialog.name, text])
+	return Button.new()
+
+
+## Esc, gedrückt, wie von der Tastatur; Godot macht daraus ui_cancel.
+func _esc() -> InputEventKey:
+	var ereignis := InputEventKey.new()
+	ereignis.keycode = KEY_ESCAPE
+	ereignis.physical_keycode = KEY_ESCAPE
+	ereignis.pressed = true
+	return ereignis
 
 
 ## Cmd bzw. Ctrl plus [param taste], gedrückt.

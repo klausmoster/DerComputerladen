@@ -192,15 +192,23 @@ static func locate(issues: Array[CatalogIssue], first: int, place: String,
 			issue.message = "%s, Feld „%s“: %s" % [place, issue.field, issue.message]
 
 
-## Ein Wert aus der Datei in Worten, für Meldungen.
+## Ein Wert aus der Datei in Worten, für Meldungen. JSON.parse() liefert jede Zahl als float, aus 5
+## in der Datei wird 5.0. Eine ganze Zahl steht deshalb ohne „.0“ da, so wie in der Datei: „die
+## Zahl 5“; eine mit Nachkommastellen wie dort mit Punkt: „die Zahl 1.5“.
 static func _describe(value: Variant) -> String:
 	match typeof(value):
 		TYPE_NIL:
 			return "null"
 		TYPE_BOOL:
 			return "true" if value else "false"
-		TYPE_INT, TYPE_FLOAT:
-			return "die Zahl %s" % value
+		TYPE_INT:
+			return "die Zahl %d" % value
+		TYPE_FLOAT:
+			var number: float = value
+			# Über 10^15 hat ein float keine verlässlichen Stellen mehr, wie bei read_int().
+			if number == floorf(number) and absf(number) <= 1e15:
+				return "die Zahl %d" % int(number)
+			return "die Zahl %s" % number
 		TYPE_STRING, TYPE_STRING_NAME:
 			return "der Text „%s“" % value
 		TYPE_ARRAY:

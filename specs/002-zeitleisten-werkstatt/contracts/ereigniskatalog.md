@@ -170,7 +170,7 @@ Ereignis, immer vorhanden: `id`, `title`, `description`, `category`, `kind`, `ef
 | `kind` | weitere Schlüssel |
 |---|---|
 | `"fixed"` | `date`, `duration_days` |
-| `"yearly"` | `yearly` mit `from`, `to` (Jahre), `start` (`"MM-TT"`), `end` (`"MM-TT"`, `"MM-ende"` oder `""` für ohne Dauer) |
+| `"yearly"` | `yearly` mit `from`, `to` (Jahre), `start` (`"MM-TT"`), `end` (`"MM-TT"`, `"MM-ende"` oder `""` für ohne Dauer); Monat 01 bis 12, Tag ab 01, sonst V22 wie „00-00“ oder „13-ende“ (T098) |
 | `"preset"` | `window` mit `from`, `to` (`"JJJJ-MM-TT"`), `count_min`, `count_weights` (Liste von Zahlen in Prozent, Summe 100), `min_gap_days`, `duration_days`, `conditions` |
 | `"chance"` | `window`, `monthly_chance` (0 bis 1), `max_occurrences`, `min_gap_days`, `duration_days`, `conditions` |
 | `"follow_only"` | `duration_days`, `conditions` |

@@ -1057,6 +1057,66 @@ func test_wirkung_waehrend_die_erst_mit_dem_ende_begaenne_beginnt_nie() -> void:
 		"10.03.1994  Wirkung  Sonderaktion: Presse · lokal — Die Lokalzeitung berichtet.",
 		"21.04.1994  Wirkungsende  " + nachfrage,
 	])
+	var termin := _termine(run, "sonderaktion")[0]
+	assert_eq(termin.due_effects().size(), 0,
+		"Der Fahrplan zeigt die Wirkung nicht, die nie beginnt (T079).")
+
+
+func test_wirkung_waehrend_im_gekuerzten_winter_steht_nicht_im_fahrplan() -> void:
+	# Arrange (T079): Der Winter bekommt eine Wirkung „während“, 70 Tage verzögert. Ein voller
+	# Winter dauert 90 Tage, die Prüfung (V19) lässt sie deshalb durch. Der Winter 1984/85 beginnt
+	# im Fahrplan aber erst am 01.01.1985 und endet am 01.03.1985, nach 59 Tagen; die Wirkung käme
+	# am 12.03.1985.
+	var catalog := _katalog("catalog_us3_kalender")
+	var nachfrage := EventEffect.new()
+	nachfrage.kind = EventEffect.Kind.NACHFRAGE
+	nachfrage.magnitude = 0.1
+	nachfrage.delay_days = 70
+	nachfrage.scope = EventEffect.Scope.DURING
+	catalog.get_event("winter").effects.append(nachfrage)
+	var issues := CatalogValidator.validate(catalog)
+	var run := TimelineRun.new(catalog, 4711)
+
+	# Act
+	run.advance_to(_tag(1986, 3, 1))
+
+	# Assert: Die Prüfung meldet nichts. Jährliche Termine stehen von Anfang an im Fahrplan, vorn
+	# der gekürzte Winter 1984/85 und der volle 1985/86.
+	assert_eq(issues.size(), 0, "V19 rechnet mit der vollen Dauer: %s" % [issues])
+	var winter := _termine(run, "winter")
+	assert_eq(winter.size(), 16, "Vom Winter 1984/85 bis zum Winter 1999/2000.")
+	if winter.size() < 2:
+		return
+	var gekuerzt := winter[0]
+	var voll := winter[1]
+	assert_eq([gekuerzt.day, gekuerzt.end_day], [0, _tag(1985, 3, 1)])
+	assert_eq([voll.day, voll.end_day], [_tag(1985, 12, 1), _tag(1986, 3, 1)], "90 Tage.")
+	# Im gekürzten Winter nennt der Fahrplan die Wirkung nicht, im vollen am 09.02.1986. Der Lauf
+	# arbeitet auf einer Kopie des Katalogs; verglichen wird deshalb die Beschreibung.
+	assert_eq(gekuerzt.due_effects().size(), 0, "Sie begänne nach dem Ende und beginnt nie.")
+	var faellig := voll.due_effects()
+	assert_eq(faellig.size(), 1)
+	if faellig.size() == 1:
+		var wirkung: EventEffect = faellig[0]["effect"]
+		assert_eq([wirkung.describe(), faellig[0]["day"]],
+			[nachfrage.describe(), _tag(1986, 2, 9)])
+	# Der Lauf meldet sie nur im vollen Winter, mit Beginn und Ende.
+	var meldungen := []
+	for meldung in run.protocol:
+		if meldung.event.id == "winter" and meldung.effect != null:
+			meldungen.append(meldung.to_line())
+	assert_eq(meldungen, [
+		"09.02.1986  Wirkung  Winter: Nachfrage · * · +10%",
+		"01.03.1986  Wirkungsende  Winter: Nachfrage · * · +10%",
+	])
+	# Die Textausgabe zeigt nur, was auch gemeldet wird.
+	var zeilen := ScheduleText.plan_lines(run, _tag(1986, 3, 1))
+	var wirkungszeilen := []
+	for zeile in zeilen:
+		if zeile.contains("└"):
+			wirkungszeilen.append(zeile)
+	assert_eq(wirkungszeilen, ["09.02.1986    └ Nachfrage · * · +10%"],
+		"Kein „12.03.1985 └ …“ unter dem Winter, der am 28.02.1985 endet.")
 
 
 func test_nach_dem_31_12_1999_kommt_kein_ende_mehr() -> void:

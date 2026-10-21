@@ -31,6 +31,8 @@ var kind := Kind.MODIFIER
 var _apply := Callable()
 ## Kennungen der Ereignisse zur Wahl, an derselben Stelle wie in der Auswahl.
 var _event_ids: Array[String] = []
+## Der Termin beim Absagen und Verschieben; null bei den anderen Arten.
+var _entry: ScheduleEntry
 
 @onready var _entry_caption: Label = %EntryCaption
 @onready var _entry_label: Label = %EntryLabel
@@ -70,6 +72,7 @@ func open_modifier(events: Array[TimelineEvent], event_id: String, start_day: in
 ## Absage (FR-026) des Termins [param entry]; gefragt wird nur nach dem Grund.
 func open_cancel(entry: ScheduleEntry, apply: Callable) -> void:
 	_open(Kind.CANCEL, apply)
+	_entry = entry
 	_entry_label.text = _entry_text(entry)
 	_focus_first()
 
@@ -77,6 +80,7 @@ func open_cancel(entry: ScheduleEntry, apply: Callable) -> void:
 ## Verschiebung (FR-026) des Termins [param entry] auf einen neuen Tag, mit Grund.
 func open_move(entry: ScheduleEntry, apply: Callable) -> void:
 	_open(Kind.MOVE, apply)
+	_entry = entry
 	_entry_label.text = _entry_text(entry)
 	_focus_first()
 
@@ -89,10 +93,16 @@ func open_schedule(events: Array[TimelineEvent], event_id: String, apply: Callab
 	_focus_first()
 
 
-## Zeigt unter den Feldern, was nicht ging; leer nimmt den Hinweis weg.
-func show_problem(text: String) -> void:
+## Zeigt unter den Feldern, was nicht ging; leer nimmt den Hinweis weg. Solange er dasteht, haben
+## die Felder in [param faulty] die Kontur des Fehlers, alle anderen ihren normalen Rahmen
+## (Style-Guide, „Bedienelemente“, T093).
+func show_problem(text: String, faulty: Array[Control] = []) -> void:
 	_hint.text = text
 	_hint.visible = not text.is_empty()
+	for input: Control in [_event_choice, _value_edit, _reason_edit, _from_edit, _to_edit,
+			_day_edit]:
+		var error := &"ErrorOptionButton" if input is OptionButton else &"ErrorLineEdit"
+		input.theme_type_variation = error if _hint.visible and faulty.has(input) else &""
 	# Ein Fenster wächst mit seinem Inhalt, wird von selbst aber nicht wieder kleiner.
 	if visible:
 		reset_size()
@@ -103,6 +113,7 @@ func show_problem(text: String) -> void:
 func _open(p_kind: Kind, apply: Callable) -> void:
 	kind = p_kind
 	_apply = apply
+	_entry = null
 	title = TITLES[kind]
 	ok_button_text = OK_TEXTS[kind]
 	for edit: LineEdit in [_value_edit, _reason_edit, _from_edit, _to_edit, _day_edit]:
@@ -153,54 +164,97 @@ static func _entry_text(entry: ScheduleEntry) -> String:
 
 # --- Übernehmen -------------------------------------------------------------------------------
 
-## OK oder Enter: Erst liest der Dialog die Felder; passt eins nicht, sagt der Hinweis warum. Dann
-## gibt er die Werte an apply; lehnt der Lauf ab, steht dessen Grund da, sonst schließt er.
+## OK oder Enter: Erst liest der Dialog die Felder; passt eins nicht, sagt der Hinweis warum, und
+## das Feld bekommt die Kontur des Fehlers. Dann gibt er die Werte an apply; lehnt der Lauf ab,
+## steht dessen Grund da, am Feld, um das es geht (_refused_fields()), sonst schließt er.
 func _on_confirmed() -> void:
 	var values := {}
-	var problem := _read(values)
+	var faulty: Array[Control] = []
+	var problem := _read(values, faulty)
 	if problem.is_empty() and _apply.is_valid():
 		problem = _apply.call(values)
-	show_problem(problem)
+		faulty = _refused_fields()
+	show_problem(problem, faulty)
 	if problem.is_empty():
 		hide()
 
 
-## Liest die Felder der Art nach [param values]; gibt zurück, was nicht passt, sonst leer.
-func _read(values: Dictionary) -> String:
+## Liest die Felder der Art nach [param values]; gibt zurück, was nicht passt, sonst leer. Das
+## Feld, das nicht passt, kommt nach [param faulty].
+func _read(values: Dictionary, faulty: Array[Control]) -> String:
 	var reason := _reason_edit.text.strip_edges()
 	if kind == Kind.MODIFIER or kind == Kind.SCHEDULE:
 		if _event_choice.selected < 0:
+			faulty.append(_event_choice)
 			return "Wähle ein Ereignis."
 		values["event_id"] = _event_ids[_event_choice.selected]
 	if kind == Kind.MODIFIER:
 		var points := _value_edit.text.strip_edges().replace("−", "-")
 		if points.is_empty():
+			faulty.append(_value_edit)
 			return "Gib einen Wert in Prozentpunkten ein, etwa +5 oder -6."
 		var parsed := EventForm.parse_percent(points)
 		if not parsed[0]:
+			faulty.append(_value_edit)
 			return parsed[1]
 		values["value"] = parsed[1]
 		var from := _date(_from_edit.text, "Beginn")
+		if not from[0]:
+			faulty.append(_from_edit)
+			return from[1]
 		var to := _date(_to_edit.text, "Ende")
-		for read: Array in [from, to]:
-			if not read[0]:
-				return read[1]
+		if not to[0]:
+			faulty.append(_to_edit)
+			return to[1]
 		values["from_day"] = from[1]
 		values["to_day"] = to[1]
 	if kind == Kind.MOVE:
 		var day := _date(_day_edit.text, "neuer Tag")
 		if not day[0]:
+			faulty.append(_day_edit)
 			return day[1]
 		values["new_day"] = day[1]
 	if kind == Kind.SCHEDULE:
 		var day := _date(_day_edit.text, "Tag")
 		if not day[0]:
+			faulty.append(_day_edit)
 			return day[1]
 		values["day"] = day[1]
 	if reason.is_empty():
+		faulty.append(_reason_edit)
 		return "Gib einen Grund ein; jeder Eingriff steht mit Grund im Protokoll."
 	values["reason"] = reason
 	return ""
+
+
+## Die Felder, um die es geht, wenn der Lauf einen Eingriff ablehnt. Den Grund nennt der Lauf
+## (TimelineRun.last_refusal), das Feld nicht; es folgt daraus, was der Dialog vorher selbst geprüft
+## hat: Ereignis, Wert, Tage und Grund sind lesbar.
+## - Modifikator: Abgelehnt wird dann nur ein Ende vor dem Beginn; es gelten beide Tage.
+## - Einplanen: Der Tag liegt nicht nach dem Stand des Laufs oder nach dem 31.12.1999.
+## - Verschieben: ebenso der neue Tag, oder er ist der alte; außer der Termin selbst lässt sich
+##   gar nicht verschieben (_entry_unchangeable()), dann gilt der Grund keinem Feld.
+## - Absagen: Es geht immer um den Termin, und für ihn gibt es kein Feld.
+func _refused_fields() -> Array[Control]:
+	var fields: Array[Control] = []
+	match kind:
+		Kind.MODIFIER:
+			fields.assign([_from_edit, _to_edit])
+		Kind.SCHEDULE:
+			fields.append(_day_edit)
+		Kind.MOVE:
+			if not _entry_unchangeable(_entry):
+				fields.append(_day_edit)
+	return fields
+
+
+## Ob sich [param entry] auf keinen Tag verschieben und nicht absagen lässt (FR-026): fix oder
+## jährlich, nicht mehr geplant oder nach dem 31.12.1999. Nur für die Kontur; ob ein Eingriff
+## geht, entscheidet allein der Lauf.
+static func _entry_unchangeable(entry: ScheduleEntry) -> bool:
+	return entry == null or entry.origin == ScheduleEntry.Origin.FIXED \
+		or entry.origin == ScheduleEntry.Origin.YEARLY \
+		or entry.state != ScheduleEntry.State.PLANNED or entry.day > TimelineRun.LAST_DAY
 
 
 ## Ein Datum wie im Formular, auch ohne führende Nullen: [true, Tagesindex] oder [false, Grund].

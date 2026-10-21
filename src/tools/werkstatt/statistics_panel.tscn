@@ -82,6 +82,15 @@ layout_mode = 2
 theme_type_variation = &"ErrorNoticeLabel"
 autowrap_mode = 3
 
+[node name="RefusedNotice" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+tooltip_text = "Ob ein Spiel einen Eingriff ablehnt, hängt am Katalog und am Tag, nie am Seed. Er gilt deshalb in keinem Spiel."
+mouse_filter = 1
+theme_type_variation = &"WarningLabel"
+autowrap_mode = 3
+
 [node name="ResultLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
@@ -107,7 +116,7 @@ text_overrun_behavior = 3
 
 [node name="YearChart" type="Control" parent="Split/YearBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 1
