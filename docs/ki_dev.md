@@ -42,6 +42,12 @@ Claude bleibt frei für Planung und Review.
 4. **Große Phasen in zwei Teilen:** erst der Kern, dann die Oberfläche, dazwischen prüft Claude.
    So baut Teil 2 auf geprüftem Grund.
 5. **Jede Phase endet mit Klaus' Abnahme**, einer `[K]`-Aufgabe, und erst danach mit einem Commit.
+6. **Vor der Gesamtabnahme die Lückensuche:** Nach der letzten Umsetzungsphase läuft
+   `/speckit-converge` über das ganze Feature. Prüfer lesen Spec, Plan, Verträge und Aufgaben
+   gegen den Code, Claude prüft jeden Befund selbst nach. Die Lücken werden eine eigene Phase mit
+   Klaus' Freigabe, erst danach folgt die Gesamtabnahme. Warum: Bei Feature 002 fand die
+   Lückensuche 14 Lücken, darunter zwei Widersprüche zur Spec, obwohl alle Tests grün waren
+   (Klaus, 2026-10-21).
 
 ## Git
 

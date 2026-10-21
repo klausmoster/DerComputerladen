@@ -35,6 +35,8 @@ src/test/
 ├── test_werkstatt_theme.gd           # Farben des Themes stammen aus UiPalette, Schriftgröße, Kästen
 ├── test_simulator.gd                 # Eingriffe, Unterschiede, Neustarts und Proben im Simulator (US6)
 ├── test_statistics_panel.gd          # Starten, Abbrechen, Ergebnis mit „–“, Häkchen, ausgenommene Ereignisse (US7)
+├── test_large_catalog.gd             # SC-011: Prüfung, Änderung samt Prüfung und ein Spiel mit catalog_500.json
+├── test_werkstatt_settings.gd        # Lage der Teiler speichern, wiederherstellen, begrenzen, kaputte Datei
 └── test_werkstatt_scene.gd           # Rauchtest: Szene baut headless auf, Prüfmeldung führt zum Feld, Simulator rechnet, Spieluhr bleibt unberührt
 ```
 
@@ -50,6 +52,11 @@ src/test/
   `… werkstatt.tscn -- --katalog res://test/fixtures/catalog_500.json`. Dahinter steht
   `Werkstatt.catalog_path` mit der Vorgabe `EventCatalog.DEFAULT_PATH`; Tests setzen den Pfad,
   bevor die Szene in den Baum kommt.
+- Die Werkstatt merkt sich die Lage aller Teiler (Wunsch von Klaus, Phase 10) in
+  `user://werkstatt_einstellungen.cfg` (ConfigFile, Abschnitt `SPLITS_SECTION`): eine Sekunde nach
+  dem letzten Ziehen (`SettingsTimer`) und beim Schließen; der Start stellt sie wieder her.
+  `Werkstatt.settings_path` lässt sich wie `backup_path` für Tests umstellen. Fehlt die Datei oder
+  ist sie kaputt, gelten still die Vorgaben. Zu große Werte begrenzt Godot beim Anordnen.
 - `Werkstatt._ready()` richtet, außer headless, das Fenster ein (R13):
   - `get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED`;
   - `get_window().content_scale_factor = DisplayServer.screen_get_scale()`, damit Text auf dem
@@ -115,6 +122,10 @@ unlesbaren Katalog. Den Dialog für „Neu …“ bringt `EventList` selbst mit,
 - `EventList.event_selected`, `TimelineView.event_clicked` und `IssuesPanel.issue_activated`
   setzen die Auswahl; `selection_changed` zeigt das Ereignis im Formular und hebt es in Liste und
   Zeitstrahl hervor.
+- `EventList.filter_changed` setzt `TimelineView.event_filter` (T074): gefiltert auf
+  `EventList.passes`, sonst `Callable()`. Mit Filter zeigt der Zeitstrahl nur Zeilen mit einer
+  passenden Marke und unter der Achse den Hinweis „Filter: N von M“; ohne Filter alles wie
+  bisher, auch leere Zeilen.
 - Vom `TimelineView` (T049): `event_moved` geht direkt an `CatalogEditor.set_event_field()`, ein
   Ziehen ist ein Schritt im Verlauf; `create_requested` öffnet `EventList.open_new_dialog()`
   vorbelegt; `event_created` wie aus der Liste; `edit_requested` wählt und setzt den Fokus in den
@@ -174,6 +185,7 @@ func discard_backup() -> void
 func suggest_id(title: String) -> String      # klein, ä→ae, ö→oe, ü→ue, ß→ss, sonst _; eindeutig mit _2, _3 …
 static func id_from(text: String, fallback: String) -> String   # die Regel von suggest_id(), ohne Editor; auch für Proben und Modifikatoren
 static func unique_id(base: String, taken: Dictionary) -> String # hängt _2, _3 … an, bis die Kennung nicht in taken steht
+func content_key() -> String   # Inhalt des Katalogs als Text, je Objekt gemerkt; für „Katalog geändert“ (Phase 10)
 ## Legt ein Ereignis mit den Vorgaben seiner Art an; leere Kennung heißt suggest_id(title),
 ## day ≥ 0 setzt bei fixen Ereignissen das Datum.
 func add_event(kind: TimelineEvent.Kind, title: String, category: String, day: int = -1, id: String = "") -> TimelineEvent
@@ -231,6 +243,9 @@ Regeln:
 - „Neu …“ öffnet einen Dialog mit Art, Titel und Kategorie. Darunter steht die Kennung, die
   `suggest_id()` aus dem Titel vorschlägt; Klaus kann sie ändern (US2, Szenario 1; FR-032).
   „Anlegen“ ruft `add_event()`.
+- Filter (T074): `signal filter_changed()` bei Suche, Art oder Kategorie; `is_filtered() -> bool`
+  und `passes(event: TimelineEvent) -> bool`. Die Regel steht nur in der Liste; der Zeitstrahl
+  fragt sie über `passes`.
 - `open_new_dialog(kind: TimelineEvent.Kind = FIXED, category: String = "", day: int = -1)`
   öffnet diesen Dialog; der Knopf ruft es ohne Argumente auf. Der Zeitstrahl lässt ihn nach einem
   Doppelklick vorbelegt öffnen: Art fix, Kategorie der Zeile, Tag. Das Datum steht im Dialog,
@@ -283,6 +298,9 @@ var visible_from: float                # Tagesindex am linken Rand
 var days_per_pixel: float              # Zoom; ganz herausgezoomt passen 1985–1999 in die Breite
 func refresh() -> void                 # nach catalog_changed; bricht ein laufendes Ziehen ab
 func select_event(id: String) -> void  # hebt hervor, ohne Signal, wie EventList
+var event_filter: Callable             # EventList.passes, solange die Liste filtert, sonst Callable() (T074)
+func is_filtered() -> bool
+func filter_text() -> String           # etwa „Filter: 11 von 500“
 # Für Tests: day_to_x(), x_to_day(), time_rect(), event_at(), mark_rects(), preview_text(),
 # preview_issue()
 ```

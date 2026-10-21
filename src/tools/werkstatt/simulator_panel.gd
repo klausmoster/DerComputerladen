@@ -556,10 +556,11 @@ func _apply_refresh() -> void:
 	_update_controls()
 
 
-## Der Katalog, mit dem ein neuer Lauf jetzt rechnen würde, als Text: der Katalog in seiner
-## kanonischen Form und die Kennungen, die without_faulty() wegen Fehlern auslässt. Ist beides
-## gleich, rechnete ein neuer Lauf mit demselben Katalog. So verschwindet der Hinweis auch wieder,
-## wenn Klaus eine Änderung rückgängig macht.
+## Der Katalog, mit dem ein neuer Lauf jetzt rechnen würde, als Text: sein Inhalt
+## (CatalogEditor.content_key(), so genau wie die kanonische Form) und die Kennungen, die
+## without_faulty() wegen Fehlern auslässt. Ist beides gleich, rechnete ein neuer Lauf mit
+## demselben Katalog. So verschwindet der Hinweis auch wieder, wenn Klaus eine Änderung
+## rückgängig macht.
 func _catalog_key() -> String:
 	if not _has_catalog():
 		return ""
@@ -568,7 +569,7 @@ func _catalog_key() -> String:
 		if issue.severity == CatalogIssue.Severity.ERROR and not faulty.has(issue.event_id):
 			faulty.append(issue.event_id)
 	faulty.sort()
-	return "%s\n%s" % [editor.catalog.to_json(), ",".join(faulty)]
+	return "%s\n%s" % [editor.content_key(), ",".join(faulty)]
 
 
 ## Die Titel der Ereignisse, die im Katalog der Werkstatt stehen, aber nicht im Lauf: Sie haben

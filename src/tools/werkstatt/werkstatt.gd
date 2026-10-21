@@ -21,9 +21,22 @@ signal selection_changed(id: String)
 
 ## Argument nach „--“, das einen anderen Katalog öffnet, etwa für die Prüfung von SC-011.
 const CATALOG_ARGUMENT := "--katalog"
+## In der Einstellungsdatei der Abschnitt für die Teiler: je Teiler ein Eintrag, benannt nach
+## seinem Pfad unter der Werkstatt, etwa „Layout/Main“, mit seinen split_offsets.
+const SPLITS_SECTION := "teiler"
+## So lange nach dem letzten Ziehen an einem Teiler wartet die Werkstatt, bevor sie die Lage
+## speichert, in Sekunden. Ein Ziehen meldet sich bei jeder Mausbewegung; geschrieben wird erst,
+## wenn Ruhe ist.
+const SETTINGS_DELAY := 1.0
+## Größer ist kein Wert eines Teilers in Pixeln; was darüber liegt, gilt beim Lesen als kaputt.
+const MAX_SPLIT_OFFSET := 100000
 
 ## Der Katalog, den die Werkstatt öffnet. Tests setzen ihn, bevor die Szene in den Baum kommt.
 var catalog_path: String = EventCatalog.DEFAULT_PATH
+## Die Einstellungsdatei der Werkstatt, ein ConfigFile: Darin merkt sie sich die Lage ihrer
+## Teiler. Sie liegt unter user://, also außerhalb des Projekts, wie die Sicherungskopie. Tests
+## setzen eine eigene Datei, bevor die Szene in den Baum kommt.
+var settings_path: String = "user://werkstatt_einstellungen.cfg"
 ## Der einzige, der den Katalog ändert. Tests setzen hier vorher eine eigene Sicherungsdatei.
 var editor := CatalogEditor.new()
 ## Das gewählte Ereignis; leer heißt keins.
@@ -54,6 +67,7 @@ var _open_error := OK
 @onready var _simulator_panel: SimulatorPanel = %SimulatorPanel
 @onready var _statistics_panel: StatisticsPanel = %StatisticsPanel
 @onready var _backup_timer: Timer = %BackupTimer
+@onready var _settings_timer: Timer = %SettingsTimer
 @onready var _close_dialog: ConfirmationDialog = %CloseDialog
 @onready var _revert_dialog: ConfirmationDialog = %RevertDialog
 @onready var _delete_dialog: ConfirmationDialog = %DeleteDialog
@@ -89,6 +103,7 @@ func _ready() -> void:
 	_statistics_panel.interventions_source = _simulator_interventions
 	_set_up_shortcuts()
 	_connect_signals()
+	restore_settings()
 	_update_toolbar()
 	# Erst wenn alles im Baum steht, damit die Dialoge sich in der Mitte öffnen können.
 	_start.call_deferred()
@@ -214,10 +229,11 @@ func _on_close_action(action: StringName) -> void:
 
 
 ## Beim regulären Schließen fällt die Sicherungskopie weg (FR-050), außer Klaus hat sie beim Start
-## auf später verschoben.
+## auf später verschoben. Die Lage der Teiler kommt in die Einstellungsdatei.
 func _quit() -> void:
 	if not _keep_backup:
 		editor.discard_backup()
+	save_settings()
 	get_tree().quit()
 
 
@@ -300,6 +316,112 @@ func _on_backup_timer() -> void:
 		_keep_backup = false
 
 
+# --- Teiler -----------------------------------------------------------------------------------
+#
+# Die Werkstatt merkt sich, wo Klaus ihre Teiler hingezogen hat: zwischen Liste, Mitte und
+# Formular, zwischen Zeitstrahl und Reitern und die im Simulator und in der Statistik. Ein
+# SplitContainer hält die Lage in split_offsets, je Teiler einen Wert in Pixeln; 0 ist die
+# Vorgabe der Szene. Genau diese Werte stehen in der Einstellungsdatei.
+#
+# Begrenzen muss die Werkstatt dabei nichts selbst. Passt ein gespeicherter Wert nicht ins
+# Fenster, etwa weil es kleiner ist als beim letzten Mal, ordnet Godot die Kinder trotzdem so an,
+# dass jedes mindestens seine Mindestgröße behält (bei allen Bereichen 80 Pixel oder mehr), und
+# beim nächsten Ziehen rechnet es vom begrenzten Wert aus weiter. Der Wert in der Datei bleibt bis
+# dahin stehen; wird das Fenster wieder größer, gilt wieder die alte Lage.
+
+
+## Alle Teiler der Werkstatt, in der Reihenfolge des Baums. find_children() sucht mit
+## owned = false auch in den eingesetzten Szenen von Simulator und Statistik.
+func splits() -> Array[SplitContainer]:
+	var result: Array[SplitContainer] = []
+	for node in find_children("*", "SplitContainer", true, false):
+		result.append(node as SplitContainer)
+	return result
+
+
+## Stellt die Teiler so, wie es die Einstellungsdatei sagt. Fehlt sie, ist sie kaputt oder passt
+## ein Eintrag nicht zu seinem Teiler, gilt dort die Vorgabe, ohne Meldung: Eine verlorene Lage
+## ist keinen Dialog wert.
+func restore_settings() -> void:
+	var config := _read_settings()
+	for split in splits():
+		# Ohne Vorgabe meldete get_value() einen fehlenden Eintrag als Fehler.
+		var saved: Variant = config.get_value(SPLITS_SECTION, _split_key(split),
+			PackedInt32Array())
+		var offsets := _offsets_for(split, saved)
+		if not offsets.is_empty():
+			split.split_offsets = offsets
+
+
+## Schreibt die Lage aller Teiler in die Einstellungsdatei, eine Sekunde nach dem letzten Ziehen
+## und beim Schließen. Andere Abschnitte der Datei bleiben stehen. Lässt sie sich nicht schreiben,
+## merkt sich die Werkstatt eben nichts; das Ergebnis sagt es nur den Tests.
+func save_settings() -> Error:
+	_settings_timer.stop()
+	var config := _read_settings()
+	for split in splits():
+		config.set_value(SPLITS_SECTION, _split_key(split), split.split_offsets)
+	return config.save(settings_path)
+
+
+## Ein Teiler wird gezogen; das meldet er bei jeder Bewegung. start() beginnt die Wartezeit jedes
+## Mal von vorn, gespeichert wird also erst, wenn eine Sekunde lang nichts mehr gezogen wurde.
+func _on_split_dragged(_offset: int) -> void:
+	_settings_timer.start()
+
+
+## Die Einstellungsdatei; ohne lesbare Datei eine leere. Eine kaputte Datei soll still die
+## Vorgaben gelten lassen, ConfigFile.load() meldet sie aber selbst als Fehler auf der Konsole.
+## Für diesen einen Aufruf schaltet die Werkstatt Godots Meldungen deshalb ab; genau dafür gibt es
+## Engine.print_error_messages. Danach gilt wieder, was vorher galt.
+func _read_settings() -> ConfigFile:
+	var config := ConfigFile.new()
+	if not FileAccess.file_exists(settings_path):
+		return config
+	var printing := Engine.print_error_messages
+	Engine.print_error_messages = false
+	var error := config.load(settings_path)
+	Engine.print_error_messages = printing
+	return config if error == OK else ConfigFile.new()
+
+
+## Name eines Teilers in der Datei: sein Pfad unter der Werkstatt.
+func _split_key(split: SplitContainer) -> String:
+	return String(get_path_to(split))
+
+
+## Die gespeicherten Werte für [param split], wenn sie zu ihm passen: eine Liste ganzer Zahlen mit
+## einem Wert je Teiler. Sonst eine leere Liste, und es gilt die Vorgabe. Aus einer Datei, die
+## jemand von Hand geändert hat, darf auch eine Liste wie [300, -80.0] kommen; Werte jenseits von
+## MAX_SPLIT_OFFSET gelten als kaputt, denn so groß ist kein Bildschirm.
+static func _offsets_for(split: SplitContainer, saved: Variant) -> PackedInt32Array:
+	if typeof(saved) != TYPE_PACKED_INT32_ARRAY and typeof(saved) != TYPE_ARRAY:
+		return PackedInt32Array()
+	var values: Array = Array(saved)
+	if values.size() != _dragger_count(split):
+		return PackedInt32Array()
+	var offsets := PackedInt32Array()
+	for value: Variant in values:
+		if typeof(value) == TYPE_FLOAT and is_finite(value) and value == floorf(value) \
+				and absf(value) <= MAX_SPLIT_OFFSET:
+			value = int(value)
+		if typeof(value) != TYPE_INT or value < -MAX_SPLIT_OFFSET or value > MAX_SPLIT_OFFSET:
+			return PackedInt32Array()
+		offsets.append(value)
+	return offsets
+
+
+## Wie viele Teiler [param split] hat: einen weniger als sichtbare Kinder. split_offsets taugt dafür
+## beim Start nicht; bei drei Kindern legt Godot den zweiten Wert erst beim Anordnen an.
+static func _dragger_count(split: SplitContainer) -> int:
+	var count := 0
+	for child in split.get_children():
+		var control := child as Control
+		if control != null and control.visible and not control.top_level:
+			count += 1
+	return maxi(count - 1, 0)
+
+
 # --- Meldungen des Editors und der Teile ------------------------------------------------------
 
 func _connect_signals() -> void:
@@ -309,6 +431,7 @@ func _connect_signals() -> void:
 	_event_list.event_selected.connect(select_event)
 	_event_list.event_created.connect(_on_event_created)
 	_event_list.delete_requested.connect(_on_delete_requested)
+	_event_list.filter_changed.connect(_on_list_filter_changed)
 	_issues_panel.issue_activated.connect(_on_issue_activated)
 	_event_form.event_renamed.connect(func(_old_id: String, new_id: String) -> void:
 		select_event(new_id))
@@ -326,6 +449,10 @@ func _connect_signals() -> void:
 	_undo_button.pressed.connect(func() -> void: editor.undo())
 	_redo_button.pressed.connect(func() -> void: editor.redo())
 	_backup_timer.timeout.connect(_on_backup_timer)
+	_settings_timer.wait_time = SETTINGS_DELAY
+	_settings_timer.timeout.connect(save_settings)
+	for split in splits():
+		split.dragged.connect(_on_split_dragged)
 	_save_errors_dialog.confirmed.connect(func() -> void: _save(false))
 	_save_errors_dialog.canceled.connect(_cancel_save)
 	_foreign_dialog.confirmed.connect(func() -> void: _save(true))
@@ -369,6 +496,14 @@ func _on_issues_changed(issues: Array[CatalogIssue]) -> void:
 	_simulator_panel.refresh()
 	_statistics_panel.refresh()
 	_update_toolbar()
+
+
+## Die Liste filtert anders: Der Zeitstrahl zeigt dasselbe wie sie (T074). Er bekommt ihre Regel
+## als Callable statt einer eigenen; ohne Filter ein leeres, dann zeigt er alles. Nach einer
+## Änderung am Katalog fragt er beim Neuaufbau wieder die Liste, so verschwindet etwa ein
+## Ereignis, dessen neuer Titel nicht mehr passt, hier wie dort.
+func _on_list_filter_changed() -> void:
+	_timeline_view.event_filter = _event_list.passes if _event_list.is_filtered() else Callable()
 
 
 ## Ein neues Ereignis, aus dem Dialog oder als Kopie, wird gewählt; der Fokus steht im Titel.

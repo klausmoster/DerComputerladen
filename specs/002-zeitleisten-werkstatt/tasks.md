@@ -765,7 +765,7 @@ letzte Phase.
 
 **Purpose**: Großer Katalog, Doku, Gesamtprüfung, Abnahme
 
-- [ ] T068 [A] Großer Katalog (SC-011):
+- [x] T068 [A] Großer Katalog (SC-011):
   - Ein Einmal-Skript erzeugt `src/test/fixtures/catalog_500.json` mit 250 fixen und 250
     Ereignissen über Wahrscheinlichkeit, kanonisch geschrieben.
   - `src/test/test_large_catalog.gd`: Die Prüfung braucht unter 100 ms, eine Änderung über den
@@ -774,21 +774,28 @@ letzte Phase.
     über dem Ziel. Bei Phase 9 gingen rund 40 % der Zeit eines Spiels auf `_may_start_again()` und
     `_running_entry()` in `TimelineRun`, die alle Termine eines Ereignisses durchgehen; eine Probe
     mit Abkürzung brauchte 1,8 statt 3,0 ms. Die Testsuite liegt seit Phase 9 bei rund 18 s.
-- [ ] T069 [K] SC-011 nach quickstart.md, Abschnitt 5 von Hand prüfen:
+- [x] T074 [A] Der Zeitstrahl folgt den Filtern der Liste (Klaus, 2026-10-21): Suche, Art und
+  Kategorie der `EventList` gelten auch für den `TimelineView`; ohne Filter zeigt er alles wie
+  bisher. Anlass: Mit `catalog_500.json` füllte allein die Kategorie Hardware die ganze Höhe des
+  Zeitstrahls. Hängt an T068.
+- [x] T069 [K] SC-011 nach quickstart.md, Abschnitt 5 von Hand prüfen:
   - `time` der Textausgabe;
   - Werkstatt mit `--katalog`, Ändern und Ziehen ohne Verzögerung. Gemessen bei Phase 7 mit 500
     Ereignissen, headless: eine Änderung ohne Lauf 153 ms, „Fahrplan erzeugen“ 200 ms, „Bis zum
     Ende“ 349 ms;
   - Statistik unter 5 Minuten.
-- [ ] T070 [C] [P] Doku nachziehen:
+  Erledigt (Klaus, 2026-10-21): Textausgabe mit 500 Ereignissen 0,56 s samt Start, Werkstatt und
+  Statistik abgenommen.
+- [x] T070 [C] [P] Doku nachziehen:
   - `CLAUDE.md`, Tabelle „Aufbau“: In der Zeile `src/core/` weicht „Event-Resources“ dem Kern
     unter `src/core/timeline/`; die Zeile `src/data/` nennt `event_catalog.json` statt
     `event_database.gd`; neu sind Zeilen für `src/core/timeline/` und `src/tools/werkstatt/`.
   - `CLAUDE.md`, Absatz zur Timeline: Fahrplan, Kern ohne Node, die fünf Signale.
   - `docs/features/Features.md`: Stand von Feature 002.
-- [ ] T071 [C] Review des ganzen Features gegen Spec und Verträge mit `/speckit-converge` als
+- [x] T071 [C] Review des ganzen Features gegen Spec und Verträge mit `/speckit-converge` als
   Lückensuche; die Lernnotizen aller Phasen stehen vollständig in
-  `specs/002-zeitleisten-werkstatt/lernnotizen.md`
+  `specs/002-zeitleisten-werkstatt/lernnotizen.md`. Ergebnis (2026-10-21): 14 Lücken, als
+  Phase 11 mit T075 bis T088 angehängt
 - [ ] T072 [K] Quickstart vollständig durchgehen (Abschnitte 1 bis 6), dabei nach Abschnitt 4.7
   SC-001 (höchstens 10 Minuten) messen und die Werkstatt abnehmen (SC-010)
 - [ ] T073 [K] Feature abnehmen: die Abnahmen aus T006, T019, T030, T040, T046, T051, T055, T063,
@@ -958,3 +965,57 @@ Task: "T023 [A] test_timeline_run.gd, Teil 1"
   `.uid`-Dateien werden committet, verschobene behalten ihre über `git mv`.
 - Nach Phase 2 hat das Projekt bis zum Ende von Phase 3 keine Ereignismeldungen. Das ist gewollt,
   denn es gibt noch keinen Abnehmer.
+
+## Phase 11: Convergence
+
+Lückensuche T071 mit `/speckit-converge` (2026-10-21): vier Prüfer lasen Spec, Plan, Verträge und
+Aufgaben gegen den Code, Claude hat die Befunde nachgeprüft. Umgesetzt wird erst nach Klaus'
+Freigabe, wie jede Phase. Die Gesamtabnahme mit T072 und T073 aus Phase 10 folgt erst danach.
+
+- [ ] T075 [A] Gesammelte Eingriffe nach `at_day` stabil sortiert nachspielen, in
+  `WhatIfProbe.build_run()` und `TimelineStatistics`; den Endtag eines Neustarts bzw. einer
+  gespeicherten Probe als größten Wert aus Stand des Laufs und letztem `at_day` festlegen; Test
+  für den Ablauf Eingriff 1992, „Fahrplan erzeugen“, Eingriff vor Spielbeginn, Neustart mit
+  Eingriffen, Probe und Statistik per FR-043, FR-045, FR-051, US6/AC2, US6/AC7, R11, R22
+  (contradicts)
+- [ ] T076 [A] Ein Klick in Liste oder Prüfung trifft nach einer offenen Eingabe die gemeinte
+  Zeile: Neubau von `EventList` und `IssuesPanel` ans Ende des Bilds schieben oder Zeilen
+  behalten; Test mit echter Mauseingabe per FR-030, FR-033, Vertrag „Datenfluss“ (contradicts)
+- [ ] T077 [A] Rechtsklick und Menü im Zeitstrahl übernehmen eine offene Eingabe vorher
+  (`_release_focus()` in `_on_right_click()`); Test mit „Duplizieren“ aus dem Menü per FR-039,
+  US4/AC4, Vertrag „Zeitstrahl“ (partial)
+- [ ] T078 [K] [A] Sicherungskopie trotz Kopie eines anderen Katalogs: Klaus entscheidet zwischen
+  einer Sicherungsdatei je Katalogpfad (Empfehlung) und einer festgehaltenen Ausnahme mit Warnung
+  beim Start; danach umsetzen, mit Test per FR-050, R23 (partial)
+- [ ] T079 [A] Wirkungen „während“, die nie beginnen, etwa im auf Spielbeginn gekürzten Winter
+  1984/85, weder im Fahrplan noch in der Begründung zeigen: `ScheduleEntry.due_effects()` nach
+  derselben Regel wie der Lauf; Test per FR-013, FR-021, V19 (partial)
+- [ ] T080 [A] Eine Auswahl im Formular bleibt offen, auch wenn vorher ein anderes Feld eine
+  offene Eingabe hatte; Test per FR-031 (partial)
+- [ ] T081 [K] [A] Fehlerkontur an Auswahlfeldern: Klaus klärt, ob der Style-Guide sie meint
+  („Ein Feld mit Fehler bekommt eine Kontur …“); falls ja, Theme-Variante für `OptionButton` und
+  Aufruf ergänzen per Verfassung IV, Style-Guide „Bedienelemente“ (partial)
+- [ ] T082 [A] Die Statistik zählt in „mit N Eingriffen“ nur die angenommenen Eingriffe und nennt
+  abgelehnte per FR-045 (partial)
+- [ ] T083 [A] `Timeline.start_game()` lehnt Seeds über 2.147.483.647 mit Meldung ab; Test per
+  FR-014 (partial)
+- [ ] T084 [A] Prüfregeln für von Hand geänderte Dateien: V21 prüft Kategorie-Kennungen auf
+  `[a-z0-9_]+`, V15 lehnt eine Bedingung auf das eigene Ereignis ab; je eine Fixture per
+  data-model (EventCategory, EventCondition), FR-006 (partial)
+- [ ] T085 [A] Fehlende Tests: Signale `event_ended` und `effect_ended` des Autoloads mit
+  `catalog_us3_kalender.json`; SC-002 mit Eingriffsprotokoll Tag für Tag gegen Sprünge; V22 mit
+  falschem Typ und unbekanntem Wert für `kind` und `scope` per FR-017, SC-002, V22 (partial)
+- [ ] T086 [A] Die Grenze von 20 Anzahlen im Formular festhalten und bei mehr Gewichten einen
+  Hinweis zeigen, statt das Feld still unbearbeitbar zu lassen per FR-004, FR-031 (unrequested)
+- [ ] T087 [C] Spec auf die datierten Entscheidungen nachziehen: FR-026 und Edge Case (Ablehnung
+  nach 1999, Verschieben auf denselben Tag), FR-037 (Filter, T074), FR-038 und Annahmen
+  (Trackpad, Zoom-Knöpfe, waagerechte Leiste, Teiler merken), FR-039 und US4/AC5 (vorbelegter
+  Dialog), FR-043 und FR-051 (Laden einer Probe ersetzt die gesammelten Eingriffe), FR-050 und
+  Edge Case Absturz („Später“, Kopie eines anderen Katalogs, nach T078), FR-012 (Würfelwert bei
+  gewürfelten und Folgeterminen; am Termin steht der letzte Grund), V19 (gekürztes erstes
+  Vorkommen), US1/AC7 (Würfelwert im Simulator) per spec.md (unrequested)
+- [ ] T088 [C] Übrige Dokumente nachziehen: die erledigten Wünsche (Trackpad, waagerechte Leiste,
+  Zoom-Knöpfe, Teiler merken) als Aufgaben vermerken, T074 in die Abdeckungstabelle, Messwerte
+  bei T069 aktualisieren (Änderung 41 ms, Ziehen 38 ms), Mindestabstand in plan.md und T023 wie
+  FR-005, R2 auf die Katalogklassen eingrenzen, die Grenze aus T086 in Vertrag und Datenmodell per
+  plan.md, tasks.md, research.md (unrequested)

@@ -77,8 +77,15 @@ var _month_starts: PackedInt32Array = PackedInt32Array()
 var _next_month: int = 0
 ## Die Termine nach laufender Nummer; Nummer n steht an der Stelle n − 1.
 var _by_serial: Array[ScheduleEntry] = []
-## Kennung → alle Termine des Ereignisses in der Reihenfolge ihres Entstehens.
-var _entries_by_event: Dictionary = {}
+## Kennung → die Tage der Termine des Ereignisses, die weder entfallen noch abgesagt sind,
+## aufsteigend (PackedInt32Array). Ihre Zahl ist das, was für die Höchstzahl zählt, und für den
+## Mindestabstand genügen die Nachbarn eines Tags (FR-005, _may_start_again()). Nachgeführt bei
+## jedem Wechsel, der das ändert: neuer Termin, Entfall, Absage, Verschieben.
+var _counted_days: Dictionary = {}
+## Kennung → der Termin des Ereignisses, der gerade läuft (FR-022). Es läuft höchstens einer:
+## Ein Termin beginnt nur, wenn hier keiner steht. Gesetzt beim Beginn mit Dauer, entfernt beim
+## Ende.
+var _running: Dictionary = {}
 ## Tag → die dann fälligen verzögerten Wirkungen, je [laufende Nummer, Stelle der Wirkung,
 ## Termin, Wirkung].
 var _due_effects: Dictionary = {}
@@ -295,6 +302,7 @@ func cancel_entry(serial: int, reason: String) -> Error:
 		return error
 	if reason.strip_edges().is_empty():
 		return _refuse(ERR_INVALID_PARAMETER, "Die Absage braucht einen Grund.")
+	_uncount_day(entry)
 	entry.state = ScheduleEntry.State.CANCELLED
 	entry.note = reason
 	var record := _record(INTERVENTION_CANCEL)
@@ -325,13 +333,16 @@ func move_entry(serial: int, new_day: int, reason: String) -> Error:
 		return _refuse(ERR_INVALID_PARAMETER, "Die Verschiebung braucht einen Grund.")
 	var old_day := entry.day
 	# Der Termin wandert an seine neue Stelle im Fahrplan: herausnehmen, ändern, neu einsortieren.
+	# Für den Mindestabstand wandert sein Tag mit.
 	entries.remove_at(entries.find(entry))
+	_uncount_day(entry)
 	if entry.moved_from_day < 0:
 		entry.moved_from_day = old_day
 	entry.end_day = new_day + (entry.end_day - entry.day)
 	entry.day = new_day
 	entry.note = reason
 	entries.insert(entries.bsearch_custom(entry, _comes_before), entry)
+	_count_day(entry)
 	# Der alte Tag bleibt als Stichtag stehen; an ihm geschieht dann eben nichts.
 	_add_stop(new_day)
 	var record := _record(INTERVENTION_MOVE)
@@ -487,9 +498,7 @@ func _add_entry(event: TimelineEvent, day: int, origin: ScheduleEntry.Origin,
 	entry.end_day = day + maxi(event.duration_days, 0)
 	entry.origin = origin
 	_by_serial.append(entry)
-	if not _entries_by_event.has(event.id):
-		_entries_by_event[event.id] = []
-	_entries_by_event[event.id].append(entry)
+	_count_day(entry)
 	if at_day_end:
 		entries.insert(_first_index_from(day + 1), entry)
 	else:
@@ -550,6 +559,7 @@ func _end_entries(day: int, messages: Array[TimelineMessage]) -> void:
 	ending.sort_custom(_serial_before)
 	for entry: ScheduleEntry in ending:
 		entry.state = ScheduleEntry.State.ENDED
+		_running.erase(entry.event.id)
 		for effect in entry.event.effects:
 			# Auch eine verzögerte Wirkung „während“ endet mit dem Ereignis.
 			if _is_during(entry, effect) and _effect_day(entry, effect) < entry.end_day:
@@ -649,6 +659,7 @@ func _start_entry(entry: ScheduleEntry, day: int, queue: Array[ScheduleEntry],
 		return
 	if entry.end_day > entry.day:
 		entry.state = ScheduleEntry.State.RUNNING
+		_running[entry.event.id] = entry
 		_plan_end(entry)
 	else:
 		entry.state = ScheduleEntry.State.OCCURRED
@@ -671,6 +682,7 @@ func _start_entry(entry: ScheduleEntry, day: int, queue: Array[ScheduleEntry],
 
 func _skip(entry: ScheduleEntry, day: int, kind: TimelineMessage.Kind, reason: String,
 		messages: Array[TimelineMessage]) -> void:
+	_uncount_day(entry)
 	entry.state = ScheduleEntry.State.SKIPPED
 	entry.note = reason
 	_emit(kind, day, entry, null, messages)
@@ -751,24 +763,45 @@ func _unmet_condition(event: TimelineEvent, day: int) -> String:
 ## erreicht, und der Tag liegt von jedem Termin des Ereignisses mindestens den Mindestabstand
 ## entfernt, in beide Richtungen, auch von einem, der erst noch geplant ist. Entfallene und
 ## abgesagte Termine zählen bei beidem nicht mit. Ein Mindestabstand von 0 prüft nichts.
+##
+## Dafür muss es nicht jeden Termin durchgehen: _counted_days hält die Tage, die zählen,
+## aufsteigend. Ihre Zahl ist die Zahl für die Höchstzahl. Der nächste Termin vor und nach dem Tag
+## steht direkt neben der Stelle, an die bsearch() den Tag einsortieren würde; liegen beide weit
+## genug weg, liegen es alle anderen auch.
 func _may_start_again(event: TimelineEvent, day: int) -> bool:
-	var counted := 0
-	for entry: ScheduleEntry in _entries_by_event.get(event.id, []):
-		if entry.state == ScheduleEntry.State.SKIPPED \
-				or entry.state == ScheduleEntry.State.CANCELLED:
-			continue
-		if event.min_gap_days > 0 and absi(day - entry.day) < event.min_gap_days:
-			return false
-		counted += 1
-	return event.max_occurrences <= 0 or counted < event.max_occurrences
+	var days: PackedInt32Array = _counted_days.get(event.id, PackedInt32Array())
+	if event.max_occurrences > 0 and days.size() >= event.max_occurrences:
+		return false
+	if event.min_gap_days <= 0:
+		return true
+	# Die erste Stelle mit einem Tag ≥ day; davor liegen nur frühere Tage.
+	var index := days.bsearch(day)
+	if index < days.size() and days[index] - day < event.min_gap_days:
+		return false
+	return index == 0 or day - days[index - 1] >= event.min_gap_days
 
 
 ## Der Termin des Ereignisses, der gerade läuft; null, wenn keiner läuft (FR-022).
 func _running_entry(event: TimelineEvent) -> ScheduleEntry:
-	for entry: ScheduleEntry in _entries_by_event.get(event.id, []):
-		if entry.state == ScheduleEntry.State.RUNNING:
-			return entry
-	return null
+	return _running.get(event.id)
+
+
+## Ein Termin zählt ab jetzt für Höchstzahl und Mindestabstand: neu angelegt oder verschoben.
+## Sein Tag kommt an seine Stelle in _counted_days.
+func _count_day(entry: ScheduleEntry) -> void:
+	var days: PackedInt32Array = _counted_days.get(entry.event.id, PackedInt32Array())
+	days.insert(days.bsearch(entry.day), entry.day)
+	# Zurückschreiben: So stimmt es, ob das Dictionary die Liste als Verweis hält oder als Kopie.
+	_counted_days[entry.event.id] = days
+
+
+## Ein geplanter Termin zählt nicht mehr, weil er entfällt oder abgesagt wird; beim Verschieben
+## zählt er danach mit seinem neuen Tag wieder. Stehen mehrere Termine am selben Tag, ist egal,
+## welcher Eintrag wegfällt; es bleibt dieselbe Liste von Tagen.
+func _uncount_day(entry: ScheduleEntry) -> void:
+	var days: PackedInt32Array = _counted_days[entry.event.id]
+	days.remove_at(days.bsearch(entry.day))
+	_counted_days[entry.event.id] = days
 
 
 ## Neue Meldung über einen Termin. Sie geht an die Liste dieses Aufrufs und ins Protokoll. Der

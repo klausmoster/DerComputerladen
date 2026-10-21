@@ -640,9 +640,10 @@ func _selected_statistic() -> EventStatistic:
 
 # --- Katalog ----------------------------------------------------------------------------------
 
-## Der Katalog, mit dem ein neuer Start jetzt rechnen würde, als Text: kanonisch geschrieben, dazu
-## die Kennungen, die without_faulty() wegen Fehlern auslässt. Wie im Simulator: Macht Klaus eine
-## Änderung rückgängig, ist der Text wieder derselbe, und der Hinweis verschwindet.
+## Der Katalog, mit dem ein neuer Start jetzt rechnen würde, als Text: sein Inhalt
+## (CatalogEditor.content_key()), dazu die Kennungen, die without_faulty() wegen Fehlern auslässt.
+## Wie im Simulator: Macht Klaus eine Änderung rückgängig, ist der Text wieder derselbe, und der
+## Hinweis verschwindet.
 func _catalog_key() -> String:
 	if not _has_catalog():
 		return ""
@@ -651,7 +652,7 @@ func _catalog_key() -> String:
 		if issue.severity == CatalogIssue.Severity.ERROR and not faulty.has(issue.event_id):
 			faulty.append(issue.event_id)
 	faulty.sort()
-	return "%s\n%s" % [editor.catalog.to_json(), ",".join(faulty)]
+	return "%s\n%s" % [editor.content_key(), ",".join(faulty)]
 
 
 ## Die Titel der Ereignisse, die im Katalog der Werkstatt stehen, aber nicht in der Statistik.

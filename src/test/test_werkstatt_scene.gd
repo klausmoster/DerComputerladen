@@ -7,8 +7,9 @@ extends GutTest
 ## ohne Spieluhr und Katalog anzufassen, und sein Protokoll ist das der Textausgabe.
 ##
 ## Jeder Test öffnet eine Kopie eines Test-Katalogs in einem eigenen Ordner unter user:// und setzt
-## eine eigene Sicherungsdatei, bevor die Szene in den Baum kommt; after_each() räumt auf. Der echte
-## Katalog und die echte Sicherungskopie bleiben unberührt.
+## eine eigene Sicherungsdatei und Einstellungsdatei, bevor die Szene in den Baum kommt;
+## after_each() räumt auf. Der echte Katalog, die echte Sicherungskopie und die echten
+## Einstellungen bleiben unberührt.
 ##
 ## Kein Test bestätigt das Schließen: get_tree().quit() beendete den ganzen Testlauf.
 
@@ -496,6 +497,86 @@ func test_umbenennen_im_formular_behaelt_die_auswahl() -> void:
 	assert_eq(werkstatt.editor.catalog.get_event("zeitungsartikel").conditions[0].event,
 		"reklamationen", "Die Bedingung zeigt auf die neue Kennung.")
 	assert_eq(_node(werkstatt, "%EventForm").get_input("id").text, "reklamationen")
+
+
+func test_liste_baut_nur_neu_wenn_sich_an_ihr_etwas_aendert() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var liste := _liste(werkstatt)
+	var erste := liste.get_root().get_child(0)
+
+	# Act: Ein neues Datum steht nicht in der Liste.
+	werkstatt.editor.set_event_field("intel_pentium", &"date", 3026)
+
+	# Assert: dieselben Zeilen, nicht neu gebaut (SC-011)
+	assert_same(liste.get_root().get_child(0), erste, "Ein neues Datum baut die Zeilen nicht neu.")
+
+	# Act und Assert: Ein neuer Titel steht drin; die Zeilen sind neu gebaut und sortiert.
+	werkstatt.editor.set_event_field("zeitungsartikel", &"title", "Am Anfang")
+	assert_eq(_titel(_node(werkstatt, "%EventList"))[0], "Am Anfang")
+
+
+func test_zeitstrahl_folgt_suche_art_und_kategorie_der_liste() -> void:
+	# Arrange: T074, catalog_minimal mit je einem Ereignis jeder Art in vier Kategorien
+	var werkstatt := await _werkstatt()
+	var liste: EventList = _node(werkstatt, "%EventList")
+	var zeitstrahl: TimelineView = _node(werkstatt, "%TimelineView")
+	var suche: LineEdit = liste.get_node("%Search")
+	var alle_zeilen := zeitstrahl.row_titles()
+	var alle_marken := zeitstrahl.marked_events()
+	assert_eq(zeitstrahl.filter_text(), "", "Ohne Filter kein Hinweis.")
+
+	# Act und Assert: Suche
+	suche.text = "pentium"
+	suche.text_changed.emit(suche.text)
+	assert_eq(zeitstrahl.marked_events(), PackedStringArray(["intel_pentium"]))
+	assert_eq(zeitstrahl.row_titles(), PackedStringArray(["Hardware"]))
+	assert_eq(zeitstrahl.filter_text(), "Filter: 1 von 5")
+	# Ein neuer Titel passt nicht mehr: weg aus Liste und Zeitstrahl, Rückgängig holt ihn zurück.
+	werkstatt.editor.set_event_field("intel_pentium", &"title", "Prozessor erscheint")
+	assert_eq([_titel(liste).size(), zeitstrahl.marked_events().size()], [0, 0])
+	werkstatt.editor.undo()
+	assert_eq(zeitstrahl.marked_events(), PackedStringArray(["intel_pentium"]))
+	suche.text = ""
+	suche.text_changed.emit(suche.text)
+
+	# Act und Assert: Art; „nur als Folge“ passt, hat aber keine Marke und keine Zeile.
+	_waehlen(liste.get_node("%KindFilter"), "über Wahrscheinlichkeit")
+	assert_eq(zeitstrahl.marked_events(), PackedStringArray(["reklamationswelle"]))
+	assert_eq(zeitstrahl.row_titles(), PackedStringArray(["Reklamation"]))
+	_waehlen(liste.get_node("%KindFilter"), "nur als Folge")
+	assert_eq(zeitstrahl.row_titles().size(), 0)
+	assert_eq(zeitstrahl.filter_text(), "Filter: 1 von 5", "Gezählt wird wie in der Liste.")
+	_waehlen(liste.get_node("%KindFilter"), "Alle Arten")
+
+	# Act und Assert: Kategorie
+	_waehlen(liste.get_node("%CategoryFilter"), "Lokal")
+	assert_eq(zeitstrahl.marked_events(), PackedStringArray(["neubaugebiet"]))
+	assert_eq(zeitstrahl.row_titles(), PackedStringArray(["Lokal"]))
+
+	# Act und Assert: Filter aufheben stellt alles wieder her.
+	_waehlen(liste.get_node("%CategoryFilter"), "Alle Kategorien")
+	assert_eq(zeitstrahl.row_titles(), alle_zeilen)
+	assert_eq(zeitstrahl.marked_events(), alle_marken)
+	assert_eq(zeitstrahl.filter_text(), "")
+
+
+func test_geloeschte_kategorie_im_filter_hebt_den_filter_auf() -> void:
+	# Arrange: eine neue, leere Kategorie im Filter; danach zeigt die Liste nichts.
+	var werkstatt := await _werkstatt()
+	var liste: EventList = _node(werkstatt, "%EventList")
+	var zeitstrahl: TimelineView = _node(werkstatt, "%TimelineView")
+	werkstatt.editor.add_category("Messen")
+	_waehlen(liste.get_node("%CategoryFilter"), "Messen")
+	assert_eq(zeitstrahl.filter_text(), "Filter: 0 von 5")
+
+	# Act: Die Kategorie fällt weg; im Filter gilt wieder „Alle Kategorien“.
+	assert_eq(werkstatt.editor.delete_category("messen"), OK)
+
+	# Assert: Liste und Zeitstrahl zeigen wieder alles.
+	assert_false(liste.is_filtered())
+	assert_eq(zeitstrahl.filter_text(), "")
+	assert_eq(_titel(liste).size(), 5)
 
 
 # --- Zebra in Liste und Prüfung (Phase 7) -----------------------------------------------------
@@ -1053,6 +1134,7 @@ func _werkstatt(fixture: String = MINIMAL, datei: String = "katalog.json") -> We
 	var werkstatt: Werkstatt = SZENE.instantiate()
 	werkstatt.catalog_path = ziel
 	werkstatt.editor.backup_path = ORDNER + "sicherung.json"
+	werkstatt.settings_path = ORDNER + "einstellungen.cfg"
 	add_child_autofree(werkstatt)
 	# _start() kommt per call_deferred() am Ende des ersten Bilds.
 	await wait_process_frames(2)

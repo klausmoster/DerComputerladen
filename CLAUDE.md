@@ -79,11 +79,13 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | Pfad | Inhalt |
 |---|---|
 | `src/` | Godot-Projekt (Projekt-Root ist `src/`, nicht das Repo-Root) |
-| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline`, `game_window`, Event-Resources |
-| `src/data/` | Seed-Daten in GDScript (`event_database.gd`) |
+| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline` (Hülle der Zeitleiste), `game_window` |
+| `src/core/timeline/` | Kern der Zeitleiste ohne Node: Datenklassen, Katalog, Prüfregeln, Fahrplan (`TimelineRun`), Vergleich, Statistik |
+| `src/data/` | Ereigniskatalog `event_catalog.json`, gepflegt mit der Zeitleisten-Werkstatt |
 | `src/ui/` | Theme des ganzen Spiels (`computerladen_theme.tres`) und Farben (`ui_palette.gd`) |
 | `src/scenes/title/` | Titelbildschirm, Hauptmenü, Hinweis |
 | `src/assets/` | Schriften (`fonts/`), gerasterte Bilder (`images/`), App-Symbol (`icon/`) |
+| `src/tools/werkstatt/` | Zeitleisten-Werkstatt (Editor, Zeitstrahl, Simulator, Statistik), Textausgabe `fahrplan_ausgabe.gd`, Proben unter `proben/`; vom Export ausgeschlossen |
 | `tools/raster/` | Python-Werkzeuge der Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol |
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
 | `docs/game_bible/` | Obsidian-Vault mit den Spieldaten (Komponenten, Preise, Prospekte) |
@@ -92,9 +94,14 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | `.claude/agents/` | Projekt-Agents, z.B. `godot-entwickler` für `[A]`-Aufgaben |
 
 `GameClock`, `Timeline` und `GameWindow` sind Autoloads (siehe `src/project.godot`).
-Architekturprinzip der Timeline: sie **wendet Effekte nicht an**, sondern meldet
-sie per Signal (`Timeline.effect_applied`) — Wirtschaft, Nachfrage und
-Reputation hängen sich später dran.
+Die Zeitleiste folgt dem Fahrplan-Modell: Aus dem Katalog entsteht je Spiel und
+Seed ein Fahrplan (`TimelineRun`, ein Kern ohne Node), den die Spieluhr abspielt.
+Das Autoload `Timeline` ist die Hülle darum und meldet per Signal:
+`event_fired`, `effect_applied`, `event_ended`, `effect_ended` und
+`entry_skipped`. Architekturprinzip: Die Timeline **wendet Effekte nicht an**,
+sie meldet sie nur — Wirtschaft, Nachfrage und Reputation hängen sich später dran.
+Ereignisse pflegt Klaus in der Zeitleisten-Werkstatt
+(`src/tools/werkstatt/werkstatt.tscn`), nicht im Code.
 
 ## game_bible — Datenkonventionen
 

@@ -953,3 +953,181 @@ Der Agent schreibt die Notizen, Claude trägt sie je Phase hier ein.
 - **Messung (SC-004):** 1.000 Spiele mit dem echten Katalog dauern headless 7,9 s, im Fenster vom
   Start bis 100 % 8,6 s. Ein Bild dauert dabei im Median 17 ms, 95 % unter 18 ms; das längste mit
   46 ms ist das, in dem „Starten“ gedrückt wird.
+
+## Phase 10
+
+### T068 Großer Katalog
+
+- **Ein Einmal-Skript ohne Zufall:** Ein Skript im Scratchpad (`extends SceneTree`, Aufruf mit
+  `-s`, nicht im Repo) baut 250 fixe Ereignisse und 250 über Wahrscheinlichkeit, je 25 in jeder
+  der zehn Kategorien, und schreibt sie mit `EventCatalog.write_file()` nach
+  `src/test/fixtures/catalog_500.json`. Jeder Wert folgt aus der Nummer i über feste Formeln, etwa
+  `0.01 + (i % 8) * 0.01` für die Chance. Ein `RandomNumberGenerator` mit festem Seed wäre auch
+  wiederholbar, hinge aber an Godots Zufallsverfahren. Zwei Läufe ergaben dieselbe Datei
+  (SHA-256 gleich); am Ende liest das Skript sie wieder, prüft sie (keine Meldung) und vergleicht
+  `to_json()` mit dem Text.
+- **Was drinsteht:** Dauern, verzögerte Wirkungen, „gilt nur während“, Zeitfenster über den ganzen
+  Zeitraum oder über 2 bis 7 Jahre mit Beginn mitten im Jahr, Höchstzahlen und Mindestabstände,
+  Folgeereignisse zu 50 % und Bedingungen „schon“ und „noch nicht eingetreten“. So läuft im Spiel
+  jeder Weg des Kerns; ein Spiel hat rund 940 Termine.
+- **Zeiten im Test:** `src/test/test_large_catalog.gd` misst jede Zeit mehrmals mit
+  `Time.get_ticks_usec()` und nimmt den Median. Ein Ausreißer nach oben, wenn der Rechner kurz
+  anderes tut, verschiebt ihn nicht; das Minimum wäre ruhiger, zeigte aber die bestmögliche Dauer
+  statt der gewöhnlichen. `gut.p()` schreibt die Werte in die Ausgabe: Prüfung 4,7 ms, Änderung
+  samt Prüfung 4,7 bis 5,1 ms, ein Spiel 89 ms. Die Grenzen bleiben die der Spec.
+- **Der Platzhalter zieht um:** Seit Phase 4 maß `test_catalog_editor.gd` die Änderung an einem
+  im Test erzeugten Katalog, mit dem Vermerk „catalog_500.json kommt erst mit T068“. Der Test
+  steht jetzt in `test_large_catalog.gd`: sechs Arten Änderung je fünfmal an verschiedenen
+  Ereignissen; Umbenennen und Löschen treffen Ereignisse, auf die ein Folgeereignis zeigt.
+- **Ganzzahl-Division:** `size() / 2` mit zwei `int` warnt mit `-d` („Integer division“), und
+  die Suite wäre nicht mehr still. `floori(size() / 2.0)` sagt, dass abgerundet werden soll, wie
+  schon `_first_index_from()` im Kern.
+
+### Schneller Kern
+
+- **Mitzählen statt Nachzählen:** `_may_start_again()` und `_running_entry()` in
+  `src/core/timeline/timeline_run.gd` gingen bei jedem Treffer alle Termine des Ereignisses durch.
+  Jetzt führt der Lauf zwei Nachschlagewerke mit: `_counted_days` hält je Ereignis die Tage der
+  Termine, die für Höchstzahl und Mindestabstand zählen, aufsteigend als `PackedInt32Array`, und
+  `_running` den einen Termin, der gerade läuft. Die Höchstzahl ist dann `days.size()`; für den
+  Mindestabstand genügen die beiden Nachbarn der Stelle, die `bsearch()` liefert.
+- **Eine Invariante pflegen:** Das geht nur, wenn jede Stelle, die einen Zustand ändert, die
+  Nachschlagewerke mitführt: `_add_entry()`, `_skip()`, `cancel_entry()` und `move_entry()` für
+  die Tage, `_start_entry()` und `_end_entries()` für den laufenden Termin. Eine Invariante ist eine
+  Aussage, die nach jedem Schritt stimmt, hier „`_counted_days` enthält genau die Tage der Termine,
+  die weder entfallen noch abgesagt sind“. Vergisst eine Stelle sie, rechnet der Lauf falsch,
+  ohne dass etwas abstürzt; deshalb die Gegenproben unten.
+- **Zurückschreiben:** `_count_day()` schreibt die geänderte Liste ins Dictionary zurück. Packed
+  Arrays werden in 4.7 zwar als Verweis weitergegeben (Phase 9), aber so hängt die Richtigkeit
+  nicht daran.
+- **Kein anderes Verhalten, dreifach belegt:** Die Textausgabe des echten Katalogs ist mit und ohne
+  `--protokoll` für die Seeds 1, 4711 und 99999 bytegleich. 288 Textausgaben aller Test-Kataloge
+  über drei Seeds gleichen denen einer Kopie des Projekts mit dem alten Kern im Scratchpad. Eine
+  Gegenprobe spielte alten und neuen Kern nebeneinander mit 37.225 zufälligen Eingriffen in
+  448 Läufen, ohne Abweichung; zwei absichtlich eingebaute Fehler ließen sie anschlagen.
+- **Messung:** Ein Spiel zu 50 % pro Monat (der Katalog von SC-008) 2,94 → 1,80 ms, SC-008 mit
+  1.000 Spielen 3,41 → 2,13 s, der echte Katalog 7,5 → 7,3 ms, catalog_500 90,5 → 88,8 ms. Dort
+  hat jedes Ereignis nur wenige Termine; die Zeit geht auf das Anlegen des Laufs (Kopie des
+  Katalogs und 250 Würfel, 33 ms) und auf `chance_info()` in den Würfelrunden.
+
+### Die Werkstatt mit 500 Ereignissen
+
+- **Erst messen:** Ein Skript im Scratchpad hat nach einer Änderung jeden Teil einzeln gestoppt,
+  im Fenster in Klaus' Größe. Vorher: Die Liste baute ihre 500 Zeilen zweimal neu, je 15 ms, einmal
+  nach `catalog_changed` und einmal nach `issues_changed`. Simulator und Statistik brauchten je
+  14 ms für `to_json()` im Vergleich „Katalog geändert“. Das Formular brauchte 14 ms, mit einer
+  Zielauswahl 26 bis 36 ms, der Zeitstrahl 8 ms und die Prüfung 5 ms.
+- **Liste:** `_fill_rows()` in `src/tools/werkstatt/event_list.gd` baut nur neu, wenn
+  `_rows_key()` anders ist, ein Text aus Suche, Filtern und je Ereignis Kennung, Titel, Art,
+  Kategorie und Zeichen. Ein Tree ist beim Neubau teuer: Jede Zelle bekommt ihren Text neu, und
+  beim Rollen zur gewählten Zeile misst er alle aus. Beim Sortieren wird jeder Titel einmal klein
+  geschrieben statt in jedem der rund 4.500 Vergleiche.
+- **Formular:** `OptionButton.fit_to_longest_item` ist in `_choice()` aus. Kommt ein gefüllter
+  OptionButton in den Baum, misst er sonst jeden Eintrag aus, um so breit zu werden wie der längste:
+  23,9 statt 1,8 ms bei 500 Einträgen (Probe). Er wurde dadurch auch so breit wie der längste
+  Titel, obwohl `clip_text` gesetzt war; das Formular bleibt jetzt gleich breit. Nur die Farbwahl
+  der Kategorien behält es, damit ihre Zeilen gleich breit untereinander stehen.
+- **Katalog geändert:** `CatalogEditor.content_key()` liefert den Inhalt als Text, genau so
+  unterscheidend wie `to_json()`, aber aus einem Zwischenspeicher. Ein Dictionary mit Objekten als
+  Schlüssel vergleicht nach der Identität: Es merkt sich je Kategorie und Ereignis seinen Text. Das
+  stimmt, weil der Editor ein Ereignis nie ändert, sondern durch eine Kopie ersetzt; was noch im
+  Katalog steht, hat noch seinen alten Inhalt.
+- **Zeitstrahl:** `_text_width()` merkt sich jede Breite. Godot misst einen Text, indem es ihn setzt
+  (shaping); das kostet bei 500 Titeln 3 ms je Neuaufbau, und die Achse misst in jedem Bild.
+- **Ergebnis** im Fenster, 1920 × 925 bei Faktor 2, Simulator und Statistik mit Lauf: Feldwechsel
+  140 → 41 ms, Loslassen nach dem Ziehen 112 → 38 ms, längstes Bild 147 bis 159 → 45 bis 46 ms. Beim
+  Ziehen selbst bleibt die Bildzeit bei 3 bis 4 ms, vorher wie nachher.
+- **Tests halten es fest:** `test_liste_baut_nur_neu_wenn_sich_an_ihr_etwas_aendert` (dieselbe
+  `TreeItem` nach einem neuen Datum),
+  `test_langer_titel_in_der_auswahl_macht_das_formular_nicht_breiter` und
+  `test_inhaltsschluessel_ist_so_genau_wie_die_kanonische_form`. In einer Kopie mit den alten
+  Fassungen von Liste und Formular scheitern die ersten beiden.
+- **Eine Abkürzung zu viel:** `EventList.select_event()` sollte `_highlight()` sparen, wenn die
+  Auswahl gleich bleibt. Ein Test fiel: Das Zebra malt beim Wählen einer höheren Zeile die alte
+  noch als gewählt, weil der Tree `item_selected` sendet, bevor er die alte Zeile abwählt. Bisher
+  übermalt das `_highlight()` nach jeder Auswahl. Die Abkürzung ist wieder draußen; sie hätte
+  3,5 ms gespart.
+
+### Die Werkstatt merkt sich ihre Teiler
+
+- **SplitContainer in 4.7:** `split_offsets` hat einen Wert je Teiler, ein `HSplitContainer` mit
+  drei Kindern also zwei. 0 ist die Lage aus den Size-Flags; je nachdem, welche Seite sich
+  ausdehnt, zählt der Wert vom Anfang oder vom Ende (Probe). Den zweiten Wert legt Godot erst beim
+  ersten Anordnen an; `_dragger_count()` in `src/tools/werkstatt/werkstatt.gd` zählt deshalb die
+  sichtbaren Kinder. `find_children("*", "SplitContainer", true, false)` findet mit
+  `owned = false` auch die Teiler in den Szenen von Simulator und Statistik.
+- **Begrenzen macht Godot:** Passt ein Wert nicht ins Fenster, ordnet der SplitContainer die Kinder
+  trotzdem so an, dass jedes seine Mindestgröße behält, und beim nächsten Ziehen rechnet er vom
+  begrenzten Wert aus weiter (Probe: aus [5000, 0] wurde beim Ziehen [676, −200]). Alle Bereiche der
+  Werkstatt haben 80 Pixel oder mehr Mindestgröße. Der Wert in der Datei bleibt bis dahin stehen;
+  wird das Fenster wieder größer, gilt wieder die alte Lage.
+- **ConfigFile:** `save_settings()` schreibt je Teiler einen Eintrag im Abschnitt `[teiler]`,
+  benannt nach seinem Pfad, etwa `Layout/Main=PackedInt32Array(420, -460)`. ConfigFile schreibt
+  Werte in Godots Textform, auch Packed Arrays, und liest sie mit Typ zurück. `get_value()` braucht
+  eine Vorgabe, sonst meldet es einen fehlenden Eintrag als Fehler.
+- **Still bei kaputter Datei:** `ConfigFile.load()` meldet eine kaputte Datei selbst mit „ERROR:
+  ConfigFile parse error …“. `_read_settings()` schaltet dafür kurz `Engine.print_error_messages`
+  ab, das genau für solche Fälle da ist; die Probe zeigte, dass dann auch kein Logger und damit
+  GUT etwas sieht. Danach gilt wieder der alte Wert.
+- **Entprellen mit einem Timer:** Ein SplitContainer sendet `dragged` bei jeder Mausbewegung.
+  `_on_split_dragged()` ruft `start()` des einmaligen `SettingsTimer` auf, und das beginnt die
+  Sekunde jedes Mal von vorn; gespeichert wird beim `timeout`, wenn eine Sekunde lang nichts mehr
+  gezogen wurde, und beim Schließen in `_quit()`.
+- **Tests:** `src/test/test_werkstatt_settings.gd` setzt `settings_path` wie `backup_path` auf
+  einen Testordner. Die drei Testdateien, die die ganze Werkstatt bauen, setzen ihn jetzt auch;
+  sonst läse jeder Test Klaus' echte Lage. Headless ist das Fenster 64 × 64 Pixel. Die Tests setzen
+  deshalb die Anker der Werkstatt oben links und geben ihr selbst eine Größe; mit Ankern über das
+  ganze Fenster legte Godot die Größe nach dem Fenster fest und warnte.
+
+### Zeittests ohne Wackeln
+
+- **Was wackelte:** `test_starten_rechnet_in_haeppchen_und_zeigt_das_ergebnis` in
+  `src/test/test_statistics_panel.gd` verlangte nach dem ersten Häppchen von 15 ms ein bis 39 von
+  40 Spielen und ein Bild später mehr. Wie viele Spiele in 15 ms fertig werden, hängt aber am
+  Rechner und daran, was er nebenher tut; einmal war es keins. Auf einem viel schnelleren Rechner
+  wären es alle 40 gewesen.
+- **Was der Test jetzt verlangt:** 200 Spiele, rund das Zwanzigfache eines Häppchens, damit
+  „Starten“ sicher zurückkehrt, bevor alle fertig sind. Danach wartet `wait_until()` bis zu 10 s,
+  bis weitere Spiele fertig sind, und am Ende sind es alle 200. Eine Zahl für ein einzelnes
+  Häppchen steht nirgends mehr.
+- **Ebenso:** `test_abbrechen_zeigt_die_fertigen_spiele_samt_ihrer_zahl` wartet mit
+  `wait_until()`, bis mindestens ein Spiel fertig ist, statt genau zwei Bilder. In
+  `test_run_for_haelt_sein_budget_ungefaehr_ein` (`test_timeline_statistics.gd`) gilt „nie vor
+  dem Budget“ weiter für jedes Häppchen, „höchstens ein Schritt mehr“ aber für den Median aus
+  sieben. Hält das Betriebssystem den Prozess mitten in einem Häppchen an, wird nur dieses länger.
+  Dass Spiele fertig werden, prüft eine begrenzte Schleife statt „in 75 ms“.
+- **Probe unter Last:** Beide Dateien liefen auf allen acht Kernen voll ausgelastet zweimal grün.
+  Die alte Fassung lief so allerdings auch viermal grün; ihren einen Fehlschlag kann man nicht auf
+  Abruf erzeugen. Die neue hängt nur noch an Reserven vom Zwanzigfachen und mehr.
+
+### T074 Der Zeitstrahl folgt den Filtern der Liste
+
+- **Die Regel an einer Stelle:** `EventList._passes()` in `src/tools/werkstatt/event_list.gd`
+  entscheidet, ob ein Ereignis durch Suche, Art und Kategorie kommt. Die Zeilen der Liste nutzen
+  sie, und nach außen bietet die Liste sie als `passes(event)` an. Dazu kommen `is_filtered()` und
+  das Signal `filter_changed`.
+- **Eine Methode als Callable:** Die Werkstatt reicht in `_on_list_filter_changed()` die Methode
+  selbst weiter: `_timeline_view.event_filter = _event_list.passes`. `_event_list.passes` ohne
+  Klammern ist ein `Callable`, ein Verweis auf Methode und Objekt. Der Zeitstrahl ruft
+  `event_filter.call(event)` je Ereignis beim Neuaufbau und kennt die Liste dabei nicht. Weil er bei
+  jedem Neuaufbau neu fragt, verschwindet ein Ereignis mit einem Titel, der nicht mehr passt, nach
+  `catalog_changed` von selbst. Ohne Filter bekommt er `Callable()`, ein leeres; `is_valid()` ist
+  dann falsch, und er zeigt alles wie bisher, auch leere Zeilen für den Doppelklick.
+- **Eine Eigenschaft mit Setter:** `event_filter` hat einen `set`-Block, der `refresh()` aufruft;
+  wer den Filter setzt, muss nicht ans Neuzeichnen denken. So arbeiten im Zeitstrahl schon
+  `visible_from` und `days_per_pixel`.
+- **Der Hinweis:** Gefiltert liegt unter der Achse ein Streifen von 22 Pixeln. Links unter den
+  Zoom-Knöpfen steht „Filter: 11 von 500“ in gedämpftem Text (`gehaeuse-dunkel` auf `papier`, die
+  Rolle der `MutedLabel`), darunter eine Linie in der Farbe des Rasters. Ins Feld der Zoom-Knöpfe
+  selbst passt keine Zeile mehr, es ist so hoch wie die Achse. `_rows_top()` sagt allen Stellen,
+  wo die Zeilen beginnen: Rollen, Treffer, Raster, Leiste. Der Streifen deckt beim Rollen zu, was
+  unter ihn gerät, wie die Achse, und hat einen eigenen Hinweis beim Überfahren.
+- **Was gezählt wird:** Gezählt wird wie in der Liste, auch Ereignisse „nur als Folge“. Zeilen
+  bleiben nur, wenn sie eine Marke haben; ein passendes Ereignis „nur als Folge“ hat keine. Die
+  Spalte der Kategorien bleibt so breit wie ohne Filter, sonst spränge die Zeitfläche bei jedem
+  Tastendruck.
+- **Kategorie im Filter gelöscht:** Dann gilt in der Liste wieder „Alle Kategorien“, und
+  `refresh()` meldet `filter_changed`, damit der Zeitstrahl nicht weiter filtert.
+- **Messung** mit catalog_500 im Fenster bis zum nächsten Bild: Kategorie wählen 8,7 ms, ein
+  Zeichen tippen 5,0 ms (höchstens 7,3), zurück auf „Alle Kategorien“ 20,7 ms; dort baut die Liste
+  alle 500 Zeilen neu.

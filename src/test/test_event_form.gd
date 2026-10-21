@@ -308,6 +308,25 @@ func test_wirkung_hinzufuegen_und_ziel_eingeben() -> void:
 	assert_eq(_editor.catalog.get_event("intel_pentium").effects[2].target, "maus")
 
 
+func test_langer_titel_in_der_auswahl_macht_das_formular_nicht_breiter() -> void:
+	# Arrange: Die Reklamationswelle hat ein Folgeereignis; zur Wahl stehen die Ereignisse, die
+	# Folge sein dürfen, darunter das Neubaugebiet.
+	_formular.show_event("reklamationswelle")
+	var vorher := _formular.get_combined_minimum_size().x
+
+	# Act
+	_editor.set_event_field("neubaugebiet", &"title", "Ein sehr langer Titel ".repeat(12))
+	await wait_process_frames(1)
+
+	# Assert: Der lange Titel steht zur Wahl, wird aber abgeschnitten (clip_text).
+	var auswahl: OptionButton = _formular.get_input("follow_ups[0].target")
+	var texte := []
+	for i in auswahl.item_count:
+		texte.append(auswahl.get_item_text(i))
+	assert_true(texte.any(func(text: String) -> bool: return text.begins_with("Ein sehr lang")))
+	assert_eq(_formular.get_combined_minimum_size().x, vorher, "Das Formular bleibt so breit.")
+
+
 # --- focus_field ------------------------------------------------------------------------------
 
 func test_focus_field_findet_felder_auch_in_den_listen() -> void:

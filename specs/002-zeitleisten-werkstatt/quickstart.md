@@ -94,6 +94,7 @@ Szene noch die Pixelschrift des Spiels; die Werkstatt setzt Open Sans erst beim 
 | Katalogdatei vorübergehend umbenennen, Werkstatt starten | Angebot, einen leeren Katalog anzulegen; geschrieben wird erst beim Speichern | Edge Case |
 | Ungespeicherte Änderung, 2 Minuten warten, Werkstatt im Terminal mit `pkill -9 -f werkstatt.tscn` hart beenden, neu starten | Angebot, die Sicherungskopie zu übernehmen, mit beiden Zeiten; danach ist die Änderung da | FR-050 |
 | Bei liegender Sicherungskopie die Werkstatt mit `-- --katalog res://test/fixtures/catalog_minimal.json` starten | keine Übernahme angeboten, ein Hinweis nennt den Pfad der Kopie | R23 |
+| Alle Teiler ziehen, schließen, neu starten; dann das Fenster verkleinern | die Teiler stehen wie zuletzt; jeder Bereich bleibt sichtbar (ab Phase 10) | Wunsch von Klaus |
 
 ### 4.2 Kalender und Dauer (ab Phase 5)
 
@@ -120,6 +121,7 @@ Szene noch die Pixelschrift des Spiels; die Werkstatt setzt Open Sans erst beim 
 | Auf dem Trackpad mit zwei Fingern waagerecht und senkrecht wischen, dann kneifen | Wischen verschiebt die Jahre bzw. rollt die Zeilen; Kneifen zoomt um den Mauszeiger | R16 |
 | Mit Cmd+Mausrad, mit Kneifen oder mit „+“ oben links hineinzoomen, dann „Alles“ | bis zu einem Monat mit Tagesstrichen, die waagerechte Leiste bekommt einen Griff; „Alles“ zeigt wieder 1985 bis 1999 | US4, Szenario 6 |
 | Weihnachtsgeschäft ziehen | geht nicht, Hinweis „nur im Formular änderbar“ | FR-039 |
+| In der Liste „Pentium“ suchen, dann die Kategorie Hardware wählen, dann beides aufheben | der Zeitstrahl zeigt nur die passenden Ereignisse und „Filter: N von M“; ohne Filter wieder alles | T074 |
 | Zwei Ereignisse derselben Kategorie auf denselben Tag legen | gestapelt untereinander, Titel nur bei Platz | FR-037 |
 | Titel und Farben ansehen | Titel in Textfarbe neben der Marke, Kategorien gut unterscheidbar | FR-029, R14 |
 

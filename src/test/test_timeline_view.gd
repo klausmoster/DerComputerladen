@@ -642,6 +642,140 @@ func test_hinweis_nennt_titel_art_datum_oder_fenster_und_chance() -> void:
 	assert_eq(frei, "", "Auf freier Fläche kein Hinweis.")
 
 
+# --- Filter der Liste (T074) -----------------------------------------------------------------
+#
+# Die Regel kennt nur die Liste; der Zeitstrahl fragt event_filter je Ereignis. Die Tests geben
+# ihm deshalb eigene kleine Regeln. Wie die Liste ihre Regel liefert, prüft test_werkstatt_scene.gd.
+
+
+func test_filter_zeigt_nur_passende_marken_und_zeilen_mit_treffern() -> void:
+	# Arrange: ohne Filter alle vier Zeilen
+	assert_eq(_zeitstrahl.row_titles(),
+		PackedStringArray(["Hardware", "Lokal", "Reklamation", "Kalender"]))
+
+	# Act: nur Hardware
+	_zeitstrahl.event_filter = func(ereignis: TimelineEvent) -> bool:
+		return ereignis.category == "hardware"
+
+	# Assert: nur die passenden Marken, nur die Zeile mit Treffern, der Hinweis zählt mit.
+	assert_eq(_zeitstrahl.row_titles(), PackedStringArray(["Hardware"]))
+	assert_eq(_zeitstrahl.marked_events(),
+		PackedStringArray(["intel_486", "intel_pentium", "pentium_presse"]))
+	assert_true(_zeitstrahl.is_filtered())
+	assert_eq(_zeitstrahl.filter_text(), "Filter: 3 von 9")
+
+
+func test_ohne_filter_bleiben_leere_zeilen_mit_filter_nicht() -> void:
+	# Arrange: eine Kategorie ohne Ereignis, nur im Speicher
+	_editor.add_category("Leer")
+	_zeitstrahl.refresh()
+	assert_has(_zeitstrahl.row_titles(), "Leer",
+		"Ohne Filter bleibt die leere Zeile; ein Doppelklick dort legt ein Ereignis an.")
+
+	# Act: ein Filter, der jedes Ereignis durchlässt
+	_zeitstrahl.event_filter = func(_ereignis: TimelineEvent) -> bool: return true
+
+	# Assert: Gefiltert zählen nur Zeilen mit Marke.
+	assert_does_not_have(_zeitstrahl.row_titles(), "Leer")
+	assert_eq(_zeitstrahl.row_titles().size(), 4)
+	assert_eq(_zeitstrahl.filter_text(), "Filter: 9 von 9")
+
+	# Act und Assert: Filter aufheben stellt alles wieder her.
+	_zeitstrahl.event_filter = Callable()
+	assert_has(_zeitstrahl.row_titles(), "Leer")
+	assert_eq(_zeitstrahl.row_titles().size(), 5)
+	assert_false(_zeitstrahl.is_filtered())
+	assert_eq(_zeitstrahl.filter_text(), "", "Ohne Filter kein Hinweis.")
+
+
+func test_ohne_kategorie_nur_wenn_dort_etwas_passt() -> void:
+	# Arrange: Der Pentium bekommt eine Kategorie, die es nicht gibt (V05).
+	_editor.set_event_field("intel_pentium", &"category", "gibt_es_nicht")
+	_zeitstrahl.refresh()
+	assert_has(_zeitstrahl.row_titles(), "Ohne Kategorie")
+	var spalte := _zeitstrahl.time_rect().position.x
+
+	# Act: ein Filter ohne den Pentium
+	_zeitstrahl.event_filter = func(ereignis: TimelineEvent) -> bool:
+		return ereignis.id != "intel_pentium"
+
+	# Assert: Die Zeile fällt weg; die Spalte der Kategorien bleibt so breit, damit nichts springt.
+	assert_does_not_have(_zeitstrahl.row_titles(), "Ohne Kategorie")
+	assert_eq(_zeitstrahl.time_rect().position.x, spalte)
+
+	# Act und Assert: ein Filter nur mit dem Pentium
+	_zeitstrahl.event_filter = func(ereignis: TimelineEvent) -> bool:
+		return ereignis.id == "intel_pentium"
+	assert_eq(_zeitstrahl.row_titles(), PackedStringArray(["Ohne Kategorie"]))
+
+
+func test_hinweis_steht_im_streifen_unter_der_achse() -> void:
+	# Arrange
+	var vorher := _mitte("intel_pentium")
+	watch_signals(_zeitstrahl)
+
+	# Act
+	_zeitstrahl.event_filter = func(ereignis: TimelineEvent) -> bool:
+		return ereignis.category == "hardware"
+
+	# Assert: Die Zeilen rücken um den Streifen nach unten.
+	assert_eq(_mitte("intel_pentium"), vorher + Vector2(0.0, TimelineView.FILTER_HEIGHT))
+	# Im Streifen liegt keine Marke, ein Doppelklick legt dort nichts an, und der Hinweis über
+	# ihm erklärt den Filter.
+	var streifen := Vector2(vorher.x, TimelineView.AXIS_HEIGHT + TimelineView.FILTER_HEIGHT / 2.0)
+	assert_eq(_zeitstrahl.event_at(streifen), "")
+	_doppelklick(streifen)
+	assert_signal_not_emitted(_zeitstrahl, "create_requested")
+	assert_eq(_zeitstrahl._get_tooltip(streifen), TimelineView.FILTER_TOOLTIP)
+
+
+func test_auswahl_und_ziehen_gehen_auch_gefiltert() -> void:
+	# Arrange: nur Hardware, bei vier Pixeln je Tag ab dem 01.03.1993
+	_zeitstrahl.event_filter = func(ereignis: TimelineEvent) -> bool:
+		return ereignis.category == "hardware"
+	_zeitstrahl.days_per_pixel = 0.25
+	_zeitstrahl.visible_from = _tag(1993, 3, 1)
+	var start := _mitte("intel_pentium")
+	var ziel := Vector2(_zeitstrahl.day_to_x(_tag(1993, 4, 15) + 0.5), start.y)
+	watch_signals(_zeitstrahl)
+
+	# Act
+	_druecken(start)
+	_bewegen(start + Vector2(20.0, 0.0))
+	_bewegen(ziel)
+	_loslassen(ziel)
+
+	# Assert: wie ohne Filter; ein Klick wählt, das Loslassen meldet genau einmal.
+	assert_signal_emitted_with_parameters(_zeitstrahl, "event_clicked", ["intel_pentium"])
+	assert_signal_emit_count(_zeitstrahl, "event_moved", 1)
+	assert_signal_emitted_with_parameters(_zeitstrahl, "event_moved",
+		["intel_pentium", &"date", _tag(1993, 4, 15)])
+
+	# Act und Assert: Der Katalog nimmt es an; die Marke steht am neuen Tag, der Filter gilt weiter.
+	_editor.set_event_field("intel_pentium", &"date", _tag(1993, 4, 15))
+	_zeitstrahl.refresh()
+	assert_almost_eq(_mitte("intel_pentium").x, ziel.x, 1.0)
+	assert_eq(_zeitstrahl.filter_text(), "Filter: 3 von 9")
+	# Ein gewähltes Ereignis, das nicht passt, ist hier nicht zu sehen, wie in der Liste.
+	_zeitstrahl.select_event("stadtfest")
+	assert_eq(_zeitstrahl.mark_rects("stadtfest").size(), 0)
+
+
+func test_ereignis_das_nicht_mehr_passt_verschwindet() -> void:
+	# Arrange: eine Regel über den Titel, wie die Suche der Liste
+	_zeitstrahl.event_filter = func(ereignis: TimelineEvent) -> bool:
+		return ereignis.title.to_lower().contains("pentium")
+	assert_eq(_zeitstrahl.marked_events(), PackedStringArray(["intel_pentium", "pentium_presse"]))
+
+	# Act: ein neuer Titel; danach baut die Werkstatt den Zeitstrahl neu (catalog_changed).
+	_editor.set_event_field("pentium_presse", &"title", "Presse zum neuen Prozessor")
+	_zeitstrahl.refresh()
+
+	# Assert
+	assert_eq(_zeitstrahl.marked_events(), PackedStringArray(["intel_pentium"]))
+	assert_eq(_zeitstrahl.filter_text(), "Filter: 1 von 9")
+
+
 # --- Helfer -----------------------------------------------------------------------------------
 
 func _tag(jahr: int, monat: int, tag: int) -> int:

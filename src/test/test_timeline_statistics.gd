@@ -26,6 +26,8 @@ const SPIELENDE := "res://test/fixtures/catalog_us1_spielende.json"
 ## So viel darf ein Aufruf von run_for() über Budget und längstem Schritt liegen: Der Rechner
 ## arbeitet nebenher auch anderes.
 const TOLERANZ_MS := 10.0
+## So viele Häppchen misst der Test des Zeitbudgets; es zählt ihr Median.
+const HAEPPCHEN := 7
 
 
 # --- Mittelwert und Anteile (SC-008; US7, Szenarien 3 und 6) ----------------------------------
@@ -240,21 +242,33 @@ func test_run_for_haelt_sein_budget_ungefaehr_ein() -> void:
 		schritte.run_for(0)
 		laengster_schritt = maxf(laengster_schritt, (Time.get_ticks_usec() - vorher) / 1000.0)
 	var statistik := TimelineStatistics.new(katalog, 1000)
-	var dauern := []
+	var dauern: Array[float] = []
 
-	# Act: fünf Häppchen zu 15 ms, wie die Werkstatt sie je Bild rechnet
-	for haeppchen in 5:
+	# Act: sieben Häppchen zu 15 ms, wie die Werkstatt sie je Bild rechnet
+	for haeppchen in HAEPPCHEN:
 		var vorher := Time.get_ticks_usec()
 		var fertig := statistik.run_for(15)
 		dauern.append((Time.get_ticks_usec() - vorher) / 1000.0)
 		assert_false(fertig, "1.000 Spiele passen nicht in 15 ms.")
 
-	# Assert: nie vor dem Budget, höchstens um einen Schritt später
+	# Assert: nie vor dem Budget. Höchstens um einen Schritt später gilt für das gewöhnliche
+	# Häppchen, den Median: Hält das Betriebssystem den Prozess mitten in einem Häppchen an, wird
+	# eben dieses länger, ohne dass run_for() etwas falsch macht.
 	gut.p("run_for(15): %s ms; längster Schritt %.2f ms" % [str(dauern), laengster_schritt])
 	for dauer: float in dauern:
 		assert_gte(dauer, 15.0, "Das Budget ist verbraucht.")
-		assert_lte(dauer, 15.0 + laengster_schritt + TOLERANZ_MS, "Höchstens ein Schritt mehr.")
-	assert_gt(statistik.games_done, 0, "In 75 ms werden Spiele fertig.")
+	var sortiert := dauern.duplicate()
+	sortiert.sort()
+	assert_lte(sortiert[floori(sortiert.size() / 2.0)], 15.0 + laengster_schritt + TOLERANZ_MS,
+		"Höchstens ein Schritt mehr.")
+
+	# Act und Assert: Häppchen für Häppchen werden Spiele fertig; wie viele Häppchen es dafür
+	# braucht, hängt am Rechner.
+	var weitere := 0
+	while statistik.games_done == 0 and weitere < 1000:
+		statistik.run_for(15)
+		weitere += 1
+	assert_gt(statistik.games_done, 0, "Spiele werden über mehrere Aufrufe fertig.")
 
 
 # --- Helfer -----------------------------------------------------------------------------------

@@ -85,35 +85,42 @@ func test_anzahl_nimmt_ziffern_bis_100000_mit_tausenderpunkt() -> void:
 # --- Rechnen (US7, Szenarien 1 und 2) ---------------------------------------------------------
 
 func test_starten_rechnet_in_haeppchen_und_zeigt_das_ergebnis() -> void:
-	# Arrange
+	# Arrange: 200 Spiele brauchen mit catalog_minimal rund 360 ms Rechenzeit, das Zwanzigfache
+	# eines Häppchens von 15 ms. Wie viele Spiele ein Häppchen schafft, prüft der Test nicht: Das
+	# hängt am Rechner und daran, was er nebenher tut; unter Last wird im ersten auch keins fertig.
 	var werkstatt := await _werkstatt()
 	var panel := _statistik(werkstatt)
-	_anzahl(panel, "40")
+	_anzahl(panel, "200")
 
 	# Act: Das erste Häppchen rechnet „Starten“ selbst.
 	_druecken(panel, "%StartButton")
 
-	# Assert: Es läuft, und dazwischen bekommt die Werkstatt ihre Bilder (R17).
+	# Assert: Es läuft noch, und dazwischen bekommt die Werkstatt ihre Bilder (R17).
 	var fortschritt: ProgressBar = panel.get_node("%Progress")
 	var erstes := panel.statistics.games_done
-	assert_true(panel.is_running())
-	assert_between(erstes, 1, 39, "Ein Häppchen von 15 ms reicht nicht für 40 Spiele.")
-	assert_eq([fortschritt.max_value, fortschritt.value], [40.0, float(erstes)])
-	assert_string_contains(panel.get_node("%ProgressLabel").text, "von 40 Spielen")
+	assert_true(panel.is_running(), "„Starten“ kehrt zurück, bevor alle Spiele fertig sind.")
+	assert_lt(erstes, 200)
+	assert_eq([fortschritt.max_value, fortschritt.value], [200.0, float(erstes)])
+	assert_string_contains(panel.get_node("%ProgressLabel").text, "von 200 Spielen")
 	assert_true(panel.get_node("%StartButton").disabled)
 	assert_false(panel.get_node("%CancelButton").disabled)
 	assert_false(panel.get_node("%CountEdit").editable, "Die Anzahl gilt erst beim nächsten Start.")
-	await wait_process_frames(1)
-	assert_gt(panel.statistics.games_done, erstes, "Ein Bild später ist sie weiter.")
+
+	# Act und Assert: Nach einigen Bildern ist sie weiter, und der Balken zeigt den Stand.
+	var weiter: bool = await wait_until(func() -> bool:
+		return panel.statistics.games_done > erstes, 10.0)
+	assert_true(weiter, "Bild für Bild werden weitere Spiele fertig.")
+	assert_eq(fortschritt.value, float(panel.statistics.games_done))
 
 	# Act
 	await _bis_fertig(panel)
 
 	# Assert: 100 % und eine Zeile je Ereignis nach Kennung; „–“ ohne Obergrenze (FR-044)
-	assert_eq(fortschritt.value, 40.0)
-	assert_string_starts_with(panel.get_node("%ProgressLabel").text, "100 % · 40 von 40 Spielen")
+	assert_eq(panel.statistics.games_done, 200)
+	assert_eq(fortschritt.value, 200.0)
+	assert_string_starts_with(panel.get_node("%ProgressLabel").text, "100 % · 200 von 200 Spielen")
 	assert_string_starts_with(panel.get_node("%ResultLabel").text,
-		"Ergebnis über 40 Spiele, Seeds 1 bis 40, ohne Eingriffe")
+		"Ergebnis über 200 Spiele, Seeds 1 bis 200, ohne Eingriffe")
 	var zeilen := _zeilen(panel)
 	assert_eq(zeilen.size(), 5)
 	assert_eq(zeilen[0], [PENTIUM, "1,00", "1", "1", "0,0 %", "–"], "fix: keine Obergrenze")
@@ -150,11 +157,13 @@ func test_ergebnis_im_zebra_mit_auswahl_in_petrol() -> void:
 
 
 func test_abbrechen_zeigt_die_fertigen_spiele_samt_ihrer_zahl() -> void:
-	# Arrange: die Vorgabe, 1.000 Spiele
+	# Arrange: die Vorgabe, 1.000 Spiele. Abgebrochen wird, sobald mindestens eines fertig ist;
+	# wie viele Bilder das dauert, hängt am Rechner.
 	var werkstatt := await _werkstatt()
 	var panel := _statistik(werkstatt)
 	_druecken(panel, "%StartButton")
-	await wait_process_frames(2)
+	var eines: bool = await wait_until(func() -> bool: return panel.statistics.games_done > 0, 10.0)
+	assert_true(eines, "Ein Spiel ist fertig.")
 
 	# Act
 	_druecken(panel, "%CancelButton")
@@ -366,6 +375,7 @@ func _werkstatt(fixture: String = MINIMAL) -> Werkstatt:
 	var werkstatt: Werkstatt = SZENE.instantiate()
 	werkstatt.catalog_path = ziel
 	werkstatt.editor.backup_path = ORDNER + "sicherung.json"
+	werkstatt.settings_path = ORDNER + "einstellungen.cfg"
 	add_child_autofree(werkstatt)
 	await wait_process_frames(2)
 	return werkstatt

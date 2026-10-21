@@ -148,6 +148,10 @@ unique_name_in_owner = true
 wait_time = 120.0
 autostart = true
 
+[node name="SettingsTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
+
 [node name="CloseDialog" type="ConfirmationDialog" parent="."]
 unique_name_in_owner = true
 title = "Werkstatt schließen"

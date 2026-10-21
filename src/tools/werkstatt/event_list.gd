@@ -18,6 +18,9 @@ signal event_selected(id: String)
 signal event_created(id: String)
 ## Klaus will das gewählte Ereignis löschen; die Werkstatt fragt nach und nennt die Verweise.
 signal delete_requested(id: String)
+## Suche, Art oder Kategorie haben sich geändert, also auch, welche Ereignisse durchkommen. Die
+## Werkstatt gibt den Filter dann an den Zeitstrahl weiter (T074).
+signal filter_changed()
 
 enum Column { MARK, TITLE, KIND }
 
@@ -41,6 +44,10 @@ var _id_edited := false
 var _new_day := -1
 ## Streifen, Auswahl und Überfahren der Liste.
 var _zebra: Zebra
+## Was die Zeilen gerade zeigen, als ein Text (_rows_key()). Nach jeder Änderung kommen refresh()
+## und show_issues(); ist der Text derselbe, bleiben die Zeilen stehen. Mit 500 Ereignissen spart
+## das je Änderung zwei Neubauten von je rund 15 ms (SC-011).
+var _shown_rows := ""
 
 @onready var _search: LineEdit = %Search
 @onready var _kind_filter: OptionButton = %KindFilter
@@ -81,9 +88,9 @@ func _ready() -> void:
 		_kind_filter.add_item(label)
 	for label in TimelineEvent.KIND_LABELS:
 		_new_kind.add_item(label)
-	_search.text_changed.connect(func(_text: String) -> void: _fill_rows())
-	_kind_filter.item_selected.connect(func(_index: int) -> void: _fill_rows())
-	_category_filter.item_selected.connect(func(_index: int) -> void: _fill_rows())
+	_search.text_changed.connect(func(_text: String) -> void: _on_filter_changed())
+	_kind_filter.item_selected.connect(func(_index: int) -> void: _on_filter_changed())
+	_category_filter.item_selected.connect(func(_index: int) -> void: _on_filter_changed())
 	_tree.item_selected.connect(_on_item_selected)
 	%NewButton.pressed.connect(open_new_dialog)
 	_duplicate_button.pressed.connect(_on_duplicate_pressed)
@@ -97,10 +104,25 @@ func _ready() -> void:
 	_update_buttons()
 
 
-## Baut Filter und Zeilen aus dem aktuellen Katalog neu, etwa nach catalog_changed.
+## Baut Filter und Zeilen aus dem aktuellen Katalog neu, etwa nach catalog_changed. Gibt es die
+## Kategorie im Filter nicht mehr, gilt wieder „Alle Kategorien“, und filter_changed meldet das.
 func refresh() -> void:
-	_fill_category_choices()
+	var lost := _fill_category_choices()
 	_fill_rows()
+	if lost:
+		filter_changed.emit()
+
+
+## Ob gerade gefiltert wird: Im Suchfeld steht etwas, oder Art oder Kategorie sind gewählt.
+func is_filtered() -> bool:
+	return not _query().is_empty() or _kind_filter.selected > 0 \
+		or not _chosen_category().is_empty()
+
+
+## Ob [param event] durch Suche und Filter kommt, nach derselben Regel wie die Zeilen der Liste.
+## Der Zeitstrahl fragt hier, statt selbst zu filtern (T074); ohne Filter kommt jedes durch.
+func passes(event: TimelineEvent) -> bool:
+	return _passes(event, _query(), _kind_filter.selected - 1, _chosen_category())
 
 
 ## Zeigt an den Zeilen die schwerste Meldung je Ereignis, nach issues_changed.
@@ -143,7 +165,15 @@ func open_new_dialog(kind: TimelineEvent.Kind = TimelineEvent.Kind.FIXED, catego
 
 # --- Zeilen -----------------------------------------------------------------------------------
 
+## Baut die Zeilen neu, aber nur, wenn sie danach etwas anderes zeigten als jetzt. Ein Tree baut
+## neue Zeilen nicht billig: Jede Zelle setzt ihren Text neu, und spätestens beim Rollen zur
+## gewählten Zeile muss er jeden davon ausmessen. Das neue Datum eines Ereignisses ändert an der
+## Liste nichts, ein neuer Titel oder ein neuer Fehler schon.
 func _fill_rows() -> void:
+	var key := _rows_key()
+	if key == _shown_rows:
+		return
+	_shown_rows = key
 	_syncing = true
 	_zebra.forget()
 	_tree.clear()
@@ -155,30 +185,73 @@ func _fill_rows() -> void:
 	_highlight()
 
 
+## Alles, wovon die Zeilen abhängen, in einem Text: Suche, Filter und je Ereignis Kennung, Titel,
+## Art, Kategorie und das Zeichen für Fehler oder Warnung. Die Zeilen zeigen davon Titel, Art,
+## Zeichen und im Hinweis die Kennung; nach der Kategorie wird gefiltert, nach Titel und Kennung
+## sortiert. Gleicher Text heißt also gleiche Zeilen. Das Trennzeichen \u001f kommt in keinem
+## Titel vor, den jemand eintippt.
+func _rows_key() -> String:
+	if editor == null or editor.catalog == null:
+		return "-"
+	var parts := PackedStringArray([_search.text, str(_kind_filter.selected),
+		_chosen_category()])
+	for event in editor.catalog.events:
+		parts.append("%s\u001f%s\u001f%d\u001f%s\u001f%d" % [event.id, event.title, event.kind,
+			event.category, _severity_by_event.get(event.id, -1)])
+	return "\n".join(parts)
+
+
 ## Die Ereignisse, die Suche und Filter durchlassen, nach Titel sortiert, bei gleichem Titel
 ## nach Kennung.
 func _visible_events() -> Array[TimelineEvent]:
-	var query := _search.text.strip_edges().to_lower()
+	var query := _query()
 	var kind := _kind_filter.selected - 1
-	var category := ""
-	if _category_filter.selected > 0:
-		category = _category_filter.get_item_metadata(_category_filter.selected)
+	var category := _chosen_category()
 	var result: Array[TimelineEvent] = []
+	# Die Titel klein, einmal je Ereignis: Der Vergleich beim Sortieren läuft bei 500 Ereignissen
+	# rund 4.500-mal, und to_lower() in jedem Vergleich kostete mehr als das ganze Sortieren sonst.
+	var lowered := {}
 	for event in editor.catalog.events:
-		if not query.is_empty() and not event.title.to_lower().contains(query):
-			continue
-		if kind >= 0 and event.kind != kind:
-			continue
-		if not category.is_empty() and event.category != category:
+		if not _passes(event, query, kind, category):
 			continue
 		result.append(event)
+		lowered[event] = event.title.to_lower()
 	result.sort_custom(func(a: TimelineEvent, b: TimelineEvent) -> bool:
-		var title_a := a.title.to_lower()
-		var title_b := b.title.to_lower()
+		var title_a: String = lowered[a]
+		var title_b: String = lowered[b]
 		if title_a != title_b:
 			return title_a.naturalnocasecmp_to(title_b) < 0
 		return a.id < b.id)
 	return result
+
+
+## Die Kennung der Kategorie im Filter; leer heißt alle.
+func _chosen_category() -> String:
+	if _category_filter.selected > 0:
+		return _category_filter.get_item_metadata(_category_filter.selected)
+	return ""
+
+
+## Der Suchtext, wie er gilt: ohne Leerzeichen am Rand und klein.
+func _query() -> String:
+	return _search.text.strip_edges().to_lower()
+
+
+## Die Regel des Filters an einer Stelle, für die Zeilen und für passes(): Der Titel enthält die
+## Suche, Groß- und Kleinschreibung egal, und Art und Kategorie stimmen, wenn sie gewählt sind.
+## [param kind] −1 und [param category] leer heißen alle.
+static func _passes(event: TimelineEvent, query: String, kind: int, category: String) -> bool:
+	if not query.is_empty() and not event.title.to_lower().contains(query):
+		return false
+	if kind >= 0 and event.kind != kind:
+		return false
+	return category.is_empty() or event.category == category
+
+
+## Suche, Art oder Kategorie geändert: neue Zeilen, und die Werkstatt erfährt es.
+func _on_filter_changed() -> void:
+	_fill_rows()
+	filter_changed.emit()
 
 
 func _add_row(root: TreeItem, event: TimelineEvent) -> void:
@@ -252,22 +325,22 @@ func _on_duplicate_pressed() -> void:
 
 # --- Filter -----------------------------------------------------------------------------------
 
-## Füllt die Auswahl der Kategorien; die gewählte bleibt, solange es sie gibt.
-func _fill_category_choices() -> void:
-	var chosen := ""
-	if _category_filter.selected > 0:
-		chosen = _category_filter.get_item_metadata(_category_filter.selected)
+## Füllt die Auswahl der Kategorien; die gewählte bleibt, solange es sie gibt. Gibt zurück, ob sie
+## verloren ging, weil es sie nicht mehr gibt; dann gilt „Alle Kategorien“.
+func _fill_category_choices() -> bool:
+	var chosen := _chosen_category()
 	_category_filter.clear()
 	_category_filter.add_item("Alle Kategorien")
 	_category_filter.set_item_metadata(0, "")
 	if editor == null or editor.catalog == null:
-		return
+		return not chosen.is_empty()
 	for category in editor.catalog.categories:
 		_category_filter.add_item(_category_label(category))
 		var index := _category_filter.item_count - 1
 		_category_filter.set_item_metadata(index, category.id)
 		if category.id == chosen:
 			_category_filter.select(index)
+	return _chosen_category() != chosen
 
 
 static func _category_label(category: EventCategory) -> String:

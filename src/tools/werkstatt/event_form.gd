@@ -708,6 +708,9 @@ func _color_choice(key: String, current: StringName, pick: Callable) -> OptionBu
 			else "%s (keine Kategorienfarbe)" % token)
 	var choice := _choice(key, labels, tokens.find(current),
 		func(index: int) -> void: pick.call(tokens[index]))
+	# Hier soll die Auswahl so breit sein wie die längste Farbe, damit die Zeilen der Kategorien
+	# untereinander gleich breit stehen; bei sieben Einträgen kostet das nichts.
+	choice.fit_to_longest_item = true
 	choice.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	choice.custom_minimum_size.x = 136
 	for i in tokens.size():
@@ -794,8 +797,14 @@ func _percent_input(key: String, share: float, apply: Callable) -> LineEdit:
 
 
 ## Auswahl aus [param labels]; [param pick] bekommt die Stelle der Wahl.
+##
+## fit_to_longest_item ist aus: Sonst misst der OptionButton beim Eintritt in den Baum jeden
+## Eintrag aus, um so breit zu werden wie der längste. Bei der Wahl eines Folgeereignisses aus
+## 500 Ereignissen kostete das gut 20 ms je Neubau des Formulars, und der längste Titel zog das
+## ganze Formular breiter, obwohl der Text mit clip_text ohnehin abgeschnitten wird.
 func _choice(key: String, labels: Array[String], selected: int, pick: Callable) -> OptionButton:
 	var choice := OptionButton.new()
+	choice.fit_to_longest_item = false
 	for label in labels:
 		choice.add_item(label)
 	choice.select(selected)

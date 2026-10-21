@@ -393,6 +393,9 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     wie beim Knopf „Neu …“, und ein versehentlicher Doppelklick legt nichts an.
   - **Jährliche Vorkommen** rechnet `TimelineRun.yearly_occurrences()`; Fahrplan und Zeitstrahl
     nutzen dieselbe Regel.
+  - **Filter** (Klaus, 2026-10-21): Der Zeitstrahl zeigt nur, was die Liste nach Suche, Art und
+    Kategorie zeigt. Mit 500 Ereignissen füllte sonst eine Kategorie die ganze Höhe. Verworfen
+    für jetzt: Kategorien zuklappen.
 - **Begründung:** Eigenes Zeichnen ist für eine Achse mit Hunderten Marken das Übliche und
   schnell. Zugleich lernt Klaus dabei, was er für Spielansichten braucht: `_draw`, Eingaben,
   Tooltips.

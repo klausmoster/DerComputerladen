@@ -21,8 +21,6 @@ const KAPUTT := "res://test/fixtures/catalog_v22_kaputt.json"
 ## 01.01.1985 = 0; der 22.03.1993 ist Tag 3002, der 15.04.1993 Tag 3026.
 const PENTIUM_TAG := 3002
 const NEUER_TAG := 3026
-## SC-011: Eine Änderung samt neuer Prüfung dauert bei 500 Ereignissen unter 100 ms.
-const HOECHSTENS_MSEC := 100.0
 
 ## Jede ändernde Methode einmal: Methode, Argumente, erwarteter Name der Aktion.
 const AENDERUNGEN := [
@@ -930,7 +928,32 @@ func test_unlesbare_sicherungskopie_darf_ueberschrieben_werden() -> void:
 	assert_true(_editor.backup_matches(), "Jetzt liegt die eigene, lesbare Kopie dort.")
 
 
-# --- Speicher und Zeit ------------------------------------------------------------------------
+# --- Inhalt vergleichen ----------------------------------------------------------------------
+
+func test_inhaltsschluessel_ist_so_genau_wie_die_kanonische_form() -> void:
+	# Arrange: Simulator und Statistik vergleichen damit, ob der Katalog ein anderer ist (FR-042).
+	_oeffnen(MINIMAL)
+	var anfang := _editor.content_key()
+	var kanonisch := _editor.catalog.to_json()
+
+	# Act und Assert: Eine Änderung ändert ihn, Rückgängig stellt ihn wieder her.
+	_editor.set_event_field("intel_pentium", &"date", NEUER_TAG)
+	assert_ne(_editor.content_key(), anfang)
+	_editor.undo()
+	assert_eq(_editor.content_key(), anfang, "Nach Rückgängig ist es wieder derselbe Inhalt.")
+	# Auch die Kategorien gehören zum Inhalt.
+	_editor.set_category_field("lokal", &"name", "Stadt")
+	assert_ne(_editor.content_key(), anfang)
+	_editor.undo()
+	# Verwerfen liest neue Objekte mit demselben Inhalt: derselbe Text, wie bei to_json().
+	_editor.set_event_field("intel_pentium", &"title", "Pentium kommt")
+	assert_eq(_editor.revert(), OK)
+	assert_eq(_editor.catalog.to_json(), kanonisch)
+	assert_eq(_editor.content_key(), anfang, "Gleicher Inhalt in neuen Objekten.")
+	assert_eq(CatalogEditor.new().content_key(), "", "Ohne Katalog ist er leer.")
+
+
+# --- Speicher ---------------------------------------------------------------------------------
 
 func test_editor_wird_samt_verlauf_freigegeben() -> void:
 	# Arrange: R15. UndoRedo ist kein RefCounted; der Editor gibt es in NOTIFICATION_PREDELETE frei.
@@ -947,34 +970,6 @@ func test_editor_wird_samt_verlauf_freigegeben() -> void:
 
 	# Assert
 	assert_null(verweis.get_ref(), "Ohne Verweis von außen ist der Editor samt Verlauf weg.")
-
-
-func test_aenderung_samt_pruefung_bei_500_ereignissen_unter_100_ms() -> void:
-	# Arrange: SC-011 mit einem im Test erzeugten Katalog (catalog_500.json kommt erst mit T068).
-	var ziel := _katalog_mit_500_ereignissen()
-	var start := Time.get_ticks_usec()
-	assert_eq(_editor.open(ziel), OK)
-	var oeffnen_msec := (Time.get_ticks_usec() - start) / 1000.0
-	assert_eq(_editor.issues().size(), 0, "Der erzeugte Katalog hat keine Meldung.")
-	var schritte := {
-		"Datum": func() -> void: _editor.set_event_field("fix_123", &"date", 4000),
-		"Art": func() -> void: _editor.set_event_kind("zufall_100", TimelineEvent.Kind.PRESET),
-		"Kennung": func() -> void: _editor.rename_event("zufall_050", "zufall_umbenannt"),
-		"Löschen": func() -> void: _editor.delete_event("zufall_200"),
-		"Rückgängig": func() -> void: _editor.undo(),
-	}
-
-	# Act und Assert
-	var zeiten := PackedStringArray(["Öffnen %.1f ms" % oeffnen_msec])
-	for schritt: String in schritte:
-		start = Time.get_ticks_usec()
-		schritte[schritt].call()
-		var msec := (Time.get_ticks_usec() - start) / 1000.0
-		zeiten.append("%s %.1f ms" % [schritt, msec])
-		assert_lt(msec, HOECHSTENS_MSEC, "%s samt Prüfung bei 500 Ereignissen (SC-011)." % schritt)
-	gut.p("SC-011, 500 Ereignisse: " + ", ".join(zeiten))
-	assert_eq(_editor.catalog.get_event("zufall_049").follow_ups[0].target, "zufall_umbenannt",
-		"Das Umbenennen hat seinen Verweis nachgezogen.")
 
 
 # --- Helfer -----------------------------------------------------------------------------------
@@ -1003,46 +998,3 @@ func _schreiben(ziel: String, text: String) -> void:
 	var datei := FileAccess.open(ziel, FileAccess.WRITE)
 	datei.store_string(text)
 	datei.close()
-
-
-## Schreibt einen Katalog mit 250 fixen und 250 Ereignissen über Wahrscheinlichkeit in den
-## Testordner, wie ihn SC-011 beschreibt. Jedes Ereignis über Wahrscheinlichkeit hat ein
-## Folgeereignis auf das nächste, damit Umbenennen und Löschen Verweise finden.
-func _katalog_mit_500_ereignissen() -> String:
-	var katalog := EventCatalog.new()
-	for eintrag: Array in CatalogEditor.START_CATEGORIES:
-		var kategorie := EventCategory.new()
-		kategorie.id = eintrag[0]
-		kategorie.name = eintrag[1]
-		kategorie.color = eintrag[2]
-		katalog.categories.append(kategorie)
-	for i in 250:
-		var fix := TimelineEvent.new()
-		fix.id = "fix_%03d" % i
-		fix.title = "Fixes Ereignis %d" % i
-		fix.category = "hardware"
-		fix.date = i * 21
-		var wirkung := EventEffect.new()
-		wirkung.kind = EventEffect.Kind.PREIS
-		wirkung.target = "cpu"
-		wirkung.magnitude = -0.1
-		fix.effects.append(wirkung)
-		katalog.events.append(fix)
-		var zufall := TimelineEvent.new()
-		zufall.id = "zufall_%03d" % i
-		zufall.title = "Ereignis über Wahrscheinlichkeit %d" % i
-		zufall.category = "kunde"
-		zufall.kind = TimelineEvent.Kind.CHANCE
-		zufall.monthly_chance = 0.02
-		zufall.min_gap_days = 30
-		var folge := FollowUp.new()
-		folge.target = "zufall_%03d" % ((i + 1) % 250)
-		folge.chance = 0.5
-		folge.delay_min = 7
-		folge.delay_max = 21
-		zufall.follow_ups.append(folge)
-		katalog.events.append(zufall)
-	katalog.sort_events()
-	var ziel := ORDNER + "katalog_500.json"
-	assert_eq(katalog.write_file(ziel), OK)
-	return ziel

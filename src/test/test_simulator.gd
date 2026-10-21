@@ -548,6 +548,7 @@ func _werkstatt(fixture: String = US6) -> Werkstatt:
 	var werkstatt: Werkstatt = SZENE.instantiate()
 	werkstatt.catalog_path = ziel
 	werkstatt.editor.backup_path = ORDNER + "sicherung.json"
+	werkstatt.settings_path = ORDNER + "einstellungen.cfg"
 	add_child_autofree(werkstatt)
 	await wait_process_frames(2)
 	return werkstatt

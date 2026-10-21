@@ -24,6 +24,11 @@ extends Control
 ## Achse die Strecke von d bis d + 1. Links steht die Spalte mit den Kategorien, oben die Achse,
 ## unten die waagerechte Leiste durch die Jahre; dazwischen liegt die Zeitfläche, und an ihrem
 ## linken Rand steht der Tag visible_from.
+##
+## Filter (T074): Der Zeitstrahl zeigt, was die Liste nach Suche, Art und Kategorie zeigt. Die
+## Regel kennt nur die Liste; der Zeitstrahl bekommt sie als event_filter und fragt sie je
+## Ereignis. Gefiltert zeigt er nur Zeilen mit mindestens einer Marke, und ein Streifen unter der
+## Achse sagt, wie viele Ereignisse passen.
 
 ## Klaus hat auf eine Marke geklickt, auch mit rechts; die Werkstatt wählt das Ereignis.
 signal event_clicked(id: String)
@@ -73,11 +78,16 @@ const DAY_TICKS_FROM := 3.0
 const DAY_NUMBERS_FROM := 18.0
 ## Was das Ziehen eines jährlichen Ereignisses am Mauszeiger sagt (FR-039).
 const LOCKED_HINT := "Nur im Formular änderbar"
+## Der Hinweis über dem Streifen „Filter: …“ (T074).
+const FILTER_TOOLTIP := "Der Zeitstrahl zeigt nur, was die Liste nach Suche, Art und " \
+	+ "Kategorie zeigt."
 ## Zoom-Knöpfe „−“ und „+“ in der Ecke über der Spalte: Faktor je Klick.
 const BUTTON_ZOOM := 2.0
 
 ## Maße in logischen Pixeln (Style-Guide, „Werkzeuge“).
 const AXIS_HEIGHT := 44.0
+## Mit Filter liegt unter der Achse ein Streifen mit dem Hinweis „Filter: 12 von 500“.
+const FILTER_HEIGHT := 22.0
 ## Beschriftungen der Achse stehen 4 Pixel hinter ihrem Strich und enden 2 Pixel vor dem nächsten.
 const AXIS_PADDING := 4.0
 const SECTION_GAP := 2.0
@@ -128,6 +138,7 @@ const COLOR_ERROR := UiPalette.KASSENROT             # Fehler als gefülltes Fel
 const COLOR_ERROR_TEXT := UiPalette.PAPIER           # … mit Text in papier
 const COLOR_YEAR_LINE := UiPalette.GEHAEUSE          # Jahresgrenzen in den Zeilen
 const COLOR_MONTH_LINE := UiPalette.GEHAEUSE_HELL    # Monatsgrenzen in den Zeilen
+const COLOR_MUTED := UiPalette.GEHAEUSE_DUNKEL       # gedämpfter Text: Hinweis auf den Filter
 
 ## Die Rasten des Mausrads, auch die waagerechten.
 const WHEELS := [
@@ -165,7 +176,19 @@ var days_per_pixel: float = 1.0:
 		_update_zoom_buttons()
 		queue_redraw()
 
+## Der Filter der Liste (T074): ein Callable, das für ein TimelineEvent sagt, ob es passt, etwa
+## EventList.passes. Ein leeres Callable() heißt: kein Filter. Dann zeigt der Zeitstrahl alles,
+## auch Kategorien ohne Ereignis, damit ein Doppelklick dort eines anlegen kann. Jeder neue Wert
+## baut die Zeilen neu.
+var event_filter := Callable():
+	set(value):
+		event_filter = value
+		refresh()
+
 var _rows: Array[Row] = []
+## Wie viele Ereignisse beim letzten Aufbau durch den Filter kamen, und wie viele es gibt.
+var _filter_passed := 0
+var _filter_total := 0
 var _label_width := LABEL_MIN_WIDTH
 ## Was die Namen der Kategorien in der Spalte an Breite brauchen; 0 ohne Zeilen.
 var _names_width := 0.0
@@ -187,6 +210,8 @@ var _mouse := Vector2.ZERO
 var _menu_event_id := ""
 ## Wie die Achse die Monate schreibt: 0 gar nicht, 1 mit drei Buchstaben, 2 ausgeschrieben.
 var _month_style := 0
+## Schriftgröße → { Text → Breite in Pixeln }, für _text_width(). Eine neue Schrift leert ihn.
+var _widths := {}
 
 # Zustand eines Ziehens, vom Drücken bis zum Loslassen.
 var _drag := Drag.NONE
@@ -384,10 +409,44 @@ func preview_issue() -> CatalogIssue:
 	return _preview_issue if _drag_moved else null
 
 
+## Ob gerade ein Filter der Liste gilt.
+func is_filtered() -> bool:
+	return event_filter.is_valid()
+
+
+## Der Hinweis im Streifen unter der Achse, etwa „Filter: 12 von 500“; leer ohne Filter. Gezählt
+## werden die Ereignisse wie in der Liste, auch solche „nur als Folge“, die keine Marke haben.
+func filter_text() -> String:
+	if not is_filtered():
+		return ""
+	return "Filter: %d von %d" % [_filter_passed, _filter_total]
+
+
+## Die Titel der Zeilen von oben nach unten; für die Tests.
+func row_titles() -> PackedStringArray:
+	var titles := PackedStringArray()
+	for row in _rows:
+		titles.append(row.title)
+	return titles
+
+
+## Die Kennungen der Ereignisse, die eine Marke haben, sortiert und jede einmal; für die Tests.
+## Anders als mark_rects() hängt das nicht daran, was gerade zu sehen ist.
+func marked_events() -> PackedStringArray:
+	var seen := {}
+	for row in _rows:
+		for mark in row.marks:
+			seen[mark.event.id] = true
+	var ids := PackedStringArray(seen.keys())
+	ids.sort()
+	return ids
+
+
 # --- Marken aus dem Katalog -------------------------------------------------------------------
 
 func _update_theme() -> void:
 	_font = get_theme_default_font()
+	_widths.clear()
 	_small_size = get_theme_font_size(&"small", &"Werkstatt")
 	_text_size = get_theme_font_size(&"text", &"Werkstatt")
 	for button in _zoom_buttons():
@@ -406,12 +465,20 @@ func _on_parts_resized() -> void:
 ## Je Kategorie eine Zeile in der Reihenfolge des Katalogs (data-model.md), darin die Marken ihrer
 ## Ereignisse. Ereignisse mit unbekannter Kategorie (V05) kommen in eine eigene Zeile am Ende, in
 ## kassenrot, damit sie nicht verschwinden.
+##
+## Mit Filter bekommen nur die Ereignisse eine Marke, die durchkommen, und es bleiben nur Zeilen
+## mit mindestens einer Marke, auch bei „Ohne Kategorie“. Die Spalte der Kategorien bleibt dabei
+## so breit wie ohne Filter, sonst spränge die ganze Zeitfläche bei jedem Tastendruck.
 func _build_rows() -> void:
 	_rows.clear()
 	_names_width = 0.0
+	_filter_passed = 0
+	_filter_total = 0
 	if editor == null or editor.catalog == null:
 		_fit_label_width()
 		return
+	var filtered := is_filtered()
+	var all_rows: Array[Row] = []
 	var row_index := {}
 	for category in editor.catalog.categories:
 		if row_index.has(category.id):
@@ -420,19 +487,34 @@ func _build_rows() -> void:
 		row.category = category
 		row.title = category.name if not category.name.strip_edges().is_empty() else category.id
 		row.color = _row_color(category.color)
-		row_index[category.id] = _rows.size()
-		_rows.append(row)
+		row_index[category.id] = all_rows.size()
+		all_rows.append(row)
 	var orphans := Row.new()
 	orphans.title = "Ohne Kategorie"
 	orphans.color = COLOR_ERROR
+	# Ob „Ohne Kategorie“ ohne Filter Marken hätte; davon hängt die Breite der Spalte ab.
+	var orphans_unfiltered := false
 	for event in editor.catalog.events:
 		var index: int = row_index.get(event.category, -1)
-		_add_marks(_rows[index] if index >= 0 else orphans, event)
+		_filter_total += 1
+		if filtered and not event_filter.call(event):
+			if index < 0 and not orphans_unfiltered:
+				var probe := Row.new()
+				_add_marks(probe, event)
+				orphans_unfiltered = not probe.marks.is_empty()
+			continue
+		_filter_passed += 1
+		_add_marks(all_rows[index] if index >= 0 else orphans, event)
+	orphans_unfiltered = orphans_unfiltered or not orphans.marks.is_empty()
+	var widest := 0.0
+	for row in all_rows:
+		widest = maxf(widest, _text_width(row.title, _text_size))
+		if not filtered or not row.marks.is_empty():
+			_rows.append(row)
 	if not orphans.marks.is_empty():
 		_rows.append(orphans)
-	var widest := 0.0
-	for row in _rows:
-		widest = maxf(widest, _text_width(row.title, _text_size))
+	if orphans_unfiltered:
+		widest = maxf(widest, _text_width(orphans.title, _text_size))
 	_names_width = 2.0 * LABEL_PADDING + SWATCH_SIZE + SWATCH_GAP + widest
 	_fit_label_width()
 
@@ -654,8 +736,8 @@ static func _starts_before(a: Mark, b: Mark) -> bool:
 ## herausgezoomt füllt ihr Griff die Bahn.
 func _update_scrollbars() -> void:
 	var time := time_rect()
-	var area := maxf(time.end.y - AXIS_HEIGHT, 0.0)
-	_scroll.position = Vector2(size.x - _scroll_width, AXIS_HEIGHT)
+	var area := maxf(time.end.y - _rows_top(), 0.0)
+	_scroll.position = Vector2(size.x - _scroll_width, _rows_top())
 	_scroll.size = Vector2(_scroll_width, area)
 	_scroll.max_value = _content_height
 	_scroll.page = area
@@ -693,7 +775,12 @@ func _px_to_x(px: float) -> float:
 
 
 func _row_top(row: Row) -> float:
-	return AXIS_HEIGHT + row.top - _scroll.value
+	return _rows_top() + row.top - _scroll.value
+
+
+## Wo die Zeilen beginnen: unter der Achse, mit Filter unter dem Streifen mit dem Hinweis.
+func _rows_top() -> float:
+	return AXIS_HEIGHT + (FILTER_HEIGHT if is_filtered() else 0.0)
 
 
 func _lane_top(row: Row, lane: int) -> float:
@@ -723,7 +810,7 @@ static func _band(box: Rect2) -> Rect2:
 ## genau am linken Rand endet, zählt nicht; sonst stünde ihr Titel dort ohne sie.
 func _is_shown(box: Rect2, time: Rect2) -> bool:
 	return box.end.x > time.position.x and box.position.x < time.end.x \
-		and box.end.y > AXIS_HEIGHT and box.position.y < time.end.y
+		and box.end.y > _rows_top() and box.position.y < time.end.y
 
 
 # --- Zeichnen ---------------------------------------------------------------------------------
@@ -741,7 +828,7 @@ func _draw() -> void:
 	for i in _rows.size():
 		var row := _rows[i]
 		var top := _row_top(row)
-		if top + row.height <= AXIS_HEIGHT or top >= time.end.y:
+		if top + row.height <= _rows_top() or top >= time.end.y:
 			continue
 		shown.append(i)
 		if i % 2 == 1:
@@ -752,6 +839,7 @@ func _draw() -> void:
 	_draw_selection(shown, time)
 	_draw_preview()
 	_draw_categories(shown)
+	_draw_filter_hint()
 	_draw_axis(time)
 	# Unter der Zeitfläche liegt die waagerechte Leiste; was von den Zeilen dorthin reicht, deckt
 	# der Grund zu, damit nichts halb unter ihr steht.
@@ -761,12 +849,13 @@ func _draw() -> void:
 
 ## Senkrechte Linien an den Jahresgrenzen, ab Monatszoom auch an den Monatsgrenzen.
 func _draw_grid(time: Rect2) -> void:
-	var bottom := minf(time.end.y, AXIS_HEIGHT + _content_height - _scroll.value)
-	if bottom <= AXIS_HEIGHT:
+	var top := _rows_top()
+	var bottom := minf(time.end.y, top + _content_height - _scroll.value)
+	if bottom <= top:
 		return
 	if 1.0 / days_per_pixel >= MONTHS_FROM:
-		_draw_lines(_month_starts, AXIS_HEIGHT, bottom, COLOR_MONTH_LINE, time)
-	_draw_lines(_year_starts, AXIS_HEIGHT, bottom, COLOR_YEAR_LINE, time)
+		_draw_lines(_month_starts, top, bottom, COLOR_MONTH_LINE, time)
+	_draw_lines(_year_starts, top, bottom, COLOR_YEAR_LINE, time)
 
 
 ## Linien von 1 Pixel an den Tagen [param days], soweit sie in der Zeitfläche liegen. bsearch()
@@ -909,7 +998,22 @@ func _draw_categories(shown: Array[int]) -> void:
 		# Mit einer Breite kürzt Godot zu lange Namen mit „…“.
 		draw_string(_font, Vector2(x, roundf(middle + offset)), row.title,
 			HORIZONTAL_ALIGNMENT_LEFT, _label_width - x - LABEL_PADDING, _text_size, COLOR_TEXT)
-	draw_rect(Rect2(_label_width - 1.0, AXIS_HEIGHT, 1.0, size.y - AXIS_HEIGHT), COLOR_TEXT)
+	draw_rect(Rect2(_label_width - 1.0, _rows_top(), 1.0, size.y - _rows_top()), COLOR_TEXT)
+
+
+## Gefiltert: der Streifen unter der Achse. Links unter den Zoom-Knöpfen steht der Hinweis in
+## gedämpftem Text auf dem Grund, darunter eine Linie in der Farbe des Rasters. Er deckt zu, was
+## beim Rollen nach oben unter ihn gerät, wie die Achse.
+func _draw_filter_hint() -> void:
+	if not is_filtered():
+		return
+	draw_rect(Rect2(0.0, AXIS_HEIGHT, size.x, FILTER_HEIGHT), COLOR_GROUND)
+	var ascent := _font.get_ascent(_small_size)
+	var descent := _font.get_descent(_small_size)
+	var baseline := AXIS_HEIGHT + (FILTER_HEIGHT + ascent - descent) / 2.0
+	draw_string(_font, Vector2(LABEL_PADDING, roundf(baseline)), filter_text(),
+		HORIZONTAL_ALIGNMENT_LEFT, -1, _small_size, COLOR_MUTED)
+	draw_rect(Rect2(0.0, _rows_top() - 1.0, size.x, 1.0), COLOR_YEAR_LINE)
 
 
 ## Die Achse oben, im Kasten der Tabellenköpfe: Jahre; ab Monatszoom Monate und Tagesstriche;
@@ -1366,6 +1470,8 @@ func _on_menu_id_pressed(item: int) -> void:
 func _get_tooltip(at_position: Vector2) -> String:
 	if _drag != Drag.NONE:
 		return ""
+	if is_filtered() and at_position.y >= AXIS_HEIGHT and at_position.y < _rows_top():
+		return FILTER_TOOLTIP
 	var mark := _mark_at(at_position)
 	if mark == null:
 		return ""
@@ -1422,7 +1528,7 @@ func _release_focus() -> void:
 
 ## Die Zeile unter [param at]; null über der Achse, unter der letzten Zeile und auf der Leiste.
 func _row_at(at: Vector2) -> Row:
-	if at.y < AXIS_HEIGHT or at.y >= time_rect().end.y:
+	if at.y < _rows_top() or at.y >= time_rect().end.y:
 		return null
 	for row in _rows:
 		var top := _row_top(row)
@@ -1540,8 +1646,17 @@ static func _yearly_text(event: TimelineEvent) -> String:
 	return "jedes Jahr vom %s bis %s" % [start, EventForm.format_day_of_year(end)]
 
 
+## Breite eines Texts in Pixeln. Um einen Text zu messen, setzt Godot ihn erst (shaping); das
+## kostet je Titel einige Mikrosekunden. Der Zeitstrahl misst jeden Titel bei jedem Neuaufbau und
+## die Beschriftungen der Achse in jedem Bild, deshalb merkt er sich jede Breite. Mehr als ein
+## paar Tausend verschiedene Texte kommen kaum zusammen; danach fängt er von vorn an.
 func _text_width(text: String, font_size: int) -> float:
-	return _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	if not _widths.has(font_size) or _widths[font_size].size() > 10000:
+		_widths[font_size] = {}
+	var known: Dictionary = _widths[font_size]
+	if not known.has(text):
+		known[text] = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	return known[text]
 
 
 static func _title_of(event: TimelineEvent) -> String:

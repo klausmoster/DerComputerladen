@@ -124,6 +124,9 @@ var _file_time := 0
 var _file_hash := ""
 ## Ob die Datei beim Öffnen kein lesbarer Katalog war.
 var _file_unreadable := false
+## Kategorie oder Ereignis → sein Text für content_key(), für die Objekte, die beim letzten Aufruf
+## im Katalog standen.
+var _texts := {}
 
 
 func _init() -> void:
@@ -243,6 +246,33 @@ func issues() -> Array[CatalogIssue]:
 
 func has_errors() -> bool:
 	return CatalogValidator.has_errors(issues())
+
+
+## Der Inhalt des Katalogs als Text, zum Vergleichen: Zwei Stände ergeben genau dann denselben
+## Text, wenn to_json() für beide denselben ergäbe. Simulator und Statistik erkennen daran, ob ein
+## neuer Lauf mit einem anderen Katalog rechnen würde (FR-042), auch nach Rückgängig wieder mit
+## demselben. Leer ohne Katalog.
+##
+## Schneller als to_json(), weil der Editor ein Ereignis nie an Ort und Stelle ändert, sondern
+## durch eine Kopie ersetzt (siehe oben). Der Text eines Objekts gilt deshalb, solange es im
+## Katalog steht; nach einer Änderung entsteht er nur für die neuen Objekte. Mit 500 Ereignissen
+## sind das statt 14 ms für to_json() Bruchteile einer Millisekunde. Die Ereignisse stehen nach
+## Kennung sortiert im Katalog wie in der Datei: Lesen sortiert sie, und jeder Schritt setzt sie
+## an ihre Stelle.
+func content_key() -> String:
+	if catalog == null:
+		return ""
+	var texts := {}
+	var parts := PackedStringArray()
+	for category in catalog.categories:
+		parts.append(_text_of(category, texts))
+	# Eine leere Zeile trennt die Kategorien von den Ereignissen.
+	parts.append("")
+	for event in catalog.events:
+		parts.append(_text_of(event, texts))
+	# Nur die Objekte von jetzt behalten; ersetzte fallen aus dem Zwischenspeicher.
+	_texts = texts
+	return "\n".join(parts)
 
 
 # --- Sicherungskopie ---------------------------------------------------------------------------
@@ -993,6 +1023,19 @@ func _catalog_dict() -> Dictionary:
 	for event in catalog.events:
 		events.append(event.to_dict())
 	return {"categories": categories, "events": events, "format": EventCatalog.FORMAT}
+
+
+## Der Text einer Kategorie oder eines Ereignisses für content_key(): to_dict() mit sortierten
+## Schlüsseln in einer Zeile, wie es auch to_json() schreibt. Ein Dictionary mit Objekten als
+## Schlüssel vergleicht nach der Identität des Objekts, nicht nach dem Inhalt; genau das braucht
+## der Zwischenspeicher.
+func _text_of(item: Object, texts: Dictionary) -> String:
+	var text: String = _texts.get(item, "")
+	if text.is_empty():
+		# EventCategory und TimelineEvent haben beide to_dict(); call() ruft es über den Namen.
+		text = JSON.stringify(item.call(&"to_dict"), "", true)
+	texts[item] = text
+	return text
 
 
 ## Ob unter backup_path die lesbare Kopie eines anderen Katalogs liegt.
