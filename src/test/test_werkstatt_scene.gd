@@ -336,6 +336,29 @@ func test_toolbar_zaehlt_fehler_und_warnungen() -> void:
 	assert_eq(_node(werkstatt, "%CountLabel").text, "1 Fehler, 1 Warnung")
 
 
+func test_langer_katalogpfad_kuerzt_sich_und_steht_voll_im_hinweis() -> void:
+	# Arrange: ein Katalog unter einem Dateinamen von 237 Zeichen; erlaubt sind 255.
+	var datei := "katalog_" + "mit_einem_sehr_langen_namen_".repeat(8) + ".json"
+	var werkstatt := await _werkstatt(MINIMAL, datei)
+	# Headless ist das Fenster 640 × 360 groß, zu schmal für Liste und Formular nebeneinander.
+	werkstatt.size = Vector2(1200.0, 800.0)
+
+	# Act
+	await wait_process_frames(2)
+
+	# Assert
+	var layout: Control = _node(werkstatt, "Layout")
+	assert_eq(layout.size.x, werkstatt.size.x - 16.0,
+		"Der Inhalt bleibt so breit wie die Werkstatt, abzüglich der Ränder von 8 Pixeln.")
+	var datei_label: Label = _node(werkstatt, "%FileLabel")
+	assert_eq(datei_label.text, ORDNER + datei)
+	var voll := datei_label.get_theme_font(&"font").get_string_size(datei_label.text,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, datei_label.get_theme_font_size(&"font_size")).x
+	assert_lt(datei_label.size.x, voll, "Der Dateiname ist gekürzt.")
+	assert_string_contains(datei_label.tooltip_text, ORDNER + datei,
+		"Der Hinweis nennt den vollen Pfad.")
+
+
 # --- Liste ------------------------------------------------------------------------------------
 
 func test_liste_sucht_im_titel_und_filtert_nach_art_und_kategorie() -> void:
@@ -474,7 +497,169 @@ func test_umbenennen_im_formular_behaelt_die_auswahl() -> void:
 	assert_eq(_node(werkstatt, "%EventForm").get_input("id").text, "reklamationen")
 
 
+# --- Zeitstrahl (T049) ------------------------------------------------------------------------
+#
+# Headless ist das Fenster 640 × 360 groß; neben Liste und Formular bleibt für den Zeitstrahl dann
+# keine Breite. Wo ein Test auf Marken klickt, gibt er ihm deshalb selbst eine Größe. Der Container
+# setzt sie erst im nächsten Bild zurück, darum kommt bis zum Ende des Tests kein await.
+
+
+func test_ziehen_im_zeitstrahl_aendert_den_katalog_und_cmd_z_nimmt_es_zurueck() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var zeitstrahl: TimelineView = _node(werkstatt, "%TimelineView")
+	var tag_vorher := _tag(1993, 3, 22)
+
+	# Act: Beim Loslassen meldet der Zeitstrahl event_moved (test_timeline_view.gd).
+	zeitstrahl.event_moved.emit("intel_pentium", &"date", _tag(1993, 4, 15))
+
+	# Assert: US4, Szenarien 1 und 7
+	assert_eq(werkstatt.editor.catalog.get_event("intel_pentium").date, _tag(1993, 4, 15))
+	assert_eq(werkstatt.editor.undo_name(), "Datum von Intel Pentium erscheint",
+		"Das Ziehen ist ein Schritt im Verlauf.")
+	get_viewport().push_input(_taste(KEY_Z))
+	assert_eq(werkstatt.editor.catalog.get_event("intel_pentium").date, tag_vorher,
+		"Cmd+Z stellt den 22.03.1993 wieder her.")
+
+
+func test_zeitstrahl_folgt_katalog_und_auswahl() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var zeitstrahl: TimelineView = _node(werkstatt, "%TimelineView")
+	zeitstrahl.size = Vector2(900.0, 300.0)
+	var vorher := zeitstrahl.mark_rects("intel_pentium")[0].position.x
+
+	# Act
+	werkstatt.editor.set_event_field("intel_pentium", &"date", _tag(1996, 3, 22))
+	zeitstrahl.event_clicked.emit("neubaugebiet")
+
+	# Assert
+	assert_gt(zeitstrahl.mark_rects("intel_pentium")[0].position.x, vorher,
+		"Nach catalog_changed steht der Pentium drei Jahre später.")
+	assert_eq(werkstatt.selected_id, "neubaugebiet", "Ein Klick im Zeitstrahl wählt.")
+
+
+func test_doppelklick_oeffnet_den_dialog_vorbelegt_und_legt_das_ereignis_an() -> void:
+	# Arrange: US4, Szenario 5, ein Doppelklick in der Zeile Hardware am 12.03.1996
+	var werkstatt := await _werkstatt()
+	var liste: EventList = _node(werkstatt, "%EventList")
+	var tag := _tag(1996, 3, 12)
+
+	# Act: Den Doppelklick meldet der Zeitstrahl als create_requested (test_timeline_view.gd).
+	_node(werkstatt, "%TimelineView").create_requested.emit("hardware", tag)
+
+	# Assert: Der Dialog „Neu …“ ist vorbelegt, der Fokus steht im Titel.
+	var dialog: ConfirmationDialog = liste.get_node("%NewDialog")
+	assert_true(dialog.visible)
+	var art: OptionButton = liste.get_node("%NewKind")
+	var kategorie: OptionButton = liste.get_node("%NewCategory")
+	assert_eq(art.get_item_text(art.selected), "fix")
+	assert_eq(kategorie.get_item_metadata(kategorie.selected), "hardware")
+	assert_true(liste.get_node("%NewDate").visible)
+	assert_eq(liste.get_node("%NewDate").text, "12.03.1996")
+	var titel: LineEdit = liste.get_node("%NewTitle")
+	assert_true(titel.has_focus(), "Der Fokus steht im Titel des Dialogs.")
+
+	# Act: Titel eingeben und anlegen
+	titel.text = "Neuer Rechner"
+	titel.text_changed.emit(titel.text)
+	assert_eq(liste.get_node("%NewId").text, "neuer_rechner", "Die Kennung folgt dem Titel.")
+	dialog.get_ok_button().pressed.emit()
+
+	# Assert
+	var neu := werkstatt.editor.catalog.get_event("neuer_rechner")
+	assert_not_null(neu)
+	if neu != null:
+		assert_eq([neu.kind, neu.date, neu.category], [TimelineEvent.Kind.FIXED, tag, "hardware"])
+	assert_eq(werkstatt.selected_id, "neuer_rechner", "Das neue Ereignis ist gewählt.")
+	assert_same(get_viewport().gui_get_focus_owner(),
+		_node(werkstatt, "%EventForm").get_input("title"),
+		"Der Fokus steht im Titel des Formulars.")
+
+
+func test_doppelklick_mit_anderer_art_nimmt_deren_vorgaben() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var liste: EventList = _node(werkstatt, "%EventList")
+	_node(werkstatt, "%TimelineView").create_requested.emit("lokal", _tag(1996, 3, 12))
+	var titel: LineEdit = liste.get_node("%NewTitle")
+	titel.text = "Neue Siedlung"
+	titel.text_changed.emit(titel.text)
+
+	# Act: Der Tag gilt nur für fix.
+	_waehlen(liste.get_node("%NewKind"), "beim Start gesetzt")
+
+	# Assert
+	assert_false(liste.get_node("%NewDate").visible, "Für eine andere Art steht kein Datum da.")
+	liste.get_node("%NewDialog").get_ok_button().pressed.emit()
+	var neu := werkstatt.editor.catalog.get_event("neue_siedlung")
+	assert_not_null(neu)
+	if neu != null:
+		assert_eq([neu.kind, neu.category, neu.window_from, neu.window_to],
+			[TimelineEvent.Kind.PRESET, "lokal", 0, 5477], "Die Vorgaben der Art gelten.")
+
+
+func test_doppelklick_abbrechen_legt_nichts_an() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var anzahl := werkstatt.editor.catalog.events.size()
+	var dialog: ConfirmationDialog = _node(werkstatt, "%EventList").get_node("%NewDialog")
+	_node(werkstatt, "%TimelineView").create_requested.emit("hardware", _tag(1996, 3, 12))
+
+	# Act
+	dialog.get_cancel_button().pressed.emit()
+	await wait_process_frames(1)
+
+	# Assert
+	assert_false(dialog.visible)
+	assert_eq(werkstatt.editor.catalog.events.size(), anzahl)
+	assert_false(werkstatt.editor.can_undo(), "Kein Schritt im Verlauf.")
+	# Der Knopf „Neu …“ öffnet den Dialog wieder ohne Datum.
+	_node(werkstatt, "%EventList").get_node("%NewButton").pressed.emit()
+	assert_false(_node(werkstatt, "%EventList").get_node("%NewDate").visible)
+
+
+func test_menue_im_zeitstrahl_bearbeiten_duplizieren_loeschen() -> void:
+	# Arrange: ein Rechtsklick auf den Pentium im Zeitstrahl
+	var werkstatt := await _werkstatt()
+	var zeitstrahl: TimelineView = _node(werkstatt, "%TimelineView")
+	zeitstrahl.size = Vector2(900.0, 300.0)
+	var knopf := InputEventMouseButton.new()
+	knopf.button_index = MOUSE_BUTTON_RIGHT
+	knopf.pressed = true
+	knopf.position = zeitstrahl.mark_rects("intel_pentium")[0].get_center()
+	zeitstrahl._gui_input(knopf)
+	var menue: PopupMenu = null
+	for kind in zeitstrahl.get_children(true):
+		if kind is PopupMenu:
+			menue = kind
+	assert_true(menue != null and menue.visible, "Das Menü ist offen.")
+	assert_eq(werkstatt.selected_id, "intel_pentium", "Der Rechtsklick wählt.")
+	if menue == null:
+		return
+
+	# Act und Assert: „Bearbeiten“ setzt den Fokus in den Titel des Formulars.
+	menue.id_pressed.emit(TimelineView.MenuItem.EDIT)
+	assert_same(get_viewport().gui_get_focus_owner(),
+		_node(werkstatt, "%EventForm").get_input("title"))
+	# „Duplizieren“ legt die Kopie an und wählt sie.
+	menue.id_pressed.emit(TimelineView.MenuItem.DUPLICATE)
+	assert_eq(werkstatt.selected_id, "intel_pentium_2")
+	# „Löschen“ führt zur Rückfrage (FR-036) und löscht noch nichts.
+	menue.id_pressed.emit(TimelineView.MenuItem.DELETE)
+	var dialog: ConfirmationDialog = _node(werkstatt, "%DeleteDialog")
+	assert_true(dialog.visible)
+	assert_string_contains(dialog.dialog_text, "„Intel Pentium erscheint“ löschen?")
+	assert_not_null(werkstatt.editor.catalog.get_event("intel_pentium"), "Erst nach der Antwort.")
+	menue.hide()
+
+
 # --- Helfer -----------------------------------------------------------------------------------
+
+## Tagesindex eines Datums.
+func _tag(jahr: int, monat: int, tag: int) -> int:
+	return GameDate.new(jahr, monat, tag).to_day_index()
+
 
 ## Baut die Werkstatt mit einer Kopie von [param fixture] als Katalog; ohne Fixture mit dem, was
 ## schon unter [param datei] liegt oder eben nicht. Wartet, bis der Start gelaufen ist.

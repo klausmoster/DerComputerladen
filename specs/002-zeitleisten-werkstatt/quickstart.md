@@ -116,7 +116,8 @@ Szene noch die Pixelschrift des Spiels; die Werkstatt setzt Open Sans erst beim 
 | Ende eines Zeitfensters ziehen, bis Anzahl und Abstand nicht mehr passen | Fehler steht schon beim Ziehen am Mauszeiger; nach dem Loslassen meldet die Prüfung V10 | US4, Szenario 2 |
 | Maus über einem Ereignis ruhen lassen | Hinweis mit Titel, Art, Datum oder Fenster, Chance | US4, Szenario 3 |
 | Rechtsklick auf ein Ereignis | Menü Bearbeiten, Duplizieren, Löschen | US4, Szenario 4 |
-| Doppelklick in der Zeile Hardware, März 1996 | neues fixes Ereignis an diesem Tag, gewählt, Fokus im Titel | US4, Szenario 5 |
+| Doppelklick in der Zeile Hardware, März 1996 | Dialog „Neu …“ mit Art fix, Kategorie Hardware und dem Tag; nach Titel und Enter das neue Ereignis an diesem Tag, gewählt, Fokus im Titel | US4, Szenario 5; R16 |
+| Auf dem Trackpad mit zwei Fingern waagerecht und senkrecht wischen, dann kneifen | Wischen verschiebt die Jahre bzw. rollt die Zeilen; Kneifen zoomt um den Mauszeiger | R16 |
 | Mit Cmd+Mausrad hineinzoomen | bis zu einem Monat mit Tagesstrichen | US4, Szenario 6 |
 | Weihnachtsgeschäft ziehen | geht nicht, Hinweis „nur im Formular änderbar“ | FR-039 |
 | Zwei Ereignisse derselben Kategorie auf denselben Tag legen | gestapelt untereinander, Titel nur bei Platz | FR-037 |

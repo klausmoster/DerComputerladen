@@ -955,6 +955,31 @@ func test_jaehrlich_ohne_dauer_ab_spielbeginn_und_ab_einem_spaeteren_jahr() -> v
 		assert_eq(winter[6].end_day - 1, _tag(1996, 2, 29))
 
 
+func test_jaehrliche_vorkommen_fuer_fahrplan_und_zeitstrahl() -> void:
+	# Arrange: yearly_occurrences() ist die Regel, nach der Fahrplan und Zeitstrahl der Werkstatt
+	# die jährlichen Vorkommen bilden (T047).
+	var katalog := _katalog("catalog_us3_kalender")
+	var run := TimelineRun.new(katalog, 4711)
+
+	# Act und Assert: je Ereignis dieselben Beginne wie im Fahrplan; dort beginnt, was vor 1985
+	# anfing, am Tag 0.
+	for ereignis in katalog.events:
+		var beginne := []
+		for vorkommen in TimelineRun.yearly_occurrences(ereignis):
+			beginne.append(maxi(vorkommen.x, TimelineRun.FIRST_DAY))
+		assert_eq(beginne, _tage(run, ereignis.id), "%s wie im Fahrplan" % ereignis.id)
+	var winter := TimelineRun.yearly_occurrences(katalog.get_event("winter"))
+	assert_eq(winter[0], Vector2i(_tag(1984, 12, 1), _tag(1985, 2, 28)),
+		"Der Winter 1984/85 mit seinem echten Beginn vor dem Spiel.")
+	assert_eq(winter[winter.size() - 1].y, _tag(2000, 2, 29))
+	# Unsinnige Jahre, wie sie bis zur Korrektur in der Werkstatt stehen können (V08), halten
+	# nicht auf; es bleiben die Vorkommen im Spielzeitraum.
+	var unsinn := katalog.get_event("winter")
+	unsinn.yearly_from = -999999999
+	unsinn.yearly_to = 999999999
+	assert_eq(TimelineRun.yearly_occurrences(unsinn).size(), 16)
+
+
 # --- Dauer, Wirkungen und Ereignisse, die noch laufen (T042, US3) -----------------
 
 func test_ereignis_mit_42_tagen_dauer_endet_am_tag_nach_seinem_letzten_tag() -> void:

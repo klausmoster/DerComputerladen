@@ -81,7 +81,7 @@ die Werkstatt mit rund elf Szenen und Skripten und 21 Testdateien, davon zwei be
 
 | Grundsatz | Prüfung | Vor Phase 0 | Nach Phase 1 |
 |---|---|---|---|
-| I. Nur Desktop | Die Werkstatt setzt Maus und Tastatur voraus: Hover, Tooltips, Rechtsklick, Ziehen. Kürzel Cmd bzw. Ctrl über `command_or_control_autoremap`, keine Touch-Eingaben, Forward+ bleibt | erfüllt | erfüllt |
+| I. Nur Desktop | Die Werkstatt setzt Maus und Tastatur voraus: Hover, Tooltips, Rechtsklick, Ziehen. Kürzel Cmd bzw. Ctrl über `command_or_control_autoremap`, keine Touch-Eingaben; Wischen und Kneifen auf dem Trackpad im Zeitstrahl (Verfassung 2.1.1), Forward+ bleibt | erfüllt | erfüllt |
 | II. Klaus entscheidet, der Agent baut, Claude plant und prüft | Der Plan enthält nur Signaturen, keine Rümpfe. Die Aufteilung `[K]`/`[A]`/`[C]` folgt in den Tasks, umgesetzt wird phasenweise auf Klaus' Auftrag mit Lernnotizen; `/speckit-implement` wird nicht verwendet | erfüllt | erfüllt |
 | III. Erst spezifizieren | Spec mit 5 Fragen geklärt und im Review nachgeschärft, eigener Branch, Godot-Details erst hier, Entscheidungen mit Alternativen in research.md (R1–R24) | erfüllt | erfüllt |
 | IV. Ein Look: der Style-Guide | Die Werkstatt nutzt Farben der Hauptpalette. Wie, regelt ein neuer Abschnitt „Werkzeuge“ im Style-Guide, der vor dem Bau der Werkstatt entsteht (siehe „Vorarbeiten“). Das Spiel selbst bekommt keine neue Oberfläche | erfüllt mit Vorarbeit | erfüllt mit Vorarbeit |

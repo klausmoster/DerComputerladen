@@ -439,3 +439,130 @@ Der Agent schreibt die Notizen, Claude trägt sie je Phase hier ein.
   Schleife prüft jeden Termin einzeln. Je nach Wurf hatte das Neubaugebiet einen Termin oder
   keinen, und die Zahl der Asserts schwankte. `start_game(4711)` ersetzt den Lauf wie in den
   anderen Tests der Datei; die Schleife prüft jetzt 16 Termine, bei jedem Lauf gleich viele.
+
+## Phase 6
+
+### T047 Der Zeitstrahl zeichnet sich selbst
+
+- **Ein Control statt vieler Nodes:** `TimelineView` in `src/tools/werkstatt/timeline_view.gd`
+  erbt von `Control` und malt Zeilen, Raster, Marken, Titel und Achse in `_draw()`. Ein Node je
+  Marke wäre bei 500 Ereignissen und jedem Zoomschritt teuer (R16). Godot ruft `_draw()` nur nach
+  `queue_redraw()` auf und behält die Zeichenbefehle bis dahin; die Setter von `visible_from` und
+  `days_per_pixel` rufen es deshalb selbst auf.
+- **Reihenfolge heißt Ebene:** Was später gezeichnet wird, liegt oben. Spalte und Achse kommen
+  nach den Marken; was beim Verschieben oder Rollen darunter gerät, verschwindet.
+  `clip_contents = true` schneidet am Rand des Controls ab.
+- **Nur, was zu sehen ist:** `_is_shown()` überspringt Marken außerhalb der Zeitfläche,
+  `bsearch()` in `_draw_lines()` springt zur ersten sichtbaren Jahres- oder Monatsgrenze. Mit 500
+  erzeugten Ereignissen braucht ein Bild beim Zoomen und Ziehen im Mittel rund 3 ms.
+- **Tag ↔ Pixel:** `day_to_x()` und `x_to_day()` sind eine Gerade: x = Breite der Spalte +
+  (Tag − `visible_from`) / `days_per_pixel`. Ein Tag d belegt die Strecke von d bis d + 1, ein
+  Punkt steht bei d + 0,5. `_zoom_at()` merkt sich den Tag unter der Maus, ändert den Zoom und
+  setzt `visible_from` so, dass derselbe Tag wieder unter der Maus liegt.
+- **Stapeln:** `_stack()` rechnet in Pixeln ab dem 01.01.1985, nicht ab dem linken Rand. Darum
+  ändert Verschieben nichts am Stapel, Zoomen schon. Die Marken kommen nach ihrem Anfang dran,
+  jede nimmt die erste Unterzeile mit 6 Pixeln Platz; mehr Unterzeilen, als sich Marken an einer
+  Stelle überlappen, entstehen so nie.
+- **Innere Klassen:** `Mark` und `Row` sind reine Datenträger ohne Node. Sie sehen die Enums und
+  Konstanten der äußeren Klasse, etwa `Shape.POINT`.
+- **Theme beim eigenen Zeichnen:** `_update_theme()` holt Schrift und Größen mit
+  `get_theme_default_font()` und `get_theme_font_size(&"small", &"Werkstatt")`. Godot schickt
+  `NOTIFICATION_THEME_CHANGED` auch, wenn das Control in den Baum kommt. Die Farben stehen als
+  Konstanten aus `UiPalette` oben in der Datei. `draw_rect()` ohne Füllung legt die Linie mittig
+  auf den Rand; `_draw_outline()` baut Rahmen deshalb aus vier gefüllten Rechtecken.
+- **Eine Regel an einer Stelle:** `TimelineRun.yearly_occurrences()` ist neu und öffentlich.
+  `_plan_yearly()` im Lauf und `_add_marks()` im Zeitstrahl fragen beide dort, wie `_hits()` in
+  Phase 3. Die Jahre begrenzt die Funktion auf 1984 bis 1999: Am Ergebnis ändert das nichts, aber
+  ein Tippfehler wie 999999999 im Formular hielte sonst GameDate in einer Schleife fest.
+
+### T048 Maus, Vorschau und Hinweise
+
+- **`_gui_input(event)`:** Godot schickt jede Mauseingabe über dem Control dorthin, die Position
+  in seinen eigenen Koordinaten. Wer gedrückt hat, bekommt Bewegung und Loslassen auch außerhalb.
+  `accept_event()` hält die Eingabe von den Eltern fern.
+- **Ziehen als kleiner Zustandsautomat:** `_drag` sagt, was gerade geschieht (`PAN`, `DATE`,
+  `DURATION`, `WINDOW_FROM`, `WINDOW_TO`, `LOCKED`). Drücken legt es in `_start_drag()` fest,
+  Bewegen zählt erst ab 3 Pixeln und rundet mit `roundi()` auf ganze Tage, Loslassen sendet einmal
+  `event_moved`. Das Signal geht erst nach `_cancel_drag()` hinaus; wer daraufhin `refresh()`
+  aufruft, findet einen aufgeräumten Zustand.
+- **Vorschau (R16):** `_first_error()` prüft eine Kopie aus `duplicate_event()` mit dem neuen
+  Wert über `CatalogValidator.validate_event()`. Katalog und Verlauf bleiben unberührt, bis die
+  Werkstatt beim Loslassen `set_event_field()` aufruft; ein Cmd+Z nimmt dann das ganze Ziehen
+  zurück (R15).
+- **Ein Ziehen, ein Feld:** `event_moved` trägt genau ein Feld. Ein Balken hat deshalb nur rechts
+  einen Griff, die Dauer; sein Beginn ist das Datum, und das verschiebt den ganzen Balken. Die
+  Fläche eines Zeitfensters bräuchte zwei Felder; dort verschiebt Ziehen die Ansicht.
+- **`_get_tooltip(at_position)`:** Godot fragt danach, sobald die Maus kurz stillsteht, auch ohne
+  `tooltip_text`; ein leerer Text heißt: kein Hinweis. Die Probe im Fenster zeigte außerdem, dass
+  Godot Hinweise nur in einem Fenster mit Fokus zeigt.
+- **Doppelklick:** Godot meldet erst einen einfachen Klick, dann einen mit `double_click`. Der
+  erste wählt oder verschiebt, erst der zweite legt an.
+- **Menü als internes Kind:** `add_child(_menu, false, INTERNAL_MODE_FRONT)` hängt das
+  `PopupMenu` an, ohne dass es in einer Szene steht. Es ist ein eigenes Fenster;
+  `get_screen_transform() * at` rechnet die Stelle samt Bildschirmfaktor um. Mit Faktor 2 sitzt
+  es an der Maus.
+- **Mauszeiger und Fokus:** `mouse_default_cursor_shape` wechselt je nach Griff, und Godot zeigt
+  den neuen Zeiger sofort. `_release_focus()` nimmt einem Feld im Formular beim Klick den Fokus,
+  damit es seine Eingabe übernimmt, wie bei Cmd+S.
+
+### T050 Tests
+
+- `src/test/test_timeline_view.gd` ruft `_gui_input()` direkt mit selbst gebauten
+  `InputEventMouseButton` und `InputEventMouseMotion` auf. Beim Zoomen sind Cmd und Ctrl beide
+  gesetzt; `is_command_or_control_pressed()` fragt unter macOS Cmd, sonst Ctrl.
+- Die neue Fixture `src/test/fixtures/catalog_us4_zeitstrahl.json` hat zwei Ereignisse am selben
+  Tag, ein Zeitfenster mit einem Balken darin, ein gesetztes Ereignis mit 1 bis 2 Terminen und 365
+  Tagen Abstand für V10 und von jeder Art eines. `to_json()` ergibt sie bytegleich.
+- `mark_rects()`, `event_at()`, `preview_text()` und `preview_issue()` sind öffentlich: Tests
+  fragen, wo eine Marke liegt und was am Mauszeiger stünde, statt Pixel zu raten.
+- **Fehlerprobe:** In einer Kopie außerhalb des Repos wurden nacheinander 16 Fehler eingebaut, etwa
+  „kein Stapeln“, „Vorschau ändert den Katalog“ oder „Ränder vertauscht“. „Abschneiden statt
+  Runden“ fiel zuerst nicht auf; dafür gibt es jetzt `test_ziehen_rundet_auf_den_naechsten_tag`.
+  Seitdem lassen 15 Fehler Tests scheitern, und „Jahre ohne Grenze“ lässt den Lauf hängen.
+- **Bilder im Fenster:** Unter macOS zeichnet Godot nicht, solange sein Fenster verdeckt ist; die
+  Bildschirmfotos kamen erst mit dem Fenster im Vordergrund.
+
+### T049 Der Zeitstrahl in der Werkstatt
+
+- **Skript an einen vorhandenen Node:** In `src/tools/werkstatt/werkstatt.tscn` stand schon ein
+  `Control` namens `TimelineView` mit eindeutigem Namen. Es bekommt nur
+  `script = ExtResource("6_timeline")`; `%TimelineView` findet es wie vorher, und die
+  Mindesthöhe von 220 bleibt. Ein Skript, das von `Control` erbt, passt an jeden Control-Node.
+  `size_flags_vertical = 3` lässt den Zeitstrahl im `VSplitContainer` die Höhe mit der Prüfung
+  teilen.
+- **Verdrahtung wie bei der Liste:** `_connect_signals()` in `werkstatt.gd` verbindet die Signale
+  nach oben. `event_moved` geht direkt an `editor.set_event_field`; die Parameter passen eins zu
+  eins, also braucht es keine Zwischenfunktion. Von oben ruft `_on_catalog_changed()`
+  `refresh()` und `_on_selection_changed()` `select_event()` auf.
+- **Ein Ziehen, ein Schritt:** `event_moved` kommt erst beim Loslassen, deshalb entsteht genau eine
+  Aktion im Verlauf, und Cmd+Z nimmt das ganze Ziehen zurück (US4, Szenario 7).
+- **Doppelklick über den Dialog:** `create_requested` öffnet den Dialog „Neu …“ der Liste
+  vorbelegt. Angelegt wird erst mit „Anlegen“, und von dort geht es über `event_created` weiter
+  wie bei jedem neuen Ereignis; ein versehentlicher Doppelklick legt nichts an.
+- **Tests headless:** Das Fenster ist dort 640 × 360 groß, neben Liste und Formular bleibt dem
+  Zeitstrahl keine Breite. `test_werkstatt_scene.gd` gibt ihm deshalb selbst eine Größe und
+  prüft ohne `await`: Der Container ordnet seine Kinder erst im nächsten Bild neu
+  (`queue_sort()`). Wo es nur um die Verdrahtung geht, senden die Tests die Signale direkt.
+
+### Ergänzungen: Trackpad, vorbelegter Dialog, Fehlerfarbe
+
+- **Trackpad:** macOS meldet Wischen mit zwei Fingern als `InputEventPanGesture` mit `delta`,
+  positiv wie das Mausrad nach unten bzw. rechts, und Kneifen als `InputEventMagnifyGesture` mit
+  einem `factor` um 1. Beide erben von `InputEventWithModifiers`, Cmd fragt also wieder
+  `is_command_or_control_pressed()`. Die Empfindlichkeit steht in `GESTURE_STEPS`, eine Einheit
+  zählt wie eine halbe Raste, und in `MAGNIFY_POWER`. `_zoom_to()` ist das gemeinsame Zoomen um
+  eine Stelle für Mausrad, Cmd+Wischen und Kneifen.
+- **Rollleiste aus dem Code:** `_scroll.value += …` genügt. Die `ScrollBar` begrenzt den Wert selbst
+  auf 0 bis `max_value − page` und meldet `value_changed`, worauf der Zeitstrahl neu zeichnet.
+- **Vorgabewerte statt zweier Methoden:** `EventList.open_new_dialog(kind, category, day)` hat für
+  alles Vorgaben. Der Knopf „Neu …“ ruft dieselbe Methode über `pressed.connect(open_new_dialog)`
+  ohne Argumente auf; ein Signal ohne Parameter darf eine Methode mit lauter Vorgabewerten
+  aufrufen.
+- **Zeile ein- und ausblenden:** Die Datumszeile im `GridContainer` des Dialogs sind zwei Labels,
+  die zusammen sichtbar werden, solange ein Tag vorbelegt und die Art „fix“ ist. Unsichtbare
+  Kinder überspringt der Container, die beiden Spalten bleiben gerade.
+- **Fehlerfarbe statt Magenta:** `_row_color()` gibt der Zeile „Ohne Kategorie“ und Kategorien mit
+  falscher Farbe (V21) kassenrot, die Rolle Fehler. `UiPalette.by_token()` gäbe für ein
+  unbekanntes Token Magenta, und das ist keine Farbe der Palette.
+- **Fehlerprobe:** 14 weitere eingebaute Fehler, etwa „Zeitstrahl nicht neu“, „Dialog nicht
+  vorbelegt“ oder „Kneifen verkehrt“, ließen jeweils mindestens einen Test scheitern.

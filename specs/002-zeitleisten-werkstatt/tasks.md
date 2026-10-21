@@ -569,7 +569,7 @@ Textausgabe zeigt das neue Datum.
 
 ### Implementation for User Story 4
 
-- [ ] T047 [A] [US4] `src/tools/werkstatt/timeline_view.gd` (`TimelineView`), Zeichnen (FR-037):
+- [x] T047 [A] [US4] `src/tools/werkstatt/timeline_view.gd` (`TimelineView`), Zeichnen (FR-037):
   - Achse mit Jahren, ab Monatszoom mit Monaten und Tagesstrichen.
   - Je Kategorie eine Zeile in ihrer Farbe (`UiPalette.by_token()`).
   - Marken je Art; überlappende werden in Unterzeilen gestapelt. Titel stehen nur bei Platz, in
@@ -577,7 +577,7 @@ Textausgabe zeigt das neue Datum.
   - „Nur als Folge“ bekommt keine Marke.
 
   Kandidat für eine `[K]`-Aufgabe (plan.md, „Was Klaus dabei lernt“).
-- [ ] T048 [A] [US4] `TimelineView`, Eingaben laut Vertrag, Tabelle der Eingaben:
+- [x] T048 [A] [US4] `TimelineView`, Eingaben laut Vertrag, Tabelle der Eingaben:
   - **Navigation:** Zoom mit Cmd- bzw. Ctrl-Mausrad um die Mausposition, vom ganzen Zeitraum bis
     zu einem Monat; Verschieben mit Mausrad, Shift-Mausrad und Ziehen auf freier Fläche.
   - **Ziehen:** Datum fixer Ereignisse tagesgenau, das Datum steht am Mauszeiger; Ränder von
@@ -588,17 +588,18 @@ Textausgabe zeigt das neue Datum.
     Mauszeiger; der Katalog ändert sich erst beim Loslassen.
   - **Übrige Maus:** `_get_tooltip()`; Rechtsklick öffnet ein `PopupMenu` mit Bearbeiten,
     Duplizieren, Löschen; Doppelklick auf freie Fläche sendet `create_requested`.
-- [ ] T049 [A] [US4] `TimelineView` in `src/tools/werkstatt/werkstatt.tscn` und `werkstatt.gd`
+- [x] T049 [A] [US4] `TimelineView` in `src/tools/werkstatt/werkstatt.tscn` und `werkstatt.gd`
   einbinden:
   - `event_clicked` wählt das Ereignis.
   - `event_moved` geht an `CatalogEditor.set_event_field()`.
-  - `create_requested` geht an `add_event()`, fix an diesem Tag in der Kategorie der Zeile; das
-    neue Ereignis wird gewählt, der Fokus steht im Titel.
+  - `create_requested` öffnet den Dialog „Neu …“ vorbelegt mit Art fix, der Kategorie der Zeile
+    und dem Tag (R16, Klaus 2026-10-21); nach „Anlegen“ ist das neue Ereignis gewählt, der Fokus
+    steht im Titel.
   - Das gewählte Ereignis ist hervorgehoben.
-- [ ] T050 [A] [P] [US4] `src/test/test_timeline_view.gd`: Umrechnung Tag ↔ Pixel bei mehreren
+- [x] T050 [A] [P] [US4] `src/test/test_timeline_view.gd`: Umrechnung Tag ↔ Pixel bei mehreren
   Zoomstufen, Stapeln überlappender Marken, kein Ziehen bei jährlichen Ereignissen; die Vorschau
   meldet V10, wenn das Fenster zu klein wird, ohne den Katalog zu ändern. Hängt an T048.
-- [ ] T051 [K] [US4] Phase 6 abnehmen nach quickstart.md, Abschnitte 1 und 4.3 (US4, Szenarien 1
+- [x] T051 [K] [US4] Phase 6 abnehmen nach quickstart.md, Abschnitte 1 und 4.3 (US4, Szenarien 1
   bis 7, FR-037, FR-039)
 
 **Checkpoint**: Eintakten per Maus funktioniert. Abnahme durch Klaus, dann Auftrag für Phase 7.

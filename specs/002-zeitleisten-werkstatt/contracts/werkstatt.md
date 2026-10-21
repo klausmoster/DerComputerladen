@@ -110,6 +110,11 @@ unlesbaren Katalog; `InterventionDialog`. Den Dialog für „Neu …“ bringt `
 - `EventList.event_selected`, `TimelineView.event_clicked` und `IssuesPanel.issue_activated`
   setzen die Auswahl; `selection_changed` zeigt das Ereignis im Formular und hebt es in Liste und
   Zeitstrahl hervor.
+- Vom `TimelineView` (T049): `event_moved` geht direkt an `CatalogEditor.set_event_field()`, ein
+  Ziehen ist ein Schritt im Verlauf; `create_requested` öffnet `EventList.open_new_dialog()`
+  vorbelegt; `event_created` wie aus der Liste; `edit_requested` wählt und setzt den Fokus in den
+  Titel; `delete_requested` führt zur Rückfrage wie in der Liste. Nach `catalog_changed` ruft die
+  Werkstatt `refresh()`, nach `selection_changed` `select_event()`.
 - `IssuesPanel.issue_activated(event_id, field)` ruft danach `EventForm.focus_field(field)` auf
   (FR-033).
 - `CatalogEditor.catalog_changed` zeichnet Liste, Formular und Zeitstrahl neu;
@@ -219,6 +224,10 @@ Regeln:
 - „Neu …“ öffnet einen Dialog mit Art, Titel und Kategorie. Darunter steht die Kennung, die
   `suggest_id()` aus dem Titel vorschlägt; Klaus kann sie ändern (US2, Szenario 1; FR-032).
   „Anlegen“ ruft `add_event()`.
+- `open_new_dialog(kind: TimelineEvent.Kind = FIXED, category: String = "", day: int = -1)`
+  öffnet diesen Dialog; der Knopf ruft es ohne Argumente auf. Der Zeitstrahl lässt ihn nach einem
+  Doppelklick vorbelegt öffnen: Art fix, Kategorie der Zeile, Tag. Das Datum steht im Dialog,
+  solange die Art fix ist; bei einer anderen Art gelten deren Vorgaben. Abbrechen legt nichts an.
 
 **EventForm:**
 - Felder für das gewählte Ereignis; die Art bestimmt, welche Felder sichtbar sind (FR-031). Die
@@ -259,9 +268,16 @@ class_name TimelineView extends Control
 signal event_clicked(id: String)
 signal event_moved(id: String, field: StringName, value: Variant)   # beim Loslassen, an CatalogEditor
 signal create_requested(category: String, day: int)                  # Doppelklick auf freie Fläche
+signal edit_requested(id: String)      # Menü „Bearbeiten“
+signal event_created(id: String)       # Menü „Duplizieren“, über CatalogEditor.duplicate_event()
+signal delete_requested(id: String)    # Menü „Löschen“; die Rückfrage stellt die Werkstatt (FR-036)
 var editor: CatalogEditor
 var visible_from: float                # Tagesindex am linken Rand
 var days_per_pixel: float              # Zoom; ganz herausgezoomt passen 1985–1999 in die Breite
+func refresh() -> void                 # nach catalog_changed; bricht ein laufendes Ziehen ab
+func select_event(id: String) -> void  # hebt hervor, ohne Signal, wie EventList
+# Für Tests: day_to_x(), x_to_day(), time_rect(), event_at(), mark_rects(), preview_text(),
+# preview_issue()
 ```
 
 | Eingabe | Wirkung |
@@ -276,7 +292,9 @@ var days_per_pixel: float              # Zoom; ganz herausgezoomt passen 1985–
 | Überfahren | Hinweis über `_get_tooltip()`: Titel, Art, Datum oder Zeitfenster, Chance |
 | Klick | wählt das Ereignis |
 | Rechtsklick | `PopupMenu`: Bearbeiten, Duplizieren, Löschen |
-| Doppelklick auf freie Fläche | neues fixes Ereignis an diesem Tag in der Kategorie der Zeile |
+| Doppelklick auf freie Fläche | `create_requested`; die Werkstatt öffnet den Dialog „Neu …“ vorbelegt mit fix, der Kategorie der Zeile und dem Tag (R16) |
+| Wischen mit zwei Fingern (Trackpad) | waagerecht seitlich verschieben, senkrecht die Zeilen rollen, mit Cmd Zoom um die Maus (R16) |
+| Kneifen (Trackpad) | Zoom um die Mausposition, in denselben Grenzen wie Cmd+Mausrad |
 
 Darstellung (FR-037):
 - je Kategorie eine Zeile in deren Farbe;
@@ -290,6 +308,22 @@ Darstellung (FR-037):
 
 Achse mit Jahren, ab Monatszoom mit Monaten und Tagesstrichen. Titel stehen in Textfarbe auf dem
 Grund neben der Marke, nicht auf der farbigen Fläche (R14).
+
+Ergänzt bei der Umsetzung (T047 bis T049):
+- Links eine Spalte mit Farbfeld und Namen je Kategorie; Zeilen abwechselnd `papier` und
+  `endlos-gruen`. Achse und Raster nach den Rollen „Fläche“ und „Raster“ im Style-Guide.
+- Gibt es Ereignisse ohne gültige Kategorie (V05), erscheint eine Zeile „Ohne Kategorie“; sie und
+  Kategorien mit unerlaubter Farbe (V21) zeichnen in `kassenrot`, der Rolle Fehler.
+- Passen die Zeilen nicht in die Höhe, rollt eine Leiste am Rand; das Mausrad bleibt beim
+  seitlichen Verschieben.
+- Titel am rechten Rand dürfen angeschnitten sein, Achsenbeschriftungen nicht.
+- Ein Ziehen ändert genau ein Feld: Ein Balken hat rechts den Griff für die Dauer, Ziehen am
+  Körper verschiebt das Datum; Zeitfenster haben Griffe an beiden Rändern, Ziehen auf ihrer
+  Fläche verschiebt die Ansicht. Datum und Fenster bleiben in 1985 bis 1999.
+- Für den Doppelklick zählt die Fläche von Rahmen und Bändern als frei.
+- `event_clicked` kommt beim Drücken, auch beim Rechtsklick; ein Klick auf freie Fläche behält
+  die Auswahl. Ein Klick in den Zeitstrahl nimmt einem Formularfeld den Fokus, damit es seine
+  Eingabe übernimmt.
 
 **Vorschau beim Ziehen (R16):** Während des Ziehens ändert sich der Katalog nicht. Die Ansicht
 prüft eine Kopie des Ereignisses mit dem neuen Wert über `CatalogValidator.validate_event()` und

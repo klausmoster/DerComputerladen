@@ -1,0 +1,147 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		},
+		{
+			"color": "holz-dunkel",
+			"id": "lokal",
+			"name": "Lokal"
+		},
+		{
+			"color": "nacht-hell",
+			"id": "reklamation",
+			"name": "Reklamation"
+		},
+		{
+			"color": "nacht",
+			"id": "kalender",
+			"name": "Kalender"
+		}
+	],
+	"events": [
+		{
+			"category": "hardware",
+			"date": "1989-04-10",
+			"description": "Der 486 kommt.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "intel_486",
+			"kind": "fixed",
+			"title": "Intel 80486 erscheint"
+		},
+		{
+			"category": "hardware",
+			"date": "1993-03-22",
+			"description": "Superskalare P5-Architektur, 64-Bit-Bus.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "intel_pentium",
+			"kind": "fixed",
+			"title": "Intel Pentium erscheint"
+		},
+		{
+			"category": "lokal",
+			"conditions": [],
+			"count_min": 1,
+			"count_weights": [
+				50,
+				50
+			],
+			"description": "Ein neues Wohngebiet entsteht.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "neubaugebiet",
+			"kind": "preset",
+			"min_gap_days": 365,
+			"title": "Neubaugebiet am Stadtrand",
+			"window": {
+				"from": "1990-01-01",
+				"to": "1993-12-31"
+			}
+		},
+		{
+			"category": "hardware",
+			"date": "1993-03-22",
+			"description": "Am selben Tag wie der Pentium.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "pentium_presse",
+			"kind": "fixed",
+			"title": "Pentium in der Presse"
+		},
+		{
+			"category": "reklamation",
+			"conditions": [],
+			"description": "Mehrere Kunden bringen Geräte zurück.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "reklamationswelle",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 90,
+			"monthly_chance": 0.03,
+			"title": "Reklamationswelle",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "lokal",
+			"date": "1994-03-10",
+			"description": "Sechs Wochen Rabatt.",
+			"duration_days": 42,
+			"effects": [],
+			"follow_ups": [],
+			"id": "sonderaktion",
+			"kind": "fixed",
+			"title": "Sonderaktion"
+		},
+		{
+			"category": "lokal",
+			"date": "1991-06-01",
+			"description": "Drei Tage Fest auf dem Marktplatz.",
+			"duration_days": 3,
+			"effects": [],
+			"follow_ups": [],
+			"id": "stadtfest",
+			"kind": "fixed",
+			"title": "Stadtfest"
+		},
+		{
+			"category": "kalender",
+			"description": "Die Leute kaufen Geschenke.",
+			"effects": [],
+			"follow_ups": [],
+			"id": "weihnachtsgeschaeft",
+			"kind": "yearly",
+			"title": "Weihnachtsgeschäft",
+			"yearly": {
+				"end": "12-ende",
+				"from": 1985,
+				"start": "11-01",
+				"to": 1999
+			}
+		},
+		{
+			"category": "reklamation",
+			"conditions": [],
+			"description": "Die Lokalzeitung berichtet.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "zeitungsartikel",
+			"kind": "follow_only",
+			"title": "Zeitungsartikel über Reklamationen"
+		}
+	],
+	"format": 1
+}

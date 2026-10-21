@@ -33,6 +33,9 @@ var _syncing := false
 ## Ob Klaus die Kennung im Dialog „Neu …“ selbst geändert hat; dann schlägt die Liste keine mehr
 ## vor.
 var _id_edited := false
+## Der Tag, mit dem der Dialog „Neu …“ vorbelegt ist, etwa nach einem Doppelklick im Zeitstrahl;
+## −1 heißt keiner. Er gilt nur für fixe Ereignisse.
+var _new_day := -1
 
 @onready var _search: LineEdit = %Search
 @onready var _kind_filter: OptionButton = %KindFilter
@@ -44,6 +47,8 @@ var _id_edited := false
 @onready var _new_kind: OptionButton = %NewKind
 @onready var _new_title: LineEdit = %NewTitle
 @onready var _new_category: OptionButton = %NewCategory
+@onready var _new_date_caption: Label = %DateCaption
+@onready var _new_date: Label = %NewDate
 @onready var _new_id: LineEdit = %NewId
 @onready var _new_hint: Label = %NewHint
 
@@ -112,15 +117,19 @@ func select_event(id: String) -> void:
 
 
 ## Öffnet den Dialog „Neu …“: Art, Titel, Kategorie und die vorgeschlagene Kennung (US2,
-## Szenario 1; FR-032).
-func open_new_dialog() -> void:
+## Szenario 1; FR-032). Der Knopf „Neu …“ ruft das ohne Werte auf. Nach einem Doppelklick im
+## Zeitstrahl ist der Dialog vorbelegt: Art, [param category] und [param day]. Der Tag gilt nur,
+## solange die Art „fix“ bleibt; wählt Klaus eine andere, gelten deren Vorgaben (US4, Szenario 5).
+func open_new_dialog(kind: TimelineEvent.Kind = TimelineEvent.Kind.FIXED, category: String = "",
+		day: int = -1) -> void:
 	if editor == null or editor.catalog == null:
 		return
 	_new_title.text = ""
 	_new_id.text = ""
 	_id_edited = false
-	_new_kind.select(TimelineEvent.Kind.FIXED)
-	_fill_new_categories()
+	_new_day = day
+	_new_kind.select(kind)
+	_fill_new_categories(category)
 	_check_new()
 	_new_dialog.popup_centered()
 	_new_title.grab_focus()
@@ -256,11 +265,12 @@ static func _category_label(category: EventCategory) -> String:
 
 # --- Dialog „Neu …“ ---------------------------------------------------------------------------
 
-## Die Kategorien zur Wahl; vorgewählt ist die aus dem Filter, sonst die erste.
-func _fill_new_categories() -> void:
+## Die Kategorien zur Wahl; vorgewählt ist [param wanted], ohne sie die aus dem Filter, sonst die
+## erste.
+func _fill_new_categories(wanted: String) -> void:
 	_new_category.clear()
-	var preferred := ""
-	if _category_filter.selected > 0:
+	var preferred := wanted
+	if preferred.is_empty() and _category_filter.selected > 0:
 		preferred = _category_filter.get_item_metadata(_category_filter.selected)
 	for category in editor.catalog.categories:
 		_new_category.add_item(_category_label(category))
@@ -297,6 +307,11 @@ func _check_new() -> void:
 	_new_hint.text = problem
 	_new_hint.visible = not problem.is_empty()
 	_new_dialog.get_ok_button().disabled = not titled or not problem.is_empty()
+	# Den Tag zeigt der Dialog nur, solange er gilt: vorbelegt und Art „fix“.
+	var dated := _new_day >= 0 and _new_kind.selected == TimelineEvent.Kind.FIXED
+	_new_date_caption.visible = dated
+	_new_date.visible = dated
+	_new_date.text = str(GameDate.from_day_index(_new_day)) if dated else ""
 	# Ein Fenster wächst mit seinem Inhalt, wird von selbst aber nicht wieder kleiner.
 	if _new_dialog.visible:
 		_new_dialog.reset_size()
@@ -310,7 +325,8 @@ func _on_new_confirmed() -> void:
 	if _new_category.selected >= 0:
 		category = _new_category.get_item_metadata(_new_category.selected)
 	var kind := _new_kind.selected as TimelineEvent.Kind
-	var event := editor.add_event(kind, _new_title.text.strip_edges(), category, -1, _new_id.text)
+	var day := _new_day if kind == TimelineEvent.Kind.FIXED else -1
+	var event := editor.add_event(kind, _new_title.text.strip_edges(), category, day, _new_id.text)
 	if event != null:
 		event_created.emit(event.id)
 

@@ -10,8 +10,9 @@ Android, iOS, Mobile, Touch oder Web. Das ist dauerhaft entschieden, nicht
 „später vielleicht":
 - Maus + Tastatur werden vorausgesetzt. Hover, Tooltips, Rechtsklick,
   Cursor-Wechsel und Drag&Drop sind erwünschte Mittel.
-- Keine touch-taugliche Mindestgröße von Klickflächen, keine Gesten, kein
-  `InputEventScreenTouch`, keine Orientierungswechsel, keine Safe Areas.
+- Keine touch-taugliche Mindestgröße von Klickflächen, keine Touch-Gesten, kein
+  `InputEventScreenTouch`, keine Orientierungswechsel, keine Safe Areas. Wischen
+  und Kneifen auf dem Trackpad sind Desktop-Eingabe und erlaubt.
 - Renderer bleibt **Forward+**. Keine Rücksicht auf Compatibility/Mobile oder
   GLES-Beschränkungen.
 - Android-Build-Templates werden nie installiert.

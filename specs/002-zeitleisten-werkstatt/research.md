@@ -384,6 +384,15 @@ vorhandene Code unter `src/core/` und `src/data/`, die Feature-Docs 01-01 und 01
     prüft eine Kopie des Ereignisses mit dem neuen Wert über `CatalogValidator.validate_event()`
     und zeigt einen Fehler sofort am Mauszeiger, etwa wenn Anzahl und Mindestabstand nicht mehr ins
     Fenster passen (US4, Szenario 2).
+  - **Trackpad** (Klaus, 2026-10-21): macOS meldet Wischen mit zwei Fingern als
+    `InputEventPanGesture` und Kneifen als `InputEventMagnifyGesture`, nicht als Mausrad.
+    Waagerechtes Wischen verschiebt, senkrechtes rollt die Zeilen, mit Cmd zoomt es; Kneifen zoomt
+    um die Maus. Das Trackpad ist Desktop-Eingabe, „keine Gesten“ in Grundsatz I meint Touch.
+  - **Doppelklick** (Klaus, 2026-10-21, nach Empfehlung): Er öffnet den Dialog „Neu …“
+    vorbelegt mit Art fix, der Kategorie der Zeile und dem Tag. So folgt die Kennung dem Titel
+    wie beim Knopf „Neu …“, und ein versehentlicher Doppelklick legt nichts an.
+  - **Jährliche Vorkommen** rechnet `TimelineRun.yearly_occurrences()`; Fahrplan und Zeitstrahl
+    nutzen dieselbe Regel.
 - **Begründung:** Eigenes Zeichnen ist für eine Achse mit Hunderten Marken das Übliche und
   schnell. Zugleich lernt Klaus dabei, was er für Spielansichten braucht: `_draw`, Eingaben,
   Tooltips.

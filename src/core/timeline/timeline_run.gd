@@ -176,6 +176,34 @@ func chance_info(event_id: String, day: int) -> Dictionary:
 	return {"base": base, "sum": total, "effective": clampf(total, 0.0, 1.0), "modifiers": active}
 
 
+## Die Vorkommen eines jährlichen Ereignisses, die in den Fahrplan kommen (R9), aufsteigend, je als
+## Vector2i(Beginn, letzter Tag) in Tagesindizes; ohne Dauer ist der letzte Tag der Beginn. Ein
+## Vorkommen, das vor dem 01.01.1985 beginnt, behält hier seinen echten Beginn, beim Winter ab dem
+## 01.12.1984 also −31; erst der Fahrplan setzt es auf Tag 0. Die Regel:
+## - Kandidaten sind die Vorkommen, die in den Jahren yearly_from − 1 bis yearly_to beginnen.
+## - Es zählt nur, was sich mit dem 01.01. von yearly_from bis 31.12. von yearly_to und mit dem
+##   Spielzeitraum überschneidet. So hat der Winter ab 1985 ein Vorkommen ab dem 01.12.1984, die
+##   CeBIT ab 1986 aber keins im März 1985.
+##
+## Der Fahrplan und der Zeitstrahl der Werkstatt fragen beide hier; so kann die Regel an keiner der
+## beiden Stellen anders ausfallen.
+static func yearly_occurrences(event: TimelineEvent) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	# Ein Vorkommen reicht höchstens ins Folgejahr. Was vor 1984 oder nach 1999 beginnt, berührt den
+	# Spielzeitraum deshalb nie. Die Grenzen ändern am Ergebnis nichts; sie halten nur unsinnige
+	# Jahre schnell, wie sie die Werkstatt bis zur Korrektur zeigt (V08), etwa 999999999.
+	var first_year := maxi(event.yearly_from - 1, CatalogValidator.FIRST_YEAR - 1)
+	var last_year := mini(event.yearly_to, CatalogValidator.LAST_YEAR)
+	var from_day := maxi(_new_year(event.yearly_from), FIRST_DAY)
+	var to_day := mini(_new_year(event.yearly_to + 1) - 1, LAST_DAY)
+	for year in range(first_year, last_year + 1):
+		var occurrence := _occurrence(event, year)
+		if occurrence.is_empty() or occurrence[1] < from_day or occurrence[0] > to_day:
+			continue
+		result.append(Vector2i(occurrence[0], occurrence[1]))
+	return result
+
+
 # --- Fahrplan anlegen ----------------------------------------------------------
 
 ## Würfelt die Termine eines Ereignisses „beim Start gesetzt“ (R7):
@@ -203,25 +231,16 @@ func _plan_preset(event: TimelineEvent) -> void:
 		_add_entry(event, event.window_from + offsets[i] + i * gap, ScheduleEntry.Origin.PRESET)
 
 
-## Legt die Termine eines jährlichen Ereignisses an, einen je Vorkommen (R9):
-## - Kandidaten sind die Vorkommen, die in den Jahren yearly_from − 1 bis yearly_to beginnen.
-## - In den Fahrplan kommt eines nur, wenn es sich mit dem 01.01. von yearly_from bis 31.12. von
-##   yearly_to und mit dem Spielzeitraum überschneidet. So hat der Winter ab 1985 ein Vorkommen ab
-##   dem 01.12.1984, die CeBIT ab 1986 aber keins im März 1985.
-## - Ein Vorkommen, das vor dem 01.01.1985 begann, beginnt im Fahrplan am 01.01.1985 und trägt
-##   started_before_game. Seine Tage vor 1985 rechnet GameDate mit negativen Indizes.
+## Legt die Termine eines jährlichen Ereignisses an, einen je Vorkommen aus yearly_occurrences()
+## (R9). Ein Vorkommen, das vor dem 01.01.1985 begann, beginnt im Fahrplan am 01.01.1985 und trägt
+## started_before_game. Seine Tage vor 1985 rechnet GameDate mit negativen Indizes.
 func _plan_yearly(event: TimelineEvent) -> void:
-	var from_day := maxi(GameDate.new(event.yearly_from, 1, 1).to_day_index(), FIRST_DAY)
-	var to_day := mini(GameDate.new(event.yearly_to, 12, 31).to_day_index(), LAST_DAY)
-	for year in range(event.yearly_from - 1, event.yearly_to + 1):
-		var occurrence := _occurrence(event, year)
-		if occurrence.is_empty() or occurrence[1] < from_day or occurrence[0] > to_day:
-			continue
-		var entry := _add_entry(event, maxi(occurrence[0], FIRST_DAY), ScheduleEntry.Origin.YEARLY)
-		entry.started_before_game = occurrence[0] < FIRST_DAY
+	for occurrence in yearly_occurrences(event):
+		var entry := _add_entry(event, maxi(occurrence.x, FIRST_DAY), ScheduleEntry.Origin.YEARLY)
+		entry.started_before_game = occurrence.x < FIRST_DAY
 		# Das Ende wird am Tag nach dem letzten gemeldet. Ohne Dauer bleibt end_day = day.
 		if event.has_duration():
-			entry.end_day = occurrence[1] + 1
+			entry.end_day = occurrence.y + 1
 
 
 ## Neuer, geplanter Termin. Er bekommt die nächste laufende Nummer und seine Stelle im Fahrplan:
@@ -665,3 +684,10 @@ static func _occurrence(event: TimelineEvent, year: int) -> PackedInt32Array:
 	if not GameDate.is_valid(end_year, end.x, last):
 		return PackedInt32Array()
 	return PackedInt32Array([first, GameDate.new(end_year, end.x, last).to_day_index()])
+
+
+## Tagesindex des 01.01. von [param year]. Jahre vor 1984 zählen wie 1984, Jahre nach 2001 wie 2001;
+## für yearly_occurrences() ändert das nichts, aber GameDate muss keine Jahrtausende abzählen.
+static func _new_year(year: int) -> int:
+	var clamped := clampi(year, CatalogValidator.FIRST_YEAR - 1, CatalogValidator.LAST_YEAR + 2)
+	return GameDate.new(clamped, 1, 1).to_day_index()

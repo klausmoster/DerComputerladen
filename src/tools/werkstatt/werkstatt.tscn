@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://tools/werkstatt/event_list.tscn" id="3_list"]
 [ext_resource type="Script" path="res://tools/werkstatt/issues_panel.gd" id="4_issues"]
 [ext_resource type="PackedScene" path="res://tools/werkstatt/event_form.tscn" id="5_form"]
+[ext_resource type="Script" path="res://tools/werkstatt/timeline_view.gd" id="6_timeline"]
 
 [node name="Werkstatt" type="Control"]
 layout_mode = 3
@@ -70,8 +71,9 @@ layout_mode = 2
 [node name="FileLabel" type="Label" parent="Layout/Toolbar/Bar"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Die Katalogdatei, die die Werkstatt bearbeitet"
+size_flags_horizontal = 3
 mouse_filter = 1
+text_overrun_behavior = 3
 
 [node name="DirtyLabel" type="Label" parent="Layout/Toolbar/Bar"]
 unique_name_in_owner = true
@@ -80,8 +82,8 @@ layout_mode = 2
 text = "· ungespeichert"
 
 [node name="Spacer" type="Control" parent="Layout/Toolbar/Bar"]
+custom_minimum_size = Vector2(16, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 mouse_filter = 2
 
 [node name="CountLabel" type="Label" parent="Layout/Toolbar/Bar"]
@@ -106,7 +108,8 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
-tooltip_text = "Hier steht ab Phase 6 der Zeitstrahl."
+size_flags_vertical = 3
+script = ExtResource("6_timeline")
 
 [node name="Tabs" type="TabContainer" parent="Layout/Main/Center"]
 unique_name_in_owner = true

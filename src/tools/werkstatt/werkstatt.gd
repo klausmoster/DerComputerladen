@@ -6,10 +6,10 @@ extends Control
 ## Katalog über einen CatalogEditor, fragt nach, bevor etwas verloren gehen könnte, und verdrahtet
 ## die Teile.
 ##
-## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung, später Zeitstrahl, Simulator
-## und Statistik. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft sie von
-## oben auf (refresh(), show_event() …); untereinander kennen sie sich nicht. Den Katalog ändert nur
-## der CatalogEditor, die Auswahl gehört der Werkstatt.
+## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung und Zeitstrahl, später
+## Simulator und Statistik. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft
+## sie von oben auf (refresh(), show_event() …); untereinander kennen sie sich nicht. Den Katalog
+## ändert nur der CatalogEditor, die Auswahl gehört der Werkstatt.
 ##
 ## Start im Editor mit F6, wenn die Szene offen ist, oder im Terminal, mit `--katalog` nach `--`
 ## auch für einen anderen Katalog:
@@ -50,6 +50,7 @@ var _open_error := OK
 @onready var _tabs: TabContainer = %Tabs
 @onready var _issues_panel: IssuesPanel = %IssuesPanel
 @onready var _event_form: EventForm = %EventForm
+@onready var _timeline_view: TimelineView = %TimelineView
 @onready var _backup_timer: Timer = %BackupTimer
 @onready var _close_dialog: ConfirmationDialog = %CloseDialog
 @onready var _revert_dialog: ConfirmationDialog = %RevertDialog
@@ -76,6 +77,7 @@ func _ready() -> void:
 	_tabs.set_tab_title(0, "Prüfung")
 	_event_list.editor = editor
 	_event_form.editor = editor
+	_timeline_view.editor = editor
 	_set_up_shortcuts()
 	_connect_signals()
 	_update_toolbar()
@@ -114,6 +116,7 @@ func select_event(id: String) -> void:
 func _on_selection_changed(id: String) -> void:
 	_event_list.select_event(id)
 	_event_form.show_event(id)
+	_timeline_view.select_event(id)
 
 
 ## Nach einer Änderung kann das gewählte Ereignis fehlen, etwa nach Löschen oder Rückgängig.
@@ -300,6 +303,14 @@ func _connect_signals() -> void:
 	_issues_panel.issue_activated.connect(_on_issue_activated)
 	_event_form.event_renamed.connect(func(_old_id: String, new_id: String) -> void:
 		select_event(new_id))
+	# Der Zeitstrahl wählt wie die Liste, und ein Ziehen geht beim Loslassen als ein Schritt an den
+	# CatalogEditor; Cmd+Z nimmt es zurück.
+	_timeline_view.event_clicked.connect(select_event)
+	_timeline_view.event_moved.connect(editor.set_event_field)
+	_timeline_view.create_requested.connect(_on_create_requested)
+	_timeline_view.event_created.connect(_on_event_created)
+	_timeline_view.edit_requested.connect(_on_edit_requested)
+	_timeline_view.delete_requested.connect(_on_delete_requested)
 	_save_button.pressed.connect(request_save)
 	_revert_button.pressed.connect(request_revert)
 	_undo_button.pressed.connect(func() -> void: editor.undo())
@@ -323,13 +334,14 @@ func _connect_signals() -> void:
 	_missing_dialog.confirmed.connect(editor.new_catalog)
 
 
-## Nach jeder Änderung: Liste und Formular neu, die Toolbar auch. Fehlt danach das gewählte
-## Ereignis, gilt am Ende des Bilds keins mehr als gewählt; bis dahin kann noch eine neue Kennung
-## kommen, wenn die Änderung ein Umbenennen war.
+## Nach jeder Änderung: Liste, Formular und Zeitstrahl neu, die Toolbar auch. Fehlt danach das
+## gewählte Ereignis, gilt am Ende des Bilds keins mehr als gewählt; bis dahin kann noch eine neue
+## Kennung kommen, wenn die Änderung ein Umbenennen war.
 func _on_catalog_changed() -> void:
 	_event_list.refresh()
 	_event_list.select_event(selected_id)
 	_event_form.refresh()
+	_timeline_view.refresh()
 	_update_toolbar()
 	_check_selection.call_deferred()
 
@@ -343,6 +355,19 @@ func _on_issues_changed(issues: Array[CatalogIssue]) -> void:
 
 ## Ein neues Ereignis, aus dem Dialog oder als Kopie, wird gewählt; der Fokus steht im Titel.
 func _on_event_created(id: String) -> void:
+	select_event(id)
+	_event_form.focus_title()
+
+
+## Doppelklick auf freie Fläche im Zeitstrahl (US4, Szenario 5): Der Dialog „Neu …“ der Liste
+## öffnet sich vorbelegt mit der Art fix, der Kategorie der Zeile und dem Tag. Erst „Anlegen“
+## legt das Ereignis an, und dann geht es weiter wie bei jedem neuen über event_created.
+func _on_create_requested(category: String, day: int) -> void:
+	_event_list.open_new_dialog(TimelineEvent.Kind.FIXED, category, day)
+
+
+## „Bearbeiten“ im Menü des Zeitstrahls: Das Ereignis wird gewählt, der Fokus steht im Titel.
+func _on_edit_requested(id: String) -> void:
 	select_event(id)
 	_event_form.focus_title()
 
@@ -408,7 +433,10 @@ static func keys_text(key: String, shift: bool = false) -> String:
 ## Zahl der Meldungen und welche Knöpfe gerade gehen.
 func _update_toolbar() -> void:
 	var has_catalog := editor.catalog != null
+	# Der Dateiname nimmt den freien Platz der Toolbar und kürzt sich darin mit „…“, sonst machte
+	# ein langer Pfad die ganze Werkstatt breiter als ihr Fenster. Voll steht er im Hinweis.
 	_file_label.text = editor.path if has_catalog else "%s (nicht geladen)" % editor.path
+	_file_label.tooltip_text = "Die Katalogdatei, die die Werkstatt bearbeitet:\n%s" % editor.path
 	_dirty_label.visible = has_catalog and editor.is_dirty()
 	_count_label.text = _count_text()
 	_save_button.disabled = not has_catalog

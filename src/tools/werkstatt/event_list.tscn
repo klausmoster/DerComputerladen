@@ -94,6 +94,20 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="DateCaption" type="Label" parent="NewDialog/Fields"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Datum"
+
+[node name="NewDate" type="Label" parent="NewDialog/Fields"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Der Tag aus dem Zeitstrahl. Er gilt nur, solange die Art „fix“ ist."
+mouse_filter = 1
+
 [node name="IdCaption" type="Label" parent="NewDialog/Fields"]
 layout_mode = 2
 text = "Kennung"
