@@ -12,14 +12,6 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
-### Zweite Lückensuche von Feature 002 (T092, 2026-10-21)
-
-- **Noch eine Lückensuche nach Phase 12?** `docs/ki_dev.md`, Punkt 6, verlangt sie nach der
-  letzten Umsetzungsphase, und das wäre jetzt Phase 12. Die zweite Suche fand nur noch
-  Kleinigkeiten. Empfehlung: Nach Phase 12 prüft Claude deren Aufgaben wie jede Phase, ohne eine
-  dritte Suche über das ganze Feature. Punkt 6 bekommt dazu den Satz: „Eine weitere Lückensuche
-  läuft nur, wenn die letzte etwas Mittleres oder Schwereres fand, das nicht nur Aussehen ist.“
-
 ### Phase 12 von Feature 002 (2026-10-21)
 
 - **Vier Zeilen in den Tabellen (T101):** Mit der neuen Vorgabe zeigen Statistik mit Warnung und
@@ -43,9 +35,6 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ### Arbeitsweise (2026-10-21)
 
-- **`CLAUDE.md` verweist auf `docs/ki_dev.md`:** Klaus schrieb „ki_dev ist in claude.md“, dort
-  stand aber kein Verweis. Claude hat ihn ergänzt, mit der Regel zum lokalen Gedächtnis und dem
-  Hinweis auf diese Datei. Bitte bestätigen.
 - **Lokales Gedächtnis aufgelöst:** Was dort stand, ist nach `docs/ki_dev.md` und hierher
   umgezogen. Danach hat Claude die Dateien im lokalen Memory-Verzeichnis gelöscht.
 
@@ -102,6 +91,11 @@ Lernnotizen.
 
 ## Erledigt
 
+- **`CLAUDE.md` verweist auf `docs/ki_dev.md`** (Claudes Ergänzung nach Klaus' Satz „ki_dev ist in
+  claude.md“): Klaus hat den Absatz „Arbeitsweise“ mit dem Merge von Feature 002 nach `main`
+  freigegeben (2026-10-21).
+- **Noch eine Lückensuche nach Phase 12?** Klaus, 2026-10-21: nein, weiter mit T072. Punkt 6 in
+  `docs/ki_dev.md` bleibt, wie er ist; für Phase 12 gilt diese Ausnahme.
 - **Phase 11 und 12 zusammen abnehmen** (Claudes Vorschlag): Klaus hat am 2026-10-21 beide mit
   T103 abgenommen; sie stehen in einem Commit.
 - **Wirkungen abgesagter und entfallener Termine (T097):** Klaus, 2026-10-21: nicht zeigen, sie

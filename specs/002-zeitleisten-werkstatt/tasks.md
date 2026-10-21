@@ -807,10 +807,13 @@ letzte Phase.
   Lückensuche; die Lernnotizen aller Phasen stehen vollständig in
   `specs/002-zeitleisten-werkstatt/lernnotizen.md`. Ergebnis (2026-10-21): 14 Lücken, als
   Phase 11 mit T075 bis T088 angehängt
-- [ ] T072 [K] Quickstart vollständig durchgehen (Abschnitte 1 bis 6), dabei nach Abschnitt 4.7
+- [x] T072 [K] Quickstart vollständig durchgehen (Abschnitte 1 bis 6), dabei nach Abschnitt 4.7
   SC-001 (höchstens 10 Minuten) messen und die Werkstatt abnehmen (SC-010)
-- [ ] T073 [K] Feature abnehmen: die Abnahmen aus T006, T019, T030, T040, T046, T051, T055, T063,
+  Erledigt (Klaus, 2026-10-21): alle sechs Abschnitte bestanden, SC-001 in höchstens 10 Minuten,
+  Werkstatt auch mit 500 Ereignissen flüssig und abgenommen (SC-010).
+- [x] T073 [K] Feature abnehmen: die Abnahmen aus T006, T019, T030, T040, T046, T051, T055, T063,
   T067, T069 und T072 sind erledigt; über den Merge nach `main` entscheiden
+  Erledigt (Klaus, 2026-10-21): Feature 002 abgenommen und nach `main` zusammengeführt.
 
 ---
 
@@ -1082,3 +1085,5 @@ Gesamtabnahme mit T072 und T073 folgt danach.
 - [x] T103 [K] Phase 11 und 12 abnehmen nach quickstart.md, Zeilen „ab Phase 11“ und die von Phase
   12; danach T072 und T073 per docs/ki_dev.md, Ablauf je Feature, Punkt 5 (missing). Erledigt
   (Klaus, 2026-10-21): Phase 11 und 12 abgenommen
+
+Keine weitere Lückensuche nach Phase 12 (Klaus, 2026-10-21); weiter mit T072 und T073.

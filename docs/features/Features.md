@@ -45,7 +45,7 @@ unter „Offene Fragen", sind aber eigene Systeme.
 | 01-02 | [[01-02-ereignis-engine]] | fertig | tasks |
 | 02-01 | [[02-01-bible-importer]] | spezifiziert | plan |
 | 001 | [Start bis zum Hauptmenü](../../specs/001-hauptmenue/spec.md), Spec-Kit-Pilot, System 10 | fertig | tasks |
-| 002 | [Zeitleisten-Werkstatt](../../specs/002-zeitleisten-werkstatt/spec.md), System 01 | in Arbeit: Phasen 1 bis 12 abgenommen; offen ist die Gesamtabnahme (T072, T073) | tasks |
+| 002 | [Zeitleisten-Werkstatt](../../specs/002-zeitleisten-werkstatt/spec.md), System 01 | fertig | tasks |
 
 Diese Tabelle wird derzeit von Hand gepflegt. Ab etwa zehn Features lohnt ein
 Generator, der sie aus dem Frontmatter baut — gleiches Prinzip wie
