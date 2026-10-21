@@ -89,6 +89,13 @@ Lernnotizen.
     und Grund geprüft. Auch ein negativer Seed ist ein Lesefehler.
   - **Mindesthöhe (T101):** Die 80 px, die T091 jedem Bereich zusichert, bleiben.
 
+### Feature 003, Klärung der Spec (2026-10-21)
+
+- **Chance je Zeitabschnitt (FR-015):** Gilt ein Start-Modifikator nur für einen Teil des Spiels,
+  nennt die Anzeige im Ereignisformular die Chance je Abschnitt, etwa „Schwer 3 % bis 31.12.1994,
+  6 % ab 01.01.1995“. Das folgt aus zwei Antworten von Klaus, Zeitraum und Anzeige nur zum Lesen;
+  die Form hat Claude gewählt.
+
 ## Erledigt
 
 - **`CLAUDE.md` verweist auf `docs/ki_dev.md`** (Claudes Ergänzung nach Klaus' Satz „ki_dev ist in
