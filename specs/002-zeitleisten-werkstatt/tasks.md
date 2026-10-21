@@ -616,7 +616,7 @@ Protokoll stimmt mit der Textausgabe überein.
 
 ### Implementation for User Story 5
 
-- [ ] T052 [A] [US5] `src/tools/werkstatt/simulator_panel.tscn` und `simulator_panel.gd`
+- [x] T052 [A] [US5] `src/tools/werkstatt/simulator_panel.tscn` und `simulator_panel.gd`
   (`SimulatorPanel`), Grundfunktionen laut Vertrag:
   - **Lauf:** Seed-Feld, das nur Ziffern annimmt, 0 bis 2.147.483.647 (FR-040), „Würfeln“,
     „Fahrplan erzeugen“. Gerechnet wird auf `editor.catalog.without_faulty(editor.issues())`;
@@ -626,14 +626,14 @@ Protokoll stimmt mit der Textausgabe überein.
   - **Anzeige:** Fahrplan-Tabelle mit Filter nach Zustand; Begründung und verzögerte Wirkungen des
     gewählten Termins; Protokoll.
   - **Katalog:** Ändert er sich während eines Laufs, erscheint „Katalog geändert, neu starten“.
-- [ ] T053 [A] [US5] `SimulatorPanel` als Tab „Simulator“ in `src/tools/werkstatt/werkstatt.tscn`
+- [x] T053 [A] [US5] `SimulatorPanel` als Tab „Simulator“ in `src/tools/werkstatt/werkstatt.tscn`
   einbinden
-- [ ] T054 [A] [US5] `src/test/test_werkstatt_scene.gd` erweitern:
+- [x] T054 [A] [US5] `src/test/test_werkstatt_scene.gd` erweitern:
   - Der Simulator erzeugt headless mit einer Fixture für Seed 4711 einen Fahrplan, und die
     Tabelle hat Zeilen.
   - Nach „Bis zum Ende“ sind `GameClock.date` und `GameClock.paused` unverändert (US5,
     Szenario 5).
-- [ ] T055 [K] [US5] Phase 7 abnehmen nach quickstart.md, Abschnitte 1 und 4.4, darin SC-004
+- [x] T055 [K] [US5] Phase 7 abnehmen nach quickstart.md, Abschnitte 1 und 4.4, darin SC-004
   („Bis zum Ende“ unter 1 Sekunde), SC-007, FR-041 und FR-042
 
 **Checkpoint**: Die Zeitleiste lässt sich ohne Spiel durchspielen. Abnahme durch Klaus, dann
@@ -769,7 +769,9 @@ letzte Phase.
     `CatalogEditor` samt neuer Prüfung unter 100 ms, ein Spiel unter 2 s.
 - [ ] T069 [K] SC-011 nach quickstart.md, Abschnitt 5 von Hand prüfen:
   - `time` der Textausgabe;
-  - Werkstatt mit `--katalog`, Ändern und Ziehen ohne Verzögerung;
+  - Werkstatt mit `--katalog`, Ändern und Ziehen ohne Verzögerung. Gemessen bei Phase 7 mit 500
+    Ereignissen, headless: eine Änderung ohne Lauf 153 ms, „Fahrplan erzeugen“ 200 ms, „Bis zum
+    Ende“ 349 ms;
   - Statistik unter 5 Minuten.
 - [ ] T070 [C] [P] Doku nachziehen:
   - `CLAUDE.md`, Tabelle „Aufbau“: In der Zeile `src/core/` weicht „Event-Resources“ dem Kern

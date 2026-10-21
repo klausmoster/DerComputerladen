@@ -118,7 +118,7 @@ Szene noch die Pixelschrift des Spiels; die Werkstatt setzt Open Sans erst beim 
 | Rechtsklick auf ein Ereignis | Menü Bearbeiten, Duplizieren, Löschen | US4, Szenario 4 |
 | Doppelklick in der Zeile Hardware, März 1996 | Dialog „Neu …“ mit Art fix, Kategorie Hardware und dem Tag; nach Titel und Enter das neue Ereignis an diesem Tag, gewählt, Fokus im Titel | US4, Szenario 5; R16 |
 | Auf dem Trackpad mit zwei Fingern waagerecht und senkrecht wischen, dann kneifen | Wischen verschiebt die Jahre bzw. rollt die Zeilen; Kneifen zoomt um den Mauszeiger | R16 |
-| Mit Cmd+Mausrad hineinzoomen | bis zu einem Monat mit Tagesstrichen | US4, Szenario 6 |
+| Mit Cmd+Mausrad, mit Kneifen oder mit „+“ oben links hineinzoomen, dann „Alles“ | bis zu einem Monat mit Tagesstrichen, die waagerechte Leiste bekommt einen Griff; „Alles“ zeigt wieder 1985 bis 1999 | US4, Szenario 6 |
 | Weihnachtsgeschäft ziehen | geht nicht, Hinweis „nur im Formular änderbar“ | FR-039 |
 | Zwei Ereignisse derselben Kategorie auf denselben Tag legen | gestapelt untereinander, Titel nur bei Platz | FR-037 |
 | Titel und Farben ansehen | Titel in Textfarbe neben der Marke, Kategorien gut unterscheidbar | FR-029, R14 |
@@ -129,7 +129,7 @@ Szene noch die Pixelschrift des Spiels; die Werkstatt setzt Open Sans erst beim 
 |---|---|---|
 | Buchstaben ins Seed-Feld tippen | werden nicht angenommen | FR-040 |
 | Seed 4711, „Fahrplan erzeugen“ | alle feststehenden Termine, Zustand „geplant“ | US5, Szenario 1 |
-| „+1 Tag“, „+1 Monat“, „+1 Jahr“, dann „Bis …“ 31.12.1990 | Datum springt entsprechend, das Protokoll wächst, Zustände wechseln auf „eingetreten“ oder „läuft“ | FR-041 |
+| „+1 Tag“, „+1 Monat“, „+1 Jahr“, dann „Bis“ mit 31.12.1990 im Datumsfeld | Datum springt entsprechend, das Protokoll wächst, Zustände wechseln auf „eingetreten“ oder „läuft“ | FR-041 |
 | „Bis zum Ende“ mit dem übernommenen Katalog | in unter 1 Sekunde fertig, Protokoll in zeitlicher Reihenfolge | US5, Szenario 2; SC-004 |
 | Während eines Laufs ein Ereignis im Katalog ändern | Hinweis „Katalog geändert, neu starten“, der Lauf bleibt, wie er ist | FR-042 |
 | Ein Ereignis absichtlich fehlerhaft machen, „Fahrplan erzeugen“ | Ereignis ausgenommen, Hinweis nennt es | FR-042 |

@@ -43,6 +43,14 @@ border_width_bottom = 2
 border_color = Color(0.7529412, 0.22352941, 0.16862746, 1)
 anti_aliasing = false
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_error_notice"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0.7529412, 0.22352941, 0.16862746, 1)
+anti_aliasing = false
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_focus"]
 bg_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
 draw_center = false
@@ -358,6 +366,9 @@ ErrorLabel/base_type = &"Label"
 ErrorLabel/colors/font_color = Color(0.7529412, 0.22352941, 0.16862746, 1)
 ErrorLineEdit/base_type = &"LineEdit"
 ErrorLineEdit/styles/normal = SubResource("StyleBoxFlat_field_error")
+ErrorNoticeLabel/base_type = &"Label"
+ErrorNoticeLabel/colors/font_color = Color(0.9607843, 0.9411765, 0.8862745, 1)
+ErrorNoticeLabel/styles/normal = SubResource("StyleBoxFlat_error_notice")
 GridContainer/constants/h_separation = 8
 GridContainer/constants/v_separation = 4
 HSplitContainer/icons/grabber = ExtResource("3_grip_h")

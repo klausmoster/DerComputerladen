@@ -184,6 +184,138 @@ func test_cmd_wischen_und_kneifen_zoomen_um_die_maus() -> void:
 	assert_eq(_zeitstrahl.visible_from, 0.0)
 
 
+func test_waagerechte_leiste_folgt_zoom_mausrad_und_wischen() -> void:
+	# Arrange: ganz herausgezoomt füllt der Griff die Bahn.
+	var leiste := _waagerechte_leiste()
+	var flaeche := _zeitstrahl.time_rect()
+	assert_true(leiste.visible, "Die Leiste ist immer da.")
+	assert_eq([leiste.min_value, leiste.max_value, leiste.value], [0.0, 5478.0, 0.0])
+	assert_almost_eq(leiste.page, 5478.0, 0.001, "Der Griff füllt die ganze Bahn.")
+
+	# Act und Assert: Zoom ändert page, die sichtbaren Tage.
+	var maus := Vector2(flaeche.position.x + 300.0, 100.0)
+	for i in 6:
+		_rad(MOUSE_BUTTON_WHEEL_UP, maus, true)
+	assert_almost_eq(leiste.page, flaeche.size.x * _zeitstrahl.days_per_pixel, 0.001)
+	assert_lt(leiste.page, 5478.0)
+	assert_almost_eq(leiste.value, _zeitstrahl.visible_from, 0.001, "Nach dem Zoom")
+	# Mausrad und Wischen ändern value.
+	var vorher := leiste.value
+	_rad(MOUSE_BUTTON_WHEEL_DOWN, maus)
+	assert_gt(leiste.value, vorher, "Das Mausrad schiebt den Griff nach rechts.")
+	assert_almost_eq(leiste.value, _zeitstrahl.visible_from, 0.001, "Nach dem Mausrad")
+	_wischen(maus, Vector2(-4.0, 0.0))
+	assert_almost_eq(leiste.value, _zeitstrahl.visible_from, 0.001, "Nach dem Wischen")
+	# Auch nach refresh() stimmt die Leiste.
+	_zeitstrahl.refresh()
+	assert_almost_eq(leiste.value, _zeitstrahl.visible_from, 0.001, "Nach refresh()")
+
+
+func test_ziehen_an_der_waagerechten_leiste_verschiebt_die_ansicht() -> void:
+	# Arrange: ein Tag je Pixel ab dem 01.01.1985
+	_zeitstrahl.days_per_pixel = 1.0
+	_zeitstrahl.visible_from = 0.0
+	var leiste := _waagerechte_leiste()
+	var spanne := _zeitstrahl.time_rect().size.x
+
+	# Act und Assert: Wer am Griff zieht, setzt value; die Ansicht folgt.
+	leiste.value = 2000.0
+	assert_almost_eq(_zeitstrahl.visible_from, 2000.0, 0.001)
+	# Über das Ende hinaus geht es nicht, in denselben Grenzen wie beim Verschieben.
+	leiste.value = 99999.0
+	assert_almost_eq(_zeitstrahl.visible_from, 5478.0 - spanne, 0.001)
+	assert_almost_eq(leiste.value, _zeitstrahl.visible_from, 0.001)
+
+
+func test_waagerechte_leiste_verdeckt_keine_zeile() -> void:
+	# Arrange: so niedrig, dass die Zeilen rollen müssen; dann ganz nach unten
+	_zeitstrahl.size = Vector2(1000.0, 150.0)
+	var leiste := _waagerechte_leiste()
+	var rollleiste := _rollleiste()
+	var flaeche := _zeitstrahl.time_rect()
+	assert_true(rollleiste.visible)
+
+	# Act
+	rollleiste.value = rollleiste.max_value
+
+	# Assert: Die Leiste liegt unten im Zeitstrahl unter der Zeitfläche, von der Spalte bis zur
+	# senkrechten Leiste.
+	assert_eq(leiste.position.y + leiste.size.y, _zeitstrahl.size.y, "Ganz unten, sichtbar.")
+	assert_eq(leiste.position, Vector2(flaeche.position.x, flaeche.end.y))
+	assert_eq(leiste.size.x, flaeche.size.x)
+	assert_eq(rollleiste.position.y + rollleiste.size.y, leiste.position.y,
+		"Die senkrechte Leiste endet, wo die waagerechte beginnt.")
+	# Die unterste Zeile, Kalender, steht ganz über der Leiste.
+	var marken := _zeitstrahl.mark_rects("weihnachtsgeschaeft")
+	assert_eq(marken.size(), 15)
+	var unterste := 0.0
+	for marke in marken:
+		unterste = maxf(unterste, marke.end.y)
+	assert_lte(unterste, leiste.position.y, "Keine Marke steht unter der Leiste.")
+
+
+func test_zoomknoepfe_zoomen_um_die_mitte() -> void:
+	# Arrange: ganz herausgezoomt; die Mitte ist der Tag 2739.
+	var leiste := _waagerechte_leiste()
+	var mitte := _mittlerer_tag()
+
+	# Act und Assert: „+“ halbiert die sichtbaren Tage um die Mitte …
+	_knopf("+").pressed.emit()
+	assert_almost_eq(_sichtbare_tage(), 5478.0 / 2.0, 0.001)
+	assert_almost_eq(_mittlerer_tag(), mitte, 0.001, "Die Mitte bleibt.")
+	_knopf("+").pressed.emit()
+	assert_almost_eq(_sichtbare_tage(), 5478.0 / 4.0, 0.001)
+	assert_almost_eq(_mittlerer_tag(), mitte, 0.001)
+	# … „−“ verdoppelt sie, und die Leiste folgt.
+	_knopf("−").pressed.emit()
+	assert_almost_eq(_sichtbare_tage(), 5478.0 / 2.0, 0.001)
+	assert_almost_eq(_mittlerer_tag(), mitte, 0.001)
+	assert_almost_eq(leiste.page, _sichtbare_tage(), 0.001)
+	assert_almost_eq(leiste.value, _zeitstrahl.visible_from, 0.001)
+	# „Alles“ zeigt wieder 1985 bis 1999.
+	_knopf("Alles").pressed.emit()
+	assert_almost_eq(_sichtbare_tage(), 5478.0, 0.001)
+	assert_eq(_zeitstrahl.visible_from, 0.0)
+	assert_almost_eq(leiste.page, 5478.0, 0.001)
+	assert_eq(leiste.value, 0.0)
+
+
+func test_zoomknoepfe_sind_an_den_grenzen_gesperrt() -> void:
+	# Arrange
+	var plus := _knopf("+")
+	var minus := _knopf("−")
+	var alles := _knopf("Alles")
+
+	# Assert: Ganz herausgezoomt geht nur „+“.
+	assert_eq([plus.disabled, minus.disabled, alles.disabled], [false, true, true])
+
+	# Act: bis zum Anschlag hinein
+	for i in 10:
+		plus.pressed.emit()
+
+	# Assert: bei 31 Tagen ist „+“ gesperrt.
+	assert_almost_eq(_sichtbare_tage(), 31.0, 0.001)
+	assert_eq([plus.disabled, minus.disabled, alles.disabled], [true, false, false])
+	alles.pressed.emit()
+	assert_eq([plus.disabled, minus.disabled, alles.disabled], [false, true, true])
+
+
+func test_zoomknoepfe_stehen_ueber_der_spalte_mit_hinweisen() -> void:
+	# Arrange: das Feld über der Spalte, in der Höhe der Achse
+	var feld := Rect2(0.0, 0.0, _zeitstrahl.time_rect().position.x, TimelineView.AXIS_HEIGHT)
+	var befehl := "Cmd" if OS.get_name() == "macOS" else "Ctrl"
+
+	# Assert
+	for text: String in ["−", "+", "Alles"]:
+		assert_true(feld.encloses(_knopf(text).get_rect()), "„%s“ steht im Feld." % text)
+		assert_eq(_knopf(text).focus_mode, Control.FOCUS_NONE, "„%s“ nimmt keinen Fokus." % text)
+	assert_false(_knopf("−").get_rect().intersects(_knopf("+").get_rect()), "nebeneinander")
+	assert_false(_knopf("+").get_rect().intersects(_knopf("Alles").get_rect()), "nebeneinander")
+	assert_eq(_knopf("+").tooltip_text, "Vergrößern; auch Kneifen oder %s+Mausrad" % befehl)
+	assert_eq(_knopf("−").tooltip_text, "Verkleinern; auch Kneifen oder %s+Mausrad" % befehl)
+	assert_eq(_knopf("Alles").tooltip_text, "Ganzer Zeitraum 1985 bis 1999")
+
+
 func test_ziehen_auf_freier_flaeche_verschiebt() -> void:
 	# Arrange: zwei Tage je Pixel, ab dem 18.03.1993; im Juni 1996 hat die Zeile Hardware nichts.
 	_zeitstrahl.days_per_pixel = 2.0
@@ -616,3 +748,32 @@ func _rollleiste() -> VScrollBar:
 			return kind
 	fail_test("Der Zeitstrahl hat keine Rollleiste.")
 	return VScrollBar.new()
+
+
+## Der Zoom-Knopf mit dem Text [param text]; die Knöpfe sind interne Kinder.
+func _knopf(text: String) -> Button:
+	for kind in _zeitstrahl.get_children(true):
+		if kind is Button and kind.text == text:
+			return kind
+	fail_test("Der Zeitstrahl hat keinen Knopf „%s“." % text)
+	return Button.new()
+
+
+## Wie viele Tage die Zeitfläche gerade zeigt.
+func _sichtbare_tage() -> float:
+	return _zeitstrahl.time_rect().size.x * _zeitstrahl.days_per_pixel
+
+
+## Der Tag in der Mitte der Zeitfläche.
+func _mittlerer_tag() -> float:
+	var flaeche := _zeitstrahl.time_rect()
+	return _zeitstrahl.x_to_day(flaeche.position.x + flaeche.size.x / 2.0)
+
+
+## Die waagerechte Leiste durch die Jahre, ebenfalls ein internes Kind.
+func _waagerechte_leiste() -> HScrollBar:
+	for kind in _zeitstrahl.get_children(true):
+		if kind is HScrollBar:
+			return kind
+	fail_test("Der Zeitstrahl hat keine waagerechte Leiste.")
+	return HScrollBar.new()

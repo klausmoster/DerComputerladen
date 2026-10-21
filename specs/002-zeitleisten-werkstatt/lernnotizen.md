@@ -566,3 +566,120 @@ Der Agent schreibt die Notizen, Claude trägt sie je Phase hier ein.
   unbekanntes Token Magenta, und das ist keine Farbe der Palette.
 - **Fehlerprobe:** 14 weitere eingebaute Fehler, etwa „Zeitstrahl nicht neu“, „Dialog nicht
   vorbelegt“ oder „Kneifen verkehrt“, ließen jeweils mindestens einen Test scheitern.
+
+### Waagerechte Leiste
+
+- **Synchron ohne Rückkopplung:** Die `HScrollBar` ist ein internes Kind wie die senkrechte
+  Leiste. `value` ist `visible_from`, `page` sind die sichtbaren Tage, `max_value` die 5478 Tage.
+  Zieht Klaus an ihr, setzt `_on_hscroll_changed()` `visible_from`. Ändert sich die Ansicht auf
+  anderem Weg, stellt der Setter von `visible_from` die Leiste über `_sync_hscroll()` nach, mit
+  `set_value_no_signal()`. Das meldet kein `value_changed`, also ruft die Leiste die Ansicht
+  nicht wieder auf. Muss `Range` beim Ändern von `page` den Wert begrenzen, meldet es das aber
+  von sich aus; diesen Fall fängt die Sperre `_syncing_hscroll` ab.
+- **Platz statt Überdecken:** `time_rect()` endet über der Leiste, und Zeilen, Raster und
+  senkrechte Leiste rechnen damit. Ein Streifen Grund unter der Zeitfläche deckt zu, was eine
+  halb sichtbare Zeile dorthin zeichnen würde. Alle Leisten der Werkstatt sind 8 Pixel breit,
+  auch die von Tree und ScrollContainer.
+
+### Zoom-Knöpfe
+
+- **Knöpfe in einem selbst zeichnenden Control:** „−“, „+“ und „Alles“ sind echte `Button` als
+  interne Kinder, wie die Leisten. Sie zeichnen sich nach `_draw()` des Zeitstrahls, also über
+  der Ecke, und bekommen Relief, Kontur und Sperrzustand aus dem Theme. Weil der Zeitstrahl kein
+  Container ist, setzt `_layout_buttons()` Größe und Lage selbst.
+- **Erst messen, wenn das Theme da ist:** Die Mindestgröße eines Knopfs stimmt erst, wenn er sein
+  Theme kennt, und das ist nach dem Zeitstrahl selbst. Gemessen ohne Theme waren es 14 × 22
+  Pixel, mit Theme 27 × 29. Deshalb meldet jeder Knopf `minimum_size_changed` an
+  `_on_parts_resized()`, wie die Leisten. Die Spalte wird nur so breit, wie Namen oder Knöpfe es
+  verlangen; beim echten Katalog sind beides 118 Pixel.
+- `focus_mode = FOCUS_NONE` lässt einem Feld im Formular seinen Fokus. Die Knöpfe sperren sich an
+  den Grenzen über `disabled`, das der Setter von `days_per_pixel` nach jedem Zoom nachstellt.
+
+## Phase 7
+
+### T052 Der Simulator
+
+- **Feste Teile in der Szene, Zeilen im Code:** `src/tools/werkstatt/simulator_panel.tscn` hält
+  Knöpfe, Felder, Hinweise und die beiden Tabellen; die Zeilen legt `simulator_panel.gd` an, denn
+  sie hängen am Lauf. Mit `unique_name_in_owner` findet `%SeedEdit` sein Feld, egal wo es steht.
+- **Ein eigener Lauf statt der Spieluhr:** `generate_plan()` legt
+  `TimelineRun.new(editor.catalog.without_faulty(editor.issues()), seed)` an. Der Lauf kopiert den
+  Katalog in `_init()` selbst, spätere Änderungen erreichen ihn nicht. Das Panel nennt weder
+  `GameClock` noch `Timeline`; dass es die Uhr nicht anfasst, folgt schon daraus.
+- **Schritte wie die Spieluhr:** `_first_of_next_month()` und `_first_of_next_year()` rechnen wie
+  `GameClock.advance_one_month()` bis zum nächsten Ersten. Vor dem ersten Schritt steht der Lauf
+  auf −1, dem 31.12.1984 (negative Tage seit T007); deshalb landet jeder erste Schritt auf dem
+  01.01.1985. `play_until()` ruft `advance_to()`, das von Stichtag zu Stichtag springt (R6):
+  „Bis zum Ende“ dauert mit dem echten Katalog rund 21 ms, samt Tabelle und Protokoll.
+- **Seed-Feld:** Ein `LineEdit` meldet `text_changed` erst am Ende des Bilds, einmal für alles, was
+  in diesem Bild getippt wurde (Probe). `_on_seed_changed()` wirft dort Nicht-Ziffern hinaus und
+  begrenzt auf 2.147.483.647; gezeichnet ist bis dahin nichts. Das Setzen von `text` meldet sich
+  nicht noch einmal.
+- **„Katalog geändert“:** `_catalog_key()` ist der Katalog als kanonischer Text plus die Kennungen,
+  die `without_faulty()` auslässt. Stimmt er nicht mehr mit dem beim Erzeugen überein, erscheint
+  der Hinweis; macht Klaus die Änderung rückgängig, verschwindet er wieder. `refresh()` merkt den
+  Vergleich per `call_deferred()` vor, so kosten die zwei Signale je Änderung nur einen.
+- **Zebra von Hand:** Eine Probe im Fenster zeigte, dass `Tree` und `ItemList` die eigene Farbe
+  einer Zelle über Auswahl und Überfahren malen; eine grüne Zeile verdeckte das petrol der Auswahl.
+  `Zebra` setzt deshalb alle drei Farben selbst mit `set_custom_bg_color()`, zuerst als innere
+  Klasse, inzwischen in eigener Datei (siehe unten). Das Signal `gui_input` kommt, bevor der Tree
+  die Maus verarbeitet; `get_item_at_position()` sucht die Zeile darunter einmal je Bild.
+- **Protokoll ohne Umbruch:** Mit `TreeItem.set_autowrap_mode()` kennt der Tree die Höhe einer
+  Zeile erst, nachdem er sie gezeichnet hat, und `scroll_to_item()` landete mitten im Protokoll
+  (Probe). Jede Meldung bleibt eine Zeile wie `to_line()`, zu lang endet sie mit „…“, ganz steht
+  sie im Hinweis.
+- **Typvariante für das Fehlerfeld:** `ErrorNoticeLabel` in `werkstatt_theme.tres` gibt einem
+  `Label` einen `normal`-Kasten in kassenrot und Text in papier: der Fehler als gefülltes Feld.
+  Die Warnung „Katalog geändert“ nutzt das vorhandene `WarningLabel`.
+- **Vorhandene Helfer:** `EventForm.parse_date()` und `format_date()` lesen und schreiben
+  „1.3.1993“, die Begründung kommt aus `ScheduleEntry.explain()` und `due_effects()`, das
+  Protokoll aus `TimelineMessage.to_line()`.
+
+### T053 Der Simulator in der Werkstatt
+
+- **Teilszene als Reiter:** `src/tools/werkstatt/werkstatt.tscn` setzt `simulator_panel.tscn` als
+  Kind von `Tabs` ein. Ein `TabContainer` macht aus jedem Kind einen Reiter und nimmt den Namen des
+  Knotens als Titel; `set_tab_title(get_tab_idx_from_control(...), "Simulator")` gibt ihm den
+  richtigen.
+- **Verdrahtung wie bei den anderen Teilen:** Die Werkstatt gibt dem Panel ihren `editor` und ruft
+  `refresh()` nach `catalog_changed` und nach `issues_changed`. Das zweite braucht es fürs
+  Speichern: Danach fallen die Meldungen beim Lesen weg, und ein neuer Lauf nähme andere
+  Ereignisse aus. Weil beide Signale nach jeder Änderung kommen, fällt das Fehlen des ersten in
+  keinem Test auf; es bleibt trotzdem, denn der Hinweis gehört zur Änderung am Katalog.
+- **Auswahl folgt:** `event_selected(id)` wählt das Ereignis in Liste, Formular und Zeitstrahl,
+  aber nur, wenn es im Katalog noch steht; der Lauf rechnet mit einer älteren Kopie.
+
+### T054 Tests
+
+- **Tippen im Test:** `get_viewport().push_input()` mit einem `InputEventKey`, das nur `unicode`
+  trägt, schreibt ins Feld mit dem Fokus; `text_changed` kommt am Ende des Bilds, deshalb
+  `await wait_process_frames(1)`.
+- **Autoloads über ihren Pfad:** `get_node(^"/root/GameClock")` statt `GameClock`. Den Namen kennt
+  GDScript erst, wenn Godot das Autoload angelegt hat; `--check-only -s` übersetzte das Testskript
+  früher und meldete „Identifier not found: GameClock“.
+- **Protokoll gleich Textausgabe:** Der Test baut den Lauf wie `fahrplan_ausgabe.gd` (lesen,
+  prüfen, `without_faulty()`) und spielt ihn in einem Zug; der Simulator spielt in Schritten.
+  Gleiche Zeilen belegen damit auch SC-002 in der Werkstatt.
+- **Messen:** `test_bis_zum_ende_dauert_unter_einer_sekunde` misst an der eingefrorenen Übernahme
+  rund 11 ms; den echten Katalog lassen die Tests aus (R20). Mit ihm im Fenster: 21 ms, bis Tabelle
+  und Protokoll stehen, 44 ms bis zum gezeichneten Bild (SC-004: unter 1 Sekunde).
+- **Fehlerprobe:** 22 eingebaute Fehler in einer Kopie außerhalb des Repos, etwa „Buchstaben im
+  Seed“, „Auswahl ohne petrol“ oder „Simulator stellt die Spieluhr“; 21 ließen Tests scheitern.
+  „+1 Monat sind 30 Tage“ fiel zuerst nicht auf, weil der Test vom 02.01. aus sprang; jetzt springt
+  er auch von der Mitte eines Monats.
+- **Bilder im Fenster:** Ein Testgerüst, das „Fahrplan erzeugen“ und „Bis“ im selben Bild drückt,
+  sieht anderes als Klaus: Der rote Hinweis verkleinert die Tabelle erst am Ende des Bilds, nach
+  `scroll_to_item()`. Zwischen zwei Klicks wartet das Gerüst deshalb ein paar Bilder.
+
+### Eine Klasse für alle Tabellen
+
+- **Eigene Datei mit `class_name`:** `src/tools/werkstatt/zebra.gd` ist ein `RefCounted` ohne Node,
+  das sich an die Signale eines `Tree` hängt. Liste, Prüfung und beide Tabellen des Simulators
+  legen je eins an und halten es in einer Variablen; eine Signalverbindung allein hielte es nicht
+  am Leben.
+- **Zellen mit eigener Bedeutung:** `keep_cell()` merkt sich eine Farbe je Zelle, die `paint()` nie
+  übermalt: das „!“ in kassenrot und das „?“ auf papier. Holz steht nur auf papier lesbar, auf
+  petrol kaum; deshalb behält auch die Warnung ihren Grund in einer gewählten Zeile.
+- **Zwei Regeln für die Besitzer:** `forget()` vor `Tree.clear()`, sonst hielte Zebra Zeilen, die
+  es nicht mehr gibt; `paint_all()` nach jeder Auswahl aus dem Code, denn `deselect_all()` sendet
+  kein Signal (`EventList._highlight()`).

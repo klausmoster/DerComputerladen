@@ -12,7 +12,8 @@ extends Tree
 ##
 ## Fehler und Warnung unterscheiden sich in Form und Zeichen, nicht nur in der Farbe (Style-Guide,
 ## „Farbrollen“): Ein Fehler ist ein gefülltes Feld in kassenrot mit „!“ in papier, eine Warnung
-## Text in holz mit „?“ davor.
+## Text in holz mit „?“ davor. Die Zeilen sind gestreift wie alle Tabellen der Werkstatt (Zebra);
+## die Zelle der Stufe behält dabei ihren Grund.
 
 signal issue_activated(event_id: String, field: String)
 
@@ -22,8 +23,12 @@ const TITLES: Array[String] = ["Stufe", "Ereignis", "Feld", "Text"]
 ## Breite der schmalen Spalten; der Text nimmt den Rest.
 const WIDTHS: Array[int] = [112, 200, 200, 0]
 
+## Streifen, Auswahl und Überfahren der Prüfung.
+var _zebra: Zebra
+
 
 func _ready() -> void:
+	_zebra = Zebra.new(self)
 	columns = TITLES.size()
 	column_titles_visible = true
 	hide_root = true
@@ -48,6 +53,7 @@ func _ready() -> void:
 ## Zeigt [param issues] in ihrer Reihenfolge: zuerst die Meldungen beim Lesen, dann die der
 ## Prüfung, darin nach Ereignis und Regel, Kategorien zuletzt (CatalogValidator).
 func show_issues(issues: Array[CatalogIssue]) -> void:
+	_zebra.forget()
 	clear()
 	var root := create_item()
 	if issues.is_empty():
@@ -55,22 +61,27 @@ func show_issues(issues: Array[CatalogIssue]) -> void:
 		empty.set_text(Column.TEXT, "Keine Meldungen. Der Katalog ist in Ordnung.")
 		for column in columns:
 			empty.set_selectable(column, false)
+		_zebra.paint_all()
 		return
 	for issue in issues:
 		var item := create_item(root)
 		var is_error := issue.severity == CatalogIssue.Severity.ERROR
+		# Die Stufe behält ihren Grund über keep_cell(), auch in einer gestreiften oder gewählten
+		# Zeile: holz ist nur auf papier gut zu lesen.
 		if is_error:
 			item.set_text(Column.SEVERITY, "! Fehler")
-			item.set_custom_bg_color(Column.SEVERITY, UiPalette.KASSENROT)
+			_zebra.keep_cell(item, Column.SEVERITY, UiPalette.KASSENROT)
 			item.set_custom_color(Column.SEVERITY, UiPalette.PAPIER)
 		else:
 			item.set_text(Column.SEVERITY, "? Warnung")
+			_zebra.keep_cell(item, Column.SEVERITY, UiPalette.PAPIER)
 			item.set_custom_color(Column.SEVERITY, UiPalette.HOLZ)
 		item.set_text(Column.EVENT, issue.event_id if not issue.event_id.is_empty() else "–")
 		item.set_text(Column.FIELD, issue.field)
 		item.set_text(Column.TEXT, issue.message)
 		item.set_tooltip_text(Column.TEXT, issue.message)
 		item.set_metadata(Column.SEVERITY, {"event_id": issue.event_id, "field": issue.field})
+	_zebra.paint_all()
 
 
 func _on_item_mouse_selected(_position: Vector2, button: int) -> void:

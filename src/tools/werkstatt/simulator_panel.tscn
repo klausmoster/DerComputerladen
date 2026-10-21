@@ -1,0 +1,168 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/werkstatt/simulator_panel.gd" id="1_simulator"]
+
+[node name="SimulatorPanel" type="VBoxContainer"]
+script = ExtResource("1_simulator")
+
+[node name="RunBar" type="HFlowContainer" parent="."]
+layout_mode = 2
+
+[node name="SeedCaption" type="Label" parent="RunBar"]
+layout_mode = 2
+text = "Seed"
+
+[node name="SeedEdit" type="LineEdit" parent="RunBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+tooltip_text = "Der Seed bestimmt alle Zufallsentscheidungen eines Spiels. Nur Ziffern, von 0 bis 2.147.483.647; Enter erzeugt den Fahrplan."
+placeholder_text = "etwa 4711"
+
+[node name="RollButton" type="Button" parent="RunBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Einen zufälligen Seed ins Feld schreiben"
+text = "Würfeln"
+
+[node name="GenerateButton" type="Button" parent="RunBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Fahrplan erzeugen"
+
+[node name="StepBar" type="HFlowContainer" parent="."]
+layout_mode = 2
+
+[node name="DayButton" type="Button" parent="StepBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Einen Tag abspielen"
+text = "+1 Tag"
+
+[node name="MonthButton" type="Button" parent="StepBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Bis zum Ersten des nächsten Monats abspielen, wie die Spieluhr"
+text = "+1 Monat"
+
+[node name="YearButton" type="Button" parent="StepBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Bis zum 1. Januar des nächsten Jahres abspielen, wie die Spieluhr"
+text = "+1 Jahr"
+
+[node name="UntilButton" type="Button" parent="StepBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Bis einschließlich zum Datum im Feld daneben abspielen"
+text = "Bis"
+
+[node name="UntilEdit" type="LineEdit" parent="StepBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 0)
+layout_mode = 2
+tooltip_text = "Datum, etwa 31.12.1990; Enter spielt bis dorthin."
+placeholder_text = "TT.MM.JJJJ"
+
+[node name="EndButton" type="Button" parent="StepBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Bis zum 31.12.1999 abspielen"
+text = "Bis zum Ende"
+
+[node name="DateSeparator" type="VSeparator" parent="StepBar"]
+layout_mode = 2
+
+[node name="DateLabel" type="Label" parent="StepBar"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CatalogNotice" type="Label" parent="StepBar"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+tooltip_text = "Der Lauf rechnet weiter mit dem Katalog von seinem Start. „Fahrplan erzeugen“ startet neu mit dem Stand von jetzt."
+mouse_filter = 1
+theme_type_variation = &"WarningLabel"
+text = "? Katalog geändert, neu starten"
+
+[node name="InputHint" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"ErrorLabel"
+autowrap_mode = 3
+
+[node name="ExcludedNotice" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"ErrorNoticeLabel"
+autowrap_mode = 3
+
+[node name="FilterBar" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="StateCaption" type="Label" parent="FilterBar"]
+layout_mode = 2
+text = "Zustand"
+
+[node name="StateFilter" type="OptionButton" parent="FilterBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Nur Termine in diesem Zustand zeigen"
+
+[node name="PlanCount" type="Label" parent="FilterBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+
+[node name="Split" type="HSplitContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PlanSplit" type="VSplitContainer" parent="Split"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PlanTable" type="Tree" parent="Split/PlanSplit"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DetailScroll" type="ScrollContainer" parent="Split/PlanSplit"]
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Detail" type="VBoxContainer" parent="Split/PlanSplit/DetailScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DetailTitle" type="Label" parent="Split/PlanSplit/DetailScroll/Detail"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+autowrap_mode = 3
+
+[node name="DetailText" type="Label" parent="Split/PlanSplit/DetailScroll/Detail"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="ProtocolBox" type="VBoxContainer" parent="Split"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Protocol" type="Tree" parent="Split/ProtocolBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InterventionBox" type="VBoxContainer" parent="Split/ProtocolBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2

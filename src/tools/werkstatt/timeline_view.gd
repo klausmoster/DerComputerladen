@@ -11,7 +11,8 @@ extends Control
 ## Bei 500 Ereignissen bleibt das schnell, und gezeichnet wird nur, was gerade zu sehen ist.
 ## _gui_input() nimmt die Maus entgegen: Mausrad zum Verschieben, mit Cmd bzw. Ctrl zum Zoomen,
 ## Ziehen von Marken und Rändern, Doppelklick und Rechtsklick; dazu auf dem Trackpad Wischen mit
-## zwei Fingern und Kneifen. Hinweise liefert _get_tooltip().
+## zwei Fingern und Kneifen. Hinweise liefert _get_tooltip(). Zwei Leisten und drei Zoom-Knöpfe
+## in der Ecke oben links hängen als interne Kinder daran.
 ##
 ## Den Katalog ändert der Zeitstrahl nicht selbst. Beim Ziehen prüft er eine Kopie des Ereignisses
 ## (Vorschau), und erst beim Loslassen meldet er den neuen Wert mit event_moved; die Werkstatt gibt
@@ -20,8 +21,9 @@ extends Control
 ## selbst auf, wie der Knopf in der Liste.
 ##
 ## Koordinaten: Tage sind Tagesindizes wie in GameDate (01.01.1985 = 0). Ein Tag d belegt auf der
-## Achse die Strecke von d bis d + 1. Links steht die Spalte mit den Kategorien, oben die Achse;
-## dazwischen liegt die Zeitfläche, und an ihrem linken Rand steht der Tag visible_from.
+## Achse die Strecke von d bis d + 1. Links steht die Spalte mit den Kategorien, oben die Achse,
+## unten die waagerechte Leiste durch die Jahre; dazwischen liegt die Zeitfläche, und an ihrem
+## linken Rand steht der Tag visible_from.
 
 ## Klaus hat auf eine Marke geklickt, auch mit rechts; die Werkstatt wählt das Ereignis.
 signal event_clicked(id: String)
@@ -71,6 +73,8 @@ const DAY_TICKS_FROM := 3.0
 const DAY_NUMBERS_FROM := 18.0
 ## Was das Ziehen eines jährlichen Ereignisses am Mauszeiger sagt (FR-039).
 const LOCKED_HINT := "Nur im Formular änderbar"
+## Zoom-Knöpfe „−“ und „+“ in der Ecke über der Spalte: Faktor je Klick.
+const BUTTON_ZOOM := 2.0
 
 ## Maße in logischen Pixeln (Style-Guide, „Werkzeuge“).
 const AXIS_HEIGHT := 44.0
@@ -87,6 +91,8 @@ const LABEL_MAX_WIDTH := 220.0
 const LABEL_PADDING := 8.0
 const SWATCH_SIZE := 10.0
 const SWATCH_GAP := 6.0
+## Abstand der Zoom-Knöpfe untereinander und zum Rand ihres Felds.
+const BUTTON_GAP := 4.0
 ## Punkte und Balken sind 10 Pixel hoch, Punkte auch 10 breit; kürzere Marken werden 4 breit.
 const POINT_SIZE := 10.0
 const BAR_HEIGHT := 10.0
@@ -143,10 +149,11 @@ static var _month_starts := _first_days(1)
 
 ## Der einzige, der den Katalog ändert; der Zeitstrahl liest daraus.
 var editor: CatalogEditor
-## Tagesindex am linken Rand der Zeitfläche.
+## Tagesindex am linken Rand der Zeitfläche. Die waagerechte Leiste folgt.
 var visible_from: float = 0.0:
 	set(value):
 		visible_from = value
+		_sync_hscroll()
 		queue_redraw()
 ## Zoom in Tagen je Pixel. Ganz herausgezoomt passen 1985–1999 genau in die Breite der Zeitfläche.
 ## Jeder neue Wert stapelt die Marken neu, denn ihre Breiten hängen am Zoom.
@@ -155,10 +162,13 @@ var days_per_pixel: float = 1.0:
 		days_per_pixel = maxf(value, 0.000001)
 		_fit_all = days_per_pixel >= _max_days_per_pixel() - 0.000001
 		_stack()
+		_update_zoom_buttons()
 		queue_redraw()
 
 var _rows: Array[Row] = []
 var _label_width := LABEL_MIN_WIDTH
+## Was die Namen der Kategorien in der Spalte an Breite brauchen; 0 ohne Zeilen.
+var _names_width := 0.0
 var _content_height := 0.0
 ## Ob der ganze Zeitraum zu sehen ist; dann bleibt er es auch, wenn sich die Breite ändert.
 var _fit_all := true
@@ -166,6 +176,9 @@ var _font: Font = ThemeDB.fallback_font
 var _small_size := 12
 var _text_size := 14
 var _scroll_width := 8.0
+var _hscroll_height := 8.0
+## Ob _sync_hscroll() gerade die waagerechte Leiste einstellt; was sie dabei meldet, zählt nicht.
+var _syncing_hscroll := false
 var _selected_id := ""
 var _hover: Mark
 var _hover_part := Part.NONE
@@ -190,6 +203,10 @@ var _preview_ready := false
 var _preview_issue: CatalogIssue
 
 var _scroll := VScrollBar.new()
+var _hscroll := HScrollBar.new()
+var _zoom_out_button := Button.new()
+var _zoom_in_button := Button.new()
+var _zoom_all_button := Button.new()
 var _menu := PopupMenu.new()
 
 
@@ -232,10 +249,34 @@ func _init() -> void:
 	clip_contents = true
 	_scroll.visible = false
 	_scroll.value_changed.connect(func(_value: float) -> void: queue_redraw())
-	_scroll.minimum_size_changed.connect(_on_scroll_resized)
+	_scroll.minimum_size_changed.connect(_on_parts_resized)
 	# Interne Kinder gehören zum Control selbst: Sie stehen in keiner Szene und zählen bei
 	# get_children() nicht mit.
 	add_child(_scroll, false, INTERNAL_MODE_FRONT)
+	# Die waagerechte Leiste zeigt die Jahre: value ist visible_from, page die sichtbaren Tage.
+	# step 0 lässt Bruchteile von Tagen zu, wie visible_from sie hat.
+	_hscroll.step = 0.0
+	_hscroll.min_value = 0.0
+	_hscroll.max_value = TOTAL_DAYS
+	_hscroll.value_changed.connect(_on_hscroll_changed)
+	_hscroll.minimum_size_changed.connect(_on_parts_resized)
+	add_child(_hscroll, false, INTERNAL_MODE_FRONT)
+	# Die Zoom-Knöpfe in der Ecke über der Spalte. Sie nehmen keinen Fokus, damit ein Feld im
+	# Formular seinen behält; ihr Aussehen kommt aus dem Theme, die Schriftgröße wie bei der Achse.
+	var command := "Cmd" if OS.get_name() == "macOS" else "Ctrl"
+	_zoom_out_button.text = "−"
+	_zoom_out_button.tooltip_text = "Verkleinern; auch Kneifen oder %s+Mausrad" % command
+	_zoom_out_button.pressed.connect(_on_zoom_out)
+	_zoom_in_button.text = "+"
+	_zoom_in_button.tooltip_text = "Vergrößern; auch Kneifen oder %s+Mausrad" % command
+	_zoom_in_button.pressed.connect(_on_zoom_in)
+	_zoom_all_button.text = "Alles"
+	_zoom_all_button.tooltip_text = "Ganzer Zeitraum 1985 bis 1999"
+	_zoom_all_button.pressed.connect(_on_zoom_all)
+	for button in _zoom_buttons():
+		button.focus_mode = FOCUS_NONE
+		button.minimum_size_changed.connect(_on_parts_resized)
+		add_child(button, false, INTERNAL_MODE_FRONT)
 	_menu.add_item("Bearbeiten", MenuItem.EDIT)
 	_menu.add_item("Duplizieren", MenuItem.DUPLICATE)
 	_menu.add_item("Löschen", MenuItem.DELETE)
@@ -286,10 +327,12 @@ func x_to_day(x: float) -> float:
 	return visible_from + (x - _label_width) * days_per_pixel
 
 
-## Die Zeitfläche: von der Spalte der Kategorien bis zur Rollleiste, über die ganze Höhe.
+## Die Zeitfläche: von der Spalte der Kategorien bis zur senkrechten Leiste, von oben bis zur
+## waagerechten.
 func time_rect() -> Rect2:
 	var right := size.x - _scroll_width
-	return Rect2(_label_width, 0.0, maxf(right - _label_width, 1.0), size.y)
+	return Rect2(_label_width, 0.0, maxf(right - _label_width, 1.0),
+		maxf(size.y - _hscroll_height, 0.0))
 
 
 ## Kennung des Ereignisses, dessen Marke unter [param point] liegt; leer auf freier Fläche.
@@ -347,14 +390,17 @@ func _update_theme() -> void:
 	_font = get_theme_default_font()
 	_small_size = get_theme_font_size(&"small", &"Werkstatt")
 	_text_size = get_theme_font_size(&"text", &"Werkstatt")
+	for button in _zoom_buttons():
+		button.add_theme_font_size_override(&"font_size", _small_size)
 
 
-## Die Breite der Rollleiste kommt aus dem Theme und steht erst fest, wenn sie im Baum ist.
-func _on_scroll_resized() -> void:
-	var width := _scroll.get_combined_minimum_size().x
-	if width != _scroll_width:
-		_scroll_width = width
-		_update_view()
+## Die Maße von Leisten und Knöpfen kommen aus dem Theme. Sie stehen erst fest, wenn die Kinder
+## ihr Theme kennen, und das ist nach dem Zeitstrahl selbst; deshalb melden die Kinder sich hier.
+func _on_parts_resized() -> void:
+	_scroll_width = _scroll.get_combined_minimum_size().x
+	_hscroll_height = _hscroll.get_combined_minimum_size().y
+	_fit_label_width()
+	_update_view()
 
 
 ## Je Kategorie eine Zeile in der Reihenfolge des Katalogs (data-model.md), darin die Marken ihrer
@@ -362,8 +408,9 @@ func _on_scroll_resized() -> void:
 ## kassenrot, damit sie nicht verschwinden.
 func _build_rows() -> void:
 	_rows.clear()
-	_label_width = LABEL_MIN_WIDTH
+	_names_width = 0.0
 	if editor == null or editor.catalog == null:
+		_fit_label_width()
 		return
 	var row_index := {}
 	for category in editor.catalog.categories:
@@ -386,7 +433,15 @@ func _build_rows() -> void:
 	var widest := 0.0
 	for row in _rows:
 		widest = maxf(widest, _text_width(row.title, _text_size))
-	var needed := 2.0 * LABEL_PADDING + SWATCH_SIZE + SWATCH_GAP + widest
+	_names_width = 2.0 * LABEL_PADDING + SWATCH_SIZE + SWATCH_GAP + widest
+	_fit_label_width()
+
+
+## Die Spalte ist so breit, wie die Namen brauchen, und mindestens so breit, dass die drei
+## Zoom-Knöpfe darüber nebeneinander passen; bei den zehn Kategorien des Katalogs genügt die
+## Breite der Namen.
+func _fit_label_width() -> void:
+	var needed := maxf(_names_width, _buttons_width() + 2.0 * BUTTON_GAP)
 	_label_width = roundf(clampf(needed, LABEL_MIN_WIDTH, LABEL_MAX_WIDTH))
 
 
@@ -448,6 +503,7 @@ func _update_view() -> void:
 	else:
 		days_per_pixel = clampf(days_per_pixel, _min_days_per_pixel(), widest)
 	visible_from = _clamped_from(visible_from)
+	_layout_buttons()
 
 
 func _max_days_per_pixel() -> float:
@@ -475,6 +531,59 @@ func _zoom_to(x: float, target: float) -> void:
 	var day := x_to_day(x)
 	days_per_pixel = clampf(target, _min_days_per_pixel(), _max_days_per_pixel())
 	visible_from = _clamped_from(day - (x - _label_width) * days_per_pixel)
+
+
+# --- Zoom-Knöpfe ------------------------------------------------------------------------------
+#
+# „+“ und „−“ zoomen um die Mitte des sichtbaren Ausschnitts, je Klick Faktor 2, über _zoom_to()
+# in denselben Grenzen wie Kneifen und Cmd+Mausrad. „Alles“ zeigt wieder 1985 bis 1999.
+
+
+func _on_zoom_in() -> void:
+	_zoom_to(_center_x(), days_per_pixel / BUTTON_ZOOM)
+
+
+func _on_zoom_out() -> void:
+	_zoom_to(_center_x(), days_per_pixel * BUTTON_ZOOM)
+
+
+func _on_zoom_all() -> void:
+	_zoom_to(_center_x(), _max_days_per_pixel())
+
+
+func _center_x() -> float:
+	var time := time_rect()
+	return time.position.x + time.size.x / 2.0
+
+
+func _zoom_buttons() -> Array[Button]:
+	return [_zoom_out_button, _zoom_in_button, _zoom_all_button]
+
+
+## Gesperrt ist, was nichts mehr bewirkte: „+“ bei einem Monat, „−“ und „Alles“ beim ganzen
+## Zeitraum.
+func _update_zoom_buttons() -> void:
+	_zoom_out_button.disabled = _fit_all
+	_zoom_all_button.disabled = _fit_all
+	_zoom_in_button.disabled = days_per_pixel <= _min_days_per_pixel() + 0.000001
+
+
+## Breite der drei Knöpfe nebeneinander, mit den Abständen zwischen ihnen.
+func _buttons_width() -> float:
+	var width := 2.0 * BUTTON_GAP
+	for button in _zoom_buttons():
+		width += button.get_combined_minimum_size().x
+	return width
+
+
+## Die Knöpfe stehen nebeneinander mittig im Feld über der Spalte, in der Höhe der Achse.
+func _layout_buttons() -> void:
+	var x := roundf((_label_width - _buttons_width()) / 2.0)
+	for button in _zoom_buttons():
+		var button_size := button.get_combined_minimum_size()
+		button.size = button_size
+		button.position = Vector2(x, roundf((AXIS_HEIGHT - button_size.y) / 2.0))
+		x += button_size.x + BUTTON_GAP
 
 
 ## Verteilt die Marken jeder Zeile auf Unterzeilen, so dass zwischen zwei Marken einer Unterzeile
@@ -510,7 +619,7 @@ func _stack() -> void:
 		row.height = row.lanes * LANE_HEIGHT + 2.0 * ROW_PADDING
 		top += row.height
 	_content_height = top
-	_update_scrollbar()
+	_update_scrollbars()
 
 
 ## Anfang und Ende einer Marke in Pixeln ab dem 01.01.1985: ein Punkt 10 Pixel breit um die Mitte
@@ -539,10 +648,13 @@ static func _starts_before(a: Mark, b: Mark) -> bool:
 	return a.first < b.first
 
 
-## Die Rollleiste rechts: Sie erscheint erst, wenn die Zeilen höher sind als der Platz unter der
-## Achse. Ihre Breite ist immer frei gehalten, damit die Zeitfläche nicht springt.
-func _update_scrollbar() -> void:
-	var area := maxf(size.y - AXIS_HEIGHT, 0.0)
+## Die Leisten am Rand. Die senkrechte rechts erscheint erst, wenn die Zeilen höher sind als der
+## Platz zwischen Achse und waagerechter Leiste; ihre Breite bleibt immer frei, damit die
+## Zeitfläche nicht springt. Die waagerechte unter der Zeitfläche ist immer da, ganz
+## herausgezoomt füllt ihr Griff die Bahn.
+func _update_scrollbars() -> void:
+	var time := time_rect()
+	var area := maxf(time.end.y - AXIS_HEIGHT, 0.0)
 	_scroll.position = Vector2(size.x - _scroll_width, AXIS_HEIGHT)
 	_scroll.size = Vector2(_scroll_width, area)
 	_scroll.max_value = _content_height
@@ -550,6 +662,27 @@ func _update_scrollbar() -> void:
 	_scroll.visible = _content_height > area + 0.5
 	if not _scroll.visible:
 		_scroll.value = 0.0
+	_hscroll.position = Vector2(time.position.x, time.end.y)
+	_hscroll.size = Vector2(time.size.x, _hscroll_height)
+	_sync_hscroll()
+
+
+## Stellt die waagerechte Leiste nach der Ansicht ein: page sind die sichtbaren Tage, value ist
+## visible_from. set_value_no_signal() meldet nichts, und die Sperre fängt ab, was Range beim
+## Ändern von page selbst meldet. So läuft keine Änderung im Kreis zurück.
+func _sync_hscroll() -> void:
+	_syncing_hscroll = true
+	_hscroll.page = minf(time_rect().size.x * days_per_pixel, TOTAL_DAYS)
+	_hscroll.set_value_no_signal(visible_from)
+	_syncing_hscroll = false
+
+
+## Klaus zieht an der waagerechten Leiste oder rollt darüber: Die Ansicht folgt, in denselben
+## Grenzen wie beim Verschieben.
+func _on_hscroll_changed(value: float) -> void:
+	if _syncing_hscroll:
+		return
+	visible_from = _clamped_from(value)
 
 
 # --- Lage der Marken --------------------------------------------------------------------------
@@ -590,7 +723,7 @@ static func _band(box: Rect2) -> Rect2:
 ## genau am linken Rand endet, zählt nicht; sonst stünde ihr Titel dort ohne sie.
 func _is_shown(box: Rect2, time: Rect2) -> bool:
 	return box.end.x > time.position.x and box.position.x < time.end.x \
-		and box.end.y > AXIS_HEIGHT and box.position.y < size.y
+		and box.end.y > AXIS_HEIGHT and box.position.y < time.end.y
 
 
 # --- Zeichnen ---------------------------------------------------------------------------------
@@ -608,7 +741,7 @@ func _draw() -> void:
 	for i in _rows.size():
 		var row := _rows[i]
 		var top := _row_top(row)
-		if top + row.height <= AXIS_HEIGHT or top >= size.y:
+		if top + row.height <= AXIS_HEIGHT or top >= time.end.y:
 			continue
 		shown.append(i)
 		if i % 2 == 1:
@@ -620,12 +753,15 @@ func _draw() -> void:
 	_draw_preview()
 	_draw_categories(shown)
 	_draw_axis(time)
+	# Unter der Zeitfläche liegt die waagerechte Leiste; was von den Zeilen dorthin reicht, deckt
+	# der Grund zu, damit nichts halb unter ihr steht.
+	draw_rect(Rect2(0.0, time.end.y, size.x, size.y - time.end.y), COLOR_GROUND)
 	_draw_cursor_texts()
 
 
 ## Senkrechte Linien an den Jahresgrenzen, ab Monatszoom auch an den Monatsgrenzen.
 func _draw_grid(time: Rect2) -> void:
-	var bottom := minf(size.y, AXIS_HEIGHT + _content_height - _scroll.value)
+	var bottom := minf(time.end.y, AXIS_HEIGHT + _content_height - _scroll.value)
 	if bottom <= AXIS_HEIGHT:
 		return
 	if 1.0 / days_per_pixel >= MONTHS_FROM:
@@ -930,12 +1066,14 @@ func _draw_cursor_texts() -> void:
 	var second := _box_size(reason, ERROR_WIDTH) if not reason.is_empty() else Vector2.ZERO
 	var total := Vector2(maxf(first.x, second.x), first.y + second.y)
 	var at := _mouse + CURSOR_OFFSET
-	# Am rechten oder unteren Rand wandern die Texte auf die andere Seite des Mauszeigers.
-	if at.x + total.x > size.x:
+	# Am rechten oder unteren Rand wandern die Texte auf die andere Seite des Mauszeigers. Rechts
+	# und unten liegen die Leisten; sie zeichnen über dem Zeitstrahl und verdeckten die Texte.
+	var limit := time_rect().end
+	if at.x + total.x > limit.x:
 		at.x = _mouse.x - CURSOR_OFFSET.x - total.x
-	if at.y + total.y > size.y:
+	if at.y + total.y > limit.y:
 		at.y = _mouse.y - CURSOR_OFFSET.y - total.y
-	at = at.clamp(Vector2.ZERO, (size - total).max(Vector2.ZERO)).round()
+	at = at.clamp(Vector2.ZERO, (limit - total).max(Vector2.ZERO)).round()
 	var fill := COLOR_GROUND if _drag == Drag.LOCKED else COLOR_DRAG
 	_draw_box(Rect2(at, first), text, -1.0, fill, COLOR_TEXT)
 	_draw_outline(Rect2(at, first), 1.0, COLOR_TEXT)
@@ -1282,9 +1420,9 @@ func _release_focus() -> void:
 
 # --- Treffer ----------------------------------------------------------------------------------
 
-## Die Zeile unter [param at]; null über der Achse und unter der letzten Zeile.
+## Die Zeile unter [param at]; null über der Achse, unter der letzten Zeile und auf der Leiste.
 func _row_at(at: Vector2) -> Row:
-	if at.y < AXIS_HEIGHT:
+	if at.y < AXIS_HEIGHT or at.y >= time_rect().end.y:
 		return null
 	for row in _rows:
 		var top := _row_top(row)

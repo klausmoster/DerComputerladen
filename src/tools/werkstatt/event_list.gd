@@ -9,6 +9,9 @@ extends VBoxContainer
 ## mit und ruft add_event(), Duplizieren ruft duplicate_event(). Alles andere meldet sie nach oben,
 ## an die Werkstatt: welches Ereignis gewählt wurde, dass eines neu entstanden ist und dass eines
 ## gelöscht werden soll. Die Auswahl gehört der Werkstatt, ebenso die Rückfrage vor dem Löschen.
+##
+## Die Zeilen sind gestreift wie alle Tabellen der Werkstatt (Zebra); das Zeichen für Fehler und
+## Warnung behält seine Farben auch in einer gestreiften oder gewählten Zeile.
 
 signal event_selected(id: String)
 ## Ein Ereignis ist neu entstanden, aus dem Dialog „Neu …“ oder durch Duplizieren.
@@ -36,6 +39,8 @@ var _id_edited := false
 ## Der Tag, mit dem der Dialog „Neu …“ vorbelegt ist, etwa nach einem Doppelklick im Zeitstrahl;
 ## −1 heißt keiner. Er gilt nur für fixe Ereignisse.
 var _new_day := -1
+## Streifen, Auswahl und Überfahren der Liste.
+var _zebra: Zebra
 
 @onready var _search: LineEdit = %Search
 @onready var _kind_filter: OptionButton = %KindFilter
@@ -70,6 +75,7 @@ func _ready() -> void:
 	_tree.set_column_expand(Column.KIND, false)
 	_tree.set_column_custom_minimum_width(Column.KIND, 72)
 	_tree.set_column_clip_content(Column.TITLE, true)
+	_zebra = Zebra.new(_tree)
 	_kind_filter.add_item("Alle Arten")
 	for label in TimelineEvent.KIND_LABELS:
 		_kind_filter.add_item(label)
@@ -139,6 +145,7 @@ func open_new_dialog(kind: TimelineEvent.Kind = TimelineEvent.Kind.FIXED, catego
 
 func _fill_rows() -> void:
 	_syncing = true
+	_zebra.forget()
 	_tree.clear()
 	var root := _tree.create_item()
 	if editor != null and editor.catalog != null:
@@ -184,23 +191,26 @@ func _add_row(root: TreeItem, event: TimelineEvent) -> void:
 	for column in Column.size():
 		item.set_tooltip_text(column, tooltip)
 	# Style-Guide, „Farbrollen“: Ein Fehler ist ein gefülltes Feld in kassenrot mit „!“ in papier,
-	# eine Warnung ein „?“ in holz.
+	# eine Warnung ein „?“ in holz. Beide Zellen behalten ihren Grund über keep_cell(), auch in
+	# einer gestreiften oder gewählten Zeile: holz ist nur auf papier gut zu lesen.
 	if _severity_by_event.has(event.id):
 		var severity: int = _severity_by_event[event.id]
 		item.set_text_alignment(Column.MARK, HORIZONTAL_ALIGNMENT_CENTER)
 		if severity == CatalogIssue.Severity.ERROR:
 			item.set_text(Column.MARK, "!")
-			item.set_custom_bg_color(Column.MARK, UiPalette.KASSENROT)
+			_zebra.keep_cell(item, Column.MARK, UiPalette.KASSENROT)
 			item.set_custom_color(Column.MARK, UiPalette.PAPIER)
 			item.set_tooltip_text(Column.MARK,
 				"Das Ereignis hat einen Fehler; die Prüfung nennt ihn.")
 		else:
 			item.set_text(Column.MARK, "?")
+			_zebra.keep_cell(item, Column.MARK, UiPalette.PAPIER)
 			item.set_custom_color(Column.MARK, UiPalette.HOLZ)
 			item.set_tooltip_text(Column.MARK, "Das Ereignis hat eine Warnung.")
 
 
-## Markiert die Zeile des gewählten Ereignisses, falls Suche und Filter sie zeigen.
+## Markiert die Zeile des gewählten Ereignisses, falls Suche und Filter sie zeigen. Danach malt das
+## Zebra alle Zeilen neu: deselect_all() meldet sich mit keinem Signal.
 func _highlight() -> void:
 	_syncing = true
 	_tree.deselect_all()
@@ -212,6 +222,7 @@ func _highlight() -> void:
 				_tree.scroll_to_item(item)
 				break
 	_syncing = false
+	_zebra.paint_all()
 
 
 func _on_item_selected() -> void:

@@ -3,7 +3,8 @@ extends GutTest
 ## Rauchtest der Werkstatt (Feature 002, T039; contracts/werkstatt.md): Die Szene baut headless auf
 ## und lässt das Fenster in Ruhe, und eine Prüfmeldung führt zum Ereignis und ins Feld (FR-033).
 ## Dazu die Abläufe beim Start, beim Speichern, Verwerfen und Schließen, die Kürzel und die Liste
-## (T034, T035, T038).
+## (T034, T035, T038), der Zeitstrahl in der Werkstatt (T049) und der Simulator (T054): Er rechnet,
+## ohne Spieluhr und Katalog anzufassen, und sein Protokoll ist das der Textausgabe.
 ##
 ## Jeder Test öffnet eine Kopie eines Test-Katalogs in einem eigenen Ordner unter user:// und setzt
 ## eine eigene Sicherungsdatei, bevor die Szene in den Baum kommt; after_each() räumt auf. Der echte
@@ -497,6 +498,73 @@ func test_umbenennen_im_formular_behaelt_die_auswahl() -> void:
 	assert_eq(_node(werkstatt, "%EventForm").get_input("id").text, "reklamationen")
 
 
+# --- Zebra in Liste und Prüfung (Phase 7) -----------------------------------------------------
+
+func test_liste_im_zebra_mit_auswahl_in_petrol() -> void:
+	# Arrange: Neubaugebiet in Zeile 1 bekommt einen Fehler (V07, Fenster endet vor dem Beginn),
+	# die Reklamationswelle in Zeile 2 eine Warnung (V13, Grundchance 0).
+	var werkstatt := await _werkstatt()
+	werkstatt.editor.set_event_field("neubaugebiet", &"window_to", 0)
+	werkstatt.editor.set_event_field("reklamationswelle", &"monthly_chance", 0.0)
+	var zeilen: Array[TreeItem] = _liste(werkstatt).get_root().get_children()
+	var zeichen := EventList.Column.MARK
+	var titel := EventList.Column.TITLE
+	assert_eq([zeilen[1].get_text(zeichen), zeilen[2].get_text(zeichen)], ["!", "?"])
+
+	# Assert: Style-Guide, „Farbrollen“: jede zweite Zeile endlos-gruen
+	assert_eq(zeilen[1].get_custom_bg_color(titel), UiPalette.ENDLOS_GRUEN)
+	assert_eq(zeilen[3].get_custom_bg_color(titel), UiPalette.ENDLOS_GRUEN)
+	assert_ne(zeilen[2].get_custom_bg_color(titel), UiPalette.ENDLOS_GRUEN)
+	assert_eq(zeilen[1].get_custom_bg_color(zeichen), UiPalette.KASSENROT,
+		"Das „!“ bleibt kassenrot, auch in einer gestreiften Zeile.")
+
+	# Act: die Reklamationswelle wählen, wie mit der Maus
+	zeilen[2].select(titel)
+
+	# Assert: Die Auswahl ist petrol; das „?“ bleibt holz auf papier.
+	assert_eq(werkstatt.selected_id, "reklamationswelle")
+	assert_eq(zeilen[2].get_custom_bg_color(titel), UiPalette.PETROL)
+	assert_eq([zeilen[2].get_custom_bg_color(zeichen), zeilen[2].get_custom_color(zeichen)],
+		[UiPalette.PAPIER, UiPalette.HOLZ], "Das „?“ bleibt holz auf papier.")
+
+	# Act und Assert: Auch in der gewählten Zeile bleibt das „!“ kassenrot.
+	zeilen[1].select(titel)
+	assert_eq(zeilen[1].get_custom_bg_color(titel), UiPalette.PETROL)
+	assert_eq(zeilen[1].get_custom_bg_color(zeichen), UiPalette.KASSENROT)
+	assert_ne(zeilen[2].get_custom_bg_color(titel), UiPalette.PETROL, "Die alte Auswahl ist weg.")
+
+	# Act und Assert: Wählt die Werkstatt keins mehr, ist die Zeile wieder gestreift.
+	werkstatt.select_event("")
+	assert_eq(zeilen[1].get_custom_bg_color(titel), UiPalette.ENDLOS_GRUEN)
+
+
+func test_pruefung_im_zebra_mit_auswahl_in_petrol() -> void:
+	# Arrange: drei Meldungen, nach Ereignis und Regel: V06 als Fehler, V20 und V13 als Warnungen.
+	var werkstatt := await _werkstatt(DATUM_AUSSERHALB)
+	werkstatt.editor.set_item_field("intel_pentium", &"effects", 0, &"magnitude", 0.0)
+	werkstatt.editor.set_event_field("reklamationswelle", &"monthly_chance", 0.0)
+	var pruefung: IssuesPanel = _node(werkstatt, "%IssuesPanel")
+	var zeilen: Array[TreeItem] = pruefung.get_root().get_children()
+	var stufe := IssuesPanel.Column.SEVERITY
+	var text := IssuesPanel.Column.TEXT
+	assert_eq([zeilen[0].get_text(stufe), zeilen[1].get_text(stufe), zeilen[2].get_text(stufe)],
+		["! Fehler", "? Warnung", "? Warnung"])
+
+	# Assert: Style-Guide, „Farbrollen“
+	assert_eq(zeilen[1].get_custom_bg_color(text), UiPalette.ENDLOS_GRUEN)
+	assert_ne(zeilen[2].get_custom_bg_color(text), UiPalette.ENDLOS_GRUEN)
+	assert_eq([zeilen[1].get_custom_bg_color(stufe), zeilen[1].get_custom_color(stufe)],
+		[UiPalette.PAPIER, UiPalette.HOLZ], "Die Warnung bleibt holz auf papier, auch gestreift.")
+
+	# Act: den Fehler wählen
+	zeilen[0].select(text)
+
+	# Assert
+	assert_eq(zeilen[0].get_custom_bg_color(text), UiPalette.PETROL)
+	assert_eq(zeilen[0].get_custom_bg_color(stufe), UiPalette.KASSENROT,
+		"Das Fehlerfeld bleibt kassenrot, auch in der gewählten Zeile.")
+
+
 # --- Zeitstrahl (T049) ------------------------------------------------------------------------
 #
 # Headless ist das Fenster 640 × 360 groß; neben Liste und Formular bleibt für den Zeitstrahl dann
@@ -654,6 +722,321 @@ func test_menue_im_zeitstrahl_bearbeiten_duplizieren_loeschen() -> void:
 	menue.hide()
 
 
+# --- Simulator (T054) -------------------------------------------------------------------------
+#
+# Die Tests drücken die Knöpfe über ihr Signal pressed, wie die übrigen Tests der Werkstatt. Ein
+# Signal fragt nicht, ob der Knopf gesperrt ist; wo das zählt, prüfen die Tests es selbst.
+
+
+func test_simulator_erzeugt_fuer_seed_4711_einen_fahrplan() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	var tabs: TabContainer = _node(werkstatt, "%Tabs")
+	assert_eq(tabs.get_tab_title(tabs.get_tab_idx_from_control(simulator)), "Simulator")
+	assert_true(simulator.get_node("%DayButton").disabled, "Ohne Fahrplan ist nichts abzuspielen.")
+
+	# Act
+	_erzeugen(simulator, "4711")
+
+	# Assert: US5, Szenario 1
+	assert_not_null(simulator.run)
+	assert_eq([simulator.run.seed, simulator.run.today], [4711, -1],
+		"Der Lauf hat den Seed aus dem Feld und steht vor dem 01.01.1985.")
+	var zeilen := _zeilen(simulator.get_node("%PlanTable"))
+	assert_gt(zeilen.size(), 0, "Die Tabelle hat Zeilen.")
+	assert_eq(zeilen.size(), simulator.run.entries.size(), "Je Termin eine Zeile.")
+	assert_has(zeilen, ["22.03.1993", "Intel Pentium erscheint", "fix", "geplant"])
+	var zustaende := {}
+	for zeile: Array in zeilen:
+		zustaende[zeile[SimulatorPanel.PlanColumn.STATE]] = true
+	assert_eq(zustaende.keys(), ["geplant"], "Alle Termine, die schon feststehen, sind geplant.")
+	assert_eq(_zeilen(simulator.get_node("%Protocol")).size(), 0, "Noch ist nichts gemeldet.")
+	assert_eq(simulator.get_node("%DateLabel").text, "Stand: vor dem 01.01.1985 · Seed 4711")
+	assert_false(simulator.get_node("%DayButton").disabled)
+	assert_false(simulator.get_node("%ExcludedNotice").visible, "Der Katalog hat keine Fehler.")
+
+
+func test_bis_zum_ende_laesst_spieluhr_und_katalog_in_ruhe() -> void:
+	# Arrange: Die Autoloads GameClock und Timeline kommen über ihren Pfad. Ihre Namen kennt
+	# GDScript erst, wenn Godot sie angelegt hat; ein Skript, das mit -s startet, kennt sie nicht.
+	var uhr := get_node(^"/root/GameClock")
+	var zeitleiste := get_node(^"/root/Timeline")
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	var datum: GameDate = uhr.date
+	var tag := datum.to_day_index()
+	var pausiert: bool = uhr.paused
+	var spiel: TimelineRun = zeitleiste.run
+	var katalog := werkstatt.editor.catalog.to_json()
+	_erzeugen(simulator, "4711")
+
+	# Act
+	_druecken(simulator, "%EndButton")
+
+	# Assert: US5, Szenario 5; FR-042
+	assert_true(simulator.run.is_finished())
+	assert_same(uhr.date, datum, "Die Spieluhr hat noch dasselbe Datum …")
+	assert_eq(uhr.date.to_day_index(), tag, "… mit demselben Tag …")
+	assert_eq(uhr.paused, pausiert, "… und läuft nicht los.")
+	assert_same(zeitleiste.run, spiel, "Das Spiel behält seinen Lauf.")
+	assert_eq(werkstatt.editor.catalog.to_json(), katalog, "Der Katalog ist unverändert.")
+	assert_false(werkstatt.editor.can_undo(), "Kein Schritt im Verlauf.")
+	assert_eq(simulator.get_node("%DateLabel").text, "Stand: 31.12.1999, Spielende · Seed 4711")
+	for knopf in ["%DayButton", "%MonthButton", "%YearButton", "%UntilButton", "%EndButton"]:
+		assert_true(simulator.get_node(knopf).disabled, "%s ist am Spielende gesperrt." % knopf)
+
+
+func test_protokoll_entspricht_der_textausgabe() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+
+	# Act: in Schritten wie im Quickstart, dann bis zum Ende
+	_druecken(simulator, "%DayButton")
+	_druecken(simulator, "%MonthButton")
+	_druecken(simulator, "%YearButton")
+	_bis(simulator, "31.12.1990")
+	_druecken(simulator, "%EndButton")
+
+	# Assert: derselbe Lauf wie in fahrplan_ausgabe.gd mit --protokoll, in einem Zug abgespielt
+	var meldungen: Array[CatalogIssue] = []
+	var katalog := EventCatalog.read_file(MINIMAL, meldungen)
+	meldungen.append_array(CatalogValidator.validate(katalog))
+	var lauf := TimelineRun.new(katalog.without_faulty(meldungen), 4711)
+	lauf.advance_to(TimelineRun.LAST_DAY)
+	var erwartet := Array(ScheduleText.protocol_lines(lauf))
+	var protokoll := []
+	for zeile: Array in _zeilen(simulator.get_node("%Protocol")):
+		protokoll.append(zeile[0])
+	assert_gt(erwartet.size(), 0)
+	assert_eq(protokoll, erwartet, "Zeile für Zeile wie die Textausgabe.")
+
+
+func test_seed_feld_nimmt_nur_ziffern_bis_zum_groessten_seed() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	var feld: LineEdit = simulator.get_node("%SeedEdit")
+	var erzeugen: Button = simulator.get_node("%GenerateButton")
+	assert_true(erzeugen.disabled, "Ohne Seed gibt es nichts zu erzeugen.")
+	feld.grab_focus()
+
+	# Act: Buchstaben zwischen den Ziffern. Ein LineEdit meldet text_changed am Ende des Bilds.
+	_tippen("4a7b1c1")
+	await wait_process_frames(1)
+
+	# Assert: FR-040
+	assert_eq(feld.text, "4711", "Die Buchstaben sind weg.")
+	assert_false(erzeugen.disabled)
+
+	# Act und Assert: Mehr als 2.147.483.647 gibt es nicht.
+	feld.clear()
+	_tippen("3000000000")
+	await wait_process_frames(1)
+	assert_eq(feld.text, "2147483647", "Zu groß wird zum größten Seed.")
+	_tippen("5")
+	await wait_process_frames(1)
+	assert_eq(feld.text, "2147483647", "Eine weitere Ziffer ändert nichts.")
+	feld.release_focus()
+
+	# Act und Assert: „Würfeln“ schreibt einen Seed aus 0 bis 2.147.483.647 ins Feld.
+	_druecken(simulator, "%RollButton")
+	assert_true(feld.text.is_valid_int() and feld.text.lstrip("0123456789").is_empty(),
+		"Nur Ziffern: %s" % feld.text)
+	assert_between(feld.text.to_int(), 0, SimulatorPanel.MAX_SEED)
+
+
+func test_schritte_springen_wie_die_spieluhr() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	var hinweis: Label = simulator.get_node("%InputHint")
+	_erzeugen(simulator, "4711")
+
+	# Act und Assert: Der erste Schritt spielt den 01.01.1985 ab, ob „+1 Monat“ oder „+1 Jahr“.
+	_druecken(simulator, "%MonthButton")
+	assert_eq(simulator.run.today, 0)
+	assert_eq(simulator.get_node("%DateLabel").text, "Stand: 01.01.1985 · Seed 4711")
+	_druecken(simulator, "%GenerateButton")
+	_druecken(simulator, "%YearButton")
+	assert_eq(simulator.run.today, 0)
+	# FR-041: tage-, monats- und jahresweise, wie GameClock bis zum nächsten Ersten
+	_druecken(simulator, "%DayButton")
+	assert_eq(simulator.run.today, _tag(1985, 1, 2))
+	_druecken(simulator, "%MonthButton")
+	assert_eq(simulator.run.today, _tag(1985, 2, 1))
+	_druecken(simulator, "%YearButton")
+	assert_eq(simulator.run.today, _tag(1986, 1, 1))
+	_bis(simulator, "15.3.1993")
+	assert_eq(simulator.run.today, _tag(1993, 3, 15), "Auch ohne führende Nullen.")
+	assert_eq(simulator.get_node("%UntilEdit").text, "15.03.1993")
+	_druecken(simulator, "%MonthButton")
+	assert_eq(simulator.run.today, _tag(1993, 4, 1), "Von der Monatsmitte zum nächsten Ersten.")
+
+	# Act und Assert: Ein Datum, das nicht passt, spielt nichts ab und sagt, warum.
+	for falsch: Array in [["abc", "kein Datum"], ["1.1.1990", "schon abgespielt"],
+			["1.1.2001", "31.12.1999"]]:
+		_bis(simulator, falsch[0])
+		assert_eq(simulator.run.today, _tag(1993, 4, 1), "%s spielt nichts ab." % falsch[0])
+		assert_true(hinweis.visible)
+		assert_string_contains(hinweis.text, falsch[1])
+	assert_eq(simulator.get_node("%UntilEdit").theme_type_variation, &"ErrorLineEdit")
+	_druecken(simulator, "%EndButton")
+	assert_eq(simulator.run.today, TimelineRun.LAST_DAY)
+	assert_false(hinweis.visible, "Nach einem Schritt ist der Hinweis weg.")
+
+
+func test_gewaehlter_termin_zeigt_begruendung_und_verzoegerte_wirkungen() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	_druecken(simulator, "%EndButton")
+	var begruendung: Label = simulator.get_node("%DetailText")
+
+	# Act: den Pentium wählen
+	_termin_waehlen(simulator, _termin(simulator, "intel_pentium", ScheduleEntry.Origin.FIXED))
+
+	# Assert: FR-041, SC-007
+	assert_eq(simulator.get_node("%DetailTitle").text, "Intel Pentium erscheint (intel_pentium)")
+	assert_string_contains(begruendung.text, "Begründung: Fixes Datum aus dem Katalog")
+	assert_string_contains(begruendung.text, "05.04.1993  Nachfrage · ram · +20%")
+	assert_eq(werkstatt.selected_id, "intel_pentium", "Die Auswahl der Werkstatt folgt.")
+
+	# Act: einen gewürfelten Termin wählen
+	var gewuerfelt := _termin(simulator, "reklamationswelle", ScheduleEntry.Origin.ROLLED)
+	assert_not_null(gewuerfelt, "Mit Seed 4711 würfelt die Reklamationswelle.")
+	if gewuerfelt == null:
+		return
+	_termin_waehlen(simulator, gewuerfelt)
+
+	# Assert: US5, Szenario 3; Würfelwert, Grundchance und Schwelle stehen da.
+	assert_string_contains(begruendung.text, "Begründung: %s" % gewuerfelt.explain())
+	assert_string_contains(begruendung.text, "Würfel 0,")
+	assert_string_contains(begruendung.text, "< Schwelle 0,0300 (3 %)")
+	assert_eq(werkstatt.selected_id, "reklamationswelle")
+
+
+func test_auswahl_folgt_nur_einem_ereignis_das_es_noch_gibt() -> void:
+	# Arrange: Der Lauf rechnet mit einer Kopie; im Katalog heißt der Pentium inzwischen anders.
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	werkstatt.editor.rename_event("intel_pentium", "pentium")
+
+	# Act
+	_termin_waehlen(simulator, _termin(simulator, "intel_pentium", ScheduleEntry.Origin.FIXED))
+
+	# Assert
+	assert_eq(werkstatt.selected_id, "", "Die Werkstatt wählt kein Ereignis, das es nicht gibt.")
+	assert_string_contains(simulator.get_node("%DetailText").text, "Fixes Datum aus dem Katalog",
+		"Die Begründung steht trotzdem da.")
+
+
+func test_katalog_geaendert_waehrend_eines_laufs() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	var hinweis: Label = simulator.get_node("%CatalogNotice")
+	_erzeugen(simulator, "4711")
+	_bis(simulator, "31.12.1990")
+	var lauf := simulator.run
+	var fahrplan := _zeilen(simulator.get_node("%PlanTable"))
+	var protokoll := _zeilen(simulator.get_node("%Protocol"))
+	assert_false(hinweis.visible)
+
+	# Act: FR-042, eine Änderung ohne Speichern
+	werkstatt.editor.set_event_field("intel_pentium", &"date", _tag(1996, 3, 22))
+	await wait_process_frames(1)
+
+	# Assert: Der Hinweis erscheint, der Lauf behält seinen Stand.
+	assert_true(hinweis.visible)
+	assert_eq(hinweis.text, "? Katalog geändert, neu starten")
+	assert_eq(hinweis.theme_type_variation, &"WarningLabel", "Eine Warnung als Text in holz.")
+	assert_same(simulator.run, lauf)
+	assert_eq(lauf.today, _tag(1990, 12, 31))
+	assert_eq(lauf.catalog.get_event("intel_pentium").date, _tag(1993, 3, 22),
+		"Der Lauf rechnet mit seiner Kopie.")
+	assert_eq(_zeilen(simulator.get_node("%PlanTable")), fahrplan)
+	assert_eq(_zeilen(simulator.get_node("%Protocol")), protokoll)
+
+	# Act und Assert: Rückgängig bringt den Katalog des Laufs zurück; der Hinweis geht.
+	werkstatt.editor.undo()
+	await wait_process_frames(1)
+	assert_false(hinweis.visible)
+
+	# Act und Assert: Neu erzeugt gilt die Änderung, auch ungespeichert, und der Hinweis geht.
+	werkstatt.editor.redo()
+	await wait_process_frames(1)
+	assert_true(hinweis.visible)
+	_druecken(simulator, "%GenerateButton")
+	assert_false(hinweis.visible)
+	assert_has(_zeilen(simulator.get_node("%PlanTable")),
+		["22.03.1996", "Intel Pentium erscheint", "fix", "geplant"])
+
+
+func test_fehlerhaftes_ereignis_wird_ausgenommen_und_genannt() -> void:
+	# Arrange: intel_pentium liegt am 12.05.2001 (V06).
+	var werkstatt := await _werkstatt(DATUM_AUSSERHALB)
+	var simulator := _simulator(werkstatt)
+
+	# Act
+	_erzeugen(simulator, "4711")
+
+	# Assert: FR-042 mit FR-049
+	var hinweis: Label = simulator.get_node("%ExcludedNotice")
+	assert_true(hinweis.visible)
+	assert_string_contains(hinweis.text, "„Intel Pentium erscheint“")
+	assert_eq(hinweis.theme_type_variation, &"ErrorNoticeLabel",
+		"Ein Fehler als gefülltes Feld in kassenrot.")
+	assert_null(simulator.run.catalog.get_event("intel_pentium"), "Es fehlt im Lauf …")
+	var titel := []
+	for zeile: Array in _zeilen(simulator.get_node("%PlanTable")):
+		titel.append(zeile[SimulatorPanel.PlanColumn.EVENT])
+	assert_does_not_have(titel, "Intel Pentium erscheint", "… und in der Tabelle …")
+	assert_not_null(werkstatt.editor.catalog.get_event("intel_pentium"), "… aber nicht im Katalog.")
+
+
+func test_fahrplan_im_zebra_mit_auswahl_in_petrol() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	var zeilen: Array[TreeItem] = simulator.get_node("%PlanTable").get_root().get_children()
+
+	# Assert: Style-Guide, „Farbrollen“: jede zweite Zeile endlos-gruen
+	assert_eq(zeilen[1].get_custom_bg_color(0), UiPalette.ENDLOS_GRUEN)
+	assert_eq(zeilen[3].get_custom_bg_color(0), UiPalette.ENDLOS_GRUEN)
+	assert_ne(zeilen[2].get_custom_bg_color(0), UiPalette.ENDLOS_GRUEN)
+
+	# Act und Assert: Die gewählte Zeile ist petrol, auch eine aus dem Zebra.
+	zeilen[1].select(0)
+	assert_eq(zeilen[1].get_custom_bg_color(0), UiPalette.PETROL)
+	zeilen[2].select(0)
+	assert_eq(zeilen[2].get_custom_bg_color(0), UiPalette.PETROL)
+	assert_eq(zeilen[1].get_custom_bg_color(0), UiPalette.ENDLOS_GRUEN, "Die alte ist wieder grün.")
+
+
+func test_bis_zum_ende_dauert_unter_einer_sekunde() -> void:
+	# Arrange: SC-004 an der eingefrorenen Übernahme; den echten Katalog prüfen Tests nicht (R20).
+	var werkstatt := await _werkstatt(UEBERNAHME)
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+
+	# Act: samt Tabelle und Protokoll
+	var beginn := Time.get_ticks_usec()
+	_druecken(simulator, "%EndButton")
+	var dauer := (Time.get_ticks_usec() - beginn) / 1000.0
+
+	# Assert
+	gut.p("„Bis zum Ende“ mit der Übernahme: %.1f ms" % dauer)
+	assert_true(simulator.run.is_finished())
+	assert_gt(_zeilen(simulator.get_node("%Protocol")).size(), 0)
+	assert_lt(dauer, 1000.0, "SC-004: unter 1 Sekunde.")
+
+
 # --- Helfer -----------------------------------------------------------------------------------
 
 ## Tagesindex eines Datums.
@@ -731,6 +1114,73 @@ func _taste(taste: Key, shift: bool = false) -> InputEventKey:
 	ereignis.command_or_control_autoremap = true
 	ereignis.pressed = true
 	return ereignis
+
+
+## Der Simulator der Werkstatt; sein Reiter wird gewählt, wie es Klaus täte.
+func _simulator(werkstatt: Werkstatt) -> SimulatorPanel:
+	var simulator: SimulatorPanel = _node(werkstatt, "%SimulatorPanel")
+	var tabs: TabContainer = _node(werkstatt, "%Tabs")
+	tabs.current_tab = tabs.get_tab_idx_from_control(simulator)
+	return simulator
+
+
+## Seed ins Feld, dann „Fahrplan erzeugen“.
+func _erzeugen(simulator: SimulatorPanel, seed_text: String) -> void:
+	var feld: LineEdit = simulator.get_node("%SeedEdit")
+	feld.text = seed_text
+	feld.text_changed.emit(seed_text)
+	_druecken(simulator, "%GenerateButton")
+
+
+func _druecken(simulator: SimulatorPanel, knopf: String) -> void:
+	var button: Button = simulator.get_node(knopf)
+	button.pressed.emit()
+
+
+## Datum ins Feld neben „Bis“, dann „Bis“.
+func _bis(simulator: SimulatorPanel, datum: String) -> void:
+	var feld: LineEdit = simulator.get_node("%UntilEdit")
+	feld.text = datum
+	_druecken(simulator, "%UntilButton")
+
+
+## Die Zeilen einer Tabelle, je Zeile die Texte ihrer Spalten.
+func _zeilen(tabelle: Tree) -> Array:
+	var zeilen := []
+	for zeile in tabelle.get_root().get_children():
+		var texte := []
+		for spalte in tabelle.columns:
+			texte.append(zeile.get_text(spalte))
+		zeilen.append(texte)
+	return zeilen
+
+
+## Tippt [param text] in das Feld mit dem Fokus, Zeichen für Zeichen.
+func _tippen(text: String) -> void:
+	for zeichen in text:
+		var taste := InputEventKey.new()
+		taste.unicode = zeichen.unicode_at(0)
+		taste.pressed = true
+		get_viewport().push_input(taste)
+
+
+## Der erste Termin des Ereignisses [param id] mit der Herkunft [param herkunft]; null ohne einen.
+func _termin(simulator: SimulatorPanel, id: String,
+		herkunft: ScheduleEntry.Origin) -> ScheduleEntry:
+	for termin in simulator.run.entries:
+		if termin.event.id == id and termin.origin == herkunft:
+			return termin
+	return null
+
+
+## Wählt die Zeile des Termins in der Tabelle des Fahrplans, wie mit der Maus.
+func _termin_waehlen(simulator: SimulatorPanel, termin: ScheduleEntry) -> void:
+	var tabelle: Tree = simulator.get_node("%PlanTable")
+	for zeile in tabelle.get_root().get_children():
+		if zeile.get_metadata(SimulatorPanel.PlanColumn.DATE) == termin.serial:
+			zeile.select(SimulatorPanel.PlanColumn.DATE)
+			return
+	fail_test("Der Termin %d fehlt in der Tabelle." % termin.serial)
 
 
 func _kopieren(fixture: String, ziel: String) -> String:

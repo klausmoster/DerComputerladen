@@ -19,6 +19,7 @@ src/tools/werkstatt/                  # ganzer Ordner vom Export ausgeschlossen
 ├── event_form.tscn / event_form.gd   # class_name EventForm
 ├── timeline_view.gd                  # class_name TimelineView
 ├── issues_panel.gd                   # class_name IssuesPanel
+├── zebra.gd                          # Streifen, Auswahl und Überfahren für alle Tabellen der Werkstatt
 ├── simulator_panel.tscn / .gd        # class_name SimulatorPanel
 ├── statistics_panel.tscn / .gd       # class_name StatisticsPanel
 ├── intervention_dialog.tscn / .gd    # class_name InterventionDialog: Modifikator, Verschieben, Einplanen
@@ -295,6 +296,7 @@ func select_event(id: String) -> void  # hebt hervor, ohne Signal, wie EventList
 | Doppelklick auf freie Fläche | `create_requested`; die Werkstatt öffnet den Dialog „Neu …“ vorbelegt mit fix, der Kategorie der Zeile und dem Tag (R16) |
 | Wischen mit zwei Fingern (Trackpad) | waagerecht seitlich verschieben, senkrecht die Zeilen rollen, mit Cmd Zoom um die Maus (R16) |
 | Kneifen (Trackpad) | Zoom um die Mausposition, in denselben Grenzen wie Cmd+Mausrad |
+| Knöpfe „+“, „−“ und „Alles“ oben links | Zoom um die Mitte des Ausschnitts, je Klick Faktor 2; „Alles“ zeigt 1985 bis 1999; an den Grenzen gesperrt (Wunsch von Klaus bei T055) |
 
 Darstellung (FR-037):
 - je Kategorie eine Zeile in deren Farbe;
@@ -316,6 +318,9 @@ Ergänzt bei der Umsetzung (T047 bis T049):
   Kategorien mit unerlaubter Farbe (V21) zeichnen in `kassenrot`, der Rolle Fehler.
 - Passen die Zeilen nicht in die Höhe, rollt eine Leiste am Rand; das Mausrad bleibt beim
   seitlichen Verschieben.
+- Unten liegt immer eine waagerechte Leiste über die ganze Zeitfläche (Wunsch von Klaus bei der
+  Abnahme T055): Der Griff zeigt den sichtbaren Ausschnitt von 1985 bis 1999, Ziehen verschiebt
+  die Ansicht, und Mausrad, Wischen, Ziehen auf freier Fläche und Zoom stellen den Griff nach.
 - Titel am rechten Rand dürfen angeschnitten sein, Achsenbeschriftungen nicht.
 - Ein Ziehen ändert genau ein Feld: Ein Balken hat rechts den Griff für die Dauer, Ziehen am
   Körper verschiebt das Datum; Zeitfenster haben Griffe an beiden Rändern, Ziehen auf ihrer
@@ -332,6 +337,26 @@ Anzahl und Mindestabstand nicht mehr ins Fenster passen (US4, Szenario 2). Beim 
 der Wert trotzdem an den Katalog; die Prüfung zeigt den Fehler dann wie jeden anderen.
 
 ## Simulator (SimulatorPanel)
+
+```gdscript
+class_name SimulatorPanel extends VBoxContainer
+signal event_selected(id: String)        # Termin gewählt; die Werkstatt wählt das Ereignis mit,
+                                         # wenn es noch im Katalog steht
+const MAX_SEED := 2147483647
+var editor: CatalogEditor
+var run: TimelineRun                     # null bis „Fahrplan erzeugen“
+func refresh() -> void                   # nach catalog_changed und issues_changed
+func roll_seed() -> void                 # „Würfeln“ füllt nur das Feld
+func generate_plan() -> void             # „Fahrplan erzeugen“ mit dem Seed aus dem Feld
+func play_until(day: int) -> void        # alle Schalter laufen hierüber
+```
+
+Umgesetzt in Phase 7 (T052, T053): „+1 Monat“ und „+1 Jahr“ springen wie die Spieluhr zum
+nächsten Ersten bzw. 1. Januar. „Bis“ ist ein Knopf mit Datumsfeld daneben, Enter im Feld spielt
+ebenso ab; ein ungültiges oder schon gespieltes Datum spielt nichts ab und gibt einen Hinweis.
+„? Katalog geändert, neu starten“ steht als Warnung in der Schalterzeile, ausgenommene Ereignisse
+stehen als Fehlerfeld (Theme-Variante `ErrorNoticeLabel`) über der Tabelle. Rechts unter dem
+Protokoll hält `%InterventionBox` den Platz für die Eingriffe aus Phase 8.
 
 - **Oben:**
   - Seed-Feld, das nur Ziffern annimmt (0 bis 2.147.483.647, FR-040), „Würfeln“, „Fahrplan

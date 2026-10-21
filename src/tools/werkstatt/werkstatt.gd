@@ -6,9 +6,9 @@ extends Control
 ## Katalog über einen CatalogEditor, fragt nach, bevor etwas verloren gehen könnte, und verdrahtet
 ## die Teile.
 ##
-## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung und Zeitstrahl, später
-## Simulator und Statistik. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft
-## sie von oben auf (refresh(), show_event() …); untereinander kennen sie sich nicht. Den Katalog
+## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung, Zeitstrahl und Simulator,
+## später die Statistik. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft sie
+## von oben auf (refresh(), show_event() …); untereinander kennen sie sich nicht. Den Katalog
 ## ändert nur der CatalogEditor, die Auswahl gehört der Werkstatt.
 ##
 ## Start im Editor mit F6, wenn die Szene offen ist, oder im Terminal, mit `--katalog` nach `--`
@@ -51,6 +51,7 @@ var _open_error := OK
 @onready var _issues_panel: IssuesPanel = %IssuesPanel
 @onready var _event_form: EventForm = %EventForm
 @onready var _timeline_view: TimelineView = %TimelineView
+@onready var _simulator_panel: SimulatorPanel = %SimulatorPanel
 @onready var _backup_timer: Timer = %BackupTimer
 @onready var _close_dialog: ConfirmationDialog = %CloseDialog
 @onready var _revert_dialog: ConfirmationDialog = %RevertDialog
@@ -75,9 +76,11 @@ func _ready() -> void:
 	# Das Fenster schließt erst, wenn _notification() es sagt (R15).
 	get_tree().auto_accept_quit = false
 	_tabs.set_tab_title(0, "Prüfung")
+	_tabs.set_tab_title(_tabs.get_tab_idx_from_control(_simulator_panel), "Simulator")
 	_event_list.editor = editor
 	_event_form.editor = editor
 	_timeline_view.editor = editor
+	_simulator_panel.editor = editor
 	_set_up_shortcuts()
 	_connect_signals()
 	_update_toolbar()
@@ -311,6 +314,7 @@ func _connect_signals() -> void:
 	_timeline_view.event_created.connect(_on_event_created)
 	_timeline_view.edit_requested.connect(_on_edit_requested)
 	_timeline_view.delete_requested.connect(_on_delete_requested)
+	_simulator_panel.event_selected.connect(_on_simulator_event_selected)
 	_save_button.pressed.connect(request_save)
 	_revert_button.pressed.connect(request_revert)
 	_undo_button.pressed.connect(func() -> void: editor.undo())
@@ -336,20 +340,25 @@ func _connect_signals() -> void:
 
 ## Nach jeder Änderung: Liste, Formular und Zeitstrahl neu, die Toolbar auch. Fehlt danach das
 ## gewählte Ereignis, gilt am Ende des Bilds keins mehr als gewählt; bis dahin kann noch eine neue
-## Kennung kommen, wenn die Änderung ein Umbenennen war.
+## Kennung kommen, wenn die Änderung ein Umbenennen war. Der Simulator behält seinen Lauf und sagt
+## nur, ob der Katalog jetzt ein anderer ist (FR-042).
 func _on_catalog_changed() -> void:
 	_event_list.refresh()
 	_event_list.select_event(selected_id)
 	_event_form.refresh()
 	_timeline_view.refresh()
+	_simulator_panel.refresh()
 	_update_toolbar()
 	_check_selection.call_deferred()
 
 
+## Auch ohne Änderung am Katalog können sich die Meldungen ändern: Nach dem Speichern fallen die
+## Meldungen beim Lesen weg. Dann nähme ein neuer Lauf im Simulator andere Ereignisse aus.
 func _on_issues_changed(issues: Array[CatalogIssue]) -> void:
 	_issues_panel.show_issues(issues)
 	_event_list.show_issues(issues)
 	_event_form.refresh()
+	_simulator_panel.refresh()
 	_update_toolbar()
 
 
@@ -388,6 +397,13 @@ func _on_delete_requested(id: String) -> void:
 	text += "\n\nRückgängig holt alles zurück."
 	_delete_dialog.dialog_text = text
 	_delete_dialog.popup_centered(Vector2i(440, 0))
+
+
+## Ein Termin im Simulator wählt sein Ereignis, sofern es noch im Katalog steht: Der Lauf rechnet
+## mit einer Kopie, und seit seinem Start kann Klaus das Ereignis gelöscht oder umbenannt haben.
+func _on_simulator_event_selected(id: String) -> void:
+	if editor.catalog != null and editor.catalog.get_event(id) != null:
+		select_event(id)
 
 
 ## Ein Klick in der Prüfung wählt das Ereignis und setzt den Fokus ins Feld (FR-033). Meldungen zu
