@@ -57,6 +57,12 @@ Claude bleibt frei für Planung und Review.
    Klaus' Freigabe, erst danach folgt die Gesamtabnahme. Warum: Bei Feature 002 fand die
    Lückensuche 14 Lücken, darunter zwei Widersprüche zur Spec, obwohl alle Tests grün waren
    (Klaus, 2026-10-21).
+7. **Eine Claude-Sitzung je Feature ab dem Plan** (Klaus, 2026-10-21): Besprochen und
+   spezifiziert wird ein Feature dort, wo die Idee aufkam. Ab `/speckit-plan` läuft es in einer
+   eigenen Sitzung, im selben Ordner und auf seinem Branch; die vorige Sitzung rührt es dann
+   nicht mehr an. Was die neue Sitzung wissen muss, steht in Repo-Dateien. Warum: Eine lange
+   Sitzung wird zusammengefasst und verliert dabei Einzelheiten. Anlass: Eine Sitzung trug
+   Feature 001, den Start von 002 und die Spec von 003.
 
 ## Git
 
