@@ -1,7 +1,8 @@
 extends GutTest
 
 ## Prüft das Autoload Timeline als Hülle um den Lauf (Feature 002, T025): Es lädt einen Katalog,
-## hängt sich an eine Uhr und macht aus den Meldungen des Laufs Signale.
+## hängt sich an eine Uhr und macht aus den Meldungen des Laufs Signale. Dazu die Eingriffe, die
+## es an den Lauf durchreicht (T058).
 ##
 ## Wie in test_game_clock.gd arbeiten die Tests nicht mit den Autoloads. Jeder baut sich eine
 ## eigene Zeitleiste mit Test-Katalog und eigener Uhr. Die Knoten entstehen im Test selbst, nicht
@@ -120,6 +121,60 @@ func test_kettenbremse_kommt_als_entry_skipped_mit_warnung() -> void:
 		+ "selben Tag, erlaubt sind 16 (Ereignis „kette_16“)"
 	assert_push_warning(warnung, "Erste Kette, mit Ereignis und Tag (FR-018).")
 	assert_push_warning(warnung, "Zweite Kette.")
+
+
+func test_eingriffe_reichen_an_den_lauf_durch_und_senden_kein_signal() -> void:
+	# Arrange (T058): am 01.01.1992; „Konkurrent eröffnet“ ist auf den 01.06.1992 gesetzt.
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us6_reklamation", uhr)
+	zeitleiste.start_game(4711)
+	_vorspulen(uhr, _tag(1992, 1, 1))
+	var konkurrent := zeitleiste.run.find_planned("konkurrent_eroeffnet", _tag(1992, 6, 1))
+	var modifikator := ChanceModifier.new()
+	modifikator.id = "windiger_haendler"
+	modifikator.event_id = "reklamationswelle"
+	modifikator.value = 0.05
+	modifikator.reason = "Ware vom windigen Händler"
+	modifikator.from_day = _tag(1992, 1, 1)
+	modifikator.to_day = _tag(1993, 12, 31)
+	watch_signals(zeitleiste)
+
+	# Act: jeder der fünf Eingriffe einmal, dazu eine Ablehnung
+	var ergebnisse := [
+		zeitleiste.add_modifier(modifikator),
+		zeitleiste.remove_modifier("windiger_haendler"),
+		zeitleiste.schedule_event("grossauftrag", _tag(1992, 3, 2), "Messeauftrag"),
+		zeitleiste.move_entry(konkurrent.serial, _tag(1992, 9, 1), "Bauarbeiten"),
+		zeitleiste.cancel_entry(konkurrent.serial, "Laden nebenan selbst gemietet"),
+		zeitleiste.cancel_entry(konkurrent.serial, "Noch einmal"),
+	]
+
+	# Assert
+	assert_eq(ergebnisse, [OK, OK, OK, OK, OK, ERR_UNAVAILABLE])
+	assert_eq(zeitleiste.run.last_refusal, "Konkurrent eröffnet am 01.09.1992 ist nicht mehr "
+		+ "geplant, sondern abgesagt.", "Den Grund nennt der Lauf.")
+	var arten := zeitleiste.run.interventions.map(
+		func(eingriff: Dictionary) -> String: return eingriff["kind"])
+	assert_eq(arten, ["add_modifier", "remove_modifier", "schedule", "move", "cancel"])
+	var letzte := zeitleiste.run.protocol.slice(-5)
+	for meldung: TimelineMessage in letzte:
+		assert_eq(meldung.kind, TimelineMessage.Kind.INTERVENTION, meldung.to_line())
+	for signal_name in ["event_fired", "effect_applied", "event_ended", "effect_ended",
+			"entry_skipped"]:
+		assert_signal_not_emitted(zeitleiste, signal_name, "Ein Eingriff wird kein Signal.")
+
+
+func test_eingriffe_ohne_spiel_ergeben_err_unconfigured() -> void:
+	# Arrange: eine Zeitleiste, die nie in den Baum kam; sie hat keinen Lauf.
+	var zeitleiste: ZEITLEISTE = autofree(ZEITLEISTE.new())
+
+	# Act und Assert
+	assert_null(zeitleiste.run)
+	assert_eq(zeitleiste.add_modifier(ChanceModifier.new()), ERR_UNCONFIGURED)
+	assert_eq(zeitleiste.remove_modifier("x"), ERR_UNCONFIGURED)
+	assert_eq(zeitleiste.cancel_entry(1, "Grund"), ERR_UNCONFIGURED)
+	assert_eq(zeitleiste.move_entry(1, 100, "Grund"), ERR_UNCONFIGURED)
+	assert_eq(zeitleiste.schedule_event("x", 100, "Grund"), ERR_UNCONFIGURED)
 
 
 # --- Helfer ----------------------------------------------------------------------

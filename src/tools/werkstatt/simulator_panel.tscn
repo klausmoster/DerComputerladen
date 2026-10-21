@@ -1,11 +1,13 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://tools/werkstatt/simulator_panel.gd" id="1_simulator"]
+[ext_resource type="PackedScene" path="res://tools/werkstatt/intervention_dialog.tscn" id="2_dialog"]
 
 [node name="SimulatorPanel" type="VBoxContainer"]
 script = ExtResource("1_simulator")
 
 [node name="RunBar" type="HFlowContainer" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="SeedCaption" type="Label" parent="RunBar"]
@@ -29,6 +31,45 @@ text = "Würfeln"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Fahrplan erzeugen"
+
+[node name="RestartSeparator" type="VSeparator" parent="RunBar"]
+layout_mode = 2
+
+[node name="RestartWithButton" type="Button" parent="RunBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Derselbe Seed bis zum selben Tag, mit allen gesammelten Eingriffen an ihren Tagen"
+text = "Neu starten mit Eingriffen"
+
+[node name="RestartWithoutButton" type="Button" parent="RunBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Derselbe Seed bis zum selben Tag, ohne Eingriffe; die gesammelten bleiben für den nächsten Neustart"
+text = "Neu starten ohne Eingriffe"
+
+[node name="ProbeSeparator" type="VSeparator" parent="RunBar"]
+layout_mode = 2
+
+[node name="ProbeButtons" type="HBoxContainer" parent="RunBar"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SaveProbeButton" type="Button" parent="RunBar/ProbeButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Seed, Stand und die gesammelten Eingriffe unter einem Namen speichern"
+text = "Probe speichern …"
+
+[node name="LoadProbeButton" type="Button" parent="RunBar/ProbeButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Eine gespeicherte Probe laden; ihre Eingriffe ersetzen die gesammelten"
+text = "Probe laden …"
+
+[node name="DeleteProbeButton" type="Button" parent="RunBar/ProbeButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Probe löschen"
 
 [node name="StepBar" type="HFlowContainer" parent="."]
 layout_mode = 2
@@ -100,6 +141,13 @@ layout_mode = 2
 theme_type_variation = &"ErrorNoticeLabel"
 autowrap_mode = 3
 
+[node name="ProbeNotice" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"WarningLabel"
+autowrap_mode = 3
+
 [node name="FilterBar" type="HBoxContainer" parent="."]
 layout_mode = 2
 
@@ -111,6 +159,12 @@ text = "Zustand"
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Nur Termine in diesem Zustand zeigen"
+
+[node name="DiffFilter" type="CheckBox" parent="FilterBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Nur Termine zeigen, die mit den Eingriffen anders sind als ohne sie"
+text = "nur Unterschiede"
 
 [node name="PlanCount" type="Label" parent="FilterBar"]
 unique_name_in_owner = true
@@ -125,11 +179,31 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="PlanTable" type="Tree" parent="Split/PlanSplit"]
+[node name="TableBox" type="VBoxContainer" parent="Split/PlanSplit"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PlanTable" type="Tree" parent="Split/PlanSplit/TableBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 size_flags_vertical = 3
+allow_rmb_select = true
+
+[node name="EntryButtons" type="HBoxContainer" parent="Split/PlanSplit/TableBox"]
+layout_mode = 2
+
+[node name="CancelButton" type="Button" parent="Split/PlanSplit/TableBox/EntryButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Den gewählten Termin mit Grund absagen; auch per Rechtsklick in der Tabelle"
+text = "Absagen …"
+
+[node name="MoveButton" type="Button" parent="Split/PlanSplit/TableBox/EntryButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Den gewählten Termin mit Grund auf einen anderen Tag legen; auch per Rechtsklick in der Tabelle"
+text = "Verschieben …"
 
 [node name="DetailScroll" type="ScrollContainer" parent="Split/PlanSplit"]
 custom_minimum_size = Vector2(0, 112)
@@ -152,7 +226,7 @@ unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 3
 
-[node name="ProtocolBox" type="VBoxContainer" parent="Split"]
+[node name="ProtocolBox" type="VSplitContainer" parent="Split"]
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -164,5 +238,126 @@ size_flags_vertical = 3
 
 [node name="InterventionBox" type="VBoxContainer" parent="Split/ProtocolBox"]
 unique_name_in_owner = true
+layout_mode = 2
+
+[node name="InterventionHead" type="HFlowContainer" parent="Split/ProtocolBox/InterventionBox"]
+layout_mode = 2
+
+[node name="InterventionTitle" type="Label" parent="Split/ProtocolBox/InterventionBox/InterventionHead"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Eingriffe"
+
+[node name="ProbeLabel" type="Label" parent="Split/ProtocolBox/InterventionBox/InterventionHead"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+
+[node name="ModifierButton" type="Button" parent="Split/ProtocolBox/InterventionBox/InterventionHead"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Die Chance eines Ereignisses über Wahrscheinlichkeit für eine Zeit verschieben"
+text = "Modifikator …"
+
+[node name="ScheduleButton" type="Button" parent="Split/ProtocolBox/InterventionBox/InterventionHead"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Ein Ereignis, das weder fix noch jährlich ist, mit Grund an einem Tag einplanen"
+text = "Einplanen …"
+
+[node name="ModifierList" type="Tree" parent="Split/ProtocolBox/InterventionBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ModifierFoot" type="HBoxContainer" parent="Split/ProtocolBox/InterventionBox"]
+layout_mode = 2
+
+[node name="RemoveModifierButton" type="Button" parent="Split/ProtocolBox/InterventionBox/ModifierFoot"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+tooltip_text = "Den gewählten Modifikator ab der nächsten Würfelrunde entfernen"
+text = "Entfernen"
+
+[node name="ChanceLabel" type="Label" parent="Split/ProtocolBox/InterventionBox/ModifierFoot"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+
+[node name="InterventionHint" type="Label" parent="Split/ProtocolBox/InterventionBox"]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
+theme_type_variation = &"ErrorLabel"
+autowrap_mode = 3
+
+[node name="PlanMenu" type="PopupMenu" parent="."]
+unique_name_in_owner = true
+
+[node name="InterventionDialog" parent="." instance=ExtResource("2_dialog")]
+unique_name_in_owner = true
+
+[node name="SaveProbeDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Probe speichern"
+ok_button_text = "Speichern"
+dialog_hide_on_ok = false
+cancel_button_text = "Abbrechen"
+
+[node name="SaveFields" type="VBoxContainer" parent="SaveProbeDialog"]
+custom_minimum_size = Vector2(400, 0)
+
+[node name="SaveCaption" type="Label" parent="SaveProbeDialog/SaveFields"]
+layout_mode = 2
+text = "Name der Probe"
+
+[node name="ProbeNameEdit" type="LineEdit" parent="SaveProbeDialog/SaveFields"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "etwa Windiger Händler ab 1990"
+
+[node name="SaveHint" type="Label" parent="SaveProbeDialog/SaveFields"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"ErrorLabel"
+autowrap_mode = 3
+
+[node name="OverwriteDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Probe überschreiben"
+ok_button_text = "Überschreiben"
+dialog_autowrap = true
+cancel_button_text = "Abbrechen"
+
+[node name="LoadProbeDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Probe laden"
+ok_button_text = "Laden"
+cancel_button_text = "Abbrechen"
+
+[node name="LoadFields" type="VBoxContainer" parent="LoadProbeDialog"]
+custom_minimum_size = Vector2(540, 240)
+
+[node name="ProbeList" type="Tree" parent="LoadProbeDialog/LoadFields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LoadHint" type="Label" parent="LoadProbeDialog/LoadFields"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+autowrap_mode = 3
+
+[node name="DeleteProbeDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Probe löschen"
+ok_button_text = "Löschen"
+dialog_autowrap = true
+cancel_button_text = "Abbrechen"

@@ -10,16 +10,30 @@ extends RefCounted
 ## Timeline hängt ihn an die Spieluhr und macht aus den Meldungen Signale. Er wendet keine Wirkung
 ## an, er meldet nur.
 ##
-## Stand Phase 5: fixe, jährliche und beim Start gesetzte Termine, die Würfelrunde für Ereignisse
+## Der Lauf kennt fixe, jährliche und beim Start gesetzte Termine, die Würfelrunde für Ereignisse
 ## über Wahrscheinlichkeit, Bedingungen, Folgeereignisse mit Kettenbremse, verzögerte Wirkungen
 ## und Ereignisse mit Dauer (R9). Ein Termin mit Dauer „läuft“ nach seinem Beginn und ist nach
 ## seinem Ende „beendet“; einer ohne Dauer ist ein Augenblick und nach dem Beginn „eingetreten“.
-## Eingriffe kommen mit Phase 8; die Stelle dafür ist im Code mit „Phase 8“ markiert.
+##
+## Dazu kommen die Eingriffe (FR-025 bis FR-027, R11): Modifikatoren setzen und entfernen, Termine
+## absagen, verschieben und einplanen. Sie wirken erst nach today, denn today ist schon
+## abgespielt. Jeder angenommene Eingriff steht mit seinem Tag im Eingriffsprotokoll
+## [member interventions] und als Meldung INTERVENTION im Protokoll; ein abgelehnter hinterlässt
+## nichts außer seinem Grund in [member last_refusal]. Würfe kosten Eingriffe nie: Ein
+## Modifikator verschiebt nur die Schwelle, und Würfel und Würfelzwecke bleiben, wie sie sind.
 
 const FIRST_DAY := 0          # 01.01.1985
 const LAST_DAY := 5477        # 31.12.1999
 const MONTHS := 180
 const MAX_CHAIN := 16         # Glieder einer Folgekette am selben Tag, gezählt je Kette (R10)
+
+## Die Arten im Eingriffsprotokoll (data-model.md, „Eingriffsprotokoll“), Wert des Schlüssels
+## "kind".
+const INTERVENTION_ADD_MODIFIER := "add_modifier"
+const INTERVENTION_REMOVE_MODIFIER := "remove_modifier"
+const INTERVENTION_CANCEL := "cancel"
+const INTERVENTION_MOVE := "move"
+const INTERVENTION_SCHEDULE := "schedule"
 
 ## Eigene Kopie des Katalogs; der Lauf verändert sie nie.
 var catalog: EventCatalog
@@ -32,11 +46,24 @@ var seed: int
 var today: int = -1
 ## Der Fahrplan: nach Tag sortiert, an einem Tag in der Reihenfolge, in der die Termine beginnen.
 var entries: Array[ScheduleEntry] = []
-## Modifikatoren der Chancen. Die Eingriffe, die sie setzen und entfernen, kommen mit Phase 8;
-## was hier steht, rechnen chance_info() und die Würfelrunden schon ein.
+## Die Modifikatoren der Chancen in der Reihenfolge, in der sie gesetzt wurden. Gesetzt und
+## entfernt werden sie über add_modifier() und remove_modifier(); chance_info() und die
+## Würfelrunden rechnen ein, was hier steht. Abgelaufene bleiben stehen und gelten nur nicht mehr.
 var modifiers: Array[ChanceModifier] = []
-## Alle Meldungen des Laufs in der Reihenfolge, in der sie entstanden sind.
+## Alle Meldungen und Eingriffe des Laufs in der Reihenfolge, in der sie entstanden sind.
 var protocol: Array[TimelineMessage] = []
+## Das Eingriffsprotokoll (data-model.md): jeder angenommene Eingriff als Dictionary, in der
+## Reihenfolge, in der er geschah. Jeder hat "kind" (siehe INTERVENTION_*) und "at_day", den Wert
+## von today beim Eingriff, also −1 vor Spielbeginn; dazu je nach Art "event_id", "day",
+## "new_day", "reason" und bei Modifikatoren "modifier" mit den Feldern von ChanceModifier.
+## Absagen und Verschiebungen nennen Ereignis und Tag des Termins statt seiner laufenden Nummer,
+## denn die Nummer ändert sich, wenn sich der Katalog ändert. Ein frischer Lauf, der jeden Eintrag
+## an seinem at_day mit apply_intervention() anwendet, ergibt denselben Fahrplan.
+var interventions: Array[Dictionary] = []
+## Deutscher Grund des zuletzt abgelehnten Eingriffs, etwa „Windows 95 ist fix und lässt sich
+## weder absagen noch verschieben.“ Er bleibt stehen, bis ein anderer Eingriff abgelehnt wird; ob
+## ein Aufruf geklappt hat, sagt sein Rückgabewert.
+var last_refusal: String = ""
 
 ## Kennung → Ereignis, zum schnellen Nachschlagen.
 var _events_by_id: Dictionary = {}
@@ -174,6 +201,208 @@ func chance_info(event_id: String, day: int) -> Dictionary:
 			active.append(modifier)
 			total += modifier.value
 	return {"base": base, "sum": total, "effective": clampf(total, 0.0, 1.0), "modifiers": active}
+
+
+## Der geplante Termin des Ereignisses [param event_id] am Tag [param day]; null, wenn es dort
+## keinen gibt. Gibt es mehrere, kommt der erste in der Reihenfolge des Fahrplans. Absagen und
+## Verschiebungen aus dem Eingriffsprotokoll finden ihren Termin hierüber, wenn eine Probe neu
+## abgespielt wird (data-model.md, „Neu abspielen“).
+func find_planned(event_id: String, day: int) -> ScheduleEntry:
+	var index := _first_index_from(day)
+	while index < entries.size() and entries[index].day == day:
+		var entry := entries[index]
+		if entry.event.id == event_id and entry.state == ScheduleEntry.State.PLANNED:
+			return entry
+		index += 1
+	return null
+
+
+# --- Eingriffe (FR-025 bis FR-027, R11) ----------------------------------------------
+#
+# Jede Methode gibt OK zurück oder einen Error mit dem Grund in last_refusal:
+# - ERR_DOES_NOT_EXIST: Ereignis, Modifikator oder Termin gibt es nicht.
+# - ERR_ALREADY_EXISTS: Die Kennung des Modifikators ist schon vergeben.
+# - ERR_UNAVAILABLE: Der Termin ist fix oder jährlich oder nicht mehr geplant, oder der Tag liegt
+#   nicht nach today oder nach dem 31.12.1999.
+# - ERR_INVALID_PARAMETER: Grund oder Kennung fehlen, das Ende liegt vor dem Beginn, das Ereignis
+#   hat die falsche Art, oder ein Termin soll auf den Tag verschoben werden, an dem er schon liegt.
+#
+# Vor begin() ist today −1; Eingriffe gehen dann ab dem 01.01.1985 (FR-027).
+
+
+## Setzt einen Modifikator (FR-025): Er verschiebt die Chance eines Ereignisses über
+## Wahrscheinlichkeit vom from_day bis zum to_day um value. Der Lauf merkt sich eine Kopie, damit
+## eine spätere Änderung an [param modifier] weder den Fahrplan noch das Eingriffsprotokoll
+## heimlich ändert. Ein Beginn in der Vergangenheit und der Wert 0 sind erlaubt; die Würfelrunden
+## bis today sind schon gelaufen, er wirkt also ab der nächsten.
+func add_modifier(modifier: ChanceModifier) -> Error:
+	if modifier == null:
+		return _refuse(ERR_INVALID_PARAMETER, "Es fehlt der Modifikator.")
+	var event: TimelineEvent = _events_by_id.get(modifier.event_id)
+	if event == null:
+		return _refuse(ERR_DOES_NOT_EXIST, _unknown_event(modifier.event_id))
+	if event.kind != TimelineEvent.Kind.CHANCE:
+		return _refuse(ERR_INVALID_PARAMETER, ("%s ist kein Ereignis über Wahrscheinlichkeit; nur "
+			+ "dort gibt es Modifikatoren.") % event.title)
+	if modifier.id.is_empty():
+		return _refuse(ERR_INVALID_PARAMETER, "Der Modifikator hat keine Kennung.")
+	if _modifier_index(modifier.id) >= 0:
+		return _refuse(ERR_ALREADY_EXISTS,
+			"Einen Modifikator mit der Kennung „%s“ gibt es schon." % modifier.id)
+	if modifier.reason.strip_edges().is_empty():
+		return _refuse(ERR_INVALID_PARAMETER, "Der Modifikator braucht einen Grund.")
+	# −1 ist die Vorgabe von ChanceModifier und heißt „kein Ende gesetzt“ (FR-025: Pflicht).
+	if modifier.to_day == -1:
+		return _refuse(ERR_INVALID_PARAMETER,
+			"Dem Modifikator fehlt das Ende; „unbegrenzt“ heißt bis 31.12.1999.")
+	if modifier.to_day < modifier.from_day:
+		return _refuse(ERR_INVALID_PARAMETER,
+			"Der Modifikator endet am %s, vor seinem Beginn am %s." % [_date(modifier.to_day),
+			_date(modifier.from_day)])
+	var copy := _modifier_from_record(_modifier_record(modifier))
+	modifiers.append(copy)
+	var record := _record(INTERVENTION_ADD_MODIFIER)
+	record["modifier"] = _modifier_record(copy)
+	_accept(record, event, null, "Modifikator „%s“ %s vom %s bis %s" % [copy.reason,
+		_points_text(copy.value), _date(copy.from_day), _date(copy.to_day)])
+	return OK
+
+
+## Entfernt den Modifikator mit der Kennung [param id] (FR-025). Ab der nächsten Würfelrunde gilt
+## er nicht mehr. Was er vorher bewirkt hat, bleibt: Gewürfelte Termine behalten ihre Schwelle und
+## in modifier_notes seinen Grund.
+func remove_modifier(id: String) -> Error:
+	var index := _modifier_index(id)
+	if index < 0:
+		return _refuse(ERR_DOES_NOT_EXIST,
+			"Einen Modifikator mit der Kennung „%s“ gibt es nicht." % id)
+	var removed := modifiers[index]
+	modifiers.remove_at(index)
+	var record := _record(INTERVENTION_REMOVE_MODIFIER)
+	record["modifier"] = _modifier_record(removed)
+	_accept(record, _events_by_id.get(removed.event_id), null,
+		"Modifikator „%s“ %s entfernt" % [removed.reason, _points_text(removed.value)])
+	return OK
+
+
+## Sagt den geplanten Termin mit der laufenden Nummer [param serial] ab (FR-026). Er bleibt mit dem
+## Zustand „abgesagt“ und dem Grund im Fahrplan stehen und beginnt nie; seine Folgeereignisse
+## kommen deshalb auch nicht. Fixe und jährliche Termine lassen sich nicht absagen.
+func cancel_entry(serial: int, reason: String) -> Error:
+	var entry := get_entry(serial)
+	var error := _check_changeable(entry, serial)
+	if error != OK:
+		return error
+	if reason.strip_edges().is_empty():
+		return _refuse(ERR_INVALID_PARAMETER, "Die Absage braucht einen Grund.")
+	entry.state = ScheduleEntry.State.CANCELLED
+	entry.note = reason
+	var record := _record(INTERVENTION_CANCEL)
+	record["event_id"] = entry.event.id
+	record["day"] = entry.day
+	record["reason"] = reason
+	_accept(record, entry.event, entry,
+		"Termin am %s abgesagt, Grund: %s" % [_date(entry.day), reason])
+	return OK
+
+
+## Verschiebt den geplanten Termin mit der laufenden Nummer [param serial] auf [param new_day],
+## einen Tag nach today bis zum 31.12.1999 (FR-026). Die Dauer bleibt. Das erste Verschieben merkt
+## sich den ursprünglichen Tag in moved_from_day; daran erkennt ScheduleDiff den Termin als
+## verschoben. Fixe und jährliche Termine lassen sich nicht verschieben.
+func move_entry(serial: int, new_day: int, reason: String) -> Error:
+	var entry := get_entry(serial)
+	var error := _check_changeable(entry, serial)
+	if error != OK:
+		return error
+	var problem := _day_problem(new_day)
+	if not problem.is_empty():
+		return _refuse(ERR_UNAVAILABLE, problem)
+	if new_day == entry.day:
+		return _refuse(ERR_INVALID_PARAMETER,
+			"%s liegt schon am %s." % [entry.event.title, _date(new_day)])
+	if reason.strip_edges().is_empty():
+		return _refuse(ERR_INVALID_PARAMETER, "Die Verschiebung braucht einen Grund.")
+	var old_day := entry.day
+	# Der Termin wandert an seine neue Stelle im Fahrplan: herausnehmen, ändern, neu einsortieren.
+	entries.remove_at(entries.find(entry))
+	if entry.moved_from_day < 0:
+		entry.moved_from_day = old_day
+	entry.end_day = new_day + (entry.end_day - entry.day)
+	entry.day = new_day
+	entry.note = reason
+	entries.insert(entries.bsearch_custom(entry, _comes_before), entry)
+	# Der alte Tag bleibt als Stichtag stehen; an ihm geschieht dann eben nichts.
+	_add_stop(new_day)
+	var record := _record(INTERVENTION_MOVE)
+	record["event_id"] = entry.event.id
+	record["day"] = old_day
+	record["new_day"] = new_day
+	record["reason"] = reason
+	_accept(record, entry.event, entry, "Termin vom %s auf den %s verschoben, Grund: %s"
+		% [_date(old_day), _date(new_day), reason])
+	return OK
+
+
+## Plant das Ereignis [param event_id] als neuen Termin am Tag [param day] ein, einen Tag nach
+## today bis zum 31.12.1999 (FR-026). Der Termin hat die Herkunft „Eingriff“ und den Grund als
+## note. An seinem Tag gilt er wie jeder geplante Termin: Bedingungen werden geprüft, und ein
+## Ereignis, das noch läuft, beginnt nicht noch einmal. Fixe und jährliche Ereignisse lassen sich
+## nicht einplanen; sie haben ihre Tage schon.
+func schedule_event(event_id: String, day: int, reason: String) -> Error:
+	var event: TimelineEvent = _events_by_id.get(event_id)
+	if event == null:
+		return _refuse(ERR_DOES_NOT_EXIST, _unknown_event(event_id))
+	if event.kind == TimelineEvent.Kind.FIXED or event.kind == TimelineEvent.Kind.YEARLY:
+		return _refuse(ERR_UNAVAILABLE, ("%s ist %s; einplanen lassen sich nur Ereignisse, die "
+			+ "weder fix noch jährlich sind.") % [event.title, _fixed_label(event.kind)])
+	var problem := _day_problem(day)
+	if not problem.is_empty():
+		return _refuse(ERR_UNAVAILABLE, problem)
+	if reason.strip_edges().is_empty():
+		return _refuse(ERR_INVALID_PARAMETER, "Die Einplanung braucht einen Grund.")
+	var entry := _add_entry(event, day, ScheduleEntry.Origin.INTERVENTION)
+	entry.note = reason
+	var record := _record(INTERVENTION_SCHEDULE)
+	record["event_id"] = event_id
+	record["day"] = day
+	record["reason"] = reason
+	_accept(record, event, entry, "Termin am %s eingeplant, Grund: %s" % [_date(day), reason])
+	return OK
+
+
+## Wendet einen Eintrag des Eingriffsprotokolls an, mit denselben Prüfungen wie die Methoden oben,
+## an denen er auch landet. Absagen und Verschiebungen finden ihren Termin über find_planned();
+## fehlt er, gibt es ERR_DOES_NOT_EXIST. Der Eintrag darf aus einer Datei stammen: Zahlen dürfen
+## float sein, und ein fehlender oder falscher Wert führt zu einer Ablehnung, nie zum Absturz.
+func apply_intervention(record: Dictionary) -> Error:
+	var kind := _text_of(record, "kind")
+	match kind:
+		INTERVENTION_ADD_MODIFIER, INTERVENTION_REMOVE_MODIFIER:
+			var data: Variant = record.get("modifier")
+			if typeof(data) != TYPE_DICTIONARY:
+				return _refuse(ERR_INVALID_PARAMETER, "Dem Eingriff fehlt der Modifikator.")
+			if kind == INTERVENTION_ADD_MODIFIER:
+				return add_modifier(_modifier_from_record(data))
+			return remove_modifier(_text_of(data, "id"))
+		INTERVENTION_CANCEL, INTERVENTION_MOVE:
+			var event_id := _text_of(record, "event_id")
+			var day := _int_of(record, "day", FIRST_DAY - 1)
+			if not _events_by_id.has(event_id):
+				return _refuse(ERR_DOES_NOT_EXIST, _unknown_event(event_id))
+			var entry := find_planned(event_id, day)
+			if entry == null:
+				return _refuse(ERR_DOES_NOT_EXIST,
+					"%s hat am %s keinen geplanten Termin im Fahrplan." % [_title_of(event_id),
+					_date(day)])
+			if kind == INTERVENTION_CANCEL:
+				return cancel_entry(entry.serial, _text_of(record, "reason"))
+			return move_entry(entry.serial, _int_of(record, "new_day", FIRST_DAY - 1),
+				_text_of(record, "reason"))
+		INTERVENTION_SCHEDULE:
+			return schedule_event(_text_of(record, "event_id"),
+				_int_of(record, "day", FIRST_DAY - 1), _text_of(record, "reason"))
+	return _refuse(ERR_INVALID_PARAMETER, "Einen Eingriff der Art „%s“ gibt es nicht." % kind)
 
 
 ## Die Vorkommen eines jährlichen Ereignisses, die in den Fahrplan kommen (R9), aufsteigend, je als
@@ -691,3 +920,142 @@ static func _occurrence(event: TimelineEvent, year: int) -> PackedInt32Array:
 static func _new_year(year: int) -> int:
 	var clamped := clampi(year, CatalogValidator.FIRST_YEAR - 1, CatalogValidator.LAST_YEAR + 2)
 	return GameDate.new(clamped, 1, 1).to_day_index()
+
+
+# --- Hilfen für Eingriffe ----------------------------------------------------------
+
+## Lehnt einen Eingriff ab: merkt den Grund in last_refusal und gibt [param error] zurück.
+## Fahrplan, Protokoll und Eingriffsprotokoll bleiben unberührt.
+func _refuse(error: Error, reason: String) -> Error:
+	last_refusal = reason
+	return error
+
+
+## Nimmt einen Eingriff an: Der Eintrag kommt ins Eingriffsprotokoll, und eine Meldung
+## INTERVENTION mit dem Tag today kommt ins Protokoll, etwa „01.01.1992  Eingriff  Konkurrent
+## eröffnet: Termin am 01.06.1992 abgesagt, Grund: …“. Vor Spielbeginn steht dort der 31.12.1984:
+## Der Eingriff geschah, bevor der erste Tag abgespielt war (FR-027, „mit Zeitpunkt und Grund“).
+## Die Meldung geht nicht in die Rückgabe von advance_to(); das Autoload macht daraus kein Signal.
+func _accept(record: Dictionary, event: TimelineEvent, entry: ScheduleEntry, text: String) -> void:
+	interventions.append(record)
+	var message := TimelineMessage.new()
+	message.day = today
+	message.kind = TimelineMessage.Kind.INTERVENTION
+	message.event = event
+	message.entry = entry
+	message.text = "%s: %s" % [event.title, text] if event != null else text
+	protocol.append(message)
+
+
+## Neuer Eintrag fürs Eingriffsprotokoll mit Art und Tag; die übrigen Felder setzt der Eingriff.
+func _record(kind: String) -> Dictionary:
+	return {"at_day": today, "kind": kind}
+
+
+## Ob sich der Termin absagen oder verschieben lässt (FR-026): Es gibt ihn, er ist weder fix noch
+## jährlich, er ist noch geplant, und sein Tag liegt nach today und spätestens am 31.12.1999. Gibt
+## OK zurück oder lehnt ab.
+func _check_changeable(entry: ScheduleEntry, serial: int) -> Error:
+	if entry == null:
+		return _refuse(ERR_DOES_NOT_EXIST, "Einen Termin mit der Nummer %d gibt es nicht." % serial)
+	var title := entry.event.title
+	if entry.origin == ScheduleEntry.Origin.FIXED or entry.origin == ScheduleEntry.Origin.YEARLY:
+		var label := "fix" if entry.origin == ScheduleEntry.Origin.FIXED else "jährlich"
+		return _refuse(ERR_UNAVAILABLE,
+			"%s ist %s und lässt sich weder absagen noch verschieben." % [title, label])
+	if entry.state != ScheduleEntry.State.PLANNED:
+		return _refuse(ERR_UNAVAILABLE, "%s am %s ist nicht mehr geplant, sondern %s."
+			% [title, _date(entry.day), entry.state_label()])
+	var problem := _day_problem(entry.day)
+	if not problem.is_empty():
+		return _refuse(ERR_UNAVAILABLE, "%s: %s" % [title, problem])
+	return OK
+
+
+## Warum ein Eingriff am Tag [param day] nicht geht; leer, wenn er geht. Möglich sind die Tage nach
+## today bis zum 31.12.1999 (FR-026). today selbst ist schon abgespielt, vor Spielbeginn ist das
+## der 31.12.1984.
+func _day_problem(day: int) -> String:
+	if day > LAST_DAY:
+		return "Der %s liegt nach dem Spielende am %s." % [_date(day), _date(LAST_DAY)]
+	if day > today:
+		return ""
+	if day < FIRST_DAY:
+		return "Der %s liegt vor dem Spielbeginn am %s." % [_date(day), _date(FIRST_DAY)]
+	return "Der %s ist schon abgespielt; frühestens geht der %s." % [_date(day),
+		_date(today + 1)]
+
+
+## Stelle des Modifikators mit der Kennung [param id] in modifiers; −1, wenn es ihn nicht gibt.
+func _modifier_index(id: String) -> int:
+	for i in modifiers.size():
+		if modifiers[i].id == id:
+			return i
+	return -1
+
+
+## Grund für ein Ereignis, das es im Katalog des Laufs nicht gibt.
+static func _unknown_event(event_id: String) -> String:
+	return "Das Ereignis „%s“ gibt es im Katalog nicht." % event_id
+
+
+## „fix“ oder „jährlich“, für Ablehnungen.
+static func _fixed_label(kind: TimelineEvent.Kind) -> String:
+	return "jährlich" if kind == TimelineEvent.Kind.YEARLY else "fix"
+
+
+## Ein Modifikator als Dictionary fürs Eingriffsprotokoll, mit den Feldern von ChanceModifier.
+static func _modifier_record(modifier: ChanceModifier) -> Dictionary:
+	return {
+		"event_id": modifier.event_id,
+		"from_day": modifier.from_day,
+		"id": modifier.id,
+		"reason": modifier.reason,
+		"to_day": modifier.to_day,
+		"value": modifier.value,
+	}
+
+
+## Ein Modifikator aus einem Dictionary wie von _modifier_record(); was fehlt oder nicht passt,
+## bekommt die Vorgabe von ChanceModifier, und add_modifier() lehnt ihn dann ab.
+static func _modifier_from_record(data: Dictionary) -> ChanceModifier:
+	var modifier := ChanceModifier.new()
+	modifier.id = _text_of(data, "id")
+	modifier.event_id = _text_of(data, "event_id")
+	modifier.reason = _text_of(data, "reason")
+	modifier.from_day = _int_of(data, "from_day", modifier.from_day)
+	modifier.to_day = _int_of(data, "to_day", modifier.to_day)
+	var value: Variant = data.get("value")
+	if typeof(value) == TYPE_FLOAT or typeof(value) == TYPE_INT:
+		modifier.value = float(value)
+	return modifier
+
+
+## data[key] als Text; leer, wenn es fehlt oder kein Text ist.
+static func _text_of(data: Dictionary, key: String) -> String:
+	var value: Variant = data.get(key)
+	if typeof(value) == TYPE_STRING or typeof(value) == TYPE_STRING_NAME:
+		return String(value)
+	return ""
+
+
+## data[key] als ganze Zahl. Aus einer JSON-Datei kommt jede Zahl als float, 14 also als 14.0;
+## ein float ohne Nachkommastellen gilt deshalb als ganze Zahl. Sonst [param fallback].
+static func _int_of(data: Dictionary, key: String, fallback: int) -> int:
+	var value: Variant = data.get(key)
+	if typeof(value) == TYPE_INT:
+		return int(value)
+	if typeof(value) == TYPE_FLOAT and value == floorf(value) and absf(value) < 1e15:
+		return int(value)
+	return fallback
+
+
+## Tagesindex als „TT.MM.JJJJ“, auch vor 1985 und nach 1999.
+static func _date(day: int) -> String:
+	return str(GameDate.from_day_index(day))
+
+
+## Wert eines Modifikators in Prozentpunkten, etwa „+5 Prozentpunkte“ oder „-1 Prozentpunkt“.
+static func _points_text(share: float) -> String:
+	var unit := "Prozentpunkt" if is_equal_approx(absf(share * 100.0), 1.0) else "Prozentpunkte"
+	return "%s %s" % [_points(share), unit]

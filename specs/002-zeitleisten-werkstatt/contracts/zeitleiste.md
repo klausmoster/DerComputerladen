@@ -258,6 +258,10 @@ func find_planned(event_id: String, day: int) -> ScheduleEntry
 ## doppelt), ERR_UNAVAILABLE (fix, jährlich, schon begonnen, Tag nicht nach today oder nach
 ## LAST_DAY), ERR_INVALID_PARAMETER (kein Grund, Ende vor Beginn, falsche Art).
 ## Vor begin() ist today = -1, Eingriffe sind dann ab Tag 0 möglich.
+## Ergänzt bei der Umsetzung (T056): ERR_INVALID_PARAMETER auch für einen Modifikator ohne
+## Kennung oder ohne Ende und für Verschieben auf denselben Tag; ERR_UNAVAILABLE für Termine nach
+## dem 31.12.1999. Entfernen geht jederzeit. Jeder angenommene Eingriff erzeugt eine Meldung
+## INTERVENTION mit day = today; last_refusal behält den Grund der letzten Ablehnung.
 func add_modifier(modifier: ChanceModifier) -> Error
 func remove_modifier(id: String) -> Error
 func cancel_entry(serial: int, reason: String) -> Error

@@ -650,7 +650,7 @@ Reklamationswelle und Abhängige; eine gespeicherte Probe ergibt nach dem Laden 
 
 ### Implementation for User Story 6
 
-- [ ] T056 [A] [US6] `src/core/timeline/timeline_run.gd`, Teil 3, Eingriffe laut Vertrag:
+- [x] T056 [A] [US6] `src/core/timeline/timeline_run.gd`, Teil 3, Eingriffe laut Vertrag:
   - `add_modifier()` lehnt mit `Error` und `last_refusal` ab: `to_day` < `from_day`, leerer
     Grund, doppelte Kennung, Ereignis nicht `CHANCE`.
   - `remove_modifier()`, `cancel_entry()`, `move_entry()`, `schedule_event()`: nur für Termine,
@@ -660,7 +660,7 @@ Reklamationswelle und Abhängige; eine gespeicherte Probe ergibt nach dem Laden 
     aus data-model.md nach `interventions`; Ablehnungen hinterlassen dort nichts.
   - `apply_intervention(record)` und `find_planned()`; jeder Eingriff erzeugt eine
     `INTERVENTION`-Meldung.
-- [ ] T057 [A] [US6] `src/test/test_interventions.gd` mit Fixtures
+- [x] T057 [A] [US6] `src/test/test_interventions.gd` mit Fixtures
   `src/test/fixtures/catalog_us6_*.json`:
   - US6, Szenario 1: 8 % von 1990 bis 1993.
   - Szenario 3: 3 % Grundchance mit +4 und −6 ergibt 1 %; nach dem Entfernen von +4 bleibt −6,
@@ -671,13 +671,13 @@ Reklamationswelle und Abhängige; eine gespeicherte Probe ergibt nach dem Laden 
   - Eingriffsprotokoll: Jeder angenommene Eingriff steht mit seinem `at_day` darin; nachgespielt
     mit `apply_intervention()` an diesen Tagen ergibt ein frischer Lauf denselben Fahrplan.
   - SC-003: Seeds 1 bis 100 mit dem Modifikator aus Szenario 1, kein fremder Termin ändert sich.
-- [ ] T058 [A] [P] [US6] Eingriffe in `src/core/timeline.gd` mit gleichen Signaturen an `run`
+- [x] T058 [A] [P] [US6] Eingriffe in `src/core/timeline.gd` mit gleichen Signaturen an `run`
   durchreichen. Hängt an T056.
-- [ ] T059 [A] [P] [US6] `src/core/timeline/schedule_diff.gd` (`ScheduleDiff`) mit der Paarung aus
+- [x] T059 [A] [P] [US6] `src/core/timeline/schedule_diff.gd` (`ScheduleDiff`) mit der Paarung aus
   dem Vertrag: gleicher Tag, verschoben nur über `moved_from_day`, neu, weggefallen. Tests in
   `src/test/test_schedule_diff.gd`, darunter US6, Szenario 2, und ein Modifikator, der Termine
   nur dazubringt oder wegnimmt und dabei kein `MOVED` erzeugt. Hängt an T056.
-- [ ] T060 [A] [P] [US6] `src/tools/werkstatt/what_if_probe.gd` (`WhatIfProbe`) laut Vertrag:
+- [x] T060 [A] [P] [US6] `src/tools/werkstatt/what_if_probe.gd` (`WhatIfProbe`) laut Vertrag:
   - Ordner `src/tools/werkstatt/proben/` mit `.gitkeep`; jede Methode mit Dateien nimmt den
     Ordner als Parameter mit dieser Vorgabe.
   - `write_file()` kanonisch wie beim Katalog, `read_file()`, `list_probes()`, `delete_file()`,
@@ -687,10 +687,13 @@ Reklamationswelle und Abhängige; eine gespeicherte Probe ergibt nach dem Laden 
   Tests in `src/test/test_what_if_probe.gd` mit eigenem Testordner: US6, Szenario 7, auch mit
   der Absage eines gewürfelten Termins; Szenario 8 nennt den nicht anwendbaren Eingriff;
   Löschen. Hängt an T056.
-- [ ] T061 [A] [US6] `SimulatorPanel`, Eingriffe:
+- [x] T061 [A] [US6] `SimulatorPanel`, Eingriffe:
   - `src/tools/werkstatt/intervention_dialog.tscn` und `intervention_dialog.gd`:
-    - Modifikator: Ereignis, Wert in Prozentpunkten, Grund, Beginn, Ende als Pflichtfeld.
-    - Absagen: Grund. Verschieben: neuer Tag. Einplanen: Ereignis, Tag, Grund.
+    - Modifikator: Ereignis, Wert in Prozentpunkten, Grund, Beginn, Ende als Pflichtfeld. Die
+      Kennung entsteht aus dem Grund und ist eindeutig (`CatalogEditor.id_from()`,
+      `unique_id()`), weil FR-025 eine verlangt.
+    - Absagen: Grund. Verschieben: neuer Tag und Grund (FR-027, der Kern lehnt ohne Grund ab).
+      Einplanen: Ereignis, Tag, Grund.
   - Liste der Modifikatoren mit „Entfernen“ und `chance_info()`, also Summe und Begrenzung.
   - `last_refusal` wird angezeigt.
   - Das Panel sammelt die Eingriffe in einer `WhatIfProbe` ohne Datei. „Fahrplan erzeugen“,
@@ -699,14 +702,14 @@ Reklamationswelle und Abhängige; eine gespeicherte Probe ergibt nach dem Laden 
     die Werkstatt schließt oder eine Probe geladen wird.
 
   Hängt an T056 und T060.
-- [ ] T062 [A] [US6] `SimulatorPanel`, Unterschiede und Proben (FR-043, FR-051):
+- [x] T062 [A] [US6] `SimulatorPanel`, Unterschiede und Proben (FR-043, FR-051):
   - Gegenlauf ohne Eingriffe bis zum selben Tag, Markierungen über `ScheduleDiff`.
   - Weggefallene Termine stehen durchgestrichen, ein Filter zeigt „nur Unterschiede“.
   - „Probe speichern …“ mit Name, „Probe laden …“ aus der Liste, „Probe löschen“. Nicht
     anwendbare Eingriffe werden genannt.
 
   Hängt an T059 bis T061.
-- [ ] T063 [K] [US6] Phase 8 abnehmen nach quickstart.md, Abschnitte 1 und 4.5 (US6, Szenarien 1
+- [x] T063 [K] [US6] Phase 8 abnehmen nach quickstart.md, Abschnitte 1 und 4.5 (US6, Szenarien 1
   bis 8)
 
 **Checkpoint**: Spieleraktionen lassen sich ausprobieren, vergleichen und als Probe speichern.

@@ -348,6 +348,20 @@ func test_vorgeschlagene_kennung_ist_eindeutig() -> void:
 	assert_eq(zweite, "intel_pentium_3")
 
 
+func test_kennungsregel_steht_auch_ohne_editor_bereit() -> void:
+	# Arrange: Die Regel ist statisch; WhatIfProbe und der Simulator nutzen sie ohne Editor.
+	var vergeben := {"intel_pentium": true, "intel_pentium_2": true}
+
+	# Act und Assert
+	assert_eq(CatalogEditor.id_from("Ware vom windigen Händler!", "modifikator"),
+		"ware_vom_windigen_haendler")
+	assert_eq(CatalogEditor.id_from("???", "modifikator"), "modifikator",
+		"Ohne Buchstaben und Ziffern gilt die Vorgabe.")
+	assert_eq(CatalogEditor.unique_id("intel_pentium", vergeben), "intel_pentium_3",
+		"Die erste freie Nummer.")
+	assert_eq(CatalogEditor.unique_id("intel_486", vergeben), "intel_486", "Frei bleibt frei.")
+
+
 func test_neues_ereignis_bekommt_die_vorgaben_seiner_art() -> void:
 	# Arrange: US2, Szenario 1.
 	_oeffnen(MINIMAL)

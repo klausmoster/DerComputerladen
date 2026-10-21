@@ -264,11 +264,13 @@ abgesagte Termine.
 ## WhatIfProbe (Was-wäre-wenn-Probe)
 
 Eine gespeicherte Probe aus dem Simulator (FR-051), eine JSON-Datei je Probe unter
-`src/tools/werkstatt/proben/<kennung>.json`, geschrieben nach denselben Regeln wie der Katalog.
+`src/tools/werkstatt/proben/<kennung>.json`, geschrieben nach denselben Regeln wie der Katalog:
+mit `"format": 1`, und alle Tage stehen als Datum `"JJJJ-MM-TT"` in der Datei, −1 also als
+`"1984-12-31"`. Im Speicher sind es Tagesindizes wie in `TimelineRun.interventions`.
 
 | Feld | Typ | Bedeutung |
 |---|---|---|
-| `id` | String | Kennung = Dateiname, aus dem Namen erzeugt wie bei Ereignissen |
+| `id` | String | Kennung = Dateiname, aus dem Namen erzeugt wie bei Ereignissen (`CatalogEditor.id_from()`); eine gleichnamige Probe wird überschrieben, der Simulator fragt vorher |
 | `name` | String | Anzeigename, etwa „Windiger Händler ab 1990“ |
 | `seed` | int | Seed des Durchlaufs |
 | `until_day` | int | Tag, bis zu dem der Lauf beim Speichern abgespielt war |
@@ -282,7 +284,9 @@ er geschah, als Dictionary:
   Feldern von `ChanceModifier`.
 
 Absagen und Verschiebungen merken sich Ereignis und Tag des Termins statt der laufenden Nummer,
-denn die Nummer kann sich ändern, wenn sich der Katalog ändert.
+denn die Nummer kann sich ändern, wenn sich der Katalog ändert. Bei `move` ist `day` der Tag vor
+dem Verschieben. `remove_modifier` trägt den ganzen entfernten Modifikator; seine Zeile im
+Protokoll nennt dessen Grund, denn FR-027 verlangt jeden Eingriff mit Grund.
 
 **Neu abspielen:** `WhatIfProbe.build_run(catalog)` legt einen Lauf mit `seed` an und geht das
 Protokoll der Reihe nach durch:

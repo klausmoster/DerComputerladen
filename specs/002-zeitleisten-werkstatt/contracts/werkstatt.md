@@ -22,7 +22,7 @@ src/tools/werkstatt/                  # ganzer Ordner vom Export ausgeschlossen
 ├── zebra.gd                          # Streifen, Auswahl und Überfahren für alle Tabellen der Werkstatt
 ├── simulator_panel.tscn / .gd        # class_name SimulatorPanel
 ├── statistics_panel.tscn / .gd       # class_name StatisticsPanel
-├── intervention_dialog.tscn / .gd    # class_name InterventionDialog: Modifikator, Verschieben, Einplanen
+├── intervention_dialog.tscn / .gd    # class_name InterventionDialog: Modifikator, Absagen, Verschieben, Einplanen
 ├── what_if_probe.gd                  # class_name WhatIfProbe: Probe lesen, schreiben, neu abspielen
 ├── proben/                           # gespeicherte Was-wäre-wenn-Proben, eine JSON-Datei je Probe
 └── fahrplan_ausgabe.gd               # Textausgabe, siehe zeitleiste.md
@@ -33,6 +33,7 @@ src/test/
 ├── test_what_if_probe.gd             # Speichern, Laden, Neu abspielen, Löschen, nicht anwendbare Eingriffe
 ├── test_timeline_view.gd             # Tag ↔ Pixel, Stapeln, jährliche nicht ziehbar, Vorschau beim Ziehen
 ├── test_werkstatt_theme.gd           # Farben des Themes stammen aus UiPalette, Schriftgröße, Kästen
+├── test_simulator.gd                 # Eingriffe, Unterschiede, Neustarts und Proben im Simulator (US6)
 └── test_werkstatt_scene.gd           # Rauchtest: Szene baut headless auf, Prüfmeldung führt zum Feld, Simulator rechnet, Spieluhr bleibt unberührt
 ```
 
@@ -97,7 +98,9 @@ Werkstatt (Control, volle Fläche)        werkstatt.gd; theme = werkstatt_theme.
 
 Dazu Dialoge als Kinder der Werkstatt: `ConfirmationDialog` für Schließen, Verwerfen, Löschen,
 Speichern trotz Fehlern, eine fremde Änderung und die Sicherungskopie; `AcceptDialog` für einen
-unlesbaren Katalog; `InterventionDialog`. Den Dialog für „Neu …“ bringt `EventList` selbst mit.
+unlesbaren Katalog. Den Dialog für „Neu …“ bringt `EventList` selbst mit, ebenso bringt das
+`SimulatorPanel` den `InterventionDialog`, die Dialoge für Proben und sein Menü am Termin mit
+(T061/T062): Nur das Panel nutzt sie, und es bleibt allein testbar.
 
 **Datenfluss:**
 - `CatalogEditor` ist der einzige, der den Katalog ändert. Liste, Formular und Zeitstrahl rufen
@@ -168,6 +171,8 @@ func discard_backup() -> void
 
 ## Ereignisse
 func suggest_id(title: String) -> String      # klein, ä→ae, ö→oe, ü→ue, ß→ss, sonst _; eindeutig mit _2, _3 …
+static func id_from(text: String, fallback: String) -> String   # die Regel von suggest_id(), ohne Editor; auch für Proben und Modifikatoren
+static func unique_id(base: String, taken: Dictionary) -> String # hängt _2, _3 … an, bis die Kennung nicht in taken steht
 ## Legt ein Ereignis mit den Vorgaben seiner Art an; leere Kennung heißt suggest_id(title),
 ## day ≥ 0 setzt bei fixen Ereignissen das Datum.
 func add_event(kind: TimelineEvent.Kind, title: String, category: String, day: int = -1, id: String = "") -> TimelineEvent

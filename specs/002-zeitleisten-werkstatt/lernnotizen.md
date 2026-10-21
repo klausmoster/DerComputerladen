@@ -683,3 +683,174 @@ Der Agent schreibt die Notizen, Claude trägt sie je Phase hier ein.
 - **Zwei Regeln für die Besitzer:** `forget()` vor `Tree.clear()`, sonst hielte Zebra Zeilen, die
   es nicht mehr gibt; `paint_all()` nach jeder Auswahl aus dem Code, denn `deselect_all()` sendet
   kein Signal (`EventList._highlight()`).
+
+## Phase 8
+
+### T056 Eingriffe im Kern
+
+- **Fehler als Rückgabewert:** GDScript kennt keine Exceptions. Die Eingriffe in
+  `src/core/timeline/timeline_run.gd` geben deshalb Godots `Error` zurück, `OK` oder etwa
+  `ERR_UNAVAILABLE`, und den deutschen Grund in `last_refusal`. `_refuse()` erledigt beides in
+  einem Aufruf, also ist jede Prüfung eine Zeile `return _refuse(…)`. Ob ein Aufruf geklappt hat,
+  sagt nur der Rückgabewert; `last_refusal` bleibt bis zur nächsten Ablehnung stehen.
+- **Eingriffsprotokoll als reine Daten:** `interventions` hält Dictionaries mit Zahlen und Texten,
+  keine Verweise auf Termine. So lassen sie sich ohne Umweg als JSON speichern. Absagen und
+  Verschiebungen nennen Ereignis und Tag statt der laufenden Nummer, denn die Nummer ändert sich,
+  sobald sich der Katalog ändert; `apply_intervention()` findet den Termin über `find_planned()`.
+- **Kopie statt Verweis:** Objekte wie `ChanceModifier` werden als Verweis übergeben.
+  `add_modifier()` merkt sich deshalb eine Kopie; sonst änderte ein späteres
+  `modifier.value = 0.9` heimlich den Lauf, ohne Spur im Protokoll.
+- **Sortiert halten:** `move_entry()` nimmt den Termin aus `entries` heraus und setzt ihn mit
+  `bsearch_custom(entry, _comes_before)` neu ein, nach derselben Regel wie beim Anlegen. Der alte
+  Stichtag bleibt stehen; an ihm geschieht dann eben nichts.
+- **`match` über Konstanten:** `apply_intervention()` verzweigt mit `match kind:` über die
+  Konstanten `INTERVENTION_*`, mehrere Muster stehen mit Komma in einer Zeile. Weil Einträge aus
+  einer Datei kommen dürfen, liest `_int_of()` auch float wie `1826.0` als ganze Zahl.
+- **Meldung ohne Signal:** `_accept()` hängt die Meldung `INTERVENTION` nur an `protocol`, nicht an
+  die Rückgabe von `advance_to()`. Das Autoload bekommt sie deshalb gar nicht erst zu sehen.
+
+### T057 Tests der Eingriffe
+
+- **Nachrechnen statt festschreiben** wie in Phase 3: `catalog_us6_schwelle` hat keinen
+  Mindestabstand, jeder Treffer wird ein Termin. So rechnet der Test zu Szenario 1 mit demselben
+  `EventDice` jeden Monat nach, mit 8 % von 1990 bis 1993 und 3 % davor und danach.
+- **Suchen statt Seeds raten:** Die Absage eines gewürfelten Termins braucht einen, der nach seiner
+  Würfelrunde noch geplant ist. `_naechster_geplanter_gewuerfelter()` spielt Monat für Monat ab,
+  bis es einen gibt; der Test hängt so nicht an einem Datum, das eine andere Godot-Version anders
+  würfelt.
+- **SC-003 parametrisiert:** `use_parameters()` lässt denselben Test einmal mit
+  `catalog_us6_reklamation` laufen, deren Kundenflucht und Zeitungsartikel von der
+  Reklamationswelle abhängen, und einmal mit der eingefrorenen Übernahme.
+- **Fehlerprobe:** 25 eingebaute Fehler in einer Kopie außerhalb des Repos. Zwei fielen zuerst
+  nicht auf: `find_planned()` ohne Blick auf den Zustand und die Reihenfolge in Schritt 1 des
+  Vergleichs. Zwei Tests kamen dazu, jetzt lässt jeder der 25 Fehler Tests scheitern.
+
+### T058 Eingriffe im Autoload
+
+- `src/core/timeline.gd` reicht die fünf Eingriffe mit gleichen Signaturen an `run` durch; die
+  Regeln stehen nur im Lauf. Ohne laufendes Spiel gibt es `ERR_UNCONFIGURED`.
+- **Autoload ohne Baum:** `ZEITLEISTE.new()` mit `autofree()` kommt in `test_timeline.gd` nie in
+  den Szenenbaum. `_ready()` läuft dann nicht, es gibt keinen Lauf, und genau das prüft der Test.
+
+### T059 Vergleich zweier Läufe
+
+- **Paaren statt Nummern vergleichen:** `ScheduleDiff.compare()` in
+  `src/core/timeline/schedule_diff.gd` gruppiert beide Fahrpläne je Ereignis und paart erst am
+  selben Tag, dann über `moved_from_day`. Ein Termin, den ein Modifikator dazubringt, heißt so nie
+  „verschoben“.
+- **Arrays sind Verweise:** `unpaired.get(event_id, [])` liefert die Liste, die im Dictionary
+  steckt; `_take()` nimmt den Partner direkt daraus heraus. Was am Ende darin übrig ist, ist
+  weggefallen. Termine dienen in `left` als Schlüssel eines Dictionarys, verglichen wird dabei das
+  Objekt selbst.
+- **Unverschobene zuerst:** Liegen an einem Tag mehr Termine als ohne Eingriffe, bekommen die
+  unverschobenen den Partner am selben Tag zuerst. Der Test
+  `test_verschobener_termin_auf_einem_belegten_tag` zeigt, was sonst geschähe.
+- **Typ beim Ergebnis von `filter()`:** `var x := liste.filter(…)[0]` scheitert mit „Cannot infer
+  the type“. `filter()` ist als `Array` ohne Elementtyp deklariert, auch auf einem typisierten
+  Array; ein Element daraus hat für den Compiler keinen festen Typ. Die Variable braucht ihn dann
+  ausdrücklich, `var x: ScheduleEntry = …`.
+
+### T060 Was-wäre-wenn-Proben
+
+- **Kanonisch wie der Katalog:** `WhatIfProbe.write_file()` in
+  `src/tools/werkstatt/what_if_probe.gd` schreibt mit `JSON.stringify(data, "\t", true)` und
+  `"format": 1`. Lesen und wieder schreiben ergibt bytegleichen Text (siehe auch die Nacharbeiten
+  unten: Tage als Datum).
+- **Neu abspielen statt Fahrplan speichern:** `build_run()` spielt den Lauf bis zum `at_day` jedes
+  Eingriffs und wendet ihn dort an. Ein gewürfelter Termin entsteht erst in seiner Würfelrunde;
+  vor Spielbeginn angewandt, ginge seine Absage ins Leere.
+- **`res://` und `user://`:** In `res://` schreiben geht nur, solange das Spiel aus dem Projekt
+  läuft, nicht im Export; für Proben unter `tools/` reicht das. Die Tests schreiben nach `user://`,
+  in den Benutzerordner außerhalb des Projekts, und räumen in `after_each()` auf.
+- **Kleine Bordmittel:** `DirAccess.get_files_at()` listet den Ordner, `String.path_join()` setzt
+  Pfade ohne doppelten Schrägstrich zusammen, `naturalnocasecmp_to()` sortiert „Probe 2“ vor
+  „Probe 10“, und `duplicate(true)` kopiert auch die Dictionaries im Eingriffsprotokoll.
+- **Namen und Warnungen:** `from_run(name, …)` heißt laut Vertrag wie das Feld `name`;
+  `@warning_ignore("shadowed_variable")` hält den Start mit `-d` still. In den Tests heißt die
+  Schleifenvariable dagegen `titel`, denn `GutTest` erbt von `Node`, und `Node` hat schon `name`.
+- **`.gitkeep`:** Git versioniert nur Dateien. Die leere `proben/.gitkeep` hält den Ordner im
+  Repository, bis die erste Probe dort liegt.
+
+### Nacharbeiten nach dem Review
+
+- **Eine Regel, öffentlich:** `CatalogEditor.id_from()` und `CatalogEditor.unique_id()` in
+  `src/tools/werkstatt/catalog_editor.gd` sind jetzt öffentliche statische Funktionen. `static`
+  heißt: aufrufbar über den Klassennamen, ohne Objekt. So nutzen `suggest_id()`, das Duplizieren,
+  neue Kategorien und `WhatIfProbe.from_run()` dieselbe Regel, ohne dass eine fremde Klasse eine
+  private Funktion aufruft; der Unterstrich ist in GDScript nur Absprache, kein Schutz.
+- **Lesbare Probedateien:** In der Datei stehen alle Tage als „JJJJ-MM-TT“ wie im Katalog, −1
+  als „1984-12-31“. Im Speicher bleiben es Tagesindizes, damit `interventions` genau das
+  Dictionary ist, das `TimelineRun` hält. Umgesetzt wird nur an der Grenze zur Datei:
+  `_to_file()` beim Schreiben, `_from_file()` beim Lesen, beide rekursiv auch für den Modifikator
+  darin. `GameDate.to_iso()` und `from_iso()` sind dafür genau umkehrbar.
+- **Format zuerst:** `read_file()` prüft `"format"` vor allem anderen und lehnt eine Datei ohne
+  Format oder mit einem anderen per `push_error()` ab; in einer anderen Version können alle
+  übrigen Schlüssel anders aussehen.
+- **Ein falsches Datum kostet nur seinen Eintrag:** Steht etwa „1992-02-30“ oder eine Zahl in
+  einem Eintrag, übernimmt `read_file()` ihn nicht und nennt ihn in `not_applicable`, die übrigen
+  gelten. Gewählt statt `push_error()`, weil `not_applicable` in der Werkstatt sichtbar ist,
+  `push_error()` nur in der Konsole. Damit `build_run()` die Liste neu füllen kann, ohne die
+  Lesefehler zu verlieren, hält die Probe sie in `_read_problems` und stellt sie jedes Mal voran.
+
+### T061 Eingriffe im Simulator
+
+- **Ein Dialog für vier Eingriffe:** `InterventionDialog` in
+  `src/tools/werkstatt/intervention_dialog.gd` erbt von `ConfirmationDialog` und blendet je nach
+  `Kind` Zeilen seines `GridContainer` ein und aus. Ausgeblendet wird immer ein Paar aus
+  Beschriftung und Feld; ein einzelnes verschöbe alle folgenden Zellen um eine Spalte.
+- **Der Dialog fragt, der Lauf entscheidet:** Beim Öffnen bekommt der Dialog ein Callable
+  `apply`, das die Werte nimmt und den Grund einer Ablehnung zurückgibt, wie `_line()` im
+  Formular. Mit `dialog_hide_on_ok = false` bleibt er nach „OK“ offen und schließt erst bei
+  Erfolg. So steht `last_refusal` da, wo Klaus korrigieren kann, etwa „… ist fix und lässt sich
+  weder absagen noch verschieben.“
+- **Gesammelt, nicht kopiert:** `_after_intervention()` in `simulator_panel.gd` hängt nach jedem
+  angenommenen Eingriff den letzten Eintrag von `run.interventions` mit `duplicate(true)` an
+  `probe.interventions`. Ersetzt wird die Liste nie durch `run.interventions`; nach `build_run()`
+  stehen dort nur die anwendbaren.
+- **Kennung aus dem Grund:** `CatalogEditor.unique_id(CatalogEditor.id_from(grund, "modifikator"),
+  vergeben)`. Vergeben sind die Kennungen im Lauf und in den gesammelten Eingriffen; sonst lehnte
+  ein Neustart mit Eingriffen den zweiten Modifikator mit gleichem Grund ab.
+- **Protokoll aus `run.protocol`:** Die Meldung eines Eingriffs kommt nicht aus `advance_to()`.
+  `_sync_protocol()` zeigt deshalb alles, was in `run.protocol` hinter `_protocol_count` neu ist,
+  nach Schritten wie nach Eingriffen.
+- **Rechtsklick in der Tabelle:** Mit `allow_rmb_select` wählt der Tree auch mit der rechten
+  Taste, danach kommt `item_mouse_selected(position, button)`; dort öffnet das `PopupMenu` an der
+  Maus wie im Zeitstrahl.
+- **Geerbte Namen nicht überdecken:** Mit `-d` warnt GDScript, wenn eine lokale Variable so heißt
+  wie eine geerbte Eigenschaft. Im Dialog wäre das `title` (von `Window`), im Test `name` (ein
+  `GutTest` ist ein `Node`). Deshalb heißen sie `shown` in `_entry_text()` und `pfad` oder
+  `probenname` in `test_simulator.gd`.
+
+### T062 Unterschiede und Proben
+
+- **Gegenlauf:** Hat der Lauf Eingriffe, legt `_update_diff()` einmal
+  `TimelineRun.new(run.catalog, run.seed)` an und spielt ihn bei jedem Schritt bis `run.today` mit;
+  `ScheduleDiff.compare()` vergleicht beide. Der Gegenlauf nimmt den Katalog des Laufs, nicht den
+  der Werkstatt, damit beide mit demselben rechnen.
+- **Spalten zur Laufzeit:** `Tree.columns` lässt sich ändern. `_fill_plan()` stellt vier oder fünf
+  Spalten ein, mit „Unterschied“ schmalere feste, damit das Ereignis lesbar bleibt.
+- **Zeichen statt nur Farbe:** „+ neu“, „→ verschoben“, „≠ Zustand“, „− weggefallen“. Eine eigene
+  Farbe für Unterschiede kennt der Style-Guide nicht, also gibt es keine.
+- **Durchstreichen auf einer Ebene darüber:** Proben im Fenster zeigten zweierlei. Ein Callback in
+  `CELL_MODE_CUSTOM` zeichnet vor dem Hintergrund der Zelle, und auch das Signal `draw` des Tree
+  landet unter den Zeilen, denn der Tree malt sie auf eine eigene Ebene über sich. Darüber liegen
+  nur Kinder, wie seine Rollleisten. `_strike_overlay` ist so ein Kind: ein `Control` mit
+  `INTERNAL_MODE_FRONT` und `MOUSE_FILTER_IGNORE`. Es malt neu, sobald der Tree malt
+  (`draw.connect(queue_redraw)`), im selben Bild, auch beim Rollen. Die Lage jeder Zelle samt
+  Rollen liefert `get_item_area_rect()`. Nebenbei: `set_cell_mode()` leert den Text einer Zelle;
+  erst die Art setzen, dann den Text.
+- **Weggefallene an ihrem Tag:** `_plan_rows()` mischt `run.entries` und `ScheduleDiff.removed`
+  nach Tag. Ihre Metadaten sind −1 − ihre Stelle in `removed`; laufende Nummern sind ab 1.
+- **Proben:** „Probe speichern …“ schreibt die gesammelten Eingriffe mit Seed und `run.today`
+  nach `probe_folder`; gibt es die Kennung schon, fragt ein zweiter Dialog „Überschreiben?“.
+  „Probe löschen“ meint die zuletzt gespeicherte oder geladene. Die Tests setzen `probe_folder`
+  auf einen Ordner unter `user://`.
+- **Tests und Fehlerprobe:** Die neuen Tests stehen in `src/test/test_simulator.gd`, damit
+  `test_werkstatt_scene.gd` nicht weiter wächst. 18 eingebaute Fehler in einer Kopie außerhalb des
+  Repos, etwa „Neustart nimmt run.interventions“ oder „Ablehnung schließt den Dialog“, ließen
+  jeweils mindestens einen Test scheitern.
+- **Knöpfe, die zusammen umbrechen:** Die drei Proben-Knöpfe stehen in einem eigenen
+  `HBoxContainer` in der `HFlowContainer`-Leiste; so bricht die Leiste sie nur gemeinsam um.
+  `sort_children` kommt, wenn der Container seine Kinder verteilt hat, erst dann stehen ihre
+  Positionen fest. Ein Trennstrich ohne Nachbarn in seiner Zeile wird durchsichtig statt
+  unsichtbar, damit sich das Layout nicht selbst umwirft.

@@ -330,12 +330,48 @@ func discard_backup() -> void:
 
 # --- Ereignisse --------------------------------------------------------------------------------
 
-## Kennung aus einem Titel: klein, ä → ae, ö → oe, ü → ue, ß → ss, jedes andere Zeichen außer a–z
-## und 0–9 trennt, doppelte und randständige _ entfallen; gibt es sie schon, kommt _2, _3 … dazu.
+## Kennung aus einem Titel nach id_from(); gibt es sie im Katalog schon, kommt _2, _3 … dazu.
 ## „Neubaugebiet am Stadtrand“ ergibt neubaugebiet_am_stadtrand. Ohne Buchstaben und Ziffern heißt
 ## der Vorschlag „ereignis“.
 func suggest_id(title: String) -> String:
-	return _unique(_id_from(title, "ereignis"), _event_ids())
+	return unique_id(id_from(title, "ereignis"), _event_ids())
+
+
+## Kennung aus einem Text, die Regel für alle Kennungen der Werkstatt (FR-032): klein, ä → ae,
+## ö → oe, ü → ue, ß → ss, jedes andere Zeichen außer a–z und 0–9 trennt, doppelte und
+## randständige _ entfallen. „Ware vom windigen Händler!“ ergibt ware_vom_windigen_haendler. Ohne
+## Buchstaben und Ziffern [param fallback].
+##
+## Statisch, damit auch Teile ohne CatalogEditor die Regel nutzen, etwa WhatIfProbe für die
+## Dateinamen der Proben. So steht sie an einer Stelle.
+static func id_from(text: String, fallback: String) -> String:
+	var lower := text.to_lower()
+	for pair: Array in UMLAUTS:
+		lower = lower.replace(pair[0], pair[1])
+	var words := PackedStringArray()
+	var word := ""
+	for character: String in lower:
+		if (character >= "a" and character <= "z") or (character >= "0" and character <= "9"):
+			word += character
+		elif not word.is_empty():
+			words.append(word)
+			word = ""
+	if not word.is_empty():
+		words.append(word)
+	if words.is_empty():
+		return fallback
+	return "_".join(words)
+
+
+## [param base], wenn es unter den Schlüsseln von [param taken] noch nicht vorkommt, sonst mit
+## _2, _3 … dahinter, bis es frei ist: Gibt es intel_pentium schon, ergibt sich intel_pentium_2.
+static func unique_id(base: String, taken: Dictionary) -> String:
+	if not taken.has(base):
+		return base
+	var number := 2
+	while taken.has("%s_%d" % [base, number]):
+		number += 1
+	return "%s_%d" % [base, number]
 
 
 ## Legt ein Ereignis mit den Vorgaben seiner Art an (data-model.md, „Vorgaben“); leere Kennung
@@ -365,8 +401,8 @@ func duplicate_event(id: String) -> TimelineEvent:
 	if original == null:
 		return null
 	var copy: TimelineEvent = _copy(original)
-	var base := original.id if not original.id.is_empty() else _id_from(original.title, "ereignis")
-	copy.id = _unique(base, _event_ids())
+	var base := original.id if not original.id.is_empty() else id_from(original.title, "ereignis")
+	copy.id = unique_id(base, _event_ids())
 	_commit("%s duplizieren" % _event_name(original), [_insertion(copy)])
 	return copy
 
@@ -539,7 +575,7 @@ func set_item_field(id: String, list: StringName, index: int, field: StringName,
 ## frühere (FR-031).
 func add_category(name: String) -> EventCategory:
 	var category := EventCategory.new()
-	category.id = _unique(_id_from(name, "kategorie"), _category_ids())
+	category.id = unique_id(id_from(name, "kategorie"), _category_ids())
 	category.name = name
 	category.color = _free_color()
 	_commit("Kategorie %s anlegen" % _category_name(category),
@@ -922,36 +958,6 @@ static func _coerce(current: Variant, value: Variant) -> Variant:
 	if want == TYPE_STRING and have == TYPE_STRING_NAME:
 		return String(value)
 	return null
-
-
-## Kennung aus einem Text, siehe suggest_id(); ohne Buchstaben und Ziffern [param fallback].
-static func _id_from(text: String, fallback: String) -> String:
-	var lower := text.to_lower()
-	for pair: Array in UMLAUTS:
-		lower = lower.replace(pair[0], pair[1])
-	var words := PackedStringArray()
-	var word := ""
-	for character: String in lower:
-		if (character >= "a" and character <= "z") or (character >= "0" and character <= "9"):
-			word += character
-		elif not word.is_empty():
-			words.append(word)
-			word = ""
-	if not word.is_empty():
-		words.append(word)
-	if words.is_empty():
-		return fallback
-	return "_".join(words)
-
-
-## [param base], oder mit _2, _3 …, bis es in [param taken] noch nicht vorkommt.
-static func _unique(base: String, taken: Dictionary) -> String:
-	if not taken.has(base):
-		return base
-	var number := 2
-	while taken.has("%s_%d" % [base, number]):
-		number += 1
-	return "%s_%d" % [base, number]
 
 
 # --- Datei und Sicherung -----------------------------------------------------------------------

@@ -87,6 +87,50 @@ func running_entries() -> Array[ScheduleEntry]:
 	return none
 
 
+# --- Eingriffe (FR-025 bis FR-027) ---------------------------------------------------
+#
+# Später greifen Spielteile hierüber in die Zeitleiste ein, etwa „Laden nebenan gemietet“ als
+# Absage. Die Methoden haben dieselben Signaturen wie im Lauf und reichen nur durch; die Regeln
+# und das Eingriffsprotokoll stecken in TimelineRun. Den Grund einer Ablehnung nennt
+# run.last_refusal. Solange kein Spiel läuft, gibt es ERR_UNCONFIGURED. Ein Eingriff wird kein
+# Signal: Er steht nur als Meldung INTERVENTION im Protokoll des Laufs.
+
+
+## Setzt einen Modifikator; siehe TimelineRun.add_modifier().
+func add_modifier(modifier: ChanceModifier) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.add_modifier(modifier)
+
+
+## Entfernt einen Modifikator; siehe TimelineRun.remove_modifier().
+func remove_modifier(id: String) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.remove_modifier(id)
+
+
+## Sagt einen geplanten Termin ab; siehe TimelineRun.cancel_entry().
+func cancel_entry(serial: int, reason: String) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.cancel_entry(serial, reason)
+
+
+## Verschiebt einen geplanten Termin; siehe TimelineRun.move_entry().
+func move_entry(serial: int, new_day: int, reason: String) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.move_entry(serial, new_day, reason)
+
+
+## Plant ein Ereignis als neuen Termin ein; siehe TimelineRun.schedule_event().
+func schedule_event(event_id: String, day: int, reason: String) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.schedule_event(event_id, day, reason)
+
+
 ## Liest den Katalog von catalog_path und behält ihn ohne die Ereignisse mit Fehlern (FR-049).
 func _load_catalog() -> void:
 	var issues: Array[CatalogIssue] = []
