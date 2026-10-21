@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://tools/werkstatt/event_form.tscn" id="5_form"]
 [ext_resource type="Script" path="res://tools/werkstatt/timeline_view.gd" id="6_timeline"]
 [ext_resource type="PackedScene" path="res://tools/werkstatt/simulator_panel.tscn" id="7_simulator"]
+[ext_resource type="PackedScene" path="res://tools/werkstatt/statistics_panel.tscn" id="8_statistics"]
 
 [node name="Werkstatt" type="Control"]
 layout_mode = 3
@@ -123,6 +124,11 @@ layout_mode = 2
 script = ExtResource("4_issues")
 
 [node name="SimulatorPanel" parent="Layout/Main/Center/Tabs" instance=ExtResource("7_simulator")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="StatisticsPanel" parent="Layout/Main/Center/Tabs" instance=ExtResource("8_statistics")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

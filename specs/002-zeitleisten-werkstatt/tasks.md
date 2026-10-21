@@ -726,7 +726,7 @@ und 94,5.
 
 ### Implementation for User Story 7
 
-- [ ] T064 [A] [US7] Statistik-Klassen laut Vertrag:
+- [x] T064 [A] [US7] Statistik-Klassen laut Vertrag:
   - `src/core/timeline/event_statistic.gd` (`EventStatistic`).
   - `src/core/timeline/timeline_statistics.gd` (`TimelineStatistics`) mit `run_for(budget_msec)`:
     das laufende Spiel monatsweise weiter, dann das nächste, bis das Budget verbraucht ist,
@@ -736,7 +736,7 @@ und 94,5.
   - Obergrenze: Höchstzahl bei `CHANCE`, höchste Anzahl bei `PRESET`, sonst −1.
   - Gezählt werden Beginne (`RUNNING`, `OCCURRED`, `ENDED`); fehlerhafte Ereignisse sind
     ausgenommen; ein angefangenes Spiel zählt erst, wenn es fertig ist.
-- [ ] T065 [A] [US7] `src/test/test_timeline_statistics.gd`:
+- [x] T065 [A] [US7] `src/test/test_timeline_statistics.gd`:
   - 50 % pro Monat ergibt einen Mittelwert von 85,5 bis 94,5 (SC-008, US7, Szenario 3).
   - Gesetzt 30/70 fehlt in 25 bis 35 % der Spiele (Szenario 6).
   - Wiederholt gerechnet ist das Ergebnis gleich (Szenario 5).
@@ -744,7 +744,7 @@ und 94,5.
     Tag d entfernt wurde, nur bis d.
   - Obergrenze −1 ohne Grenze.
   - `run_for(15)` kehrt nach etwa 15 ms zurück, höchstens um einen Monat Rechenzeit später.
-- [ ] T066 [A] [US7] `src/tools/werkstatt/statistics_panel.tscn` und `statistics_panel.gd`
+- [x] T066 [A] [US7] `src/tools/werkstatt/statistics_panel.tscn` und `statistics_panel.gd`
   (`StatisticsPanel`) als Tab „Statistik“:
   - **Eingaben:** Anzahl (Vorgabe 1.000), Häkchen „Mit Modifikatoren und Einplanungen aus dem
     Simulator“, das das Eingriffsprotokoll des Simulators übergibt, „Starten“ und „Abbrechen“,
@@ -753,7 +753,7 @@ und 94,5.
   - **Ergebnis:** Tabelle mit Mittelwert, kleinster und größter Anzahl, „ohne“ in % und
     „Obergrenze“ in % (sonst „–“); Verteilung auf die Jahre als Balken; Hinweis auf ausgenommene
     Ereignisse.
-- [ ] T067 [K] [US7] Phase 9 abnehmen nach quickstart.md, Abschnitte 1 und 4.6, darin SC-004
+- [x] T067 [K] [US7] Phase 9 abnehmen nach quickstart.md, Abschnitte 1 und 4.6, darin SC-004
   (unter 30 s vom Start bis 100 %)
 
 **Checkpoint**: Alle sieben User Stories sind erfüllt. Abnahme durch Klaus, dann Auftrag für die
@@ -770,6 +770,10 @@ letzte Phase.
     Ereignissen über Wahrscheinlichkeit, kanonisch geschrieben.
   - `src/test/test_large_catalog.gd`: Die Prüfung braucht unter 100 ms, eine Änderung über den
     `CatalogEditor` samt neuer Prüfung unter 100 ms, ein Spiel unter 2 s.
+  - Messwerte als Ausgangspunkt: Bei Phase 7 dauerte eine Änderung mit 500 Ereignissen 153 ms, also
+    über dem Ziel. Bei Phase 9 gingen rund 40 % der Zeit eines Spiels auf `_may_start_again()` und
+    `_running_entry()` in `TimelineRun`, die alle Termine eines Ereignisses durchgehen; eine Probe
+    mit Abkürzung brauchte 1,8 statt 3,0 ms. Die Testsuite liegt seit Phase 9 bei rund 18 s.
 - [ ] T069 [K] SC-011 nach quickstart.md, Abschnitt 5 von Hand prüfen:
   - `time` der Textausgabe;
   - Werkstatt mit `--katalog`, Ändern und Ziehen ohne Verzögerung. Gemessen bei Phase 7 mit 500

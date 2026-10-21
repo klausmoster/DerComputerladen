@@ -34,6 +34,7 @@ src/test/
 ├── test_timeline_view.gd             # Tag ↔ Pixel, Stapeln, jährliche nicht ziehbar, Vorschau beim Ziehen
 ├── test_werkstatt_theme.gd           # Farben des Themes stammen aus UiPalette, Schriftgröße, Kästen
 ├── test_simulator.gd                 # Eingriffe, Unterschiede, Neustarts und Proben im Simulator (US6)
+├── test_statistics_panel.gd          # Starten, Abbrechen, Ergebnis mit „–“, Häkchen, ausgenommene Ereignisse (US7)
 └── test_werkstatt_scene.gd           # Rauchtest: Szene baut headless auf, Prüfmeldung führt zum Feld, Simulator rechnet, Spieluhr bleibt unberührt
 ```
 
@@ -426,6 +427,26 @@ func build_run(catalog: EventCatalog) -> TimelineRun
 Eingriffe des Panels und baut den Lauf mit `build_run()`.
 
 ## Statistik (StatisticsPanel)
+
+```gdscript
+class_name StatisticsPanel extends VBoxContainer
+const DEFAULT_GAMES := 1000
+const MAX_GAMES := 100000
+var editor: CatalogEditor
+var interventions_source: Callable       # liefert das Eingriffsprotokoll aus der Probe des Simulators
+var statistics: TimelineStatistics
+func refresh() -> void                   # nach catalog_changed und issues_changed
+func start() -> void
+func cancel() -> void
+func is_running() -> bool
+```
+
+Umgesetzt in Phase 9 (T066): Gerechnet wird über die Seeds 1 bis Anzahl auf
+`editor.catalog.without_faulty(editor.issues())`. Ändert sich der Katalog während einer Rechnung,
+erscheint wie im Simulator „? Katalog geändert, neu starten“, und die Rechnung bleibt beim alten
+Stand. Während der Rechnung ist die Tabelle leer. Eingriffe, die ein Spiel ablehnt, gelten dort
+nicht. Der Fortschrittsbalken ist `petrol` auf `papier` mit `tusche`-Kontur (Style-Guide, Rolle
+„Fortschritt“, Version 16).
 
 - **Eingaben:** Anzahl der Spiele (Vorgabe 1.000), „Mit Modifikatoren und Einplanungen aus dem
   Simulator“, „Starten“, „Abbrechen“ und ein Fortschrittsbalken.

@@ -854,3 +854,102 @@ Der Agent schreibt die Notizen, Claude trägt sie je Phase hier ein.
   `sort_children` kommt, wenn der Container seine Kinder verteilt hat, erst dann stehen ihre
   Positionen fest. Ein Trennstrich ohne Nachbarn in seiner Zeile wird durchsichtig statt
   unsichtbar, damit sich das Layout nicht selbst umwirft.
+
+## Phase 9
+
+### T064 Statistik nach Zeitbudget
+
+- **Häppchen statt Thread:** `run_for(budget_msec)` in `src/core/timeline/timeline_statistics.gd`
+  setzt mit `Time.get_ticks_usec()` eine Frist und spielt das laufende Spiel Monat für Monat weiter
+  (`_play_month()`), danach das nächste. Die Zeit prüft es nach jedem Monat, also kehrt es höchstens
+  um einen Schritt zu spät zurück; gemessen 15,0 bis 16,4 ms bei 15 ms Budget. Was zwischen zwei
+  Aufrufen gilt, steht in Variablen: das angefangene Spiel `_run`, `games_done` und die Zählung. Es
+  gibt keinen Thread und deshalb nichts, was vor gleichzeitigem Zugriff geschützt werden müsste
+  (R17).
+- **Erst fertig, dann gezählt:** `_count_game()` läuft nur nach `is_finished()`. `results()` sieht
+  nie ein halbes Spiel, und ein Abbruch verliert nur das angefangene. `results()` gibt Kopien
+  heraus; was die Werkstatt daran ändert, erreicht die Rechnung nicht.
+- **Feste Seeds:** Spiel n hat den Seed `first_seed + n`, also 1 bis 1.000. Dieselbe Rechnung
+  ergibt dasselbe Ergebnis, in Häppchen von einem Monat wie am Stück.
+- **Eingriffe wie beim Neu abspielen:** `_seed_free()` nimmt aus dem Protokoll `add_modifier`,
+  `remove_modifier` und `schedule` und kopiert sie mit `duplicate(true)`. Vor jedem Monat wendet
+  `_play_month()` die an, deren `at_day` in diesen Monat fällt: erst `advance_to(at_day)`, dann
+  `apply_intervention()`, genau wie `WhatIfProbe.build_run()`. Ein Modifikator, den Klaus im
+  Simulator am 31.12.1989 entfernt hat, wirkt so in jedem Spiel bis zu diesem Tag.
+- **Kern ohne Werkzeug:** `TimelineStatistics` liegt unter `src/core/timeline/` und kennt
+  `WhatIfProbe` nicht. Die liegt unter `tools/` und fehlt im Export; das Spiel könnte die
+  Statistik sonst nicht laden.
+- **Packed Arrays als Verweis:** `_statistics[index].per_year[jahr] += 1` zählt direkt im
+  `PackedInt32Array` des Objekts. In Godot 4.7 werden Packed Arrays wie Arrays als Verweis
+  weitergegeben: Nach `var b := a` ändert `b[0] = 5` auch `a` (Probe). Eine eigene Kopie gibt es
+  nur mit `duplicate()`; deshalb gibt `_copy()` für `results()` `per_year.duplicate()` heraus.
+- **Fehlerhafte Ereignisse nimmt der Aufrufer aus:** Die Statistik bekommt den Katalog wie
+  `TimelineRun` schon aus `without_faulty()`. Prüfte sie ihn noch einmal, wäre jede Bedingung auf
+  ein ausgenommenes Ereignis eine Meldung V15, und das Ereignis mit der Bedingung fiele auch weg;
+  das Spiel behält es. Prüfte sie dagegen statt des Aufrufers, fehlten ihr die Meldungen beim
+  Lesen (V22), die der Simulator ausnimmt.
+- **Obergrenze an einer Stelle:** `upper_limit(event)` ist statisch, damit Rechnung und Tabelle
+  dieselbe Regel nutzen: Höchstzahl bei `CHANCE`, `count_min` + Zahl der Gewichte − 1 bei `PRESET`,
+  sonst −1.
+
+### T065 Tests der Statistik
+
+- **Gegenprobe statt Sollwerte:** `_pruefe_zaehlung()` in `src/test/test_timeline_statistics.gd`
+  rechnet dieselben Seeds einzeln mit `TimelineRun` und vergleicht jede Zahl. Drei Kataloge decken
+  dabei entfallene Termine (US3) und am Ende noch geplante (US1) ab; beide dürfen nicht zählen.
+- **Monat für Monat:** `run_for(0)` rechnet genau einen Monat. Nach 179 Aufrufen ist das erste
+  Spiel noch nicht fertig, nach dem 180. schon; das belegt die Monatsschritte genauer als eine
+  Zeitmessung. Die Zeitmessung selbst misst zuerst den längsten einzelnen Schritt und erlaubt dann
+  15 ms plus diesen Schritt plus 10 ms, weil der Rechner nebenher anderes tut.
+- **Eingriffe aus einem echten Lauf:** Die Tests setzen Modifikatoren, Einplanung, Absage und
+  Verschiebung an einem `TimelineRun` und geben dessen `interventions` weiter, so wie der Simulator
+  sie sammelt.
+- **Test-Kataloge:** `src/test/fixtures/catalog_us7_*.json`, einmal mit `EventCatalog` gelesen und
+  wieder geschrieben, damit sie kanonisch sind.
+- **Laufzeit:** SC-008 mit 1.000 Spielen dauert 3,3 s, denn ein Spiel mit 90 Beginnen braucht im
+  Kern rund 3 ms. Zwei Schleifen über alle Termine eines Ereignisses, `_may_start_again()` und
+  `_running_entry()`, kosten davon rund 40 % (Probe außerhalb des Repos); ein Kandidat für
+  Phase 10 und SC-011.
+- **Fehlerprobe:** 23 eingebaute Fehler in einer Kopie außerhalb des Repos, etwa „Seeds ab 0“,
+  „Absagen gelten“, „Zeit nur nach jedem Spiel geprüft“, „Wert auf dem Balken“ oder „Werkstatt
+  gibt keine Eingriffe weiter“. „Geplante zählen mit“ fiel zuerst nicht auf; seit der Zähltest
+  auch `catalog_us1_spielende.json` rechnet, lässt jeder der 23 einen Test scheitern.
+
+### T066 Die Statistik in der Werkstatt
+
+- **await als Pause:** `_calculate()` in `src/tools/werkstatt/statistics_panel.gd` rechnet
+  `run_for(15)` und wartet dann mit `await get_tree().process_frame`. Dort gibt die Funktion die
+  Kontrolle an Godot zurück: Der Rest des Bilds läuft, Eingaben und Zeichnen eingeschlossen, und
+  zu Beginn des nächsten Bilds geht es hinter dem `await` weiter. `start()` ruft `_calculate()`
+  ohne `await` auf; so kehrt `start()` beim ersten `await` zurück, und die Schleife läuft allein
+  weiter.
+- **Abbrechen ohne Flag von außen:** Nach jedem `await` prüft die Schleife, ob `statistics` noch
+  ihre Rechnung ist und `_running` gilt. Ein Abbruch oder ein neuer Start beendet die alte Schleife
+  so beim nächsten Bild, ohne dass jemand sie anhalten muss; `cancel()` zeigt das Ergebnis sofort.
+- **Freigabe mitten im Warten:** Wird der Knoten freigegeben, während die Koroutine wartet,
+  verwirft Godot sie still (Probe). Nur wenn das im selben Signal geschieht, das sie gerade wecken
+  will, meldet Godot „Resumed function '_calculate()' after await, but class instance is gone“. Der
+  Test, der mit „Abbrechen“ endet, wartet deshalb noch ein Bild.
+- **Ein Callable statt eines Verweises:** `interventions_source` ist ein `Callable`, das die
+  Werkstatt auf `_simulator_interventions()` setzt; das liefert `probe.interventions` des
+  Simulators. Das Panel holt das Protokoll erst beim Start, und die beiden Panels kennen sich nicht
+  (Datenfluss der Werkstatt).
+- **Fortschrittsbalken ohne Text auf der Fläche:** Ein `ProgressBar` mit `show_percentage = false`;
+  „45 % · 450 von 1.000 Spielen · 3,8 s“ steht im Label daneben. Die Kästen `background` und
+  `fill` kommen neu aus `werkstatt_theme.tres`: papier mit tusche-Kontur, gefüllt in petrol.
+  `test_werkstatt_theme.gd` prüft sie mit, ohne Änderung.
+- **Zeichnen über ein Signal:** Das Diagramm ist ein schlichtes `Control` in der Szene. Das Panel
+  hängt `_draw_years()` an dessen Signal `draw` und zeichnet mit `draw_rect()` und `draw_string()`
+  auf dessen Fläche, wie `_strike_overlay` im Simulator; eine eigene Klasse braucht es nicht.
+- **Rechnen und Zeichnen getrennt:** `year_bars()` rechnet Lage, Farbe und Text jedes Balkens,
+  `_draw_years()` zeichnet nur, was es liefert. Headless zeichnet Godot nichts Sichtbares; die
+  Tests prüfen deshalb die Rechtecke, etwa dass kein Text auf einem Balken liegt. Die Farbe ist die
+  der Kategorie, bei einer unerlaubten kassenrot wie im Zeitstrahl.
+- **Zahlen in der Tabelle:** `TreeItem.set_text_alignment()` setzt die Zahlen rechtsbündig, die
+  Köpfe folgen mit `set_column_title_alignment()`, und `set_column_title_tooltip_text()` erklärt
+  jede Spalte. Ohne Obergrenze steht „–“.
+- **Katalog geändert:** wie im Simulator über `_catalog_key()`. Die Rechnung hat ihre eigene
+  Kopie: `TimelineStatistics` kopiert den Katalog, jeder `TimelineRun` noch einmal.
+- **Messung (SC-004):** 1.000 Spiele mit dem echten Katalog dauern headless 7,9 s, im Fenster vom
+  Start bis 100 % 8,6 s. Ein Bild dauert dabei im Median 17 ms, 95 % unter 18 ms; das längste mit
+  46 ms ist das, in dem „Starten“ gedrückt wird.

@@ -6,10 +6,10 @@ extends Control
 ## Katalog über einen CatalogEditor, fragt nach, bevor etwas verloren gehen könnte, und verdrahtet
 ## die Teile.
 ##
-## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung, Zeitstrahl und Simulator,
-## später die Statistik. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft sie
-## von oben auf (refresh(), show_event() …); untereinander kennen sie sich nicht. Den Katalog
-## ändert nur der CatalogEditor, die Auswahl gehört der Werkstatt.
+## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung, Zeitstrahl, Simulator und
+## Statistik. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft sie von oben
+## auf (refresh(), show_event() …); untereinander kennen sie sich nicht. Den Katalog ändert nur der
+## CatalogEditor, die Auswahl gehört der Werkstatt.
 ##
 ## Start im Editor mit F6, wenn die Szene offen ist, oder im Terminal, mit `--katalog` nach `--`
 ## auch für einen anderen Katalog:
@@ -52,6 +52,7 @@ var _open_error := OK
 @onready var _event_form: EventForm = %EventForm
 @onready var _timeline_view: TimelineView = %TimelineView
 @onready var _simulator_panel: SimulatorPanel = %SimulatorPanel
+@onready var _statistics_panel: StatisticsPanel = %StatisticsPanel
 @onready var _backup_timer: Timer = %BackupTimer
 @onready var _close_dialog: ConfirmationDialog = %CloseDialog
 @onready var _revert_dialog: ConfirmationDialog = %RevertDialog
@@ -77,10 +78,15 @@ func _ready() -> void:
 	get_tree().auto_accept_quit = false
 	_tabs.set_tab_title(0, "Prüfung")
 	_tabs.set_tab_title(_tabs.get_tab_idx_from_control(_simulator_panel), "Simulator")
+	_tabs.set_tab_title(_tabs.get_tab_idx_from_control(_statistics_panel), "Statistik")
 	_event_list.editor = editor
 	_event_form.editor = editor
 	_timeline_view.editor = editor
 	_simulator_panel.editor = editor
+	_statistics_panel.editor = editor
+	# Das Häkchen der Statistik nimmt die Eingriffe, die der Simulator gesammelt hat (FR-045). Die
+	# Werkstatt reicht sie als Callable weiter; so kennen sich die beiden Teile nicht.
+	_statistics_panel.interventions_source = _simulator_interventions
 	_set_up_shortcuts()
 	_connect_signals()
 	_update_toolbar()
@@ -340,25 +346,28 @@ func _connect_signals() -> void:
 
 ## Nach jeder Änderung: Liste, Formular und Zeitstrahl neu, die Toolbar auch. Fehlt danach das
 ## gewählte Ereignis, gilt am Ende des Bilds keins mehr als gewählt; bis dahin kann noch eine neue
-## Kennung kommen, wenn die Änderung ein Umbenennen war. Der Simulator behält seinen Lauf und sagt
-## nur, ob der Katalog jetzt ein anderer ist (FR-042).
+## Kennung kommen, wenn die Änderung ein Umbenennen war. Simulator und Statistik behalten ihren
+## Lauf bzw. ihre Rechnung und sagen nur, ob der Katalog jetzt ein anderer ist (FR-042).
 func _on_catalog_changed() -> void:
 	_event_list.refresh()
 	_event_list.select_event(selected_id)
 	_event_form.refresh()
 	_timeline_view.refresh()
 	_simulator_panel.refresh()
+	_statistics_panel.refresh()
 	_update_toolbar()
 	_check_selection.call_deferred()
 
 
 ## Auch ohne Änderung am Katalog können sich die Meldungen ändern: Nach dem Speichern fallen die
-## Meldungen beim Lesen weg. Dann nähme ein neuer Lauf im Simulator andere Ereignisse aus.
+## Meldungen beim Lesen weg. Dann nähmen ein neuer Lauf im Simulator und eine neue Statistik andere
+## Ereignisse aus.
 func _on_issues_changed(issues: Array[CatalogIssue]) -> void:
 	_issues_panel.show_issues(issues)
 	_event_list.show_issues(issues)
 	_event_form.refresh()
 	_simulator_panel.refresh()
+	_statistics_panel.refresh()
 	_update_toolbar()
 
 
@@ -404,6 +413,12 @@ func _on_delete_requested(id: String) -> void:
 func _on_simulator_event_selected(id: String) -> void:
 	if editor.catalog != null and editor.catalog.get_event(id) != null:
 		select_event(id)
+
+
+## Alle Eingriffe, die der Simulator gesammelt hat, für das Häkchen der Statistik. Welche davon in
+## jedem Spiel gelten, entscheidet TimelineStatistics: Modifikatoren und Einplanungen (FR-045).
+func _simulator_interventions() -> Array[Dictionary]:
+	return _simulator_panel.probe.interventions
 
 
 ## Ein Klick in der Prüfung wählt das Ereignis und setzt den Fokus ins Feld (FR-033). Meldungen zu
