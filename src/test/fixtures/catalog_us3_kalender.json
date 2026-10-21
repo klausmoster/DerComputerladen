@@ -1,0 +1,120 @@
+{
+	"categories": [
+		{
+			"color": "nacht",
+			"id": "kalender",
+			"name": "Kalender"
+		}
+	],
+	"events": [
+		{
+			"category": "kalender",
+			"description": "Computermesse in Hannover, eine Woche Mitte März.",
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "presse",
+					"magnitude": 0.0,
+					"note": "Die Fachpresse berichtet von der Messe.",
+					"scope": "once",
+					"target": "messe"
+				}
+			],
+			"follow_ups": [],
+			"id": "cebit",
+			"kind": "yearly",
+			"title": "CeBIT in Hannover",
+			"yearly": {
+				"end": "03-21",
+				"from": 1986,
+				"start": "03-15",
+				"to": 1999
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "",
+			"effects": [],
+			"follow_ups": [],
+			"id": "fruehling",
+			"kind": "yearly",
+			"title": "Frühling",
+			"yearly": {
+				"end": "05-ende",
+				"from": 1985,
+				"start": "03-01",
+				"to": 1999
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "",
+			"effects": [],
+			"follow_ups": [],
+			"id": "herbst",
+			"kind": "yearly",
+			"title": "Herbst",
+			"yearly": {
+				"end": "11-ende",
+				"from": 1985,
+				"start": "09-01",
+				"to": 1999
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "",
+			"effects": [],
+			"follow_ups": [],
+			"id": "sommer",
+			"kind": "yearly",
+			"title": "Sommer",
+			"yearly": {
+				"end": "08-ende",
+				"from": 1985,
+				"start": "06-01",
+				"to": 1999
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "Hauptumsatzzeit des Jahres.",
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "kundenstrom",
+					"magnitude": 0.3,
+					"note": "Startwert.",
+					"scope": "during",
+					"target": "*"
+				}
+			],
+			"follow_ups": [],
+			"id": "weihnachtsgeschaeft",
+			"kind": "yearly",
+			"title": "Weihnachtsgeschäft",
+			"yearly": {
+				"end": "12-ende",
+				"from": 1985,
+				"start": "11-01",
+				"to": 1999
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "",
+			"effects": [],
+			"follow_ups": [],
+			"id": "winter",
+			"kind": "yearly",
+			"title": "Winter",
+			"yearly": {
+				"end": "02-ende",
+				"from": 1985,
+				"start": "12-01",
+				"to": 1999
+			}
+		}
+	],
+	"format": 1
+}

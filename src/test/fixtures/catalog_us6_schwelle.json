@@ -1,0 +1,48 @@
+{
+	"categories": [
+		{
+			"color": "petrol",
+			"id": "reklamation",
+			"name": "Reklamation"
+		}
+	],
+	"events": [
+		{
+			"category": "reklamation",
+			"conditions": [],
+			"description": "Grundchance 0 %: Ohne Modifikator kommt sie nie.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "nur_mit_aktion",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 0.0,
+			"title": "Nur mit Aktion",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "reklamation",
+			"conditions": [],
+			"description": "Ohne Mindestabstand: Jeder Treffer der Würfelrunde wird ein Termin.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "reklamationswelle",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 0.03,
+			"title": "Reklamationswelle",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		}
+	],
+	"format": 1
+}

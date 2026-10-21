@@ -13,7 +13,6 @@ godot_signale_raus:
 - "day_passed(date: GameDate)"
 - "month_passed(date: GameDate)"
 - "year_passed(date: GameDate)"
-- "season_changed(is_holiday_season: bool)"
 - "reached_end()"
 godot_signale_rein: []
 lernen_ziele:
@@ -70,8 +69,6 @@ func to_day_index() -> int
 func duplicate_date() -> GameDate
 func compare(other: GameDate) -> int     # <0 vorher, 0 gleich, >0 nachher
 func is_same_day(other: GameDate) -> bool
-func is_holiday_season() -> bool         # November oder Dezember
-func season() -> String                  # "Winter" | "Frühling" | "Sommer" | "Herbst"
 func _to_string() -> String              # "01.03.1993"
 func to_label() -> String                # "März 1993"
 ```
@@ -85,7 +82,6 @@ Registriert in `src/project.godot` unter `[autoload]` als
 signal day_passed(date: GameDate)
 signal month_passed(date: GameDate)
 signal year_passed(date: GameDate)
-signal season_changed(is_holiday_season: bool)
 signal reached_end()
 
 const START_YEAR := 1985
@@ -107,8 +103,12 @@ func is_finished() -> bool
 ```
 
 Reihenfolge beim Tageswechsel ist verbindlich: erst `day_passed`, dann bei
-Monats-/Jahreswechsel `month_passed`/`year_passed`, dann `season_changed` — und
-nur, wenn sich `is_holiday_season()` gegenüber dem Vortag geändert hat.
+Monats-/Jahreswechsel `month_passed`/`year_passed`.
+
+Jahreszeiten und Weihnachtsgeschäft meldet die Uhr seit dem 2026-10-20 nicht
+mehr: `season_changed`, `is_holiday_season()` und `season()` sind mit Feature 002
+(T043, FR-024) entfallen. Beides sind jetzt Kalender-Ereignisse im
+Ereigniskatalog, gemeldet von der `Timeline`.
 
 **Nicht dazu gehört:** Uhrzeit innerhalb eines Tages, Feiertagskalender,
 Speichern/Laden des Datums (→ 11-01), Zeitzonen.
@@ -131,9 +131,9 @@ der offenen Fragen — **erledigt am 13.08.2026**:
    ins Dokument schreiben.
 
 **Entfallen:** Das Signal `season_changed` sollte ursprünglich in
-`holiday_season_changed` umbenannt werden. Stattdessen fällt es später ganz weg —
-Jahreszeiten und Weihnachtsgeschäft werden zu Ereignissen in der Timeline
-(→ 01-06). Deshalb hier nicht anfassen.
+`holiday_season_changed` umbenannt werden. Stattdessen ist es ganz weggefallen —
+Jahreszeiten und Weihnachtsgeschäft sind Ereignisse in der Timeline (01-06,
+aufgegangen in Feature 002; entfernt mit T043 am 2026-10-20).
 
 Aufteilung ist ein Vorschlag — Schritte wandern im Gespräch.
 
@@ -146,8 +146,8 @@ Aufteilung ist ein Vorschlag — Schritte wandern im Gespräch.
 - `advance_one_month()` vom 15.03. landet auf dem 01.04., nicht auf dem 15.04.
 - Die Uhr stoppt nach dem 31.12.1999: `is_finished()` wird `true`, `paused` wird
   gesetzt, `reached_end` feuert genau einmal.
-- `season_changed` feuert nur an zwei Tagen im Jahr — am 01.11. (`true`) und am
-  01.01. (`false`).
+- ~~`season_changed` feuert nur an zwei Tagen im Jahr~~ — entfallen am
+  2026-10-20 (Feature 002, T043); das Weihnachtsgeschäft ist ein Kalender-Ereignis.
 - Projekt startet fehlerfrei:
   `Godot --headless --path src res://scenes/timeline_demo.tscn --quit-after 60`
   → keine Ausgabe, Exit 0. (Geprüft mit Godot 4.6.3.)
@@ -198,10 +198,11 @@ Aufwand ohne Ertrag für einen Wert, den die UI zur Laufzeit setzt.
   gedacht ist, den Markt auf einen späteren Stand zu bringen. Beides passt noch
   nicht zusammen — wenn ein späterer Spielstart gewollt ist, muss die Uhr auf
   ein Startdatum gesetzt werden können.
-- **`season_changed` heißt irreführend.** Es gibt vier Jahreszeiten
-  (`season()`), aber das Signal meldet nur den Wechsel des Weihnachtsgeschäfts.
-  Wird sich mit 01-06 erledigen: Dann fällt das Signal ganz weg, weil
-  Jahreszeiten und Weihnachtsgeschäft zu Ereignissen in der Timeline werden.
+- **`season_changed` hieß irreführend.** Es gab vier Jahreszeiten
+  (`season()`), aber das Signal meldete nur den Wechsel des Weihnachtsgeschäfts.
+  Erledigt am 2026-10-20 mit Feature 002 (T043): Signal, `season()` und
+  `is_holiday_season()` sind weg, Jahreszeiten und Weihnachtsgeschäft sind
+  Kalender-Ereignisse.
 - **Kein Speichern/Laden** von `_day_index` → gehört zu 11-01.
 - **Das Enddatum liegt einen Tag hinter dem Spielende.** Die Uhr merkt das Ende
   erst, nachdem sie darüber hinaus ist: `date` steht danach auf dem 01.01.2000,

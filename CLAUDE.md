@@ -10,8 +10,9 @@ Android, iOS, Mobile, Touch oder Web. Das ist dauerhaft entschieden, nicht
 „später vielleicht":
 - Maus + Tastatur werden vorausgesetzt. Hover, Tooltips, Rechtsklick,
   Cursor-Wechsel und Drag&Drop sind erwünschte Mittel.
-- Keine touch-taugliche Mindestgröße von Klickflächen, keine Gesten, kein
-  `InputEventScreenTouch`, keine Orientierungswechsel, keine Safe Areas.
+- Keine touch-taugliche Mindestgröße von Klickflächen, keine Touch-Gesten, kein
+  `InputEventScreenTouch`, keine Orientierungswechsel, keine Safe Areas. Wischen
+  und Kneifen auf dem Trackpad sind Desktop-Eingabe und erlaubt.
 - Renderer bleibt **Forward+**. Keine Rücksicht auf Compatibility/Mobile oder
   GLES-Beschränkungen.
 - Android-Build-Templates werden nie installiert.
@@ -43,6 +44,12 @@ nach seinem OK wird committet.
 **Git:** Claude committet, **Klaus pusht.** Der Godot-Agent committet nicht.
 Nicht versuchen zu pushen — auf diesem Rechner liegen keine
 GitHub-Zugangsdaten.
+
+**Arbeitsweise:** `docs/ki_dev.md` beschreibt Abläufe, Prüfungen und
+Erfahrungen und gilt für Claude in diesem Projekt. Es gibt kein lokales
+Gedächtnis: Was dauerhaft gelten soll, kommt in eine Repo-Datei und wird
+committet. Offene Punkte und Claudes eigene Entscheidungen stehen in
+`docs/offene-punkte.md`.
 
 Erklären statt nur liefern: Zu jeder umgesetzten Aufgabe gibt es eine
 Lernnotiz — warum diese Node-Struktur, warum Signal statt direktem Zugriff, was
@@ -78,22 +85,31 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | Pfad | Inhalt |
 |---|---|
 | `src/` | Godot-Projekt (Projekt-Root ist `src/`, nicht das Repo-Root) |
-| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline`, `game_window`, Event-Resources |
-| `src/data/` | Seed-Daten in GDScript (`event_database.gd`) |
+| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline` (Hülle der Zeitleiste), `game_window` |
+| `src/core/timeline/` | Kern der Zeitleiste ohne Node: Datenklassen, Katalog, Prüfregeln, Fahrplan (`TimelineRun`), Vergleich, Statistik |
+| `src/data/` | Ereigniskatalog `event_catalog.json`, gepflegt mit der Zeitleisten-Werkstatt |
 | `src/ui/` | Theme des ganzen Spiels (`computerladen_theme.tres`) und Farben (`ui_palette.gd`) |
 | `src/scenes/title/` | Titelbildschirm, Hauptmenü, Hinweis |
 | `src/assets/` | Schriften (`fonts/`), gerasterte Bilder (`images/`), App-Symbol (`icon/`) |
+| `src/tools/werkstatt/` | Zeitleisten-Werkstatt (Editor, Zeitstrahl, Simulator, Statistik), Textausgabe `fahrplan_ausgabe.gd`, Proben unter `proben/`; vom Export ausgeschlossen |
 | `tools/raster/` | Python-Werkzeuge der Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol |
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
 | `docs/game_bible/` | Obsidian-Vault mit den Spieldaten (Komponenten, Preise, Prospekte) |
 | `docs/game_design.md` | Game Design Document |
+| `docs/ki_dev.md` | Arbeitsweise mit KI: Abläufe, Prüfungen, Erfahrungen |
+| `docs/offene-punkte.md` | offene Fragen, Lücken und Claudes eigene Entscheidungen |
 | `.claude/skills/` | Projekt-Skills, Präfix `dcl-` (eigene) und `speckit-` (Spec Kit) |
 | `.claude/agents/` | Projekt-Agents, z.B. `godot-entwickler` für `[A]`-Aufgaben |
 
 `GameClock`, `Timeline` und `GameWindow` sind Autoloads (siehe `src/project.godot`).
-Architekturprinzip der Timeline: sie **wendet Effekte nicht an**, sondern meldet
-sie per Signal (`Timeline.effect_applied`) — Wirtschaft, Nachfrage und
-Reputation hängen sich später dran.
+Die Zeitleiste folgt dem Fahrplan-Modell: Aus dem Katalog entsteht je Spiel und
+Seed ein Fahrplan (`TimelineRun`, ein Kern ohne Node), den die Spieluhr abspielt.
+Das Autoload `Timeline` ist die Hülle darum und meldet per Signal:
+`event_fired`, `effect_applied`, `event_ended`, `effect_ended` und
+`entry_skipped`. Architekturprinzip: Die Timeline **wendet Effekte nicht an**,
+sie meldet sie nur — Wirtschaft, Nachfrage und Reputation hängen sich später dran.
+Ereignisse pflegt Klaus in der Zeitleisten-Werkstatt
+(`src/tools/werkstatt/werkstatt.tscn`), nicht im Code.
 
 ## game_bible — Datenkonventionen
 

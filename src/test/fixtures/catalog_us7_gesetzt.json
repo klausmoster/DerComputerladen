@@ -1,0 +1,33 @@
+{
+	"categories": [
+		{
+			"color": "holz-dunkel",
+			"id": "lokal",
+			"name": "Lokal"
+		}
+	],
+	"events": [
+		{
+			"category": "lokal",
+			"conditions": [],
+			"count_min": 0,
+			"count_weights": [
+				30,
+				70
+			],
+			"description": "Beim Start gesetzt, zu 30 % keinmal und zu 70 % einmal (US7, Szenario 6).",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "neubaugebiet",
+			"kind": "preset",
+			"min_gap_days": 0,
+			"title": "Neubaugebiet am Stadtrand",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		}
+	],
+	"format": 1
+}

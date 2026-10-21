@@ -1,0 +1,116 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		},
+		{
+			"color": "holz",
+			"id": "kunde",
+			"name": "Kunde"
+		},
+		{
+			"color": "nacht",
+			"id": "kalender",
+			"name": "Kalender"
+		}
+	],
+	"events": [
+		{
+			"category": "kalender",
+			"description": "Jährlich ab 1986: ohne Obergrenze.",
+			"effects": [],
+			"follow_ups": [],
+			"id": "cebit",
+			"kind": "yearly",
+			"title": "CeBIT",
+			"yearly": {
+				"end": "03-21",
+				"from": 1986,
+				"start": "03-15",
+				"to": 1999
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "100 % pro Monat mit Höchstzahl 3: in jedem Spiel genau dreimal, im Januar, Februar und März 1985.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "drei_mal",
+			"kind": "chance",
+			"max_occurrences": 3,
+			"min_gap_days": 0,
+			"monthly_chance": 1.0,
+			"title": "Dreimal und nicht öfter",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"count_min": 1,
+			"count_weights": [
+				50,
+				50
+			],
+			"description": "Beim Start gesetzt, einmal oder zweimal: Obergrenze 2.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "ein_oder_zwei",
+			"kind": "preset",
+			"min_gap_days": 0,
+			"title": "Einmal oder zweimal",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "Kommt nie von selbst: ohne Obergrenze und in jedem Spiel ohne Beginn.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "nur_als_folge",
+			"kind": "follow_only",
+			"title": "Nur als Folge"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "Höchstzahl 0 heißt unbegrenzt: ohne Obergrenze.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "ohne_grenze",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 0.1,
+			"title": "Ohne Grenze",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "hardware",
+			"date": "1995-08-24",
+			"description": "Fix: ohne Obergrenze.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "windows_95",
+			"kind": "fixed",
+			"title": "Windows 95 erscheint"
+		}
+	],
+	"format": 1
+}

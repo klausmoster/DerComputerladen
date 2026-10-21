@@ -1,0 +1,122 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/werkstatt/statistics_panel.gd" id="1_statistics"]
+
+[node name="StatisticsPanel" type="VBoxContainer"]
+script = ExtResource("1_statistics")
+
+[node name="InputBar" type="HFlowContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CountCaption" type="Label" parent="InputBar"]
+layout_mode = 2
+text = "Anzahl der Spiele"
+
+[node name="CountEdit" type="LineEdit" parent="InputBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+tooltip_text = "Wie viele Spiele, von 1 bis 100.000. Gerechnet werden die Seeds 1, 2, 3 und so weiter; Enter startet."
+
+[node name="WithInterventions" type="CheckBox" parent="InputBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Jedes Spiel bekommt die Modifikatoren und Einplanungen, die du im Simulator gesammelt hast, an ihrem Tag. Absagen und Verschiebungen meinen einen Termin eines bestimmten Seeds und gelten deshalb nicht."
+text = "Mit Modifikatoren und Einplanungen aus dem Simulator"
+
+[node name="StartSeparator" type="VSeparator" parent="InputBar"]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="InputBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Starten"
+
+[node name="CancelButton" type="Button" parent="InputBar"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "Abbrechen"
+
+[node name="Progress" type="ProgressBar" parent="InputBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 16)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+max_value = 1.0
+step = 1.0
+show_percentage = false
+
+[node name="ProgressLabel" type="Label" parent="InputBar"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="InterventionInfo" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+autowrap_mode = 3
+
+[node name="CountHint" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"ErrorLabel"
+autowrap_mode = 3
+
+[node name="CatalogNotice" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+tooltip_text = "Das Ergebnis gilt für den Katalog vom Start der Rechnung. „Starten“ rechnet neu mit dem Stand von jetzt."
+mouse_filter = 1
+theme_type_variation = &"WarningLabel"
+text = "? Katalog geändert, neu starten"
+
+[node name="ExcludedNotice" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"ErrorNoticeLabel"
+autowrap_mode = 3
+
+[node name="RefusedNotice" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+tooltip_text = "Ob ein Spiel einen Eingriff ablehnt, hängt am Katalog und am Tag, nie am Seed. Er gilt deshalb in keinem Spiel."
+mouse_filter = 1
+theme_type_variation = &"WarningLabel"
+autowrap_mode = 3
+
+[node name="ResultLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Split" type="VSplitContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ResultTable" type="Tree" parent="Split"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="YearBox" type="VBoxContainer" parent="Split"]
+layout_mode = 2
+
+[node name="YearTitle" type="Label" parent="Split/YearBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text_overrun_behavior = 3
+
+[node name="YearChart" type="Control" parent="Split/YearBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 1

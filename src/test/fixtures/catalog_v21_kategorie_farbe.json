@@ -1,0 +1,159 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		},
+		{
+			"color": "holz-dunkel",
+			"id": "lokal",
+			"name": "Lokal"
+		},
+		{
+			"color": "nacht-hell",
+			"id": "reklamation",
+			"name": "Reklamation"
+		},
+		{
+			"color": "papier",
+			"id": "kalender",
+			"name": "Kalender"
+		}
+	],
+	"events": [
+		{
+			"category": "hardware",
+			"date": "1993-03-22",
+			"description": "Superskalare P5-Architektur, 64-Bit-Bus.",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "preis",
+					"magnitude": -0.3,
+					"note": "486 wird zur Mittelklasse.",
+					"scope": "once",
+					"target": "cpu_486"
+				},
+				{
+					"delay_days": 14,
+					"kind": "nachfrage",
+					"magnitude": 0.2,
+					"note": "Pentium-Systeme wollen Speicher.",
+					"scope": "once",
+					"target": "ram"
+				}
+			],
+			"follow_ups": [],
+			"id": "intel_pentium",
+			"kind": "fixed",
+			"title": "Intel Pentium erscheint"
+		},
+		{
+			"category": "lokal",
+			"conditions": [],
+			"count_min": 0,
+			"count_weights": [
+				30,
+				70
+			],
+			"description": "Ein neues Wohngebiet entsteht.",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 30,
+					"kind": "kundenstrom",
+					"magnitude": 0.2,
+					"note": "Neue Anwohner ziehen zu.",
+					"scope": "once",
+					"target": "*"
+				}
+			],
+			"follow_ups": [],
+			"id": "neubaugebiet",
+			"kind": "preset",
+			"min_gap_days": 1095,
+			"title": "Neubaugebiet am Stadtrand",
+			"window": {
+				"from": "1987-01-01",
+				"to": "1996-12-31"
+			}
+		},
+		{
+			"category": "reklamation",
+			"conditions": [],
+			"description": "Mehrere Kunden kommen gleichzeitig mit defekter Ware zurück.",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "reputation",
+					"magnitude": -0.15,
+					"note": "Häufung von Ausfällen.",
+					"scope": "once",
+					"target": "*"
+				}
+			],
+			"follow_ups": [
+				{
+					"chance": 0.5,
+					"delay_max": 21,
+					"delay_min": 7,
+					"target": "zeitungsartikel"
+				}
+			],
+			"id": "reklamationswelle",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 90,
+			"monthly_chance": 0.03,
+			"title": "Reklamationswelle",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "Hauptumsatzzeit des Jahres.",
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "kundenstrom",
+					"magnitude": 0.3,
+					"note": "Startwert.",
+					"scope": "during",
+					"target": "*"
+				}
+			],
+			"follow_ups": [],
+			"id": "weihnachtsgeschaeft",
+			"kind": "yearly",
+			"title": "Weihnachtsgeschäft",
+			"yearly": {
+				"end": "12-ende",
+				"from": 1985,
+				"start": "11-01",
+				"to": 1999
+			}
+		},
+		{
+			"category": "reklamation",
+			"conditions": [
+				{
+					"event": "reklamationswelle",
+					"occurred": true
+				}
+			],
+			"description": "Die Lokalzeitung berichtet über Ärger im Computerladen.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "zeitungsartikel",
+			"kind": "follow_only",
+			"title": "Zeitungsartikel über Reklamationen"
+		}
+	],
+	"format": 1
+}

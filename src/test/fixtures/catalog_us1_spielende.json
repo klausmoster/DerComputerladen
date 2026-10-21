@@ -1,0 +1,74 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		},
+		{
+			"color": "petrol",
+			"id": "kunde",
+			"name": "Kunde"
+		}
+	],
+	"events": [
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "nachspiel",
+			"kind": "follow_only",
+			"title": "Nachspiel"
+		},
+		{
+			"category": "hardware",
+			"date": "1999-12-31",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "silvester",
+			"kind": "fixed",
+			"title": "Silvester 1999"
+		},
+		{
+			"category": "hardware",
+			"date": "1999-12-25",
+			"description": "",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "presse",
+					"magnitude": 0.0,
+					"note": "Sofort.",
+					"scope": "once",
+					"target": "jahresende"
+				},
+				{
+					"delay_days": 14,
+					"kind": "nachfrage",
+					"magnitude": 0.1,
+					"note": "Wäre erst im Januar 2000 fällig.",
+					"scope": "once",
+					"target": "*"
+				}
+			],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 10,
+					"delay_min": 10,
+					"target": "nachspiel"
+				}
+			],
+			"id": "spaet",
+			"kind": "fixed",
+			"title": "Spät im Jahr"
+		}
+	],
+	"format": 1
+}

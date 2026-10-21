@@ -21,7 +21,13 @@ installierte Godot mit `--doctool` ausgibt; Beschreibungen aus der Doku 4.7
 
 ## R2 Vollbild und Fenster unter macOS
 
-- **Entscheidung:** Start in `MODE_FULLSCREEN` (`display/window/size/mode = 3`). Der grüne
+- **Geändert am 2026-10-20:** Die App startet im Fenster; `display/window/size/mode` ist nicht
+  mehr gesetzt. Beim Start bekommt das Fenster dieselbe Größe wie beim Wechsel ins Fenster.
+  Grund: Die Werkstatt aus Feature 002 läuft im selben Projekt, und der Start im Vollbild zwang
+  sie unter macOS erst ins Vollbild (Feature 002, research.md, R13). Klaus braucht das Vollbild
+  zum Start nicht.
+- **Entscheidung (bis 2026-10-20):** Start in `MODE_FULLSCREEN`
+  (`display/window/size/mode = 3`). Der grüne
   Fensterknopf wirkt von selbst. Für Ctrl+Cmd+F gibt es die Eingabe-Aktion `toggle_fullscreen`,
   die zwischen `MODE_FULLSCREEN` und `MODE_WINDOWED` umschaltet. Ein Autoload `GameWindow`
   bemerkt den Wechsel ins Fenster und setzt dann die Fenstergröße auf den größten ganzzahligen

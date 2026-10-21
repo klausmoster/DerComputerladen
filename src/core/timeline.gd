@@ -1,124 +1,199 @@
 extends Node
 
-## Autoload-Singleton: die Ereignis-Engine.
+## Autoload `Timeline`: die Zeitleiste des Spiels (Feature 002).
 ##
-## Registriert alle Ereignisse, lauscht auf die Spieluhr und feuert fixe
-## Ereignisse an ihrem Datum bzw. würfelt variable Ereignisse monatlich aus.
-## Beim Feuern werden die Kettenreaktionen (EventEffect) verteilt – sofort
-## oder zeitverzögert – und per `effect_applied` an andere Systeme gemeldet.
+## Die Hülle um den Lauf (research.md, R1 und R12). Beim Start liest sie den Ereigniskatalog,
+## prüft ihn und behält ihn ohne die Ereignisse mit Fehlern. Dann legt sie einen Lauf an
+## (TimelineRun), hängt sich an die Spieluhr und macht aus jeder Meldung des Laufs ein Signal.
+## Fahrplan, Würfel und Tagesablauf stecken im Lauf; hier wird nur verbunden und gesendet.
+##
+## Die Zeitleiste wendet keine Wirkung selbst an. Sie meldet nur, über die Signale unten, und
+## Wirtschaft, Nachfrage und Ruf hängen sich später daran.
 
+## Ein Ereignis beginnt, wie bisher.
 signal event_fired(event: TimelineEvent, date: GameDate)
+## Eine Wirkung beginnt, wie bisher.
 signal effect_applied(effect: EventEffect, source: TimelineEvent, date: GameDate)
+## Ein Ereignis mit Dauer endet.
+signal event_ended(event: TimelineEvent, date: GameDate)
+## Eine Wirkung, die nur während ihres Ereignisses gilt, endet.
+signal effect_ended(effect: EventEffect, source: TimelineEvent, date: GameDate)
+## Ein Termin entfällt: Eine Bedingung ist nicht erfüllt, das Ereignis läuft noch, oder die
+## Kette ist zu lang.
+signal entry_skipped(entry: ScheduleEntry, date: GameDate)
 
-var fixed_events: Array[TimelineEvent] = []
-var variable_events: Array[TimelineEvent] = []
-var history: Array[Dictionary] = []  ## { event, day_index }
+const CATALOG_PATH := EventCatalog.DEFAULT_PATH
+## Der größte Seed (FR-014): 2.147.483.647, die größte ganze Zahl mit Vorzeichen in 32 Bit.
+const MAX_SEED := 2147483647
 
-var _fixed_by_day: Dictionary = {}    ## day_index -> Array[TimelineEvent]
-var _pending_effects: Array[Dictionary] = []  ## { apply_day, effect, source }
-var _occurrences: Dictionary = {}     ## event id -> int
-var _last_fired_day: Dictionary = {}  ## event id -> day_index
-var _rng := RandomNumberGenerator.new()
+## Tests setzen einen Test-Katalog, bevor der Knoten in den Baum kommt.
+var catalog_path: String = CATALOG_PATH
+## Die Uhr, an deren day_passed die Zeitleiste hängt; null heißt das Autoload GameClock. Tests
+## setzen eine eigene Uhr, bevor der Knoten in den Baum kommt.
+var clock: Node = null
+## Der geprüfte Katalog ohne die Ereignisse mit Fehlern; leer, wenn die Datei fehlt oder nicht
+## lesbar ist.
+var catalog: EventCatalog
+## Das laufende Spiel; null, bis start_game() es anlegt.
+var run: TimelineRun
 
 
+## Liest und prüft den Katalog, hängt sich an die Uhr und startet das Spiel am Ende des ersten
+## Bilds. Ein fehlerfreier Katalog erzeugt keine Ausgabe.
 func _ready() -> void:
-	_rng.randomize()
-	_load_events()
-	GameClock.day_passed.connect(_on_day_passed)
-	GameClock.month_passed.connect(_on_month_passed)
+	_load_catalog()
+	if clock == null:
+		clock = GameClock
+	# connect() mit dem Namen des Signals, denn clock ist nur als Node bekannt; game_clock.gd hat
+	# kein class_name.
+	clock.connect(&"day_passed", _on_day_passed)
+	# call_deferred() führt den Aufruf erst am Ende des Bilds aus, nach dem _ready() der
+	# Hauptszene. So hören Abnehmer in der Szene schon den ersten Spieltag (R12).
+	start_game.call_deferred()
 
 
-func _load_events() -> void:
-	for event in EventDatabase.build_fixed_events():
-		register_event(event)
-	for event in EventDatabase.build_variable_events():
-		register_event(event)
+# Der Parameter heißt laut Vertrag seed, wie die globale Funktion seed(); die Warnung darüber
+# ist abgeschaltet, sonst wäre der Start mit -d nicht still.
+
+## Legt einen neuen Lauf an; [param seed] < 0 heißt würfeln, aus 0 bis 2.147.483.647 (FR-014).
+## Spielt den ersten Tag ab, den 01.01.1985, sendet dessen Meldungen und gibt OK zurück. Ein
+## laufendes Spiel wird dabei ersetzt.
+##
+## Ein Seed über MAX_SEED gehört nicht zum Wertebereich: Es gibt ERR_INVALID_PARAMETER und eine
+## Meldung, und ein laufendes Spiel bleibt, wie es ist. Textausgabe und Simulator lassen so einen
+## Seed gar nicht erst zu; hier prüft es die Zeitleiste selbst, bevor „Neues Spiel“ (01-05) eigene
+## Seeds übergibt. Den Rückgabewert braucht nur, wer selbst einen Seed vorgibt; der Start am Ende
+## des ersten Bilds würfelt und geht immer.
+@warning_ignore("shadowed_global_identifier")
+func start_game(seed: int = -1) -> Error:
+	if seed > MAX_SEED:
+		push_error(("Zeitleiste: Der Seed %d ist zu groß, erlaubt sind 0 bis 2.147.483.647. Es "
+			+ "beginnt kein neues Spiel.") % seed)
+		return ERR_INVALID_PARAMETER
+	var game_seed := seed if seed >= 0 else randi_range(0, MAX_SEED)
+	run = TimelineRun.new(catalog, game_seed)
+	_send(run.begin())
+	return OK
 
 
-func register_event(event: TimelineEvent) -> void:
-	if event.is_fixed:
-		fixed_events.append(event)
-		var idx := event.trigger_day_index()
-		if not _fixed_by_day.has(idx):
-			_fixed_by_day[idx] = [] as Array[TimelineEvent]
-		_fixed_by_day[idx].append(event)
-	else:
-		variable_events.append(event)
+## Der Seed des laufenden Spiels; −1, solange keins läuft.
+func get_seed() -> int:
+	return run.seed if run != null else -1
 
 
-## Bereits ausgelöste Ereignisse bis (einschließlich) `date` – nützlich beim
-## Spielstart, um den Markt auf den passenden Stand zu bringen, ohne dass die
-## Uhr durch die ganze Vergangenheit ticken muss.
-func fast_forward_to(date: GameDate) -> void:
-	var target := date.to_day_index()
-	for idx: int in _fixed_by_day.keys():
-		if idx <= target:
-			for event: TimelineEvent in _fixed_by_day[idx]:
-				_fire(event, GameDate.from_day_index(idx))
+## Ein Ereignis des laufenden Spiels; null, wenn es die Kennung nicht gibt. Es ist dasselbe
+## Objekt, das die Signale tragen, denn der Lauf arbeitet auf einer eigenen Kopie des Katalogs.
+func get_event(id: String) -> TimelineEvent:
+	if run != null:
+		return run.catalog.get_event(id)
+	return catalog.get_event(id) if catalog != null else null
 
 
-func _on_day_passed(date: GameDate) -> void:
-	_apply_due_effects(date)
-	var idx := date.to_day_index()
-	if _fixed_by_day.has(idx):
-		for event: TimelineEvent in _fixed_by_day[idx]:
-			_fire(event, date)
+## Die Termine, die gerade laufen (R12): So fragt ein Abnehmer, der später dazukommt, den Stand
+## ab, statt auf die nächste Meldung zu warten.
+func running_entries() -> Array[ScheduleEntry]:
+	if run != null:
+		return run.running_entries()
+	var none: Array[ScheduleEntry] = []
+	return none
 
 
-func _on_month_passed(date: GameDate) -> void:
-	_roll_variable_events(date)
+# --- Eingriffe (FR-025 bis FR-027) ---------------------------------------------------
+#
+# Später greifen Spielteile hierüber in die Zeitleiste ein, etwa „Laden nebenan gemietet“ als
+# Absage. Die Methoden haben dieselben Signaturen wie im Lauf und reichen nur durch; die Regeln
+# und das Eingriffsprotokoll stecken in TimelineRun. Den Grund einer Ablehnung nennt
+# run.last_refusal. Solange kein Spiel läuft, gibt es ERR_UNCONFIGURED. Ein Eingriff wird kein
+# Signal: Er steht nur als Meldung INTERVENTION im Protokoll des Laufs.
 
 
-func _roll_variable_events(date: GameDate) -> void:
-	var current_day := date.to_day_index()
-	for event in variable_events:
-		var occ: int = _occurrences.get(event.id, 0)
-		var last: int = _last_fired_day.get(event.id, -1)
-		if not event.can_occur(date, occ, last, current_day):
+## Setzt einen Modifikator; siehe TimelineRun.add_modifier().
+func add_modifier(modifier: ChanceModifier) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.add_modifier(modifier)
+
+
+## Entfernt einen Modifikator; siehe TimelineRun.remove_modifier().
+func remove_modifier(id: String) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.remove_modifier(id)
+
+
+## Sagt einen geplanten Termin ab; siehe TimelineRun.cancel_entry().
+func cancel_entry(serial: int, reason: String) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.cancel_entry(serial, reason)
+
+
+## Verschiebt einen geplanten Termin; siehe TimelineRun.move_entry().
+func move_entry(serial: int, new_day: int, reason: String) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.move_entry(serial, new_day, reason)
+
+
+## Plant ein Ereignis als neuen Termin ein; siehe TimelineRun.schedule_event().
+func schedule_event(event_id: String, day: int, reason: String) -> Error:
+	if run == null:
+		return ERR_UNCONFIGURED
+	return run.schedule_event(event_id, day, reason)
+
+
+## Liest den Katalog von catalog_path und behält ihn ohne die Ereignisse mit Fehlern (FR-049).
+func _load_catalog() -> void:
+	var issues: Array[CatalogIssue] = []
+	var loaded := EventCatalog.read_file(catalog_path, issues)
+	if loaded == null:
+		# Das Spiel startet trotzdem, mit leerer Zeitleiste; die Meldung nennt Datei und Grund.
+		for issue in issues:
+			push_error("Zeitleiste: %s Die Zeitleiste bleibt leer." % issue.message)
+		catalog = EventCatalog.new()
+		return
+	issues.append_array(CatalogValidator.validate(loaded))
+	catalog = loaded.without_faulty(issues)
+	# Jede Meldung der Stufe ERROR nennt Ereignis bzw. Kategorie und Grund. Fehlt das Ereignis
+	# danach im Katalog, sagt die Meldung das dazu. Warnungen sind für die Werkstatt.
+	for issue in issues:
+		if issue.severity != CatalogIssue.Severity.ERROR:
 			continue
-		if _rng.randf() < event.monthly_chance:
-			_fire(event, date)
+		var text := "Zeitleiste: %s" % issue.message
+		if loaded.get_event(issue.event_id) != null and catalog.get_event(issue.event_id) == null:
+			text += " Das Ereignis wird übersprungen."
+		push_error(text)
 
 
-func _fire(event: TimelineEvent, date: GameDate) -> void:
-	history.append({"event": event, "day_index": date.to_day_index()})
-	_occurrences[event.id] = int(_occurrences.get(event.id, 0)) + 1
-	_last_fired_day[event.id] = date.to_day_index()
-	event_fired.emit(event, date)
-
-	for effect in event.effects:
-		if effect.delay_days <= 0:
-			_dispatch_effect(effect, event, date)
-		else:
-			_pending_effects.append({
-				"apply_day": date.to_day_index() + effect.delay_days,
-				"effect": effect,
-				"source": event,
-			})
+## Spielt den Lauf bis zum Tag der Uhr ab. GameClock meldet jeden Tag einzeln; der Lauf käme
+## auch mit Sprüngen zurecht.
+func _on_day_passed(date: GameDate) -> void:
+	if run == null:
+		return
+	_send(run.advance_to(date.to_day_index()))
 
 
-func _apply_due_effects(date: GameDate) -> void:
-	var idx := date.to_day_index()
-	var still_pending: Array[Dictionary] = []
-	for pending in _pending_effects:
-		if pending["apply_day"] <= idx:
-			_dispatch_effect(pending["effect"], pending["source"], date)
-		else:
-			still_pending.append(pending)
-	_pending_effects = still_pending
-
-
-func _dispatch_effect(effect: EventEffect, source: TimelineEvent, date: GameDate) -> void:
-	effect_applied.emit(effect, source, date)
-	# SPAWN-Effekte lösen ein weiteres registriertes Ereignis aus.
-	if effect.kind == EventEffect.Kind.SPAWN and not effect.target.is_empty():
-		var spawned := _find_event(effect.target)
-		if spawned != null:
-			_fire(spawned, date)
-
-
-func _find_event(event_id: String) -> TimelineEvent:
-	for event in fixed_events + variable_events:
-		if event.id == event_id:
-			return event
-	return null
+## Macht aus jeder Meldung das Signal laut Vertrag, in der Reihenfolge der Meldungen. Eingriffe
+## stehen nur im Protokoll des Laufs und werden kein Signal.
+func _send(messages: Array[TimelineMessage]) -> void:
+	for message in messages:
+		var date := GameDate.from_day_index(message.day)
+		match message.kind:
+			TimelineMessage.Kind.EVENT_STARTED:
+				event_fired.emit(message.event, date)
+			TimelineMessage.Kind.EFFECT_STARTED:
+				effect_applied.emit(message.effect, message.event, date)
+			TimelineMessage.Kind.EVENT_ENDED:
+				event_ended.emit(message.event, date)
+			TimelineMessage.Kind.EFFECT_ENDED:
+				effect_ended.emit(message.effect, message.event, date)
+			TimelineMessage.Kind.ENTRY_SKIPPED:
+				entry_skipped.emit(message.entry, date)
+			TimelineMessage.Kind.CHAIN_STOPPED:
+				# Eine Kette, die so lang wird, ist fast immer ein Fehler im Katalog; deshalb
+				# zusätzlich eine Warnung mit Ereignis und Tag (FR-018).
+				push_warning("Zeitleiste: %s (Ereignis „%s“)" % [message.to_line(),
+					message.event.id])
+				entry_skipped.emit(message.entry, date)
+			TimelineMessage.Kind.INTERVENTION:
+				pass

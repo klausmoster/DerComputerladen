@@ -1,0 +1,53 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		},
+		{
+			"color": "petrol",
+			"id": "kunde",
+			"name": "Kunde"
+		}
+	],
+	"events": [
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "100 % pro Monat, 20 Tage Abstand.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "x_wuerfel",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 20,
+			"monthly_chance": 1.0,
+			"title": "X gewürfelt",
+			"window": {
+				"from": "1990-02-01",
+				"to": "1990-12-31"
+			}
+		},
+		{
+			"category": "hardware",
+			"date": "1990-01-05",
+			"description": "Plant X als Folge für den 15.04.1990.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 100,
+					"delay_min": 100,
+					"target": "x_wuerfel"
+				}
+			],
+			"id": "z_start",
+			"kind": "fixed",
+			"title": "Start Z"
+		}
+	],
+	"format": 1
+}

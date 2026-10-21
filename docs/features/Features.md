@@ -22,7 +22,7 @@ Die Nummer ist Teil der `feature_id` (`SS-NN`) und stabil.
 
 | SS | System | Stand |
 |---|---|---|
-| 01 | Zeitleiste | Umgesetzt (Spieluhr, Ereignis-Engine) |
+| 01 | Zeitleiste | Umgesetzt (Spieluhr, Ereignis-Engine); in Feature 002 umgebaut zum Fahrplan-Modell mit Zeitleisten-Werkstatt |
 | 02 | Produktdatenbank | Als nächstes — Brücke game_bible → Engine |
 | 03 | Wirtschaftsmodell | Idee |
 | 04 | Informationssystem | Idee |
@@ -45,6 +45,7 @@ unter „Offene Fragen", sind aber eigene Systeme.
 | 01-02 | [[01-02-ereignis-engine]] | fertig | tasks |
 | 02-01 | [[02-01-bible-importer]] | spezifiziert | plan |
 | 001 | [Start bis zum Hauptmenü](../../specs/001-hauptmenue/spec.md), Spec-Kit-Pilot, System 10 | fertig | tasks |
+| 002 | [Zeitleisten-Werkstatt](../../specs/002-zeitleisten-werkstatt/spec.md), System 01 | fertig | tasks |
 
 Diese Tabelle wird derzeit von Hand gepflegt. Ab etwa zehn Features lohnt ein
 Generator, der sie aus dem Frontmatter baut — gleiches Prinzip wie

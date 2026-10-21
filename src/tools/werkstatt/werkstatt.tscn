@@ -1,0 +1,215 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/werkstatt/werkstatt.gd" id="1_werkstatt"]
+[ext_resource type="Theme" path="res://tools/werkstatt/werkstatt_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://tools/werkstatt/event_list.tscn" id="3_list"]
+[ext_resource type="Script" path="res://tools/werkstatt/issues_panel.gd" id="4_issues"]
+[ext_resource type="PackedScene" path="res://tools/werkstatt/event_form.tscn" id="5_form"]
+[ext_resource type="Script" path="res://tools/werkstatt/timeline_view.gd" id="6_timeline"]
+[ext_resource type="PackedScene" path="res://tools/werkstatt/simulator_panel.tscn" id="7_simulator"]
+[ext_resource type="PackedScene" path="res://tools/werkstatt/statistics_panel.tscn" id="8_statistics"]
+
+[node name="Werkstatt" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_werkstatt")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Layout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Toolbar" type="PanelContainer" parent="Layout"]
+layout_mode = 2
+theme_type_variation = &"Toolbar"
+
+[node name="Bar" type="HBoxContainer" parent="Layout/Toolbar"]
+layout_mode = 2
+
+[node name="SaveButton" type="Button" parent="Layout/Toolbar/Bar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Speichern"
+
+[node name="RevertButton" type="Button" parent="Layout/Toolbar/Bar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Verwerfen"
+
+[node name="UndoButton" type="Button" parent="Layout/Toolbar/Bar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Rückgängig"
+
+[node name="RedoButton" type="Button" parent="Layout/Toolbar/Bar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Wiederholen"
+
+[node name="Separator" type="VSeparator" parent="Layout/Toolbar/Bar"]
+layout_mode = 2
+
+[node name="FileLabel" type="Label" parent="Layout/Toolbar/Bar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+text_overrun_behavior = 3
+
+[node name="DirtyLabel" type="Label" parent="Layout/Toolbar/Bar"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "· ungespeichert"
+
+[node name="Spacer" type="Control" parent="Layout/Toolbar/Bar"]
+custom_minimum_size = Vector2(16, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CountLabel" type="Label" parent="Layout/Toolbar/Bar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Die Meldungen stehen im Reiter „Prüfung“."
+mouse_filter = 1
+
+[node name="Main" type="HSplitContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EventList" parent="Layout/Main" instance=ExtResource("3_list")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Center" type="VSplitContainer" parent="Layout/Main"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TimelineView" type="Control" parent="Layout/Main/Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("6_timeline")
+
+[node name="Tabs" type="TabContainer" parent="Layout/Main/Center"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="IssuesPanel" type="Tree" parent="Layout/Main/Center/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("4_issues")
+
+[node name="SimulatorPanel" parent="Layout/Main/Center/Tabs" instance=ExtResource("7_simulator")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="StatisticsPanel" parent="Layout/Main/Center/Tabs" instance=ExtResource("8_statistics")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="FormScroll" type="ScrollContainer" parent="Layout/Main"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+theme_type_variation = &"FormScroll"
+horizontal_scroll_mode = 0
+
+[node name="EventForm" parent="Layout/Main/FormScroll" instance=ExtResource("5_form")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BackupTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 120.0
+autostart = true
+
+[node name="SettingsTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
+
+[node name="CloseDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Werkstatt schließen"
+ok_button_text = "Speichern"
+dialog_text = "Es gibt ungespeicherte Änderungen. Vor dem Schließen speichern?"
+dialog_autowrap = true
+cancel_button_text = "Abbrechen"
+
+[node name="RevertDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Verwerfen"
+ok_button_text = "Verwerfen"
+dialog_text = "Alle ungespeicherten Änderungen verwerfen und den Stand der Datei laden? Rückgängig geht danach nicht mehr."
+dialog_autowrap = true
+cancel_button_text = "Abbrechen"
+
+[node name="DeleteDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Löschen"
+ok_button_text = "Löschen"
+dialog_autowrap = true
+cancel_button_text = "Abbrechen"
+
+[node name="SaveErrorsDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Speichern"
+ok_button_text = "Trotzdem speichern"
+dialog_autowrap = true
+cancel_button_text = "Abbrechen"
+
+[node name="ForeignChangeDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Fremde Änderung"
+ok_button_text = "Überschreiben"
+dialog_autowrap = true
+cancel_button_text = "Abbrechen"
+
+[node name="BackupDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Sicherungskopie"
+ok_button_text = "Übernehmen"
+dialog_autowrap = true
+cancel_button_text = "Später"
+
+[node name="MissingDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Katalog fehlt"
+ok_button_text = "Leeren Katalog anlegen"
+dialog_autowrap = true
+cancel_button_text = "Abbrechen"
+
+[node name="UnreadableDialog" type="AcceptDialog" parent="."]
+unique_name_in_owner = true
+title = "Katalog nicht lesbar"
+dialog_autowrap = true
+
+[node name="NoticeDialog" type="AcceptDialog" parent="."]
+unique_name_in_owner = true
+title = "Hinweis"
+dialog_autowrap = true

@@ -1,0 +1,42 @@
+{
+	"categories": [
+		{
+			"color": "holz-dunkel",
+			"id": "lokal",
+			"name": "Lokal"
+		}
+	],
+	"events": [
+		{
+			"category": "lokal",
+			"conditions": [],
+			"count_min": 1,
+			"count_weights": [
+				50,
+				50
+			],
+			"description": "Ein neues Wohngebiet entsteht – mehr potenzielle Laufkundschaft.",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 30,
+					"kind": "kundenstrom",
+					"magnitude": 0.2,
+					"note": "Neue Anwohner ziehen zu.",
+					"scope": "once",
+					"target": "*"
+				}
+			],
+			"follow_ups": [],
+			"id": "neubaugebiet_am_stadtrand",
+			"kind": "preset",
+			"min_gap_days": 1095,
+			"title": "Neubaugebiet am Stadtrand",
+			"window": {
+				"from": "1987-01-01",
+				"to": "1996-12-31"
+			}
+		}
+	],
+	"format": 1
+}

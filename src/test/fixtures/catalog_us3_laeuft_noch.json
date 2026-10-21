@@ -1,0 +1,109 @@
+{
+	"categories": [
+		{
+			"color": "petrol",
+			"id": "lieferung",
+			"name": "Lieferung"
+		},
+		{
+			"color": "holz",
+			"id": "kunde",
+			"name": "Kunde"
+		}
+	],
+	"events": [
+		{
+			"category": "kunde",
+			"date": "1990-06-01",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "sonderschicht"
+				}
+			],
+			"id": "auftrag_a",
+			"kind": "fixed",
+			"title": "Auftrag A"
+		},
+		{
+			"category": "kunde",
+			"date": "1990-06-20",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "sonderschicht"
+				}
+			],
+			"id": "auftrag_b",
+			"kind": "fixed",
+			"title": "Auftrag B"
+		},
+		{
+			"category": "kunde",
+			"date": "1990-07-01",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 1.0,
+					"delay_max": 0,
+					"delay_min": 0,
+					"target": "sonderschicht"
+				}
+			],
+			"id": "auftrag_c",
+			"kind": "fixed",
+			"title": "Auftrag C"
+		},
+		{
+			"category": "lieferung",
+			"conditions": [],
+			"description": "Kommt im Januar und Februar 1990 sicher und dauert 60 Tage.",
+			"duration_days": 60,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "preis",
+					"magnitude": 0.15,
+					"note": "Knappheit treibt die Einkaufspreise.",
+					"scope": "during",
+					"target": "*"
+				}
+			],
+			"follow_ups": [],
+			"id": "lieferengpass",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 1.0,
+			"title": "Lieferengpass",
+			"window": {
+				"from": "1990-01-01",
+				"to": "1990-02-28"
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "Kommt als Folge eines Auftrags und dauert 30 Tage.",
+			"duration_days": 30,
+			"effects": [],
+			"follow_ups": [],
+			"id": "sonderschicht",
+			"kind": "follow_only",
+			"title": "Sonderschicht"
+		}
+	],
+	"format": 1
+}

@@ -1,0 +1,113 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/werkstatt/intervention_dialog.gd" id="1_dialog"]
+
+[node name="InterventionDialog" type="ConfirmationDialog"]
+title = "Eingriff"
+ok_button_text = "Übernehmen"
+dialog_hide_on_ok = false
+cancel_button_text = "Abbrechen"
+script = ExtResource("1_dialog")
+
+[node name="Fields" type="GridContainer" parent="."]
+custom_minimum_size = Vector2(460, 0)
+columns = 2
+
+[node name="EntryCaption" type="Label" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Termin"
+
+[node name="EntryLabel" type="Label" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EventCaption" type="Label" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Ereignis"
+
+[node name="EventChoice" type="OptionButton" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+
+[node name="ValueCaption" type="Label" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Wert"
+
+[node name="ValueRow" type="HBoxContainer" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ValueEdit" type="LineEdit" parent="Fields/ValueRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+tooltip_text = "Prozentpunkte mit Vorzeichen, Komma oder Punkt: +5, -6 oder 2,5"
+placeholder_text = "+5"
+
+[node name="ValueUnit" type="Label" parent="Fields/ValueRow"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Prozentpunkte"
+
+[node name="ReasonCaption" type="Label" parent="Fields"]
+layout_mode = 2
+text = "Grund"
+
+[node name="ReasonEdit" type="LineEdit" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "etwa Ware vom windigen Händler"
+
+[node name="FromCaption" type="Label" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Beginn"
+
+[node name="FromEdit" type="LineEdit" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "TT.MM.JJJJ"
+
+[node name="ToCaption" type="Label" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Ende"
+
+[node name="ToEdit" type="LineEdit" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Pflicht; „unbegrenzt“ heißt 31.12.1999."
+placeholder_text = "TT.MM.JJJJ, unbegrenzt 31.12.1999"
+
+[node name="DayCaption" type="Label" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Tag"
+
+[node name="DayEdit" type="LineEdit" parent="Fields"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "TT.MM.JJJJ"
+
+[node name="HintSpacer" type="Control" parent="Fields"]
+layout_mode = 2
+
+[node name="Hint" type="Label" parent="Fields"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ErrorLabel"
+autowrap_mode = 3

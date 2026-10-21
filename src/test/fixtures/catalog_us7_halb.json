@@ -1,0 +1,30 @@
+{
+	"categories": [
+		{
+			"color": "holz",
+			"id": "kunde",
+			"name": "Kunde"
+		}
+	],
+	"events": [
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "50 % pro Monat ohne Zeitfenster, Höchstzahl und Mindestabstand: im Schnitt 90 Beginne in 180 Monaten (US7, Szenario 3; SC-008).",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "jeder_zweite_monat",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 0.5,
+			"title": "Jeder zweite Monat",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		}
+	],
+	"format": 1
+}

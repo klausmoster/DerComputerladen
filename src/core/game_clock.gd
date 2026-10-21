@@ -9,7 +9,6 @@ extends Node
 signal day_passed(date: GameDate)
 signal month_passed(date: GameDate)
 signal year_passed(date: GameDate)
-signal season_changed(is_holiday_season: bool)
 signal reached_end()
 
 const START_YEAR := 1985
@@ -56,8 +55,6 @@ func advance_day() -> void:
 		month_passed.emit(date)
 	if date.year != previous.year:
 		year_passed.emit(date)
-	if date.is_holiday_season() != previous.is_holiday_season():
-		season_changed.emit(date.is_holiday_season())
 
 	if date.year > END_YEAR:
 		_ended = true

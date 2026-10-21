@@ -1,0 +1,46 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "hardware",
+			"name": "Hardware"
+		},
+		{
+			"color": "petrol",
+			"id": "kunde",
+			"name": "Kunde"
+		}
+	],
+	"events": [
+		{
+			"category": "hardware",
+			"date": "1990-05-10",
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [
+				{
+					"chance": 0.5,
+					"delay_max": 21,
+					"delay_min": 7,
+					"target": "folge"
+				}
+			],
+			"id": "ausloeser",
+			"kind": "fixed",
+			"title": "Auslöser"
+		},
+		{
+			"category": "kunde",
+			"conditions": [],
+			"description": "",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "folge",
+			"kind": "follow_only",
+			"title": "Folge mit Spanne"
+		}
+	],
+	"format": 1
+}

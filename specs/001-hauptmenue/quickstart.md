@@ -77,8 +77,8 @@ open "build/macos/Der Computerladen.app"
 | Zeit bis zum Titel | höchstens 3 Sekunden vom Doppelklick bis zur ersten Reaktion des Menüs; Stoppuhr, schlechtester von drei Starts, ohne den ersten nach dem Export | SC-001 |
 | Dock und App-Umschalter | „Der Computerladen“ mit dem Monitor auf `nacht` als Symbol, kein grauer Rahmen; in der Listenansicht des Finders als Monitor erkennbar | FR-002 |
 | Informationen im Finder | Version 0.1, dieselbe wie in der Versionszeile | FR-014 |
-| Vollbild | startet im Vollbild, ganzzahlig skaliert, Rest schwarz | FR-004, FR-012 |
-| Ctrl+Cmd+F | wechselt ins Fenster und zurück; das Fenster hat den größten Faktor, der auf den Bildschirm passt | FR-004 |
+| Start im Fenster | das Fenster hat den größten Faktor, der samt Titelleiste auf den Bildschirm passt, und steht mittig | FR-004 |
+| Ctrl+Cmd+F | wechselt ins Vollbild, ganzzahlig skaliert, Rest schwarz, und zurück ins Fenster mit dem größten Faktor | FR-004, FR-012 |
 | Grüner Knopf | wechselt ebenso ins Vollbild und zurück | FR-004 |
 | Fenster verkleinern | geht nicht unter 640 × 360; Darstellung bleibt ganzzahlig mit Rand | FR-012, FR-013 |
 | Cmd+Q, Fenster schließen | beendet die App wie „Beenden“ | FR-008 |
