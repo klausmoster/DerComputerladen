@@ -160,6 +160,10 @@ Die Bitte um Abnahme enthält, in dieser Reihenfolge:
   eröffnen.“ (Klaus, 2026-10-19, im Review von Feature 001, gegen die Empfehlung „Sie“).
 - Claude empfiehlt eine Lösung, statt nur Möglichkeiten aufzuzählen, und fragt nur, was wirklich
   Klaus' Entscheidung ist, eine Frage nach der anderen.
+- **Fragen immer als Auswahl** (Klaus, 2026-10-21): Jede Frage an Klaus kommt mit Antworten zum
+  Auswählen, die Empfehlung zuerst; eine freie Antwort bleibt möglich. Das gilt auch für die Fragen
+  von `/speckit-specify` und `/speckit-clarify`, die Spec Kit sonst als Kurzantwort zulässt.
+  Anlass: die Klärungsfragen zu Feature 003.
 - Dauert etwas länger, meldet Claude kurz den Stand.
 
 ## Werkzeuge und Pfade
