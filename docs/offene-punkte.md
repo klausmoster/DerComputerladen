@@ -55,6 +55,39 @@ einzeln, wenn ihr Schritt dran ist (dort unter „Stand der Einführung“).
   Empfehlung: nach `main`, sobald Feature 003 dort angekommen ist. So ändert sich für die Sitzung
   „[003] Schwierigkeitsgrade ab dem Plan“ mitten in der Arbeit nichts.
 
+### Probelauf des Stil-Prüfers an Feature 001 (2026-10-22)
+
+Der Stil-Prüfer hat Titelbildschirm, Hauptmenü und Hinweis gegen den Style-Guide geprüft, Claude
+hat jeden Befund nachgeprüft. Was davon repariert oder in den Style-Guide kommt, entscheidet Klaus,
+in einem eigenen Schritt. Zahlen in `docs/ki_workflow/ki_pruefung.md`, „Nachmessen“.
+- **Bestätigt:**
+  - **Logo ohne `pixelschatten` (mittel):** Das Logo steht halb auf Himmel, halb auf der
+    Fassade, also auf unruhigem Grund. Der Style-Guide verlangt dort `pixelschatten` (Logo). Das
+    PNG hat keinen, die Szene auch nicht. Empfehlung: Schatten ergänzen, wie beim Hinweis.
+  - **Ränder nicht aus dem Raster (mittel):** Logo bei x 14 und y 12, Menü 24 vom rechten Rand,
+    Versionszeile 6 vom unteren. `raster-16` ist laut Style-Guide der „Rand zum Bildschirmrand im
+    Titel“. Die Werte kommen aus dem Titelscreen-Entwurf und stehen so im Vertrag von Feature 001.
+    Empfehlung: auf 16 ziehen; der Entwurf ist älter als die Raster-Regel.
+  - **Textschatten von 1 px (niedrig):** Untertitel und Versionszeile haben einen harten Schatten
+    in `tusche` um (1, 1). Er steht im Vertrag von Feature 001, im Style-Guide gibt es ihn nicht.
+    Empfehlung: als Token in den Style-Guide, denn er hält die Schrift auf dem Bild lesbar.
+- **Verworfen:** `papier`-Text auf dem Titelbild sei kein erlaubtes Farbpaar. Der Abschnitt Logo
+  verlangt den Untertitel aber ausdrücklich in `papier`. Das ist eine Lücke, kein Fehler (unten).
+- **Lücken im Style-Guide:**
+  - **Text auf einem Vollbild:** Die Farbpaare kennen keinen Bildgrund. Ist `papier` auf dem
+    Titelbild erlaubt, und mit welchem Schatten?
+  - **Kontur am Menü:** „Alles Bedienbare“ hat eine `tusche`-Kontur und Relief, der Baustein Menü
+    beschreibt Endlospapier ohne beides. Welche Regel gilt?
+  - **Logo im Spiel:** Der Style-Guide nennt das Original mit 850 × 164, im Spiel steht die
+    gerasterte Fassung mit 141 × 27 Bildpixeln. Wie groß darf das Logo erscheinen?
+  - **Gelbe Zeile:** Nur der Innenbereich wird `signalgelb`, die Lochränder nicht. Der Baustein
+    sagt nur „Die gewählte Zeile ist `signalgelb`“.
+  - **Vollbild ohne SubViewport:** Für Szenen beschreibt der Style-Guide einen SubViewport mit
+    320 × 180. Das Titelbild ist ein TextureRect mit 640 × 360, ganzzahlig doppelt. Reicht das für
+    Vollbilder?
+  - Verworfen: die Maße der Lochränder. Sie stehen im Baustein Bildrahmen, den Claude dem Prüfer
+    nicht mitgegeben hatte, und der Code hält sie ein.
+
 ### Ältere Punkte aus Claudes bisherigem lokalem Gedächtnis
 
 - **Spielfenster ragt 6 Pixel in den Bereich des Docks** (Feature 002, Abnahme von Phase 4,

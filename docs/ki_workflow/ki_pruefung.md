@@ -52,8 +52,9 @@ Was Claude Code dafür bietet, laut seiner Doku (Stand 2026-10-22:
   kann ein Agent nichts ändern, ohne `Agent` keine weiteren Agents starten. `model: inherit` nimmt
   das Modell der Sitzung.
 - **Neue Dateien:** Neue oder geänderte Agents und Skills greifen nach wenigen Sekunden, ohne neue
-  Sitzung, außer ihr Ordner fehlte beim Start der Sitzung. `ki_dev.md` hält aus Erfahrung fest,
-  dass Agents nur beim Start laden; Schritt 3 klärt, was stimmt.
+  Sitzung, außer ihr Ordner fehlte beim Start der Sitzung. In der Desktop-App stimmt das für
+  Agents nicht: Im Probelauf von Schritt 3 stand `stil-pruefer` in der laufenden Sitzung nicht
+  bereit, wie `ki_dev.md` aus Erfahrung festhält (2026-10-22).
 - **Gleichzeitig:** Mehrere Agents aus einer Nachricht laufen nebeneinander im Hintergrund. Ihre
   Ergebnisse kommen einzeln zurück.
 - **Hook nach einem Agent:** `SubagentStop` mit dem Namen des Agents als Matcher, etwa
@@ -236,6 +237,13 @@ Ab dem ersten Probelauf zählt Claude je Prüfer und Phase: gemeldete, bestätig
 Befunde, und wie viele davon nur dieser Prüfer fand. Die Zahlen kommen hierher. Nach dem Pilot
 entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 
+| Lauf | Prüfer | Befunde | bestätigt | verworfen | Lücken im Maßstab | nur er fand |
+|---|---|---|---|---|---|---|
+| Probelauf Feature 001, Titelbildschirm (2026-10-22) | Stil | 4 | 3 | 1 | 6, davon 1 verworfen | 3 |
+
+„Nur er fand“ heißt hier: Die Prüfung von Feature 001 hatte es übersehen, das Feature war
+abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.
+
 Jede Phasenprüfung kostet zwei bis drei Prüfer-Läufe und läuft nur in Phasen, die Sichtbares oder
 Texte ändern. Sitzt der Ablauf, lässt er sich als gespeicherter Workflow fest einrichten.
 
@@ -262,7 +270,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 |---|---|---|---|
 | 1 | Umzug nach `docs/ki_workflow/` | [C] | erledigt, 2026-10-22 |
 | 2 | Einstieg und diese Datei, mit Schaubildern | [C] | erledigt, 2026-10-22 |
-| 3 | Stil-Prüfer mit Probelauf an Titelbildschirm, Hauptmenü und Hinweis aus Feature 001; dabei klärt sich, ob ein neuer Agent ohne neue Sitzung bereitsteht und Bildschirmfotos lesen kann | [C] | |
+| 3 | Stil-Prüfer mit Probelauf an Titelbildschirm, Hauptmenü und Hinweis aus Feature 001; dabei klärt sich, ob ein neuer Agent ohne neue Sitzung bereitsteht und Bildschirmfotos lesen kann | [C] | erledigt, 2026-10-22 |
 | 4 | Text-Leitfaden | [C] schreibt, [K] entscheidet den Ton | |
 | 5 | Text-Prüfer mit Probelauf an den Texten von Feature 001 und der Werkstatt | [C] | |
 | 6 | Skill `dcl-phasenpruefung` | [C] | |
@@ -273,7 +281,19 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 
 ## Erfahrungen
 
-Noch keine. Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilot.
+Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilot.
+
+- **Ein neuer Prüfer braucht eine neue Sitzung.** Bis dahin liest ein allgemeiner Agent die Datei
+  des Prüfers und hält sich daran. Er hat dabei alle Werkzeuge; „nur lesen“ steht deshalb
+  ausdrücklich im Auftrag. Bildschirmfotos konnte er sehen. Anlass: Probelauf in Schritt 3
+  (2026-10-22).
+- **Den Maßstab vollständig mitgeben, auch was ein Abschnitt nur verweist.** Der Baustein Menü
+  sagt „Lochränder wie beim Bildrahmen“; ohne den Baustein Bildrahmen meldete der Prüfer eine
+  Lücke, die keine war. Anlass: Probelauf in Schritt 3 (2026-10-22).
+- **Was im Vertrag steht, aber nicht im Style-Guide, findet der Prüfer.** Zwei der drei
+  bestätigten Befunde standen so im Vertrag von Feature 001: Ränder nach dem Titelscreen-Entwurf
+  und ein Textschatten von 1 px. Claudes Prüfung hatte gegen den Vertrag geprüft, der Prüfer prüft
+  gegen den Style-Guide. Anlass: Probelauf in Schritt 3 (2026-10-22).
 
 ## Offen
 
