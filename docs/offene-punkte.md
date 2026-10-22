@@ -27,6 +27,29 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   2026-10-22 steht fest, dass beide Profile zur Gesamtabnahme gefüllt sein müssen
   (Checkliste, CHK008). Offen sind nur noch die Werte.
 
+### KI-Workflow und Prüf-Agents (2026-10-22)
+
+Aus dem Konzept, das in `docs/ki_workflow/ki_pruefung.md` aufgegangen ist. Jede Frage kommt
+einzeln, wenn ihr Schritt dran ist (dort unter „Stand der Einführung“).
+- **Ort des Text-Leitfadens (vor Schritt 4):** Abschnitt im Style-Guide oder eigene Datei?
+  Empfehlung: ein Abschnitt „Sprache“ im Style-Guide. Dort stehen schon die du-Form, kurze Sätze
+  und Begriffe der Zeit, und nach Grundsatz IV der Verfassung ist der Style-Guide die einzige
+  Quelle für alles Sichtbare.
+- **Hook nach dem Godot-Agent (vor Schritt 8):** Startet ein Hook die Tests, sobald der
+  Godot-Agent fertig ist? Die Empfehlung folgt, wenn geklärt ist, was Hooks in Claude Code genau
+  können.
+- **Gemeinsames `user://` (mit dem Hook):** Alle Arbeitsordner teilen sich `user://` von „Der
+  Computerladen“, und die Tests schreiben in feste Unterordner wie `user://test_simulator/`. Zwei
+  Testläufe zur selben Zeit, etwa im Worktree der Arbeitsweise und in der Sitzung „[003]
+  Schwierigkeitsgrade ab dem Plan“, können sich stören. Ein Hook, der von selbst testet, macht das
+  wahrscheinlicher.
+- **Ab wann die Prüfer gelten (vor Schritt 9):** Empfehlung: ab dem Pilot für jede Phase mit
+  Sichtbarem oder Texten, auch in Werkzeugen. Bis zum ersten Spielbildschirm dauert es noch, und
+  für Werkzeuge hat der Style-Guide einen eigenen Abschnitt als Maßstab.
+- **Merge des Branches `claude/arbeitsweise-pruef-agents-83cb9b` (vor dem ersten Merge):**
+  Empfehlung: nach `main`, sobald Feature 003 dort angekommen ist. So ändert sich für die Sitzung
+  „[003] Schwierigkeitsgrade ab dem Plan“ mitten in der Arbeit nichts.
+
 ### Ältere Punkte aus Claudes bisherigem lokalem Gedächtnis
 
 - **Spielfenster ragt 6 Pixel in den Bereich des Docks** (Feature 002, Abnahme von Phase 4,
@@ -151,8 +174,21 @@ Stellen.
     der Hilfe nur diese, so steht keiner doppelt da. Die Textausgabe hängt an Meldungen zu
     Start-Modifikatoren „Der Start-Modifikator fehlt in der Ausgabe.“
 
+### KI-Workflow, Schritte 1 und 2 (2026-10-22)
+
+- **Phasenprüfung als Punkt 8:** In `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, steht sie
+  am Ende statt zwischen Punkt 4 und 5. So bleiben die Nummern, auf die Specs und Aufträge
+  verweisen, etwa „Punkt 6“ für die Lückensuche.
+- **Musterbericht nachgeschärft:** Drei ausgedachte Befunde widersprachen dem Style-Guide. 2 px
+  Abstand ist erlaubt (`raster-2`), jetzt sind es 3 px; Preise stehen als „499,00 DM“; „googeln“
+  gab es bis 1999 nicht, auch nicht ab 1998.
+
 ## Erledigt
 
+- **KI-Workflow in eigenem Ordner:** Klaus, 2026-10-22: Konzept freigegeben, mit der Änderung an
+  `CLAUDE.md` (Pfad `docs/ki_workflow/`). Umgesetzt in den Schritten 1 und 2: `ki_dev.md` ist
+  umgezogen, dazu kommen der Einstieg `README.md` und `ki_pruefung.md` mit Schaubildern; die beiden
+  Konzepte sind darin aufgegangen.
 - **Analyse von Feature 003:** Klaus, 2026-10-22: alle 41 Befunde nach Empfehlung einarbeiten.
   Eingearbeitet in Spec, Plan, research.md, Datenmodell, Verträge, Quickstart, Checkliste und
   tasks.md, jetzt mit T001 bis T035. Zusammengefasst im Plan unter „Änderungen nach der Analyse“;

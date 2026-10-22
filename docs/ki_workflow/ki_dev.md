@@ -5,27 +5,9 @@ Regeln, die sich bewährt haben, jeweils mit Grund. Die Datei wächst mit dem Pr
 Erfahrungen kommen als Punkt dazu, mit dem Anlass, aus dem sie entstanden sind. Gedacht ist sie
 als Vorlage, die sich auf spätere Projekte übertragen lässt.
 
-**Pflege:** Erkennt Claude ein Muster, das die Arbeitsweise allgemein betrifft und nicht nur das
-aktuelle Feature, fragt Claude nach, ob es hier aufgenommen wird, mit einem Vorschlag für den
-Wortlaut und dem Anlass. Beispiele: eine Prüfung, die zum zweiten Mal einen Fehler gefunden hat;
-eine Korrektur, die Klaus wiederholt. Eingetragen wird erst nach Klaus' OK (Klaus, 2026-10-21).
-
-**Abgrenzung:**
-- `CLAUDE.md` ist die verbindliche Arbeitsanweisung für Claude Code in diesem Projekt.
-- `.specify/memory/constitution.md` fasst die verbindlichen Grundsätze für die Spec-Kit-Abläufe.
-- Diese Datei ist die Blaupause dahinter: das Warum, die Erfahrungen, die Vorlage. `CLAUDE.md`
-  verweist auf sie, ihre Regeln gelten also für Claude in diesem Projekt (Klaus, 2026-10-21).
-  Wird eine Praxis grundsätzlich, wandert sie nach `CLAUDE.md` bzw. in die Verfassung.
-- `docs/offene-punkte.md` sammelt offene Fragen, Lücken und Claudes eigene Entscheidungen, bis
-  Klaus sie entschieden oder bestätigt hat.
-
-**Kein lokales Gedächtnis** (Klaus, 2026-10-21): Nichts wird in einem lokalen Memory-Verzeichnis
-abgelegt. Was dauerhaft gelten soll, wird in eine Repo-Datei geschrieben und committet: `CLAUDE.md`,
-die Verfassung, diese Datei, die Feature-Dokumente, `docs/Ideensammlung.md` oder
-`docs/offene-punkte.md`. Dann steht es allen Sitzungen und allen Beteiligten zur Verfügung und ist
-versioniert. Fällt etwas an, das nirgends passt, gehört es in diese Datei. Bis 2026-10-21 hielt
-Claudes lokales Memory Vorlieben und Stand fest; der Inhalt ist hierher und nach
-`docs/offene-punkte.md` umgezogen.
+Was für den ganzen Ordner `docs/ki_workflow/` gilt, steht im [Einstieg](README.md): Pflege,
+Abgrenzung und „Kein lokales Gedächtnis“. Wie geprüft wird, steht in
+[ki_pruefung.md](ki_pruefung.md).
 
 ## Rollen
 
@@ -39,6 +21,30 @@ Warum: Wer baut, prüft nicht selbst. Klaus bekommt nur zu sehen, was Claude sch
 Claude bleibt frei für Planung und Review.
 
 ## Ablauf je Feature
+
+```mermaid
+flowchart TD
+    subgraph beschreiben["Beschreiben mit Spec Kit"]
+        direction LR
+        S1["specify"] --> S2["clarify"] --> S3["plan<br/>ab hier eigene Sitzung"] --> S4["checklist"] --> S5["tasks"] --> S6["analyze"]
+    end
+    beschreiben --> F{"Klaus gibt eine<br/>Phase frei"}
+    subgraph phase["Je Phase"]
+        B["Godot-Agent baut"] --> CP["Claude prüft:<br/>Tests zweimal, Startprobe, Code"]
+        CP --> AB["Klaus nimmt ab"]
+        CP -.-> P["Phasenprüfung mit den Prüfern,<br/>wenn die Phase Sichtbares oder Texte ändert"]
+        P -.-> AB
+        AB --> CO["Claude committet"]
+    end
+    F --> B
+    CO -->|"nächste Phase"| F
+    CO -->|"letzte Phase"| CV["Lückensuche mit converge"]
+    CV -->|"Lücken: eine neue Phase"| F
+    CV -->|"keine Lücken"| GA["Gesamtabnahme durch Klaus"]
+    GA --> M["Merge auf Klaus' Wort,<br/>Klaus pusht"]
+```
+
+Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
 
 1. **Ein Branch pro Feature:** `feature/NNN-kurzname`, Ordner `specs/NNN-kurzname/`.
 2. **Spec Kit vollständig, auch die optionalen Schritte:**
@@ -60,9 +66,15 @@ Claude bleibt frei für Planung und Review.
 7. **Eine Claude-Sitzung je Feature ab dem Plan** (Klaus, 2026-10-21): Besprochen und
    spezifiziert wird ein Feature dort, wo die Idee aufkam. Ab `/speckit-plan` läuft es in einer
    eigenen Sitzung, im selben Ordner und auf seinem Branch; die vorige Sitzung rührt es dann
-   nicht mehr an. Was die neue Sitzung wissen muss, steht in Repo-Dateien. Warum: Eine lange
-   Sitzung wird zusammengefasst und verliert dabei Einzelheiten. Anlass: Eine Sitzung trug
-   Feature 001, den Start von 002 und die Spec von 003.
+   nicht mehr an. Was die neue Sitzung wissen muss, steht in Repo-Dateien. Sie heißt
+   „[NNN] Featurename / Beschreibung“ mit der Nummer aus Spec Kit, etwa „[003] Schwierigkeitsgrade
+   ab dem Plan“ (Klaus, 2026-10-22). Warum: Eine lange Sitzung wird zusammengefasst und verliert
+   dabei Einzelheiten. Anlass: Eine Sitzung trug Feature 001, den Start von 002 und die Spec
+   von 003.
+8. **Phasenprüfung vor der Abnahme** (in Einführung, Klaus, 2026-10-22): Ändert eine Phase
+   Sichtbares oder Texte, prüfen Prüf-Agents sie gegen Style-Guide und Text-Leitfaden, bevor Klaus
+   abnimmt. Wie, steht in [ki_pruefung.md](ki_pruefung.md). Bis die Prüfer eingeführt sind, prüft
+   Claude allein.
 
 ## Git
 
@@ -97,6 +109,9 @@ Bewährt: die **Fehlerprobe**. Der Agent baut in einer Kopie absichtlich Fehler 
 die Tests sie finden. Fällt ein Fehler durch, kommt ein Test dazu.
 
 ## Prüfen, bevor Klaus es sieht
+
+Wie Tests, Claude und Prüf-Agents zusammen prüfen, steht in [ki_pruefung.md](ki_pruefung.md). Was
+Claude selbst prüft:
 
 - Die Tests selbst laufen lassen, zweimal: Schwankt die Zahl der Prüfungen, ist ein Test vom
   Zufall abhängig.

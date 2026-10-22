@@ -65,8 +65,10 @@ gegen den Style-Guide, Sprache (du, Ton, Wortschatz 1985–1999) und später Fak
 Preise gegen die game_bible. Was sich messen lässt, prüfen Tests.
 
 - Bezug: `.claude/agents/godot-entwickler.md`; `docs/ki_workflow/ki_dev.md`, „Prüfen, bevor Klaus
-  es sieht“ und „Pflege“; Verfassung, Grundsatz IV (Style-Guide als einzige Quelle).
-- Konzept: [konzept-pruef-agents.md](konzept-pruef-agents.md) mit Grundsätzen, Anbindung an
-  Spec Kit, Beispielen und Stufen zur Einführung (2026-10-22).
+  es sieht“; „Pflege“ im Einstieg `docs/ki_workflow/README.md`; Verfassung, Grundsatz IV
+  (Style-Guide als einzige Quelle).
+- Umsetzung: [ki_workflow/ki_pruefung.md](ki_workflow/ki_pruefung.md), in Einführung seit
+  2026-10-22, mit Grundsätzen, Anbindung an Spec Kit, Beispielen und den Schritten der Einführung.
+  Die beiden Konzepte dazu sind darin aufgegangen und stehen in der Git-Geschichte.
 - Offen: Für den Sprach-Prüfer fehlt ein Text-Leitfaden als Maßstab. Ab wann, etwa mit dem ersten
   echten Spielbildschirm?
