@@ -121,8 +121,42 @@ stehen in `specs/003-schwierigkeitsgrade/research.md`.
   Werkstatt das ganze Profil durch eine Kopie. So stimmt Rückgängig auch, wenn ein Löschen zwei
   Start-Modifikatoren eines Profils mitnimmt.
 
+### Feature 003, Analyse (2026-10-22)
+
+Klaus hat alle 41 Befunde nach Empfehlung freigegeben. Zwei hat Claude beim Einarbeiten anders
+gelöst als im Bericht vorgeschlagen, mit demselben Ziel; bei sechs weiteren ließ der Bericht
+Einzelheiten offen, die Claude festgelegt hat. Alles steht in
+`specs/003-schwierigkeitsgrade/plan.md`, „Änderungen nach der Analyse“, und an den genannten
+Stellen.
+- **Anders gelöst:**
+  - **Text eines Profils (U1, R10):** `DifficultyProfile.to_dict()` statt
+    `JSON.stringify(to_list())` als Sonderfall. `_text_of()` ruft es wie bei Ereignissen und
+    Kategorien.
+  - **FilterBar im Simulator (G10, R13):** Sie bricht nicht um und wird nicht breiter als bisher;
+    `%CompareLabel` kürzt mit „…“ und zeigt den Text beim Überfahren ganz.
+- **Festgelegt, wo der Bericht offen ließ:**
+  - **Kein Vergleichslauf (A3, R13):** „Kein Vergleich: Der Lauf hat keine Eingriffe.“ Bei
+    Mittel mit Häkchen gelten die Texte von Feature 002.
+  - **„Neu“ ohne gewähltes Ereignis (A4, FR-015):** das erste Ereignis über Wahrscheinlichkeit
+    nach Kennung.
+  - **V31 (U7, R8):** Beginn und Ende werden einzeln geprüft. Liegt im Zeitraum kein
+    Monatserster, gibt es nur eine Warnung an `from_day`, „wirkt nie“; gilt V27 oder V28, prüft
+    V31 nicht.
+  - **Felder (U4, R8):** Ein unbekannter Grad hat das Feld `profiles.<schlüssel>`. Die Prüfung
+    zeigt „Profil Leicht“ und „Profil Schwer“ nur bei genau diesen Pfadteilen, sonst „Profile“.
+  - **Start-Modifikatoren im Simulator (U10, R13):** ohne eigene Farbe, denn gedämpfter Text hält
+    auf Zebra und Auswahl den Kontrast nicht.
+  - **Weggelassene Start-Modifikatoren nennen (G1, R8):** `by_event` kennzeichnet die, die ohne
+    eigene Meldung nur wegen ihres Ereignisses wegfallen. Zeitleiste und Textausgabe nennen aus
+    der Hilfe nur diese, so steht keiner doppelt da. Die Textausgabe hängt an Meldungen zu
+    Start-Modifikatoren „Der Start-Modifikator fehlt in der Ausgabe.“
+
 ## Erledigt
 
+- **Analyse von Feature 003:** Klaus, 2026-10-22: alle 41 Befunde nach Empfehlung einarbeiten.
+  Eingearbeitet in Spec, Plan, research.md, Datenmodell, Verträge, Quickstart, Checkliste und
+  tasks.md, jetzt mit T001 bis T035. Zusammengefasst im Plan unter „Änderungen nach der Analyse“;
+  Claudes eigene Festlegungen dabei stehen oben unter „Feature 003, Analyse“.
 - **Eigene Festlegungen des Plans von Feature 003, bestätigt im Review:** Klaus hat am
   2026-10-22 die Vorschläge der Checkliste freigegeben und damit diese Festlegungen bestätigt:
   - der Reiter mit „Neu“ ohne Dialog und „Löschen“ ohne Rückfrage (R11, CHK016);

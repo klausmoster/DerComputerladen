@@ -29,6 +29,7 @@ src/test/
 ├── test_what_if_probe.gd             # geändert
 ├── test_statistics_panel.gd          # geändert
 ├── test_werkstatt_scene.gd           # geändert
+├── test_large_catalog.gd             # geändert: Profile im Speicher
 └── test_werkstatt_settings.gd        # geändert: der neue Teiler im Reiter
 ```
 
@@ -47,20 +48,28 @@ Tabs (TabContainer)   „Prüfung“ (IssuesPanel), „Simulator“, „Statisti
   `profiles` beginnt, in den Reiter „Schwierigkeitsgrade“ und ruft
   `DifficultyPanel.focus_field(field)` auf. Die Auswahl des Ereignisses bleibt. Alle anderen
   Meldungen gehen wie bisher an das Formular.
-- **Liste der Prüfung** (`IssuesPanel`): Bei einer Meldung, deren Feld mit `profiles.<grad>`
-  beginnt, steht in der Spalte „Ereignis“ „Profil Leicht“ bzw. „Profil Schwer“ statt „–“; bei
-  `profiles` allein und bei `profiles.mittel` steht „Profile“ (FR-016; Review, CHK009).
+- **Liste der Prüfung** (`IssuesPanel`): Bei einer Meldung zu einem Profil steht in der Spalte
+  „Ereignis“ statt „–“ der Grad (FR-016; Review, CHK009). Entschieden wird nach dem zweiten
+  Pfadteil des Felds, bis zum nächsten „[“ oder „.“ (Analyse, U4):
+  - `leicht` ergibt „Profil Leicht“, `schwer` „Profil Schwer“;
+  - alles andere ergibt „Profile“: `profiles` allein, `profiles.mittel`, ein unbekannter Grad wie
+    `profiles.extrem` und auch `profiles.schwerr`.
 - **Löschdialog** (`_on_delete_requested()`): Nach den Ereignissen, die darauf verweisen, nennt er
-  die Start-Modifikatoren aus `editor.profile_references_to(id)`, etwa: „Darauf verweisen:
-  „Zeitungsartikel“. In den Profilen: Schwer: Anspruchsvolle Kunden. Diese Verweise werden mit
-  entfernt.“ Danach steht wie bisher „Rückgängig holt alles zurück.“ (FR-017)
+  die Start-Modifikatoren aus `editor.profile_references_to(id)` (FR-017):
+  - mit beiden: „Darauf verweisen: „Zeitungsartikel“. In den Profilen: Schwer: Anspruchsvolle
+    Kunden. Diese Verweise werden mit entfernt.“
+  - nur mit Start-Modifikatoren: „In den Profilen verweisen darauf: Schwer: Anspruchsvolle Kunden.
+    Diese Verweise werden mit entfernt.“ (Analyse, I3)
+
+  Danach steht wie bisher „Rückgängig holt alles zurück.“
 - **Speichern und Verlauf:** Speichern, Cmd+S, Cmd+Z, „ungespeichert“, die Zahlen in der Toolbar,
   die Rückfrage beim Schließen und die Sicherungskopie gelten für Profile ohne eigene Verdrahtung.
   Alles läuft über denselben `CatalogEditor` (FR-016, R10).
 - **Teiler:** Die Werkstatt merkt sich die Lage des neuen Teilers im Reiter von selbst, denn
   `splits()` findet jeden `SplitContainer`. `test_werkstatt_settings.gd` zählt die Teiler einzeln
   auf; dort kommt `…/Tabs/DifficultyPanel/Split` ans Ende der Liste, und die Prüfung der
-  Mindestgröße nimmt den neuen Reiter mit.
+  Mindestgröße nimmt den neuen Reiter mit. Damit ändern sich dort zwei Zahlen: sieben statt sechs
+  gespeicherte Teiler und elf statt acht geprüfte Bereiche (Analyse, B3).
 
 ## CatalogEditor
 
@@ -99,8 +108,18 @@ Geändert:
   es nicht, `_inverse()` bleibt, wie es ist. Ein Start-Modifikator wird nie an Ort und Stelle
   geändert.
 - `content_key()` nimmt die Profile auf: Nach den Ereignissen folgt eine leere Zeile, dann je
-  Profil sein Text, gemerkt je Objekt wie bei Ereignissen. Weil eine Änderung ein neues
-  Profil-Objekt bringt, merken Simulator und Statistik sie sicher (R10).
+  Profil sein Text aus `_text_of()`, gemerkt je Objekt wie bei Ereignissen. `_text_of()` ruft
+  `to_dict()` auf, und `DifficultyProfile.to_dict()` gibt es dafür (zeitleiste.md; Analyse, U1).
+  Weil eine Änderung ein neues Profil-Objekt bringt, merken Simulator und Statistik sie sicher
+  (R10).
+- **Lesemeldungen eines Profils** (R10; Analyse, U2): Ersetzt ein Schritt in `_run()` ein Profil,
+  verwirft der Editor die Meldungen V22 aus `_read_issues`, deren Feld zu diesem Profil gehört:
+  `profiles.<key>` und alles mit `profiles.<key>[` am Anfang, nach ganzen Pfadteilen. Das gilt
+  auch beim Rückgängigmachen und Wiederholen, denn beide laufen durch `_run()`. Stellen können
+  sich ab da verschieben, und eine gemerkte Stelle träfe den falschen Start-Modifikator.
+  Rückgängig bringt die Meldungen nicht zurück, denn sie gelten der Datei; nach `open()`
+  derselben Datei stehen sie wieder da. Meldungen zu anderen Profilen, zu Ereignissen und zum
+  Abschnitt, etwa an `profiles.mittel`, bleiben bis zum Speichern, wie in Feature 002.
 - Die Sicherungskopie baut ihr `"catalog"` aus `EventCatalog.to_dict()`, mit den Profilen, schon
   mit der Grundlage in Phase 1 (R17). `restore_backup()` liest sie über `from_json()` zurück.
 - `new_catalog()` hat zwei leere Profile, denn `EventCatalog.new()` legt sie an.
@@ -118,8 +137,8 @@ var selected_event_id: String = ""
 ## bleiben stehen; nur ihre Werte werden neu gesetzt, außer im Feld mit dem Fokus.
 func refresh() -> void
 ## Zeigt einen Grad, ohne Aktion im Verlauf.
-func show_level(level: Difficulty.Level) -> void
-func shown_level() -> Difficulty.Level
+func show_difficulty(level: Difficulty.Level) -> void
+func shown_difficulty() -> Difficulty.Level
 func select_row(index: int) -> void
 ## Fokus auf das Feld einer Prüfmeldung, etwa „profiles.schwer[2].reason“: Grad und Zeile wählen,
 ## dann das Feld. Ohne Stelle, etwa bei „profiles.mittel“, nur den Grad, bei „profiles“ allein
@@ -131,8 +150,8 @@ Aufbau:
 
 ```text
 DifficultyPanel (VBoxContainer)
-├── TopBar (HBoxContainer)          „Grad“ %LevelOption (Leicht, Mittel, Schwer; Vorgabe Leicht) · %CountLabel „3 Start-Modifikatoren“
-├── %MittelNote (Label, MutedLabel) nur bei Mittel: „Mittel ist der Katalog ohne Start-Modifikatoren. Seine Chancen sind die Grundchancen der Ereignisse.“
+├── TopBar (HBoxContainer)          „Grad“ %DifficultyOption (Leicht, Mittel, Schwer; Vorgabe Leicht) · %CountLabel „3 Start-Modifikatoren“
+├── %MittelNote (Label, MutedLabel, mit Umbruch) nur bei Mittel: „Mittel ist der Katalog ohne Start-Modifikatoren. Seine Chancen sind die Grundchancen der Ereignisse.“
 └── %Split (HSplitContainer)        nicht bei Mittel
     ├── links (VBoxContainer)
     │   ├── %Table (Tree)           Ereignis, Wert, von, bis, Grund, Kennung; Zebra; Zeichen „!“ bzw. „?“ wie in der Liste der Ereignisse
@@ -150,7 +169,9 @@ DifficultyPanel (VBoxContainer)
 Tabelle und Felder stehen nebeneinander, weil der Reiter unter dem Zeitstrahl wenig Höhe hat. Bei
 Klaus' Fenstergröße 1920 × 925 zeigt der Reiter in der Vorgabe-Teilung mindestens vier Zeilen der
 Tabelle und alle Felder ohne Rollen (Review, CHK028). Der Agent belegt es im echten Fenster mit
-einem Bildschirmfoto (`docs/ki_dev.md`).
+einem Bildschirmfoto (`docs/ki_dev.md`). Fotografiert wird auf einer Kopie des echten Katalogs mit
+mindestens vier Start-Modifikatoren in einem Profil, gestartet mit `-- --katalog <kopie>`; der
+echte Katalog bleibt unberührt (Analyse, G10).
 
 Verhalten:
 - **Tabelle:**
@@ -160,13 +181,19 @@ Verhalten:
   - „Ereignis“ nennt den Titel, bei einem unbekannten Ziel die Kennung mit „(unbekannt)“.
   - Ein Klick wählt die Zeile und füllt die Felder; ohne Auswahl sind sie gesperrt.
 - **Ereignis:**
-  - Zur Wahl stehen die Ereignisse über Wahrscheinlichkeit nach Titel.
+  - Zur Wahl stehen die Ereignisse über Wahrscheinlichkeit nach Titel. Die Auswahl richtet ihre
+    Breite nicht nach dem längsten Eintrag (`fit_to_longest_item = false`) und kürzt lange Titel
+    (`clip_text`); mit 250 Ereignissen in `catalog_500.json` bliebe sie sonst nicht im Feld
+    (Analyse, U10).
   - Zeigt der Start-Modifikator auf ein unbekanntes oder anderes Ereignis, steht es als eigener
     Eintrag oben, etwa „konkurrent (unbekannt)“ oder „Weihnachtsgeschäft (fix, jährlich)“. So hat
     V25 bzw. V26 ein Feld.
 - **Eingaben:**
   - Ein Feld übernimmt seinen Wert beim Verlassen oder mit Enter, Enter gibt den Fokus ab (R15 von
-    Feature 002).
+    Feature 002). Solange ein Feld den Fokus hat, gehört Cmd+Z dem Feld, wie im Formular. Zeigt
+    es noch den übernommenen Wert, schluckt das Panel die Taste in `gui_input`, sonst leerte sie
+    das frisch gesetzte Feld (wie `EventForm`). Den Verlauf des Katalogs erreicht Cmd+Z nach Enter
+    oder Verlassen (Analyse, U10).
   - Zahlen nehmen Komma oder Punkt und ein Vorzeichen an (`EventForm.parse_percent()`), Daten
     `TT.MM.JJJJ` auch ohne führende Nullen (`EventForm.parse_date()`).
   - Ist eine Eingabe ungültig, bleibt der alte Wert, und ein Hinweis am Feld sagt warum.
@@ -189,6 +216,8 @@ Verhalten:
   Cmd+Z holt den Start-Modifikator zurück (R11).
 - **Mittel:** Bei Mittel sind Tabelle, Knöpfe und Felder ausgeblendet, nur die Notiz steht da
   (FR-015).
+- **Ohne Editor:** Solange `editor` fehlt, tut `refresh()` nichts. Die Werkstatt setzt ihn erst in
+  ihrem `_ready()`, nach dem des Panels; das Simulator-Panel hält es genauso (Analyse, U10).
 
 ## EventForm
 
@@ -244,6 +273,13 @@ var compare_with_mittel: bool = false
     gesetzt ist, sonst mit `run.difficulty`, und spielt ihn bis `run.today`.
   - Gerechnet wird er, wenn `run.interventions` nicht leer ist, oder wenn das Häkchen gesetzt ist
     und der Grad nicht Mittel ist. Ein Wechsel des Häkchens rechnet ihn neu.
+  - Gibt es keinen Vergleichslauf, heißt `%CompareLabel` „Kein Vergleich: Der Lauf hat keine
+    Eingriffe.“ Bei Mittel mit Häkchen gilt der Vergleich mit demselben Grad und seine Texte
+    (Analyse, A3).
+  - Häkchen und Text machen die FilterBar nicht breiter, als sie bisher in der kleinen
+    Fenstergröße aus `test_werkstatt_settings.gd` ist. `%CompareLabel` kürzt seinen Text dafür
+    mit „…“ (`text_overrun_behavior`) und zeigt ihn beim Überfahren ganz. Der Agent belegt die
+    Leiste mit Bildschirmfotos bei 1920 × 925 und in dieser kleinen Größe (Analyse, G10).
 - **Texte der Markierungen:**
   - Beim Vergleich mit demselben Grad ohne Eingriffe bleiben `DIFF_TIPS`, der Hinweis an
     `%DiffFilter` und der Text „Unterschied: …“ wie in Feature 002, denn jeder Unterschied kommt
@@ -256,15 +292,18 @@ var compare_with_mittel: bool = false
     - `%DiffFilter`: „Zeigt nur Termine, die anders sind als bei Mittel ohne Eingriffe.“
 - **Protokoll:** Es zeigt die Zeilen „Grad“ ohne Zutun, über `to_line()`.
 - **Modifikatoren:**
-  - `_fill_modifiers()` zeigt zuerst `run.start_modifiers` in `MutedLabel`-Farbe, mit dem Grad
-    vor dem Grund: „Schwer: Anspruchsvolle Kunden“. Danach kommen `run.modifiers` wie bisher.
+  - `_fill_modifiers()` zeigt zuerst `run.start_modifiers`, mit dem Grad vor dem Grund:
+    „Schwer: Anspruchsvolle Kunden“. Eine eigene Farbe bekommen sie nicht, denn gedämpfter Text
+    hält auf Zebra und Auswahl den Kontrast nicht (Analyse, U10). Danach kommen `run.modifiers`
+    wie bisher.
   - Ist ein Start-Modifikator gewählt, ist „Entfernen“ gesperrt, mit dem Hinweis
-    „Start-Modifikatoren gelten das ganze Spiel; ändern lassen sie sich im Reiter
-    „Schwierigkeitsgrade““.
+    „Start-Modifikatoren gehören zum Grad und lassen sich im laufenden Spiel nicht entfernen;
+    ändern lassen sie sich im Reiter „Schwierigkeitsgrade““ (Analyse, I4).
 - **Chance:** `_chance_text()` zeigt die Ereignisse beider Listen. Gelten Start-Modifikatoren,
   nennt die Zeile ihren Anteil: „Reklamationswelle: Grundchance 3 %, Schwer +5, Summe 8 % → 8 %“.
-- **Ausgenommen:** `%ExcludedNotice` nennt auch Start-Modifikatoren, die
-  `without_faulty()` weggelassen hat: „Start-Modifikator Schwer „reklamationswelle““.
+- **Ausgenommen:** `%ExcludedNotice` nennt auch die Start-Modifikatoren aus
+  `editor.catalog.skipped_start_modifiers(editor.issues())`, je mit dem Ort aus `place()`, etwa
+  „Profil „Schwer“, Start-Modifikator „reklamationswelle““ (FR-013; Analyse, G1, I3).
 - **Proben:**
   - `save_probe()` setzt `difficulty = run.difficulty`.
   - `load_probe()` setzt die Auswahl auf den Grad der Probe, ohne Neubau, und baut den Lauf mit
@@ -292,8 +331,9 @@ var difficulty: Difficulty.Level = Difficulty.DEFAULT
   Leicht, Mittel, Schwer, „Alle drei vergleichen“. Vorgabe ist Mittel, die Statistik rechnet ohne
   Änderung also wie in Feature 002.
 - **Starten:** `start()` legt
-  `TimelineStatistics.new(_effective_catalog(), _game_count(), 1, grades)` an. `grades` ist immer
-  ein `Array[int]`: `[gewählter Grad]` oder `[LEICHT, MITTEL, SCHWER]`. Das Häkchen „Mit
+  `TimelineStatistics.new(_effective_catalog(), _game_count(), 1, difficulties)` an.
+  `difficulties` ist immer ein `Array[int]`: `[gewählter Grad]` oder `[LEICHT, MITTEL, SCHWER]`
+  (Analyse, I2). Das Häkchen „Mit
   Modifikatoren und Einplanungen aus dem Simulator“ gilt dann für alle drei Grade gleich
   (FR-020).
 - **Texte:** `_result_text()` behält seine Sätze und nennt den Grad vor den Eingriffen, auch bei
@@ -314,28 +354,30 @@ var difficulty: Difficulty.Level = Difficulty.DEFAULT
   - „Spanne“ ist die kleinste bis größte Anzahl, etwa „0–14“; „ohne“ in Prozent.
   - Jede Spalte hat einen Hinweis beim Überfahren, etwa „Mittelwert bei Schwer: so oft beginnt das
     Ereignis im Schnitt je Spiel“.
-  - Die Verteilung auf die Jahre ist ausgeblendet. `%YearTitle` sagt: „Die Verteilung auf die
-    Jahre zeigt die Statistik für einen einzelnen Grad.“ (R15)
+  - Die Verteilung auf die Jahre zeigt nichts. Ihr Bereich bleibt mit seiner Mindesthöhe stehen,
+    und `%YearTitle` sagt: „Die Verteilung auf die Jahre zeigt die Statistik für einen einzelnen
+    Grad.“ (R15; Analyse, U10)
   - Der Fortschritt heißt „45 % · 450 von 1.000 Spielen je Grad · 11,3 s“; bei einem Grad bleibt
     er wie bisher.
   - Bei 1920 × 925 passen in der Vorgabe-Teilung alle zehn Spalten ohne waagerechtes Rollen
     (Review, CHK028). Der Agent belegt es mit einem Bildschirmfoto.
 - **Katalog geändert:** Wie bisher, über `_catalog_key()`; mit `content_key()` zählt jetzt auch
   eine Änderung an Profilen.
-- **Ausgenommen:** `%ExcludedNotice` nennt wie im Simulator auch ausgenommene Start-Modifikatoren.
+- **Ausgenommen:** `%ExcludedNotice` nennt wie im Simulator die Start-Modifikatoren aus
+  `skipped_start_modifiers()` (FR-013; Analyse, G1).
 
 ## Tests
 
 | Datei | Prüft |
 |---|---|
-| `test_difficulty_panel.gd` | neu: Profile einer Fixture in der Tabelle; Mittel zeigt die Notiz; „Neu“ mit gewähltem und ohne passendes Ereignis, gesperrt ohne Ereignis über Wahrscheinlichkeit; Felder übernehmen mit Enter und beim Verlassen; ungültige Zahl behält den alten Wert mit Hinweis; „Duplizieren“ und „Löschen“; Zeichen und Kontur bei Fehlern, Hinweis ohne Kontur bei der Warnung V31; `focus_field()` mit Grad, Zeile und Feld; US2, Szenarien 1 bis 3 |
+| `test_difficulty_panel.gd` | neu: Profile einer Fixture in der Tabelle; Mittel zeigt die Notiz; ohne `editor` kein Fehler; Cmd+Z im frisch gesetzten Feld leert es nicht, wie `test_cmd_z_im_feld_leert_es_nicht` im Formular; „Neu“ mit gewähltem und ohne passendes Ereignis, gesperrt ohne Ereignis über Wahrscheinlichkeit; Felder übernehmen mit Enter und beim Verlassen; ungültige Zahl behält den alten Wert mit Hinweis; „Duplizieren“ und „Löschen“; Zeichen und Kontur bei Fehlern, Hinweis ohne Kontur bei der Warnung V31; `focus_field()` mit Grad, Zeile und Feld; US2, Szenarien 1 bis 3 |
 | `test_catalog_editor.gd` | geändert: siehe Liste unten |
 | `test_event_form.gd` | geändert: Zeile „Je Grad“ für US2, Szenarien 6 und 7; keine Zeile bei anderen Arten; ein fehlerhafter Start-Modifikator zählt nicht; aktuell nach einer Änderung im Profil |
 | `test_simulator.gd` | geändert: siehe Liste unten |
 | `test_what_if_probe.gd` | geändert: Grad schreiben und lesen; ohne Schlüssel Mittel; unbekannter Grad ergibt `null` und Fehler; `build_run()` mit Grad; Start-Modifikatoren nie im Eingriffsprotokoll. Der Vergleich der ganzen Datei erwartet die Zeile `"difficulty": "mittel"` als ersten Schlüssel |
-| `test_statistics_panel.gd` | geändert: vier Einträge in der Auswahl; Vergleich mit zehn Spalten und den Werten aus `results_for()`; Verteilung ausgeblendet mit Text; Abbrechen ergibt gleich viele Spiele je Grad; der Ergebnistext nennt den Grad, auch die bisherige Erwartung mit „Mittel“ |
+| `test_statistics_panel.gd` | geändert: vier Einträge in der Auswahl; Vergleich mit zehn Spalten und den Werten aus `results_for()`; Bereich der Verteilung mit Text; Abbrechen ergibt gleich viele Spiele je Grad; der Ergebnistext nennt den Grad, auch die bisherige Erwartung mit „Mittel“; „Katalog geändert“ nach einer Änderung an einem Profil (G4); `%ExcludedNotice` nennt einen fehlerhaften Start-Modifikator und einen, dessen Ereignis ausgenommen ist (G1) |
 | `test_werkstatt_scene.gd` | geändert: vierter Reiter „Schwierigkeitsgrade“; eine Meldung mit Feld `profiles…` wechselt in den Reiter und setzt den Fokus; der Löschdialog nennt Start-Modifikatoren; die Prüfung zeigt „Profil Schwer“ in der Spalte „Ereignis“. Die Erwartungen an `%DateLabel` bleiben |
-| `test_werkstatt_settings.gd` | geändert: `…/Tabs/DifficultyPanel/Split` am Ende der Liste der Teiler; die Mindestgröße auch im neuen Reiter |
+| `test_werkstatt_settings.gd` | geändert: `…/Tabs/DifficultyPanel/Split` am Ende der Liste der Teiler; sieben statt sechs gespeicherte Teiler; die Mindestgröße auch im neuen Reiter, elf statt acht geprüfte Bereiche (B3) |
 
 `test_catalog_editor.gd` prüft dazu:
 - Anlegen, Duplizieren, Löschen und Felder setzen, je ein Schritt mit Namen, rückgängig und
@@ -349,7 +391,17 @@ var difficulty: Difficulty.Level = Difficulty.DEFAULT
 - jede Änderung ersetzt das Profil-Objekt; `content_key()` ändert sich mit dem Profil;
 - Sicherungskopie mit Profilen, Rückholen bringt sie wieder;
 - `new_catalog()` hat zwei leere Profile;
-- eine Meldung V22 zu `profiles.mittel` bleibt bis zum Speichern stehen.
+- eine Meldung V22 zu `profiles.mittel` bleibt bis zum Speichern stehen;
+- die Vorgaben von „Neu“: das ganze Spiel, Wert 0, Grund leer, Kennung wie `reklamationswelle`
+  und beim zweiten `reklamationswelle_2`; ohne Ereignis über Wahrscheinlichkeit `null` (G5);
+- `duplicate_event()` lässt die Profile, wie sie sind; nach `set_event_kind()` stehen die
+  Start-Modifikatoren noch da, und V26 meldet sie (G7);
+- Lesemeldungen eines Profils, mit `catalog_v22_profil_wert_text.json`: Ein neuer
+  Start-Modifikator in Leicht lässt die Meldung an `profiles.schwer[1].value` stehen. Das Löschen
+  der Stelle 0 in Schwer verwirft sie, und `faulty_indices()` nennt danach keine Stelle; Cmd+Z
+  bringt sie nicht zurück, `open()` derselben Datei schon (U2);
+- die Fehlerprobe: Der Agent baut in einer Kopie Fehler ein, etwa einen `content_key()` ohne
+  Profile oder ein Rückgängig in falscher Reihenfolge, und zeigt, dass die Tests sie finden.
 
 `test_simulator.gd` prüft dazu:
 - die Vorgabe Mittel; „Fahrplan erzeugen“ mit Schwer, im Protokoll die Zeilen „Grad“;
@@ -365,8 +417,18 @@ var difficulty: Difficulty.Level = Difficulty.DEFAULT
 - beim Vergleich mit demselben Grad bleiben die Texte der Markierungen wie in Feature 002;
 - „Neu starten mit Eingriffen“ nach dem Laden einer Probe mit Schwer und „Fahrplan erzeugen“
   mit Leicht bleibt bei Leicht;
-- Start-Modifikatoren in der Liste, „Entfernen“ gesperrt.
+- Start-Modifikatoren in der Liste, „Entfernen“ gesperrt;
+- die Liste der Proben mit fünf Spalten, die bisherige Erwartung bekommt „Mittel“ (B2);
+- `%ExcludedNotice` nennt einen fehlerhaften Start-Modifikator und einen, dessen Ereignis
+  ausgenommen ist (G1);
+- „Katalog geändert, neu starten“ nach einer Änderung an einem Profil; ein Wechsel des Grads
+  danach nimmt den aktuellen Katalog (G4);
+- `%CompareLabel` ohne Vergleichslauf „Kein Vergleich: Der Lauf hat keine Eingriffe.“ (A3).
 
-`test_large_catalog.gd` bleibt und muss grün bleiben: Prüfung und Änderung samt Prüfung mit 500
-Ereignissen unter 100 ms (SC-011 von Feature 002), jetzt mit der Prüfung der Profile. Seine
-Fixture `catalog_500.json` bekommt dafür in Phase 1 den leeren Abschnitt (zeitleiste.md).
+Die Tests nutzen `catalog_us1_grade.json` (zeitleiste.md, „Fixtures“).
+
+`test_large_catalog.gd` muss grün bleiben: Prüfung und Änderung samt Prüfung mit 500 Ereignissen
+unter 100 ms (SC-011 von Feature 002). Ein neuer Test fügt `catalog_500.json` im Speicher 20
+Start-Modifikatoren je Profil hinzu; auch dann bleiben Prüfung und eine Änderung über
+`set_start_modifier_field()` samt Prüfung unter 100 ms (Analyse, G9). Die Fixture bekommt in
+Phase 1 nur den leeren Abschnitt (zeitleiste.md).

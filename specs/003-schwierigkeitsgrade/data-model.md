@@ -123,7 +123,7 @@ Neu:
 |---|---|---|
 | `difficulty` | `Difficulty.Level` | Grad des Spiels, gesetzt in `_init()`, danach fest (Edge Case „Kein Wechsel im Spiel“) |
 | `start_modifiers` | Array[ChanceModifier] | die Start-Modifikatoren des Profils, die der Lauf gesetzt hat, als eigene Kopien in der Reihenfolge des Profils; danach unveränderlich |
-| `start_refusals` | PackedStringArray | je Start-Modifikator, den der Lauf nicht setzen konnte, ein Satz mit Grad, Kennung und Grund; meist leer (R6) |
+| `start_refusals` | PackedStringArray | je Start-Modifikator, den der Lauf nicht setzen konnte, ein Satz mit dem Ort aus `place()` und dem Grund; meist leer (R6) |
 
 **Anlegen** (`_init(catalog, seed, difficulty)`):
 1. Katalog kopieren, fixe, jährliche und gesetzte Termine anlegen, Würfel der Ereignisse über
@@ -170,10 +170,18 @@ Signal (R6).
 `CatalogIssue` bleibt, wie es ist. Für Profile gilt:
 - `event_id` ist leer, auch wenn der Start-Modifikator auf ein Ereignis zeigt. Sonst nähme
   `without_faulty()` dieses Ereignis aus dem Spiel (R8).
-- `field` nennt die Stelle wie in der Datei: `profiles.schwer[2].event_id`, bei Strukturfehlern im
-  Abschnitt selbst `profiles` oder `profiles.mittel`.
-- `message` beginnt mit dem Ort, etwa „Profil „Schwer“, Start-Modifikator „reklamationswelle“,
-  Feld „to_day“: …“.
+- `field` nennt die Stelle wie in der Datei:
+  - an einem Feld: `profiles.schwer[2].event_id`;
+  - an einem Eintrag, der kein Objekt ist: `profiles.schwer[2]`;
+  - am Abschnitt: `profiles`; an einem Grad, den es nicht gibt, oder an Mittel:
+    `profiles.<schlüssel>`, etwa `profiles.extrem` oder `profiles.mittel`.
+
+  Wer Felder auswertet, vergleicht ganze Pfadteile: `profiles.schwerr` gehört nicht zu Schwer.
+- `message` beginnt mit dem Ort und nennt das volle Feld, wie bei Kategorien: „Profil „Schwer“,
+  Start-Modifikator „reklamationswelle“, Feld „profiles.schwer[2].to_day“: …“ (Analyse, B4).
+- Lesemeldungen V22 zu einem Profil verwirft die Werkstatt, sobald eine Änderung dieses Profil
+  ersetzt, denn danach können sich die Stellen verschieben. Rückgängig bringt sie nicht zurück
+  (R10; Analyse, U2).
 
 ## Prüfregeln
 
@@ -187,7 +195,7 @@ Die Tabelle aus Feature 002 (V01 bis V24) wird fortgesetzt:
 | V28 | Beginn oder Ende außerhalb 01.01.1985 bis 31.12.1999 | `from_day` bzw. `to_day` | Fehler |
 | V29 | Grund leer oder nur Leerzeichen | `reason` | Fehler |
 | V30 | Kennung leer, mit anderen Zeichen als a–z, 0–9 und _, oder im Profil doppelt; eine Dublette wird bei jedem Start-Modifikator mit dieser Kennung gemeldet | `id` | Fehler |
-| V31 | Beginn kein Monatserster oder Ende kein Monatsletzter; die Meldung nennt die erste bzw. letzte Würfelrunde, in der er wirkt, oder dass er in keiner wirkt (Klaus, 2026-10-22) | `from_day` bzw. `to_day` | Warnung |
+| V31 | Beginn kein Monatserster oder Ende kein Monatsletzter; die Meldung nennt die erste bzw. letzte Würfelrunde, in der er wirkt. Beide mitten im Monat ergeben zwei Warnungen. Liegt im Zeitraum kein Monatserster, gibt es nur eine, an `from_day`: Er wirkt nie. Gilt V27 oder V28, prüft V31 nicht (Klaus, 2026-10-22; Analyse, U7) | `from_day` bzw. `to_day` | Warnung |
 
 V31 kommt zu den Warnregeln V13, V20 und V23. Eine Warnung nimmt nichts aus: Ein Start-Modifikator
 mit V31 gilt im Spiel, in den Würfelrunden seines Zeitraums.
@@ -205,15 +213,18 @@ Profile, Leicht vor Schwer, je Profil nach Stelle und je Start-Modifikator nach 
 
 `EventCatalog.without_faulty(issues)` nimmt wie bisher Ereignisse mit Fehlern aus. Dazu lässt es
 in den Profilen der Kopie zwei Arten von Start-Modifikatoren weg (R8):
-1. die, zu deren Stelle eine Meldung der Stufe `ERROR` gehört, deren Feld also mit
-   `profiles.<key>[<i>].` beginnt;
+1. die, zu deren Stelle eine Meldung der Stufe `ERROR` gehört, deren Feld also
+   `profiles.<key>[<i>]` ist oder mit `profiles.<key>[<i>].` beginnt;
 2. die, deren Ereignis in der Kopie kein Ereignis über Wahrscheinlichkeit ist, etwa weil es selbst
    ausgenommen wurde.
 
 Spiel, Simulator, Statistik und Textausgabe rechnen deshalb nur mit Start-Modifikatoren, die die
-Prüfung bestehen. Die Zeitleiste meldet jeden weggelassenen mit Grad, Kennung und Grund über
-`push_error()` (FR-013); Simulator und Statistik nennen ihn im Hinweis auf Ausgenommenes, die
-Textausgabe auf stderr.
+Prüfung bestehen. Welche weggefallen sind, liefert `EventCatalog.skipped_start_modifiers(issues)`,
+je mit Grad, Stelle, Ort aus `place()` und Fehlergrund, nach derselben Regel wie oben (Analyse,
+G1). `by_event` kennzeichnet die, die ohne eigene Meldung nur wegen ihres Ereignisses wegfallen.
+Zeitleiste und Textausgabe nennen jeden genau einmal: mit seiner eigenen Meldung oder, mit
+`by_event`, aus dieser Liste (FR-013). Simulator und Statistik nennen alle im Hinweis auf
+Ausgenommenes.
 
 ## Abhängige Ereignisse
 
@@ -225,7 +236,7 @@ einem davon aus erreichbar ist, auch über mehrere Stufen:
 Verändert ist ein Ereignis, wenn ein geltender Start-Modifikator des Grads darauf zeigt. Bei zwei
 Graden zählen die Start-Modifikatoren beider Profile. Alle übrigen Ereignisse haben in beiden
 Graden dieselben Termine. Ein Test bildet die Hülle aus dem Katalog und prüft jede Markierung von
-`ScheduleDiff` dagegen.
+`ScheduleDiff` und jeden weggefallenen Termin in `removed` dagegen (Analyse, G2).
 
 ## Chance je Zeitabschnitt
 

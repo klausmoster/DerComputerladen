@@ -8,8 +8,10 @@ unter `src/core/timeline/`, `src/core/timeline.gd` und `src/tools/werkstatt/` au
 `72b743a`. Godot-Stand: 4.7.2.
 
 Die Entscheidungen hier sind R1 bis R19 von Feature 003. Verweise auf Feature 002 tragen immer
-den Zusatz, etwa „R5 von Feature 002“. Die Prüfregeln dagegen zählen weiter, V25 bis V30, weil
-es ein einziger Prüfer mit einer Tabelle bleibt.
+den Zusatz, etwa „R5 von Feature 002“. Die Prüfregeln dagegen zählen weiter, V25 bis V31, weil
+es ein einziger Prüfer mit einer Tabelle bleibt. Die Ergebnisse der Analyse mit
+`/speckit-analyze` vom 2026-10-22 sind in die Entscheidungen eingearbeitet, auf die sie sich
+beziehen; Klaus hat alle 41 Befunde freigegeben.
 
 Die drei Fragen, die der Plan klären sollte, beantworten R2 (Aufbau des Abschnitts), R4 (Profil
 für einen unbekannten Grad oder für „Mittel“) und R5 (Kennungen von Start-Modifikatoren und
@@ -286,26 +288,41 @@ beziehen.
     - am Ende: „Das Ende 15.06.1994 ist kein Monatsletzter; der Start-Modifikator wirkt noch in der
       Würfelrunde am 01.06.1994.“
 
-    Eine Warnung hält weder Speichern noch Tests auf. Ein Beginn nach dem letzten Monatsersten des
-    Zeitraums, etwa vom 02.03. bis 31.03., wirkt in keiner Würfelrunde; das sagt die Warnung dann
-    so. Verworfen hat Klaus, es nur zu beschreiben, und nur ganze Monate zu erlauben. Das Erste
-    ließe „ab 15.03.1990“ im Formular unerklärt stehen. Das Zweite wiche von den tagesgenauen Daten
-    aus Feature 002 ab.
+    Eine Warnung hält weder Speichern noch Tests auf. Beginn und Ende werden einzeln geprüft; liegen
+    beide mitten im Monat, gibt es zwei Warnungen, an `from_day` und an `to_day`. Liegt im Zeitraum
+    gar kein Monatserster, etwa vom 02.03. bis 31.03., gibt es nur eine, an `from_day`: „Zwischen
+    02.03.1990 und 31.03.1990 liegt keine Würfelrunde; der Start-Modifikator wirkt nie.“ Gilt schon
+    V27 oder V28, prüft V31 nicht. Verworfen hat Klaus, es nur zu beschreiben, und nur ganze Monate
+    zu erlauben. Das Erste ließe „ab 15.03.1990“ im Formular unerklärt stehen. Das Zweite wiche von
+    den tagesgenauen Daten aus Feature 002 ab.
 
   Dazu kommen Strukturfehler V22 beim Lesen, etwa ein Wert, der keine Zahl ist, ein Datum, das
   kein Kalendertag ist, ein fehlender oder unbekannter Schlüssel und Profile nach R4.
   - **Ort einer Meldung:** Meldungen zu Start-Modifikatoren haben ein leeres `event_id`. Das Feld
     heißt wie in der Datei, etwa `profiles.schwer[2].reason`. Der Text nennt Grad und
-    Start-Modifikator: „Profil „Schwer“, Start-Modifikator „reklamationswelle“, Feld „reason“:
-    Der Grund ist leer.“ Ohne Kennung heißt es „Start-Modifikator Nr. 3 ohne Kennung“.
+    Start-Modifikator und das volle Feld, wie Meldungen zu Kategorien: „Profil „Schwer“,
+    Start-Modifikator „reklamationswelle“, Feld „profiles.schwer[2].reason“: Der Grund ist leer.“
+    Ohne Kennung heißt es „Start-Modifikator Nr. 3 ohne Kennung“ (Analyse, B4).
+  - **Felder:** Ein Eintrag, der kein Objekt ist, hat das Feld `profiles.schwer[2]`, ein ganzer
+    Abschnitt `profiles`, ein unbekannter Grad `profiles.<schlüssel>`, etwa `profiles.extrem`.
+    Wer Felder auswertet, vergleicht ganze Pfadteile: `profiles.schwerr` gehört nicht zu Schwer
+    (Analyse, U4).
   - **Ausnehmen:** `without_faulty()` lässt zwei Arten von Start-Modifikatoren weg. Zum einen die,
     zu deren Stelle eine Meldung der Stufe `ERROR` gehört, deren Feld also mit
     `profiles.<grad>[<i>].` beginnt. Zum anderen die, deren Ereignis in der Kopie nicht als
     Ereignis über Wahrscheinlichkeit steht, etwa weil es wegen eigener Fehler ausgenommen ist. So
     hält es Feature 002 schon mit Folgeereignissen.
-  - **Im Spiel:** Die Zeitleiste meldet jeden ausgenommenen Start-Modifikator mit Grad, Kennung und
-    Grund über `push_error()` (FR-013). Auch einen, der nur wegen seines Ereignisses wegfällt,
-    nennt sie.
+  - **Weggelassene nennen:** `EventCatalog.skipped_start_modifiers(issues)` liefert jeden
+    Start-Modifikator, den `without_faulty()` weglässt, mit Grad, Stelle, Ort und Fehlergrund.
+    `by_event` sagt, ob er keine eigene Meldung hat und nur wegen seines Ereignisses wegfällt.
+    Simulator und Statistik nennen alle im Hinweis auf Ausgenommenes. Zeitleiste und Textausgabe
+    geben ohnehin jede Meldung aus und nennen aus der Hilfe nur die mit `by_event`; so steht jeder
+    genau einmal da (FR-013). Ohne diese Hilfe gäbe es für einen, der nur wegen seines Ereignisses
+    wegfällt, gar keine Meldung (Analyse, G1).
+  - **Im Spiel:** Die Zeitleiste meldet jeden weggelassenen Start-Modifikator einmal über
+    `push_error()`, mit Grad, Kennung und Fehlergrund. Den Zusatz „Das Ereignis wird
+    übersprungen.“ bekommen nur Meldungen mit einer Kennung des Ereignisses, Meldungen zu Profilen
+    bekommen „Der Start-Modifikator wird übersprungen.“ (Analyse, U5).
   - **Eigene Festlegung:** V30 prüft auch eine leere Kennung und falsche Zeichen, wie V01, V03 und
     V21. FR-012 nennt nur die doppelte Kennung. Ohne gültige Kennung ließe sich ein
     Start-Modifikator aber beim Spielstart nicht benennen.
@@ -328,8 +345,8 @@ beziehen.
 - **Entscheidung:** Start-Modifikatoren sind Verweise auf Ereignisse wie Folgeereignisse und
   Bedingungen:
   - Löscht Klaus ein Ereignis, nennt der Dialog vorher die Start-Modifikatoren, die darauf
-    verweisen, etwa „Im Profil „Schwer“: Anspruchsvolle Kunden“. Sie werden im selben Schritt mit
-    entfernt, und Cmd+Z holt alles zurück (FR-036 von Feature 002).
+    verweisen, etwa „In den Profilen: Schwer: Anspruchsvolle Kunden“. Sie werden im selben Schritt
+    mit entfernt, und Cmd+Z holt alles zurück (FR-036 von Feature 002).
   - Benennt er es um, ziehen sie still mit. Aus `konkurrent_eroeffnet` wird in „Schwer +2 auf
     Konkurrent eröffnet“ also `konkurrent_kommt`, im selben Schritt wie das Umbenennen.
 
@@ -365,8 +382,20 @@ beziehen.
       Start-Modifikatoren eines Profils zeigen, stimmten die gemerkten Stellen nach dem ersten
       Entfernen nicht mehr.
     - `content_key()` merkt sich den Text je Objekt. Ein neues Profil-Objekt ist eine Änderung, die
-      Simulator und Statistik sicher sehen.
+      Simulator und Statistik sicher sehen. Den Text liefert `DifficultyProfile.to_dict()`, so wie
+      `to_dict()` bei Ereignissen und Kategorien; `_text_of()` ruft genau diese Methode (Analyse,
+      U1).
     - `_run()` muss nur eine Liste mehr kennen.
+  - **Lesemeldungen eines Profils:** Meldungen V22 zu Start-Modifikatoren hängen an einer Stelle
+    im Profil. Fügt Klaus einen Start-Modifikator ein oder löscht er einen, verschieben sich die
+    Stellen, und `without_faulty()` nähme den falschen aus. Deshalb verwirft der `CatalogEditor`
+    die Lesemeldungen eines Profils, sobald ein Schritt dieses Profil ersetzt, auch beim
+    Rückgängigmachen. Ab da gilt der Stand im Speicher, und den schreibt das nächste Speichern
+    ohnehin. Rückgängig bringt sie nicht zurück, denn sie gelten der Datei; öffnet Klaus die Datei
+    neu, stehen sie wieder da. Lesemeldungen zu anderen Profilen und zu Ereignissen bleiben bis zum
+    Speichern, wie in Feature 002 (Analyse, U2). Verworfen: die Meldungen mit ihren Stellen
+    wandern lassen. Dann müssten auch Ort und Feld im Text mitwandern, und ein Rückgängig nach dem
+    Speichern brächte Meldungen zurück, die nicht mehr gelten.
   - **Sicherungskopie:** Sie baut ihren Katalog ab Phase 1 aus `EventCatalog.to_dict()`. Sonst
     fehlten ihr die Profile, und der Test, der den Katalog Zeichen für Zeichen in der Kopie sucht,
     schlüge fehl.
@@ -394,7 +423,8 @@ beziehen.
   - **Ort:** ein neues Panel `DifficultyPanel` als vierter Reiter hinter „Statistik“. Die übrigen
     Reiter behalten ihren Platz, und neben der Statistik liegt er dort, wo Klaus Profile
     nachstellt und vergleicht.
-  - **Oben** die Auswahl „Grad“ als `OptionButton` mit Leicht, Mittel und Schwer, Vorgabe Leicht.
+  - **Oben** die Auswahl „Grad“ als `OptionButton` `%DifficultyOption` mit Leicht, Mittel und
+    Schwer, Vorgabe Leicht. Sie heißt wie in Simulator und Statistik (Analyse, I2).
   - **Darunter** die Start-Modifikatoren des Profils als Tabelle mit den Spalten Ereignis (Titel),
     Wert (in Prozentpunkten, etwa „+5“), von, bis, Grund und Kennung, mit Zeichen für Fehler und
     Warnung wie in der Liste der Ereignisse. Darunter stehen „Neu“, „Duplizieren“ und „Löschen“.
@@ -406,7 +436,11 @@ beziehen.
 
     Ein Feld übernimmt seinen Wert beim Verlassen oder mit Enter, mit Fehlerkontur und Hinweis
     wie im Formular (R15 und T081 von Feature 002). Die Felder entstehen einmal. Nach einer
-    Änderung setzt das Panel nur ihre Werte neu, außer im Feld mit dem Fokus.
+    Änderung setzt das Panel nur ihre Werte neu, außer im Feld mit dem Fokus. Weil die Felder
+    bleiben, braucht ihr eigenes Rückgängig denselben Schutz wie im Formular: Solange ein Feld den
+    Fokus hat, gehört Cmd+Z dem Feld. Zeigt es noch den übernommenen Wert, schluckt das Panel die
+    Taste, damit sie das Feld nicht leert. Den Verlauf des Katalogs erreicht Cmd+Z nach Enter oder
+    Verlassen (Analyse, U10).
   - **„Mittel“** zeigt statt Tabelle und Feldern: „Mittel ist der Katalog ohne
     Start-Modifikatoren. Seine Chancen sind die Grundchancen der Ereignisse.“ (FR-015)
   - **„Neu“** legt in einem Schritt einen Start-Modifikator an:
@@ -456,7 +490,10 @@ beziehen.
   Der Hinweis beim Überfahren sagt „Ändern im Reiter „Schwierigkeitsgrade““.
   - Gerechnet wird im Kern, in `DifficultyProfile.chance_periods()`. Die wirksame Chance ist über
     das ganze Spiel stückweise gleich. Grenzen liegen am Beginn jedes Start-Modifikators auf das
-    Ereignis und am Tag nach seinem Ende. Gleiche Nachbarn werden zusammengelegt.
+    Ereignis und am Tag nach seinem Ende. Gleiche Nachbarn werden zusammengelegt. Den Text baut
+    `describe_periods()` ebenfalls im Kern, mit eigener Formatierung wie
+    `ScheduleEntry._percent()`. `EventForm` darf der Kern nicht nutzen, denn die Werkstatt ist vom
+    Export ausgeschlossen (Analyse, U11).
   - Mit drei Abschnitten heißt es etwa „3 % bis 31.12.1989, 5 % vom 01.01.1990 bis 31.12.1994,
     3 % ab 01.01.1995“.
   - Start-Modifikatoren mit einem Fehler zählen nicht mit, wie im Spiel (FR-015).
@@ -498,16 +535,25 @@ beziehen.
     Eingriffe“ oder „Vergleich: Mittel ohne Eingriffe“ (FR-018).
     - Gerechnet wird der Vergleichslauf, wenn er sich vom Lauf unterscheiden kann: mit Eingriffen,
       wie bisher, oder mit Häkchen und einem anderen Grad als Mittel (US3, Szenario 5).
-    - Bei Mittel sind beide Vergleiche gleich, das Häkchen ändert dann nichts (Edge Case).
+    - Gibt es keinen Vergleichslauf, steht dort „Kein Vergleich: Der Lauf hat keine Eingriffe.“
+      (Analyse, A3).
+    - Bei Mittel sind beide Vergleiche gleich, das Häkchen ändert dann nichts (Edge Case). Es
+      gelten die Texte von Feature 002, denn auch dort kommt jeder Unterschied von den Eingriffen.
+    - Häkchen und Text dürfen die Leiste nicht breiter machen, als sie bisher in der kleinen
+      Fenstergröße aus `test_werkstatt_settings.gd` ist. Der Text kürzt sich dafür mit „…“ und
+      zeigt sich beim Überfahren ganz (Analyse, G10).
   - **Texte:** Beim Vergleich mit demselben Grad bleiben die Texte der Markierungen wie in
     Feature 002, denn dort kommt jeder Unterschied von den Eingriffen. Beim Vergleich mit Mittel
     nennen sie den Vergleichslauf, etwa beim Überfahren von „+ neu“: „Neu gegenüber Mittel ohne
     Eingriffe; dort gibt es den Termin nicht.“
   - **Protokoll und Modifikatoren:**
     - Das Protokoll zeigt die Zeilen „Grad“ (R6).
-    - Die Liste der Modifikatoren zeigt zuerst die Start-Modifikatoren, gedämpft und mit dem Grad
-      vor dem Grund, etwa „Schwer: Anspruchsvolle Kunden“. Sind sie gewählt, ist „Entfernen“
-      gesperrt.
+    - Die Liste der Modifikatoren zeigt zuerst die Start-Modifikatoren, mit dem Grad vor dem
+      Grund, etwa „Schwer: Anspruchsvolle Kunden“. Eine eigene Farbe bekommen sie nicht, denn
+      gedämpfter Text hält auf Zebra und Auswahl den Kontrast nicht (Analyse, U10). Sind sie
+      gewählt, ist „Entfernen“ gesperrt, mit dem Hinweis „Start-Modifikatoren gehören zum Grad und
+      lassen sich im laufenden Spiel nicht entfernen; ändern lassen sie sich im Reiter
+      „Schwierigkeitsgrade““ (Analyse, I4).
     - Die Zeile zur Chance nennt den Anteil des Grads: „Reklamationswelle: Grundchance 3 %, Schwer
       +5, Summe 8 % → 8 %“.
   - **Stand:** Der Text „Stand: 01.01.1990 · Seed 4711“ bleibt, wie er ist. Den Grad zeigt die
@@ -515,8 +561,8 @@ beziehen.
   - **Probe des Panels:** Vor jedem Neubau mit `build_run()` setzt das Panel den Grad seiner
     Probe auf den des neuen Laufs. Der Wechsel des Grads baut aus einer eigenen, kurzlebigen Probe
     mit `run.interventions`; die gesammelten Eingriffe bleiben so unberührt.
-  - **Ausgenommen:** Der Hinweis auf ausgenommene Ereignisse nennt auch Start-Modifikatoren, die
-    wegen eines Fehlers fehlen.
+  - **Ausgenommen:** Der Hinweis auf ausgenommene Ereignisse nennt auch die Start-Modifikatoren aus
+    `skipped_start_modifiers()`, mit dem Ort aus `place()` (R8).
 - **Eigene Festlegung:** Ob ein Wechsel des Grads die gesammelten Eingriffe anwendet, lässt die
   Spec offen. „So, wie er war“ ändert genau eine Sache, den Grad.
 - **Alternativen:**
@@ -571,8 +617,10 @@ beziehen.
       „0–14“), „Spanne Mittel“, „Spanne Schwer“, „ohne Leicht“, „ohne Mittel“, „ohne Schwer“.
       Jede Spalte erklärt sich beim Überfahren. So stehen die Werte, die Klaus vergleicht, direkt
       nebeneinander (FR-020).
-    - Die Verteilung auf die Jahre zeigt die Statistik beim Vergleich nicht. An ihrer Stelle steht:
-      „Die Verteilung auf die Jahre zeigt die Statistik für einen einzelnen Grad.“
+    - Die Verteilung auf die Jahre zeigt die Statistik beim Vergleich nicht. Ihr Bereich bleibt
+      mit seiner Mindesthöhe stehen, und dort steht: „Die Verteilung auf die Jahre zeigt die
+      Statistik für einen einzelnen Grad.“ So gilt die Mindesthöhe der Bereiche weiter (T101 von
+      Feature 002; Analyse, U10).
 - **Laufzeit:** 1.000 Spiele mit dem echten Katalog brauchten in Feature 002 headless 7,9 s
   (Lernnotizen, Phase 9). Drei Grade brauchen damit rund 24 s; SC-004 erlaubt 90 s.
 - **Eigene Festlegungen:**
@@ -613,10 +661,13 @@ beziehen.
 
 - **Entscheidung:**
   - **Grundlinie zuerst:** Bevor sich der Lauf ändert, friert der Agent Fahrplan und Protokoll der
-    eingefrorenen Übernahme für die Seeds 1, 4711 und 99999 als Fixtures ein. Der Fahrplan steht
-    ohne Kopfzeile darin. Ein Test vergleicht „Mittel“ Zeichen für Zeichen damit. Das ist die feste
-    Größe dieses Features: Ohne Profil ist alles wie in Feature 002. Ändert ein Godot-Update die
-    Würfel, werden die Fixtures neu erzeugt (R5 von Feature 002).
+    eingefrorenen Übernahme für die Seeds 1, 4711 und 99999 als Fixtures ein, erzeugt mit der
+    Textausgabe mit `--no-header`. Der Fahrplan steht ohne die Kopfzeile „# Seed …“ darin. Ein
+    Test liest die Übernahme, stellt fest, dass sie keinen Fehler hat, spielt jeden Seed mit
+    `advance_to(TimelineRun.LAST_DAY)` bis zum Ende und vergleicht „Mittel“ Zeichen für Zeichen
+    mit den Fixtures (Analyse, U9). Das ist die feste Größe dieses Features: Ohne Profil ist alles
+    wie in Feature 002. Ändert ein Godot-Update die Würfel, werden die Fixtures neu erzeugt (R5 von
+    Feature 002).
   - **Dateien aus Feature 002:** Tests, die geschriebenen Text mit einer Fixture vergleichen,
     schlagen fehl, sobald `to_json()` den Abschnitt schreibt. Deshalb in Phase 1:
     - Die eingefrorene Übernahme bleibt Byte für Byte, wie sie ist. Ihre Rundreise ergibt jetzt
@@ -636,23 +687,39 @@ beziehen.
     - die Kopfzeile der Textausgabe (`test_schedule_text.gd`, R16);
     - der Ergebnistext der Statistik mit dem Grad (`test_statistics_panel.gd`, R15);
     - die Datei einer Probe mit `"difficulty"` (`test_what_if_probe.gd`, R14);
-    - die Liste der Teiler mit dem neuen im Reiter (`test_werkstatt_settings.gd`).
+    - die Liste der Teiler mit dem neuen im Reiter (`test_werkstatt_settings.gd`): sieben statt
+      sechs gespeicherte Teiler, elf statt acht geprüfte Bereiche;
+    - die Zeilen je Art im Protokoll, mit „Grad“ als achter Art (`test_timeline_run.gd`);
+    - die Liste der Proben mit der Spalte „Grad“ (`test_simulator.gd`);
+    - die Meldungen der Prüfregeln: Der Test für jede Regel erwartet bei Meldungen zu Profilen
+      „Profil „“ statt „Ereignis „“ (`test_catalog_validator.gd`; Analyse, B1 bis B4).
 
     Gleich bleiben der Stand im Simulator und die Texte der Markierungen beim Vergleich mit
     demselben Grad (R13).
   - **Fixtures:** Test-Kataloge liegen unter `src/test/fixtures/` und tragen ihren Zweck im Namen:
     - je Regel eine kaputte Fixture, `catalog_v25_…` bis `catalog_v31_…` (wie SC-006 von Feature
       002); bei V31 eine Warnung, keine Fehler;
-    - je Strukturfehler eine, etwa `catalog_v22_profil_mittel.json`;
+    - für drei Strukturfehler je eine: ein Profil für Mittel, ein unbekannter Grad und ein Wert,
+      der keine Zahl ist, etwa `catalog_v22_profil_mittel.json`; die übrigen Fälle von V22 prüft
+      der Test im Code;
     - Kataloge für die Szenarien, etwa `catalog_us1_grade.json` mit 3 % pro Monat, „Schwer +5“,
-      „Leicht −2“ und abhängigen Ereignissen für SC-002.
+      „Leicht −2“, abhängigen Ereignissen für SC-002 und einem jährlichen Ereignis für FR-003
+      (Analyse, I6);
+    - die Fixtures für V22 im Abschnitt entstehen mit dem Lesen in Phase 1 und werden in
+      `test_event_catalog.gd` gelesen; `test_difficulty_profile.gd` prüft `ChanceModifier` und
+      `DifficultyProfile` für sich (Analyse, I8).
   - **Messbar:**
     - SC-001 mit 100 Wiederholungen;
-    - SC-002 mit 100 Seeds und `ScheduleDiff`: Jede Markierung gehört zur Hülle der abhängigen
-      Ereignisse nach FR-009;
+    - SC-002 mit 100 Seeds und `ScheduleDiff`: Jede Markierung und jeder weggefallene Termin
+      (`removed`) gehört zur Hülle der abhängigen Ereignisse nach FR-009 (Analyse, G2);
+    - ein Start-Modifikator vom 15.03.1990 bis 15.06.1994 wirkt erst in der Würfelrunde am
+      01.04.1990 und zuletzt in der am 01.06.1994 (Edge Case; Analyse, G3);
     - SC-003 über die Statistik mit 1.000 Seeds;
     - SC-006 über den Diff einer gespeicherten Datei, die den Abschnitt schon hat;
-    - SC-007 an der Grundlinie.
+    - SC-007 an der Grundlinie;
+    - die Prüfung der Profile im großen Katalog: `test_large_catalog.gd` fügt `catalog_500.json`
+      im Speicher 20 Start-Modifikatoren je Profil hinzu und misst Prüfung sowie Änderung samt
+      Prüfung unter 100 ms. Die Fixture behält ihre leeren Profile (Analyse, G9).
   - **Eigener Seed (US1, Szenario 2):** Ein gewürfelter Seed hängt am globalen Zufall. Der Test
     setzt ihn mit `seed()` fest, startet zweimal ohne Seed und erwartet zwei verschiedene Seeds
     zwischen 0 und 2.147.483.647. So ist er wiederholbar (Review, CHK027).
@@ -662,14 +729,27 @@ beziehen.
     dahin ist der echte Katalog ohne Profile, und die Phasen 1 und 2 müssen grün enden.
 - **Begründung:** `docs/ki_dev.md`, Abschnitt „Tests“: feste Seeds, nie echte Daten, Ausgaben als
   Ganzes vergleichen.
+- **Alternativen:**
+  - Die Grundlinie mit Kopfzeile einfrieren: Die Kopfzeile ändert sich mit FR-021 gewollt, der
+    Vergleich bräche an genau dieser Änderung.
+  - Die Grundlinie erst nach dem Umbau erzeugen: Sie belegte dann nichts über den Stand vor dem
+    Feature.
+  - Die Tests so ändern, dass sie den Abschnitt nicht mit vergleichen: von Klaus verworfen
+    (CHK036). Das wäre mehr Arbeit in vier Testdateien, und die Tests prüften den Abschnitt nicht
+    mit.
+  - Den Test auf gefüllte Profile schon in Phase 1: Er bliebe rot, bis Klaus die Profile in Phase
+    3 anlegt, und keine Phase davor endete grün.
+  - Zwei Starts ohne festgesetzten Zufall: Der Test wäre nicht wiederholbar, und sehr selten
+    würfelten beide denselben Seed.
 
 ## R18 Startwerte der Profile
 
 *Vorschlag von Claude, 2026-10-21; Klaus entscheidet in der Werkstatt. Dass die Profile zur
 Gesamtabnahme gefüllt sind, hat Klaus am 2026-10-22 im Review entschieden (CHK008).*
 
-Die Profile im echten Katalog legt Klaus selbst in der Werkstatt an, zur Abnahme von Phase 3. Das
-ist zugleich die Probe für SC-005. Zur Gesamtabnahme haben Leicht und Schwer je mindestens einen
+Die Profile im echten Katalog legt Klaus selbst in der Werkstatt an, zur Abnahme von Phase 3 und
+erst nach der Prüfung auf einer Kopie mit leeren Profilen; dort misst er auch SC-005 (T019, T020;
+Analyse, I1). Zur Gesamtabnahme haben Leicht und Schwer je mindestens einen
 Start-Modifikator; `test_shipped_catalog.gd` prüft das, aber keine Werte. Als Ausgangspunkt
 schlägt Claude vor: Unangenehmes kommt bei „Leicht“ seltener und bei „Schwer“ öfter, Erfreuliches
 umgekehrt. Jeder Start-Modifikator gilt das ganze Spiel.
@@ -686,14 +766,19 @@ umgekehrt. Jeder Start-Modifikator gilt das ganze Spiel.
 Das blockiert nichts: Die Werte ändert Klaus jederzeit und prüft sie mit dem Vergleich in der
 Statistik (US4).
 
+Verworfen hat Klaus bei CHK008 zwei Wege: gefüllte Profile ohne Test, denn ein Profil, das später
+leer wird, fiele dann nicht auf; und die Profile erst mit dem Balancing zu füllen, denn bis dahin
+spielten sich Leicht und Schwer wie Mittel.
+
 ## R19 Wohin die Auswahl des Grads gehört
 
 *Klaus, 2026-10-22, im Review nach Empfehlung (CHK021)*
 
 - **Entscheidung:** Den Bildschirm, auf dem der Spieler den Grad wählt, bringt 01-05. Es heißt
-  dann „Neues Spiel: Startdatum, Seed und Grad“ und übergibt alles mit
-  `Timeline.start_game(seed, difficulty)`. In Phase 6 bekommt der Eintrag in
-  `docs/features/Feature_Ideas.md` diesen Hinweis; die Spec bleibt, wie sie ist.
+  dann „Neues Spiel: Startdatum, Seed und Grad“. Seed und Grad übergibt es mit
+  `Timeline.start_game(seed, difficulty)`; für das Startdatum braucht 01-05 eine eigene
+  Erweiterung. In Phase 6 bekommt der Eintrag in `docs/features/Feature_Ideas.md` diesen Hinweis.
+  Die Spec nennt die Entscheidung in den Annahmen (Analyse, I5).
 - **Begründung:** Startdatum, Seed und Grad stehen alle beim Start fest. Ein Bildschirm dafür
   reicht.
 - **Alternativen (von Klaus verworfen):**

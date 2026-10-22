@@ -54,9 +54,11 @@ Startkapital, Preise oder Kundenstrom, gehört nicht zu diesem Feature.
 
 Aus der Checkliste [review.md](checklists/review.md); Klaus hat jeweils nach Empfehlung
 entschieden.
-- Q: Muss der echte Katalog am Ende des Features gefüllte Profile haben? → A: Ja. Zur
+- Q: Muss der echte Katalog am Ende des Features gefüllte Profile haben? → A: Ja, mit Test. Zur
   Gesamtabnahme haben Leicht und Schwer je mindestens einen Start-Modifikator, und die Tests
-  prüfen, dass beide nicht leer sind (FR-014, Annahmen; CHK008).
+  prüfen, dass beide nicht leer sind (FR-014, Annahmen; CHK008). Verworfen: gefüllte Profile ohne
+  Test, denn ein leeres Profil fiele dann nicht auf; die Profile erst später füllen, denn bis dahin
+  spielten sich Leicht und Schwer wie Mittel.
 - Q: Was tut die Werkstatt, wenn ein Start-Modifikator mitten im Monat beginnt, obwohl die
   Zeitleiste am Monatsersten würfelt? → A: Sie warnt und nennt die erste Würfelrunde, in der er
   wirkt; ebenso bei einem Ende, das kein Monatsletzter ist (FR-012; CHK013).
@@ -94,7 +96,7 @@ von ihnen abhängt, laufen anders.
 5. **Given** beim Start ist kein Grad angegeben, **When** das Spiel startet, **Then** gilt „Mittel“.
 6. **Given** im Profil „Schwer“ verweist ein Start-Modifikator auf ein Ereignis, das es im Katalog
    nicht mehr gibt, **When** das Spiel startet, **Then** überspringt die Zeitleiste diesen
-   Start-Modifikator, meldet ihn mit Grad, Kennung und Grund, und alle übrigen gelten.
+   Start-Modifikator, meldet ihn mit Grad, Kennung und Fehlergrund, und alle übrigen gelten.
 7. **Given** ein Spiel mit „Schwer“ und dem Start-Modifikator +5 auf die Reklamationswelle,
    **When** später ein Eingriff −6 Prozentpunkte auf dasselbe Ereignis setzt, **Then** addieren
    sich beide zu −1 Punkt, und die wirksame Chance ist 2 %.
@@ -234,15 +236,14 @@ nahe 5,4 und bei „Schwer“ nahe 14,4.
   mit (FR-017). Verweist ein Start-Modifikator trotzdem auf ein unbekanntes Ereignis, etwa nach
   einer Änderung an der Datei von Hand, zeigt die Werkstatt ihn als Fehler, und ein Spielstart
   überspringt ihn und meldet ihn (präzisiert im Plan, Klaus, 2026-10-21).
-- **Unbekannter Grad**: Verlangt ein Spielstart einen Grad, den es nicht gibt, beginnt kein neues
-  Spiel; die Zeitleiste meldet den Fehler, und ein laufendes Spiel bleibt, wie es ist.
+- **Unbekannter Grad**: Ein Spielstart mit einem Grad, den es nicht gibt, wird abgelehnt (FR-011).
 - **Zeitraum außerhalb des Spiels**: Ein Start-Modifikator vor dem 01.01.1985 oder nach dem
   31.12.1999 ist ein Prüffehler; ein Zeitraum, der nur einen Teil des Spiels abdeckt, ist erlaubt,
   etwa „Schwer: +3 Prozentpunkte auf Konkurrent eröffnet ab 01.01.1995“.
 - **Vergleich bei „Mittel“**: Ist im Simulator „Mittel“ gewählt, sind beide Vergleichsläufe gleich;
   der Schalter ändert dann keine Markierung.
 - **Kein Wechsel im Spiel**: Der Grad gilt für das ganze Spiel; ein laufendes Spiel wechselt ihn
-  nicht. Start-Modifikatoren lassen sich im Spiel nicht entfernen, nur im Profil ändern.
+  nicht. Start-Modifikatoren lassen sich im Spiel nicht entfernen (FR-010), nur im Profil ändern.
 
 ## Requirements *(mandatory)*
 
@@ -301,9 +302,10 @@ nahe 5,4 und bei „Schwer“ nahe 14,4.
   Monatserster ist, und ein Ende, das kein Monatsletzter ist; sie nennt die erste bzw. letzte
   Würfelrunde, in der der Start-Modifikator wirkt (Klaus, 2026-10-22).
 - **FR-013**: Beim Spielstart müssen fehlerhafte Start-Modifikatoren übersprungen und mit Grad,
-  Kennung und Grund gemeldet werden; die übrigen gelten (wie FR-049 von Feature 002). Ebenso fällt
-  ein Start-Modifikator weg, dessen Ereignis wegen eines Fehlers ausgenommen ist, und wird genannt.
-  Simulator, Statistik und Textausgabe nehmen dieselben Start-Modifikatoren aus und nennen sie.
+  Kennung und Fehlergrund gemeldet werden; die übrigen gelten (wie FR-049 von Feature 002). Ebenso
+  fällt ein Start-Modifikator weg, dessen Ereignis wegen eines Fehlers ausgenommen ist, und wird
+  genannt. Simulator, Statistik und Textausgabe nehmen dieselben Start-Modifikatoren aus und nennen
+  sie.
 - **FR-014**: Die automatischen Tests müssen die gespeicherten Profile mit denselben Prüfregeln
   prüfen wie die Werkstatt (wie FR-048 von Feature 002). Sobald Klaus die Profile angelegt hat,
   prüfen sie auch, dass Leicht und Schwer im echten Katalog nicht leer sind (Klaus, 2026-10-22).
@@ -313,15 +315,14 @@ nahe 5,4 und bei „Schwer“ nahe 14,4.
 - **FR-015**: Die Werkstatt muss die Profile von „Leicht“ und „Schwer“ in einem eigenen Reiter
   „Schwierigkeitsgrade“ neben Prüfung, Simulator und Statistik zeigen und Klaus dort
   Start-Modifikatoren anlegen, ändern, duplizieren und löschen lassen; „Mittel“ zeigt sie als
-  Katalog ohne Start-Modifikatoren. „Neu“ legt einen Start-Modifikator auf das gewählte Ereignis
-  an, wenn es über Wahrscheinlichkeit kommt, sonst auf das erste solche, mit dem ganzen Spiel und
-  dem Wert 0. Seine Kennung bildet die
-  Werkstatt aus der Kennung des Ereignisses, im Profil eindeutig; Klaus kann sie ändern. Löschen
-  fragt nicht nach und lässt sich zurücknehmen. Das Formular eines Ereignisses über
-  Wahrscheinlichkeit zeigt die Chance je Grad aus Grundchance und Start-Modifikatoren nur zum Lesen;
-  gilt ein Start-Modifikator nur für einen Teil des Spiels, nennt es die Chance je Zeitabschnitt.
-  Start-Modifikatoren mit einem Fehler zählen dabei nicht mit, wie im Spiel. Werte zeigt die
-  Werkstatt in Prozentpunkten, Chancen in Prozent, wie in Feature 002.
+  Katalog ohne Start-Modifikatoren. „Neu“ legt einen Start-Modifikator auf das gewählte Ereignis an,
+  wenn es über Wahrscheinlichkeit kommt, sonst auf das erste solche nach Kennung, mit dem ganzen
+  Spiel (FR-002) und dem Wert 0. Seine Kennung bildet die Werkstatt aus der Kennung des Ereignisses,
+  im Profil eindeutig; Klaus kann sie ändern. Löschen fragt nicht nach und lässt sich zurücknehmen.
+  Das Formular eines Ereignisses über Wahrscheinlichkeit zeigt die Chance je Grad aus Grundchance
+  und Start-Modifikatoren nur zum Lesen; gilt ein Start-Modifikator nur für einen Teil des Spiels,
+  nennt es die Chance je Zeitabschnitt. Start-Modifikatoren mit einem Fehler zählen dabei nicht mit,
+  wie im Spiel. Werte zeigt die Werkstatt in Prozentpunkten, Chancen in Prozent, wie in Feature 002.
 - **FR-016**: Die Werkstatt muss Profile laufend prüfen und Fehler mit Grad und Start-Modifikator
   zeigen; in der Liste der Prüfung steht der Grad dort, wo sonst das Ereignis steht. Gespeichert
   wird zusammen mit dem Katalog, auch mit Cmd+S, und ungespeicherte Änderungen an Profilen zählen
@@ -393,7 +394,8 @@ nahe 5,4 und bei „Schwer“ nahe 14,4.
   schon hat.
 - **SC-007**: Mit „Mittel“ sind Fahrplan und Protokoll für die Seeds 1, 4711 und 99999 Zeichen für
   Zeichen wie vor diesem Feature, gemessen an einer Grundlinie, die vor dem Umbau festgehalten wird
-  (Review, 2026-10-22).
+  (Review, 2026-10-22). Ausgenommen ist die Kopfzeile der Textausgabe, die jetzt den Grad nennt
+  (FR-021).
 
 ## Assumptions
 
@@ -410,8 +412,7 @@ nahe 5,4 und bei „Schwer“ nahe 14,4.
   Werkstatt, in Tests und in der Textausgabe nutzen. 01-05 umfasst Startdatum, Seed und Grad
   (Klaus, 2026-10-22).
 - Zur Gesamtabnahme hat der echte Katalog in Leicht und Schwer je mindestens einen
-  Start-Modifikator. Die Werte legt Klaus in der Werkstatt fest; die Tests prüfen nur, dass beide
-  Profile nicht leer sind (Klaus, 2026-10-22).
+  Start-Modifikator (FR-014). Die Werte legt Klaus in der Werkstatt fest (Klaus, 2026-10-22).
 - Start-Modifikatoren nutzen den Mechanismus aus Feature 002 unverändert: Ein Modifikator ändert
   nur die Schwelle, nie den Wurf. Deshalb bleibt FR-009 erfüllbar, ohne die Würfel zu ändern.
 - Die Werkstatt gestaltet die Profile nach dem Abschnitt „Werkzeuge“ des Style-Guides wie den Rest

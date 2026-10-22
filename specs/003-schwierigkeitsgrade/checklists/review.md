@@ -65,7 +65,9 @@ dass etwas gebaut ist.
   → Entschieden (Klaus, 2026-10-22, nach Empfehlung): ja, mit Test. Zur Gesamtabnahme hat der echte
   Katalog in Leicht und Schwer je mindestens einen Start-Modifikator. Die Werte legt Klaus fest,
   Ausgangspunkt ist R18. `test_shipped_catalog.gd` prüft, dass beide Profile nicht leer sind, prüft
-  aber keine Werte. Einarbeiten in Annahmen, Plan (Phase 3) und Vertrag.
+  aber keine Werte. Einarbeiten in Annahmen, Plan (Phase 3) und Vertrag. Verworfen: „Ja, ohne
+  Test“, denn ein Profil, das später leer wird, fiele dann nicht auf; „Nein, später“, denn bis
+  zum Balancing spielten sich Leicht und Schwer wie Mittel (Analyse, K1).
 - [x] CHK009 Ist festgelegt, wie die Prüfung eine Meldung zu einem Start-Modifikator zeigt? In der
   Spalte „Ereignis“ steht bei Meldungen ohne Ereignis heute nur „–“. [Gap, Spec §FR-016]
   → Vorschlag, freigegeben von Klaus (2026-10-22): In der Spalte steht „Profil Schwer“, im Feld
@@ -154,8 +156,8 @@ dass etwas gebaut ist.
   als „Spielstart zu einem späteren Datum“. [Conflict, Spec Annahmen; Feature_Ideas 01-05]
   → Entschieden (Klaus, 2026-10-22, nach Empfehlung): Die Auswahl des Grads gehört zu 01-05, das
   dann „Neues Spiel: Startdatum, Seed und Grad“ heißt. Der Eintrag in `Feature_Ideas.md` bekommt in
-  Phase 6 den Hinweis auf `start_game(seed, difficulty)`; die Spec bleibt. Verworfen: zu 11-05; eine
-  eigene Idee.
+  Phase 6 den Hinweis auf `start_game(seed, difficulty)`; die Spec nennt die Entscheidung in den
+  Annahmen (Analyse, I5). Verworfen: zu 11-05; eine eigene Idee.
 - [x] CHK022 Deckt die Ausnahme Ereigniskatalog in Grundsatz V der Verfassung die Profile? Sie
   spricht von „den Ereignissen der Zeitleiste“. [Consistency, Verfassung V; Plan, Constitution
   Check]
@@ -279,6 +281,8 @@ dass etwas gebaut ist.
   Vorschläge von Claude hat er freigegeben. Eingearbeitet sind alle in Spec, Datenmodell, Verträge,
   research.md, Plan und Quickstart; was sich an der Spec geändert hat, fasst der Plan unter
   „Änderungen an der Spec nach dem Plan“ zusammen.
+- Die Analyse vom 2026-10-22 hat bei CHK008 die verworfenen Wege ergänzt (K1). Was sie sonst
+  geändert hat, steht im Plan unter „Änderungen nach der Analyse“.
 - Nach der Freigabe steht unter dem Punkt „→ Vorschlag, freigegeben von Klaus: …“ oder
   „→ Entschieden (Klaus): …“, wie bei Feature 002. Eingearbeitet wird in Spec, Datenmodell,
   Verträge, research.md, Plan und Quickstart.
