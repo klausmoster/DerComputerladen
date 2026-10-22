@@ -45,6 +45,23 @@ Git-Geschichte behält sie (`docs/konzept-pruef-agents.md`, `docs/konzept-ki-wor
 Faustregel: Wer unabhängig urteilen soll, wird ein Subagent. Ein Ablauf, der immer gleich laufen
 soll, wird ein Skill. Was jedes Mal passieren muss, wird ein Hook oder ein Test.
 
+Was Claude Code dafür bietet, laut seiner Doku (Stand 2026-10-22:
+[Subagents](https://code.claude.com/docs/en/sub-agents), [Hooks](https://code.claude.com/docs/en/hooks),
+[Skills](https://code.claude.com/docs/en/skills)):
+- **Werkzeuge:** `tools` in der Agent-Datei ist eine Positivliste. Ohne `Bash`, `Edit` und `Write`
+  kann ein Agent nichts ändern, ohne `Agent` keine weiteren Agents starten. `model: inherit` nimmt
+  das Modell der Sitzung.
+- **Neue Dateien:** Neue oder geänderte Agents und Skills greifen nach wenigen Sekunden, ohne neue
+  Sitzung, außer ihr Ordner fehlte beim Start der Sitzung. `ki_dev.md` hält aus Erfahrung fest,
+  dass Agents nur beim Start laden; Schritt 3 klärt, was stimmt.
+- **Gleichzeitig:** Mehrere Agents aus einer Nachricht laufen nebeneinander im Hintergrund. Ihre
+  Ergebnisse kommen einzeln zurück.
+- **Hook nach einem Agent:** `SubagentStop` mit dem Namen des Agents als Matcher, etwa
+  `godot-entwickler`. Endet der Befehl mit Exit-Code 2, arbeitet der Agent weiter, und die
+  Fehlermeldung wird seine nächste Anweisung. Zeitlimit 600 s, einstellbar.
+- **Skill:** Klaus ruft ihn mit `/name` auf, Claude von selbst. Mit
+  `disable-model-invocation: true` wird er ein Befehl nur für Klaus.
+
 ## Wer prüft was
 
 | Wer | Wann | Was | Maßstab |
@@ -83,8 +100,8 @@ Jeder Prüfer ist ein Subagent in `.claude/agents/`, etwa `stil-pruefer.md`:
 - **Lücke statt Fehler:** Regelt der Maßstab etwas nicht, meldet der Prüfer eine Lücke im Maßstab,
   keinen Fehler.
 - **Keine Befunde:** Dann schreibt er das und welche Abschnitte er geprüft hat.
-- **Neue Agents** stehen erst in einer neuen Sitzung bereit. Bis dahin nimmt Claude einen
-  allgemeinen Agent, der zuerst die Datei des Prüfers liest (`ki_dev.md`, „Aufträge an den Agent“).
+- **Steht ein Prüfer nicht bereit**, nimmt Claude einen allgemeinen Agent, der zuerst die Datei des
+  Prüfers liest (`ki_dev.md`, „Aufträge an den Agent“).
 
 Nicht vorgesehen:
 - ein eigener Code-Prüfer, denn Code prüft Claude, und `/code-review` gibt es schon;
@@ -245,7 +262,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 |---|---|---|---|
 | 1 | Umzug nach `docs/ki_workflow/` | [C] | erledigt, 2026-10-22 |
 | 2 | Einstieg und diese Datei, mit Schaubildern | [C] | erledigt, 2026-10-22 |
-| 3 | Stil-Prüfer mit Probelauf an Titelbildschirm, Hauptmenü und Hinweis aus Feature 001 | [C] | |
+| 3 | Stil-Prüfer mit Probelauf an Titelbildschirm, Hauptmenü und Hinweis aus Feature 001; dabei klärt sich, ob ein neuer Agent ohne neue Sitzung bereitsteht und Bildschirmfotos lesen kann | [C] | |
 | 4 | Text-Leitfaden | [C] schreibt, [K] entscheidet den Ton | |
 | 5 | Text-Prüfer mit Probelauf an den Texten von Feature 001 und der Werkstatt | [C] | |
 | 6 | Skill `dcl-phasenpruefung` | [C] | |

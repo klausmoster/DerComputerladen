@@ -36,8 +36,13 @@ einzeln, wenn ihr Schritt dran ist (dort unter „Stand der Einführung“).
   und Begriffe der Zeit, und nach Grundsatz IV der Verfassung ist der Style-Guide die einzige
   Quelle für alles Sichtbare.
 - **Hook nach dem Godot-Agent (vor Schritt 8):** Startet ein Hook die Tests, sobald der
-  Godot-Agent fertig ist? Die Empfehlung folgt, wenn geklärt ist, was Hooks in Claude Code genau
-  können.
+  Godot-Agent fertig ist? Möglich ist das mit einem Hook bei `SubagentStop` und dem Matcher
+  `godot-entwickler`: Meldet er Rot mit Exit-Code 2, arbeitet der Agent weiter (Stand der Doku in
+  `docs/ki_workflow/ki_pruefung.md`, „Bausteine“). Empfehlung: vorerst keiner. Der Agent testet
+  schon selbst, und Claude testet danach zweimal. Ein Hook ließe den Agent auch dann weiterarbeiten,
+  wenn er mit Absicht anhält, um eine Frage zu stellen, wie es seine Anweisung verlangt. Außerdem
+  macht er gleichzeitige Testläufe im gemeinsamen `user://` wahrscheinlicher. Liefert der Agent
+  zweimal rote Tests ab, ohne es zu melden, kommt der Hook dazu (Grundsatz 6).
 - **Gemeinsames `user://` (mit dem Hook):** Alle Arbeitsordner teilen sich `user://` von „Der
   Computerladen“, und die Tests schreiben in feste Unterordner wie `user://test_simulator/`. Zwei
   Testläufe zur selben Zeit, etwa im Worktree der Arbeitsweise und in der Sitzung „[003]
