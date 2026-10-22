@@ -326,8 +326,11 @@ func write_backup() -> Error:
 		var made := DirAccess.make_dir_recursive_absolute(backup_folder)
 		if made != OK:
 			return made
+	# Der Katalog als Dictionary wie in der Datei, mit den Profilen (Feature 003, R10). Nicht als
+	# Text aus to_json(): JSON.parse_string() machte daraus jede ganze Zahl zu einer Kommazahl
+	# (14 → 14.0), und die Kopie wäre nicht mehr kanonisch.
 	var data := {
-		"catalog": _catalog_dict(),
+		"catalog": catalog.to_dict(),
 		"format": BACKUP_FORMAT,
 		"path": path,
 		"saved": int(Time.get_unix_time_from_system()),
@@ -1049,20 +1052,6 @@ func _changed_outside() -> bool:
 		return false
 	return FileAccess.get_modified_time(path) != _file_time \
 		or FileAccess.get_sha256(path) != _file_hash
-
-
-## Der Katalog als Dictionary wie in der Datei, für die Sicherungskopie. EventCatalog.to_json()
-## liefert nur Text, und JSON.parse_string() machte daraus jede ganze Zahl zu einer Kommazahl
-## (14 → 14.0); die Kopie wäre dann nicht mehr kanonisch. Die Ereignisse stehen schon nach
-## Kennung sortiert im Katalog: Lesen sortiert sie, und jeder Schritt setzt sie an ihre Stelle.
-func _catalog_dict() -> Dictionary:
-	var categories := []
-	for category in catalog.categories:
-		categories.append(category.to_dict())
-	var events := []
-	for event in catalog.events:
-		events.append(event.to_dict())
-	return {"categories": categories, "events": events, "format": EventCatalog.FORMAT}
 
 
 ## Der Text einer Kategorie oder eines Ereignisses für content_key(): to_dict() mit sortierten

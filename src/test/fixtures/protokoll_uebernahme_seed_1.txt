@@ -1,0 +1,137 @@
+10.06.1985  Beginn  Neubaugebiet in der Nähe
+10.07.1985  Wirkung  Neubaugebiet in der Nähe: Kundenstrom · * · +20% — Neue Anwohner ziehen zu.
+17.10.1985  Beginn  Intel 80386 erscheint
+17.10.1985  Wirkung  Intel 80386 erscheint: Presse · cpu — Fachpresse feiert die 32-Bit-Ära.
+17.10.1985  Wirkung  Intel 80386 erscheint: Nachfrage · cpu_high_end · +10% — Enthusiasten wollen das Neueste.
+14.11.1985  Beginn  Großkunde meldet sich
+14.11.1985  Wirkung  Großkunde meldet sich: Presse · geschaeft
+21.11.1985  Wirkung  Großkunde meldet sich: Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+07.05.1986  Beginn  Konkurrent eröffnet
+07.05.1986  Wirkung  Konkurrent eröffnet: Kundenstrom · * · -25% — Kundschaft wird abgezogen.
+07.05.1986  Wirkung  Konkurrent eröffnet: Nachfrage · * · -10%
+14.12.1986  Beginn  Lieferengpass
+14.12.1986  Wirkung  Lieferengpass: Preis · * · +15% — Knappheit treibt die Einkaufspreise.
+14.12.1986  Wirkung  Lieferengpass: Nachfrage · * · -5% — Was es nicht gibt, wird nicht gekauft.
+24.02.1987  Beginn  Großkunde meldet sich
+24.02.1987  Wirkung  Großkunde meldet sich: Presse · geschaeft
+03.03.1987  Wirkung  Großkunde meldet sich: Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+02.04.1987  Beginn  IBM PS/2 mit VGA und PS/2-Maus
+02.04.1987  Wirkung  IBM PS/2 mit VGA und PS/2-Maus: Nachfrage · maus · +15% — PS/2-Maus etabliert sich.
+02.04.1987  Wirkung  IBM PS/2 mit VGA und PS/2-Maus: Presse · grafik — VGA wird zum Maßstab.
+25.04.1988  Beginn  Reklamationswelle
+25.04.1988  Wirkung  Reklamationswelle: Ruf · * · -15% — Häufung von Ausfällen.
+09.05.1988  Wirkung  Reklamationswelle: Presse · negativ — Negativer Zeitungsartikel droht.
+10.10.1988  Beginn  Lieferengpass
+10.10.1988  Wirkung  Lieferengpass: Preis · * · +15% — Knappheit treibt die Einkaufspreise.
+10.10.1988  Wirkung  Lieferengpass: Nachfrage · * · -5% — Was es nicht gibt, wird nicht gekauft.
+10.04.1989  Beginn  Intel 80486 erscheint
+10.04.1989  Wirkung  Intel 80486 erscheint: Preis · cpu_386 · -30% — 386 verliert die Spitzenposition.
+10.04.1989  Wirkung  Intel 80486 erscheint: Nachfrage · ram · +10% — Neue Systeme brauchen mehr Speicher.
+10.04.1989  Wirkung  Intel 80486 erscheint: Presse · cpu
+12.05.1989  Beginn  Großkunde meldet sich
+12.05.1989  Wirkung  Großkunde meldet sich: Presse · geschaeft
+19.05.1989  Wirkung  Großkunde meldet sich: Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+07.11.1989  Beginn  Großkunde meldet sich
+07.11.1989  Wirkung  Großkunde meldet sich: Presse · geschaeft
+14.11.1989  Wirkung  Großkunde meldet sich: Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+27.12.1989  Beginn  Konkurrent gibt auf
+27.12.1989  Wirkung  Konkurrent gibt auf: Kundenstrom · * · +20% — Verwaiste Kundschaft.
+29.01.1990  Beginn  Neubaugebiet in der Nähe
+28.02.1990  Wirkung  Neubaugebiet in der Nähe: Kundenstrom · * · +20% — Neue Anwohner ziehen zu.
+09.04.1990  Beginn  Lieferengpass
+09.04.1990  Wirkung  Lieferengpass: Preis · * · +15% — Knappheit treibt die Einkaufspreise.
+09.04.1990  Wirkung  Lieferengpass: Nachfrage · * · -5% — Was es nicht gibt, wird nicht gekauft.
+22.05.1990  Beginn  Windows 3.0
+22.05.1990  Wirkung  Windows 3.0: Nachfrage · maus · +20% — Ohne Maus kein Windows.
+22.05.1990  Wirkung  Windows 3.0: Nachfrage · ram · +15%
+03.10.1990  Beginn  Deutsche Wiedervereinigung
+02.12.1990  Wirkung  Deutsche Wiedervereinigung: Kundenstrom · * · +25% — Neue Kundschaft, Nachholbedarf.
+07.12.1990  Beginn  Konkurrent eröffnet
+07.12.1990  Wirkung  Konkurrent eröffnet: Kundenstrom · * · -25% — Kundschaft wird abgezogen.
+07.12.1990  Wirkung  Konkurrent eröffnet: Nachfrage · * · -10%
+01.03.1991  Beginn  AMD Am386DX-40
+01.03.1991  Wirkung  AMD Am386DX-40: Preis · cpu_386 · -20% — AMD unterbietet Intel.
+01.03.1991  Wirkung  AMD Am386DX-40: Nachfrage · cpu_budget · +15% — Preisbewusste greifen zu.
+03.03.1992  Beginn  Konkurrent gibt auf
+03.03.1992  Wirkung  Konkurrent gibt auf: Kundenstrom · * · +20% — Verwaiste Kundschaft.
+06.04.1992  Beginn  Windows 3.1
+06.04.1992  Wirkung  Windows 3.1: Nachfrage · maus · +20%
+06.04.1992  Wirkung  Windows 3.1: Nachfrage · ram · +20%
+06.04.1992  Wirkung  Windows 3.1: Nachfrage · software_windows · +30%
+12.07.1992  Beginn  Großkunde meldet sich
+12.07.1992  Wirkung  Großkunde meldet sich: Presse · geschaeft
+19.07.1992  Wirkung  Großkunde meldet sich: Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+01.01.1993  Beginn  Konjunkturflaute
+01.01.1993  Wirkung  Konjunkturflaute: Kundenstrom · * · -20% — Kaufzurückhaltung.
+01.01.1993  Wirkung  Konjunkturflaute: Nachfrage · komplett_pc · -15%
+22.03.1993  Beginn  Intel Pentium erscheint
+22.03.1993  Wirkung  Intel Pentium erscheint: Preis · cpu_486 · -30% — 486 wird zur Mittelklasse.
+22.03.1993  Wirkung  Intel Pentium erscheint: Presse · cpu — Fachpresse berichtet groß.
+30.03.1993  Beginn  MS-DOS 6.0
+30.03.1993  Wirkung  MS-DOS 6.0: Nachfrage · software · +10%
+05.04.1993  Wirkung  Intel Pentium erscheint: Nachfrage · ram · +20% — Pentium-Systeme wollen Speicher.
+01.01.1994  Beginn  CD-ROM wird Standard
+01.01.1994  Wirkung  CD-ROM wird Standard: Nachfrage · cdrom · +40%
+01.01.1994  Wirkung  CD-ROM wird Standard: Nachfrage · software_cd · +30%
+01.01.1994  Wirkung  CD-ROM wird Standard: Presse · multimedia
+05.01.1994  Beginn  Neubaugebiet in der Nähe
+04.02.1994  Wirkung  Neubaugebiet in der Nähe: Kundenstrom · * · +20% — Neue Anwohner ziehen zu.
+01.05.1994  Beginn  Großkunde meldet sich
+01.05.1994  Wirkung  Großkunde meldet sich: Presse · geschaeft
+08.05.1994  Wirkung  Großkunde meldet sich: Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+01.06.1994  Beginn  MS-DOS 6.22
+01.06.1994  Wirkung  MS-DOS 6.22: Nachfrage · software · +5%
+29.06.1994  Beginn  Lieferengpass
+29.06.1994  Wirkung  Lieferengpass: Preis · * · +15% — Knappheit treibt die Einkaufspreise.
+29.06.1994  Wirkung  Lieferengpass: Nachfrage · * · -5% — Was es nicht gibt, wird nicht gekauft.
+20.12.1994  Beginn  Konkurrent eröffnet
+20.12.1994  Wirkung  Konkurrent eröffnet: Kundenstrom · * · -25% — Kundschaft wird abgezogen.
+20.12.1994  Wirkung  Konkurrent eröffnet: Nachfrage · * · -10%
+22.08.1995  Beginn  Reklamationswelle
+22.08.1995  Wirkung  Reklamationswelle: Ruf · * · -15% — Häufung von Ausfällen.
+24.08.1995  Beginn  Windows 95
+24.08.1995  Wirkung  Windows 95: Nachfrage · maus · +40%
+24.08.1995  Wirkung  Windows 95: Nachfrage · ram · +30% — Mindestens 8 MB empfohlen.
+24.08.1995  Wirkung  Windows 95: Nachfrage · komplett_pc · +25% — Aufrüst- und Neukauf-Welle.
+24.08.1995  Wirkung  Windows 95: Presse · windows — Wochenlang in allen Medien.
+31.08.1995  Wirkung  Windows 95: Nachfrage · cdrom · +30% — Auslieferung auf CD.
+05.09.1995  Wirkung  Reklamationswelle: Presse · negativ — Negativer Zeitungsartikel droht.
+01.11.1995  Beginn  Intel Pentium Pro
+01.11.1995  Wirkung  Intel Pentium Pro: Preis · cpu_pentium · -15%
+01.11.1995  Wirkung  Intel Pentium Pro: Nachfrage · cpu_server · +10%
+28.11.1995  Beginn  Internet für Privatkunden
+28.11.1995  Wirkung  Internet für Privatkunden: Nachfrage · modem · +50%
+28.11.1995  Wirkung  Internet für Privatkunden: Kundenstrom · enthusiasten · +20% — Neue, technikbegeisterte Kundschaft.
+28.11.1995  Wirkung  Internet für Privatkunden: Presse · internet
+15.01.1996  Beginn  USB 1.0 vorgestellt
+15.01.1996  Wirkung  USB 1.0 vorgestellt: Presse · usb — Zukunftsmusik – noch kaum Hardware verfügbar.
+21.04.1996  Beginn  Neubaugebiet in der Nähe
+21.05.1996  Wirkung  Neubaugebiet in der Nähe: Kundenstrom · * · +20% — Neue Anwohner ziehen zu.
+21.07.1996  Beginn  Großkunde meldet sich
+21.07.1996  Wirkung  Großkunde meldet sich: Presse · geschaeft
+28.07.1996  Wirkung  Großkunde meldet sich: Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+02.12.1996  Beginn  Reklamationswelle
+02.12.1996  Wirkung  Reklamationswelle: Ruf · * · -15% — Häufung von Ausfällen.
+16.12.1996  Wirkung  Reklamationswelle: Presse · negativ — Negativer Zeitungsartikel droht.
+14.03.1997  Beginn  Konkurrent eröffnet
+14.03.1997  Wirkung  Konkurrent eröffnet: Kundenstrom · * · -25% — Kundschaft wird abgezogen.
+14.03.1997  Wirkung  Konkurrent eröffnet: Nachfrage · * · -10%
+07.05.1997  Beginn  Intel Pentium II
+07.05.1997  Wirkung  Intel Pentium II: Preis · cpu_pentium · -30%
+07.05.1997  Wirkung  Intel Pentium II: Nachfrage · ram · +15%
+07.05.1997  Wirkung  Intel Pentium II: Presse · cpu
+25.08.1997  Beginn  Großkunde meldet sich
+25.08.1997  Wirkung  Großkunde meldet sich: Presse · geschaeft
+01.09.1997  Wirkung  Großkunde meldet sich: Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+04.02.1998  Beginn  Lieferengpass
+04.02.1998  Wirkung  Lieferengpass: Preis · * · +15% — Knappheit treibt die Einkaufspreise.
+04.02.1998  Wirkung  Lieferengpass: Nachfrage · * · -5% — Was es nicht gibt, wird nicht gekauft.
+25.06.1998  Beginn  Windows 98
+25.06.1998  Wirkung  Windows 98: Nachfrage · komplett_pc · +20%
+25.06.1998  Wirkung  Windows 98: Nachfrage · usb_geraete · +20% — USB wird endlich nutzbar.
+25.06.1998  Wirkung  Windows 98: Presse · windows
+01.01.1999  Beginn  Euro als Buchgeld
+01.01.1999  Wirkung  Euro als Buchgeld: Presse · wirtschaft — Preisauszeichnung im Wandel.
+20.03.1999  Beginn  Reklamationswelle
+20.03.1999  Wirkung  Reklamationswelle: Ruf · * · -15% — Häufung von Ausfällen.
+03.04.1999  Wirkung  Reklamationswelle: Presse · negativ — Negativer Zeitungsartikel droht.

@@ -155,5 +155,9 @@
 			"title": "Zeitungsartikel über Reklamationen"
 		}
 	],
-	"format": 1
+	"format": 1,
+	"profiles": {
+		"leicht": [],
+		"schwer": []
+	}
 }

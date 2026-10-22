@@ -151,6 +151,22 @@ Stellen.
     der Hilfe nur diese, so steht keiner doppelt da. Die Textausgabe hängt an Meldungen zu
     Start-Modifikatoren „Der Start-Modifikator fehlt in der Ausgabe.“
 
+### Feature 003, Phase 1 (2026-10-22)
+
+Auslegungen des Agents, die Claude angenommen hat. Sie stehen auch im Datenmodell, „Prüfregeln“.
+- **Texte von V25 bis V30:** vom Agent formuliert, etwa „Das Ereignis „x“ gibt es im Katalog
+  nicht.“ (V25); vorgegeben waren nur V29 und V31.
+- **Ort der Meldungen zum Abschnitt:** „Katalog“, wie bei den übrigen Schlüsseln der obersten
+  Ebene; ist ein Profil keine Liste, das Profil selbst.
+- **V26 bei doppelter Kennung:** Es meldet, sobald eines der Ereignisse mit dieser Kennung nicht
+  über Wahrscheinlichkeit kommt, wie V16.
+- **`catalog_alle_arten.json`:** Leicht −2 gilt das ganze Spiel, Schwer +5 nur 1990 bis 1994, damit
+  die Rundreise auch andere Daten abdeckt.
+- **Datum lesen:** `ChanceModifier._read_day()` wiederholt die zehn Zeilen von
+  `TimelineEvent._read_day()`, damit Phase 1 `TimelineEvent` nicht anfasst.
+- **Fund für Phase 2:** `catalog_issue.gd` nennt in Kommentaren noch „V01 bis V24“; der Agent zieht
+  das in Phase 2 mit nach.
+
 ## Erledigt
 
 - **Analyse von Feature 003:** Klaus, 2026-10-22: alle 41 Befunde nach Empfehlung einarbeiten.

@@ -197,6 +197,22 @@ Die Tabelle aus Feature 002 (V01 bis V24) wird fortgesetzt:
 | V30 | Kennung leer, mit anderen Zeichen als a–z, 0–9 und _, oder im Profil doppelt; eine Dublette wird bei jedem Start-Modifikator mit dieser Kennung gemeldet | `id` | Fehler |
 | V31 | Beginn kein Monatserster oder Ende kein Monatsletzter; die Meldung nennt die erste bzw. letzte Würfelrunde, in der er wirkt. Beide mitten im Monat ergeben zwei Warnungen. Liegt im Zeitraum kein Monatserster, gibt es nur eine, an `from_day`: Er wirkt nie. Gilt V27 oder V28, prüft V31 nicht (Klaus, 2026-10-22; Analyse, U7) | `from_day` bzw. `to_day` | Warnung |
 
+Wortlaut der Meldungen, wie in Phase 1 gebaut (Auslegung des Agents, von Claude angenommen,
+2026-10-22), jeweils hinter Ort und Feld:
+- V25: „Der Start-Modifikator nennt kein Ereignis.“ bzw. „Das Ereignis „x“ gibt es im Katalog
+  nicht.“
+- V26: „„weihnachtsgeschaeft“ hat die Art „fix, jährlich“; Start-Modifikatoren gehören nur zu
+  Ereignissen über Wahrscheinlichkeit.“ Bei doppelter Kennung (V02) reicht eines dieser Ereignisse
+  mit anderer Art, wie bei V16.
+- V27: „Der Start-Modifikator endet am 15.06.1990, vor seinem Beginn am 15.03.1995.“
+- V28: „Der Beginn 15.03.1984 liegt außerhalb von 01.01.1985 bis 31.12.1999.“
+- V29: „Der Grund ist leer.“
+- V30: „Die Kennung ist leer.“, „… enthält andere Zeichen als a–z, 0–9 und _.“ bzw. „Die Kennung
+  „welle“ gibt es in diesem Profil mehrfach.“
+- Meldungen V22 zum ganzen Abschnitt oder zu einem Profil für Mittel oder einen unbekannten Grad
+  haben den Ort „Katalog“, wie die übrigen Schlüssel der obersten Ebene; ist ein Profil keine
+  Liste, ist der Ort das Profil, etwa „Profil „Leicht“, Feld „profiles.leicht“: …“.
+
 V31 kommt zu den Warnregeln V13, V20 und V23. Eine Warnung nimmt nichts aus: Ein Start-Modifikator
 mit V31 gilt im Spiel, in den Würfelrunden seines Zeitraums.
 
