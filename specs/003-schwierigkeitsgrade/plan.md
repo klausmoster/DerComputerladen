@@ -119,7 +119,7 @@ specs/003-schwierigkeitsgrade/
 ├── checklists/
 │   ├── requirements.md          # Qualitätsprüfung der Spec
 │   └── review.md                # Review der Anforderungen, 38 Punkte, von Klaus entschieden
-├── tasks.md                     # entsteht mit /speckit-tasks
+├── tasks.md                     # Aufgaben je Phase (/speckit-tasks), T001 bis T032
 └── lernnotizen.md               # entsteht bei der Umsetzung, eine Notiz je [A]-Task
 ```
 
