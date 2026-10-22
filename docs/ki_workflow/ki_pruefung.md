@@ -39,7 +39,7 @@ Git-Geschichte behält sie (`docs/konzept-pruef-agents.md`, `docs/konzept-ki-wor
 |---|---|---|
 | Subagent (`.claude/agents/`) | eigener Kontext, eigene Werkzeuge, eigenes Modell; zurück kommt nur das Ergebnis | `godot-entwickler`, die Prüfer |
 | Skill (`.claude/skills/`) | Anleitung, die bei Bedarf in die laufende Sitzung geladen wird | `dcl-komponente`, Spec Kit, die Phasenprüfung |
-| Hook (`.claude/settings.json`) | Befehl, den Claude Code bei einem Ereignis immer ausführt, auch wenn niemand daran denkt | denkbar: Tests, sobald der Godot-Agent fertig ist |
+| Hook (`.claude/settings.json`) | Befehl, den Claude Code bei einem Ereignis immer ausführt, auch wenn niemand daran denkt | vorerst keiner; vorgemerkt: Tests, sobald der Godot-Agent fertig ist (Schritt 8) |
 | Tests und Skripte | Code | alles Messbare |
 
 Faustregel: Wer unabhängig urteilen soll, wird ein Subagent. Ein Ablauf, der immer gleich laufen
@@ -299,7 +299,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 | 5 | Text-Prüfer mit Probelauf an den Texten von Feature 001 und der Werkstatt | [C] | erledigt, 2026-10-22 |
 | 6 | Skill `dcl-phasenpruefung` mit den Hilfsskripten für Bildschirmfotos und Textliste | [C] | erledigt, 2026-10-22 |
 | 7 | Tests `test_bilder.gd` und `test_texte.gd` | [A] | erledigt, 2026-10-22 |
-| 8 | Hook, wenn gewollt: Tests laufen von selbst, sobald der Godot-Agent fertig ist | [C] | |
+| 8 | Hook, wenn gewollt: Tests laufen von selbst, sobald der Godot-Agent fertig ist | [C] | entfällt vorerst (Klaus, 2026-10-22); kommt, wenn der Agent zweimal rote Tests abliefert, ohne es zu melden |
 | 9 | Pilot in einer echten Phase mit Sichtbarem oder Texten, mit Zählung | [C] | |
 | 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | |
 
@@ -329,5 +329,4 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 
 Die Fragen stehen mit Empfehlung in `docs/offene-punkte.md` und kommen einzeln, wenn ihr Schritt
 dran ist:
-- vor Schritt 8: Startet ein Hook die Tests, sobald der Godot-Agent fertig ist?
 - vor Schritt 9: Ab wann gelten die Prüfer?
