@@ -36,12 +36,10 @@ einzeln, wenn ihr Schritt dran ist (dort unter „Stand der Einführung“).
   Testläufe zur selben Zeit, etwa im Worktree der Arbeitsweise und in der Sitzung „[003]
   Schwierigkeitsgrade ab dem Plan“, können sich stören. Ein Hook, der von selbst testet, macht das
   wahrscheinlicher.
-- **Ab wann die Prüfer gelten (vor Schritt 9):** Empfehlung: ab dem Pilot für jede Phase mit
-  Sichtbarem oder Texten, auch in Werkzeugen. Bis zum ersten Spielbildschirm dauert es noch, und
-  für Werkzeuge hat der Style-Guide einen eigenen Abschnitt als Maßstab.
-- **Merge des Branches `claude/arbeitsweise-pruef-agents-83cb9b` (vor dem ersten Merge):**
-  Empfehlung: nach `main`, sobald Feature 003 dort angekommen ist. So ändert sich für die Sitzung
-  „[003] Schwierigkeitsgrade ab dem Plan“ mitten in der Arbeit nichts.
+- **Merge vormerken:** Sobald Feature 003 in `main` angekommen ist, geht der Branch
+  `claude/arbeitsweise-pruef-agents-83cb9b` nach `main`, auf Klaus' Wort (siehe Erledigt).
+- **Abnahme des Skills:** `/dcl-phasenpruefung` einmal in einer neuen Sitzung aufrufen, etwa als
+  Probelauf am Titelbildschirm (Schritt 6).
 
 ### Probelauf des Stil-Prüfers an Feature 001 (2026-10-22)
 
@@ -256,6 +254,9 @@ Stellen.
 
 ## Erledigt
 
+- **Pilot und Merge des KI-Workflows** (Schritt 9): Klaus, 2026-10-22, nach Empfehlung: Der Pilot
+  läuft im nächsten Feature nach 003, in der ersten Phase mit Sichtbarem oder Texten. Ab dem Pilot
+  gelten die Prüfer, auch für Werkzeuge. Der Branch geht nach `main`, sobald Feature 003 dort ist.
 - **Hook nach dem Godot-Agent** (Schritt 8 des KI-Workflows): Klaus, 2026-10-22, nach Empfehlung:
   vorerst keiner, Schritt 8 entfällt. Die Tests laufen beim Agent und danach zweimal bei Claude.
   Liefert der Agent zweimal rote Tests ab, ohne es zu melden, kommt ein Hook bei `SubagentStop`

@@ -70,5 +70,5 @@ Preise gegen die game_bible. Was sich messen lässt, prüfen Tests.
 - Umsetzung: [ki_workflow/ki_pruefung.md](ki_workflow/ki_pruefung.md), in Einführung seit
   2026-10-22, mit Grundsätzen, Anbindung an Spec Kit, Beispielen und den Schritten der Einführung.
   Die beiden Konzepte dazu sind darin aufgegangen und stehen in der Git-Geschichte.
-- Offen: Ab wann gelten die Prüfer, etwa mit dem ersten echten Spielbildschirm? Den Maßstab für
-  den Sprach-Prüfer gibt seit 2026-10-22 der Abschnitt „Sprache“ im Style-Guide.
+- Entschieden (Klaus, 2026-10-22): Die Prüfer gelten ab dem Pilot im nächsten Feature nach 003,
+  auch für Werkzeuge. Den Maßstab für den Sprach-Prüfer gibt der Abschnitt „Sprache“ im Style-Guide.

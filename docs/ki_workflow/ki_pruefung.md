@@ -300,7 +300,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 | 6 | Skill `dcl-phasenpruefung` mit den Hilfsskripten für Bildschirmfotos und Textliste | [C] | erledigt, 2026-10-22 |
 | 7 | Tests `test_bilder.gd` und `test_texte.gd` | [A] | erledigt, 2026-10-22 |
 | 8 | Hook, wenn gewollt: Tests laufen von selbst, sobald der Godot-Agent fertig ist | [C] | entfällt vorerst (Klaus, 2026-10-22); kommt, wenn der Agent zweimal rote Tests abliefert, ohne es zu melden |
-| 9 | Pilot in einer echten Phase mit Sichtbarem oder Texten, mit Zählung | [C] | |
+| 9 | Pilot in einer echten Phase mit Sichtbarem oder Texten, mit Zählung | [C] | im nächsten Feature nach 003, in seiner ersten Phase mit Sichtbarem oder Texten (Klaus, 2026-10-22) |
 | 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | |
 
 ## Erfahrungen
@@ -327,6 +327,6 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 
 ## Offen
 
-Die Fragen stehen mit Empfehlung in `docs/offene-punkte.md` und kommen einzeln, wenn ihr Schritt
-dran ist:
-- vor Schritt 9: Ab wann gelten die Prüfer?
+Zur Einführung ist nichts mehr offen (2026-10-22). Die Prüfer gelten ab dem Pilot im nächsten
+Feature nach 003, für jede Phase mit Sichtbarem oder Texten, auch in Werkzeugen. Danach entscheidet
+Klaus, ob sie bleiben, und über die Regel in der Verfassung (Schritt 10).

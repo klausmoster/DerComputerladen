@@ -73,7 +73,8 @@ Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
    von 003.
 8. **Phasenprüfung vor der Abnahme** (in Einführung, Klaus, 2026-10-22): Ändert eine Phase
    Sichtbares oder Texte, prüfen Prüf-Agents sie gegen den Style-Guide, bevor Klaus
-   abnimmt. Wie, steht in [ki_pruefung.md](ki_pruefung.md). Bis die Prüfer eingeführt sind, prüft
+   abnimmt. Wie, steht in [ki_pruefung.md](ki_pruefung.md). Das gilt ab dem Pilot im nächsten
+   Feature nach 003, auch für Werkzeuge (Klaus, 2026-10-22). Bis dahin prüft
    Claude allein.
 
 ## Git
