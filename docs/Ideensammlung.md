@@ -66,5 +66,7 @@ Preise gegen die game_bible. Was sich messen lässt, prüfen Tests.
 
 - Bezug: `.claude/agents/godot-entwickler.md`; `docs/ki_dev.md`, „Prüfen, bevor Klaus es sieht“
   und „Pflege“; Verfassung, Grundsatz IV (Style-Guide als einzige Quelle).
+- Konzept: [konzept-pruef-agents.md](konzept-pruef-agents.md) mit Grundsätzen, Anbindung an
+  Spec Kit, Beispielen und Stufen zur Einführung (2026-10-22).
 - Offen: Für den Sprach-Prüfer fehlt ein Text-Leitfaden als Maßstab. Ab wann, etwa mit dem ersten
   echten Spielbildschirm?
