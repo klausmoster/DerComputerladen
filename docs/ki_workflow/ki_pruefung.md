@@ -69,14 +69,14 @@ Was Claude Code dafür bietet, laut seiner Doku (Stand 2026-10-22:
 |---|---|---|---|
 | Tests | bei jedem Lauf | alles Messbare, etwa Farben aus der Palette, Abstände aus dem Raster, kein „Sie“ | Werte aus dem Style-Guide, im Code |
 | Claude | nach jeder Phase | Code, Tests zweimal, Startprobe, Bilder, feste Größen | Spec, Vertrag, `ki_dev.md` |
-| Prüfer | am Ende einer Phase mit Sichtbarem oder Texten | was ein Urteil braucht, etwa ob der Ton zu „Das Amt“ passt | Style-Guide, Text-Leitfaden, später die game_bible |
+| Prüfer | am Ende einer Phase mit Sichtbarem oder Texten | was ein Urteil braucht, etwa ob der Ton zu „Das Amt“ passt | Style-Guide mit dem Abschnitt „Sprache“, später die game_bible |
 | Klaus | bei der Abnahme | alles; er entscheidet, wo ein Maßstab eine Lücke hat | Spec und sein Urteil |
 
 Ob eine Regel ein Test prüft oder ein Prüfer, entscheidet sich so:
 
 ```mermaid
 flowchart TD
-    R["Eine Regel aus Style-Guide<br/>oder Text-Leitfaden"] --> M{"Lässt sie sich<br/>messen?"}
+    R["Eine Regel aus dem Style-Guide"] --> M{"Lässt sie sich<br/>messen?"}
     M -->|"ja"| T["Test<br/>läuft bei jedem Lauf"]
     M -->|"nein"| Q{"Steht der Maßstab<br/>schriftlich fest?"}
     Q -->|"ja"| P["Prüfer<br/>bei der Phasenprüfung"]
@@ -91,7 +91,7 @@ eine Meldung so klingt wie in „Das Amt“.
 | Prüfer | Maßstab | Findet zum Beispiel | Messbares als Test | Stand |
 |---|---|---|---|---|
 | Stil | Style-Guide | weicher Schatten, der den VGA-Look bricht; Symbol in falscher Pixelgröße; Knopf ohne Hover-Zustand | nur Farben der Palette, ganzzahlige Skalierung, Schrift 10 oder 12 px | Schritt 3 |
-| Text | Text-Leitfaden, fehlt noch | „Geben Sie …“; Preise in Euro im Jahr 1994; „googeln“, das es bis 1999 noch nicht gab; ein Ton, der nicht zu „Das Amt“ passt | kein „Sie“ oder „Ihnen“; jeder Text passt in sein Feld | Schritt 5 |
+| Text | Style-Guide, Abschnitt „Sprache“ | „Geben Sie …“; Preise in Euro im Jahr 1994; „googeln“, das es bis 1999 noch nicht gab; ein Ton, der nicht zu „Das Amt“ passt | kein „Sie“ oder „Ihnen“ in Bedienung, Hinweisen und Meldungen; jeder Text passt in sein Feld | Schritt 5 |
 | Fakten | game_bible und Quellen | Pentium im Katalog schon 1991, obwohl er 1993 kam; Ereignis zu Windows 95 im Jahr 1994 | Daten im Ereigniskatalog stimmen mit der game_bible überein | später, wenn Katalog und game_bible wachsen |
 
 Jeder Prüfer ist ein Subagent in `.claude/agents/`, etwa `stil-pruefer.md`:
@@ -115,8 +115,10 @@ Nicht vorgesehen:
 - **Style-Guide:** Er liegt als Artifact vor, das ein Prüfer nicht selbst lesen kann. Claude gibt
   ihm die passenden Abschnitte mit. So bleibt der Style-Guide die einzige Quelle (Verfassung,
   Grundsatz IV).
-- **Text-Leitfaden:** fehlt noch und kommt in Schritt 4: du-Form, Ton, Wortschatz von 1985 bis 1999
-  und ein Glossar. Ohne ihn urteilt der Text-Prüfer nach Gefühl. Wo er steht, ist offen.
+- **Sprache:** ein Abschnitt im Style-Guide seit Schritt 4: Leitsätze zum Ton, Anrede, Zahlen und
+  Geld, Wortschatz von 1985 bis 1999 mit Jahreszahlen, Beispiele. Klaus hat den Ort und den Ton
+  entschieden (2026-10-22). Claude gibt den Abschnitt dem Text-Prüfer mit, wie dem Stil-Prüfer
+  die seinen.
 - **game_bible:** liegt im Repo, der Fakten-Prüfer liest sie selbst.
 - **Lücken:** Regelt ein Maßstab etwas nicht, entscheidet Klaus. Erst kommt die Regel in den
   Maßstab, dann wird gebaut, wie es Grundsatz IV der Verfassung für den Style-Guide verlangt.
@@ -137,7 +139,7 @@ sequenceDiagram
         C->>S: Abschnitte des Style-Guides, Diff, Bilder
         S-->>C: Befunde mit Ort, Regel, Beleg
     and Text
-        C->>X: Text-Leitfaden, Diff, Texte
+        C->>X: Abschnitt Sprache, Diff, Texte
         X-->>C: Befunde mit Ort, Regel, Beleg
     end
     C->>C: jeden Befund nachprüfen, bestätigt oder verworfen
@@ -253,7 +255,7 @@ Texte ändern. Sitzt der Ablauf, lässt er sich als gespeicherter Workflow fest 
 flowchart LR
     S1["1 Umzug"] --> S2["2 Dokumente"]
     S2 --> S3["3 Stil-Prüfer<br/>mit Probelauf"]
-    S2 --> S4["4 Text-Leitfaden"] --> S5["5 Text-Prüfer<br/>mit Probelauf"]
+    S2 --> S4["4 Abschnitt Sprache"] --> S5["5 Text-Prüfer<br/>mit Probelauf"]
     S3 --> S6["6 Skill<br/>Phasenprüfung"]
     S5 --> S6
     S4 --> S7["7 Tests"] --> S8["8 Hook,<br/>wenn gewollt"]
@@ -271,7 +273,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 | 1 | Umzug nach `docs/ki_workflow/` | [C] | erledigt, 2026-10-22 |
 | 2 | Einstieg und diese Datei, mit Schaubildern | [C] | erledigt, 2026-10-22 |
 | 3 | Stil-Prüfer mit Probelauf an Titelbildschirm, Hauptmenü und Hinweis aus Feature 001; dabei klärt sich, ob ein neuer Agent ohne neue Sitzung bereitsteht und Bildschirmfotos lesen kann | [C] | erledigt, 2026-10-22 |
-| 4 | Text-Leitfaden | [C] schreibt, [K] entscheidet den Ton | |
+| 4 | Abschnitt „Sprache“ im Style-Guide | [C] schreibt, [K] entscheidet den Ton | erledigt, 2026-10-22 |
 | 5 | Text-Prüfer mit Probelauf an den Texten von Feature 001 und der Werkstatt | [C] | |
 | 6 | Skill `dcl-phasenpruefung` | [C] | |
 | 7 | Tests `test_bilder.gd` und `test_texte.gd` | [A] | |
@@ -299,6 +301,5 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 
 Die Fragen stehen mit Empfehlung in `docs/offene-punkte.md` und kommen einzeln, wenn ihr Schritt
 dran ist:
-- vor Schritt 4: Steht der Text-Leitfaden als Abschnitt im Style-Guide oder als eigene Datei?
 - vor Schritt 8: Startet ein Hook die Tests, sobald der Godot-Agent fertig ist?
 - vor Schritt 9: Ab wann gelten die Prüfer?

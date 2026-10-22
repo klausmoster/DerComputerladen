@@ -31,10 +31,6 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 Aus dem Konzept, das in `docs/ki_workflow/ki_pruefung.md` aufgegangen ist. Jede Frage kommt
 einzeln, wenn ihr Schritt dran ist (dort unter „Stand der Einführung“).
-- **Ort des Text-Leitfadens (vor Schritt 4):** Abschnitt im Style-Guide oder eigene Datei?
-  Empfehlung: ein Abschnitt „Sprache“ im Style-Guide. Dort stehen schon die du-Form, kurze Sätze
-  und Begriffe der Zeit, und nach Grundsatz IV der Verfassung ist der Style-Guide die einzige
-  Quelle für alles Sichtbare.
 - **Hook nach dem Godot-Agent (vor Schritt 8):** Startet ein Hook die Tests, sobald der
   Godot-Agent fertig ist? Möglich ist das mit einem Hook bei `SubagentStop` und dem Matcher
   `godot-entwickler`: Meldet er Rot mit Exit-Code 2, arbeitet der Agent weiter (Stand der Doku in
@@ -223,6 +219,11 @@ Stellen.
 
 ## Erledigt
 
+- **Text-Leitfaden als Abschnitt „Sprache“ im Style-Guide** (Schritt 4 des KI-Workflows): Klaus,
+  2026-10-22, nach Empfehlung. Den Ton hat er in vier Fragen entschieden, jeweils nach Empfehlung:
+  trocken-ironisch wie „Das Amt“; kein Witz in der Bedienung; maßvoll aus der Zeit; das Spiel duzt
+  den Spieler, Kunden, Bank und Ämter siezen den Ladenbesitzer wie damals üblich. Der Abschnitt
+  steht im Style-Guide (Version 19), die drei Textregeln unter „Schrift“ verweisen jetzt dorthin.
 - **KI-Workflow in eigenem Ordner:** Klaus, 2026-10-22: Konzept freigegeben, mit der Änderung an
   `CLAUDE.md` (Pfad `docs/ki_workflow/`). Umgesetzt in den Schritten 1 und 2: `ki_dev.md` ist
   umgezogen, dazu kommen der Einstieg `README.md` und `ki_pruefung.md` mit Schaubildern; die beiden

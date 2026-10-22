@@ -72,7 +72,7 @@ Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
    dabei Einzelheiten. Anlass: Eine Sitzung trug Feature 001, den Start von 002 und die Spec
    von 003.
 8. **Phasenprüfung vor der Abnahme** (in Einführung, Klaus, 2026-10-22): Ändert eine Phase
-   Sichtbares oder Texte, prüfen Prüf-Agents sie gegen Style-Guide und Text-Leitfaden, bevor Klaus
+   Sichtbares oder Texte, prüfen Prüf-Agents sie gegen den Style-Guide, bevor Klaus
    abnimmt. Wie, steht in [ki_pruefung.md](ki_pruefung.md). Bis die Prüfer eingeführt sind, prüft
    Claude allein.
 
