@@ -45,10 +45,10 @@ nach seinem OK wird committet.
 Nicht versuchen zu pushen — auf diesem Rechner liegen keine
 GitHub-Zugangsdaten.
 
-**Arbeitsweise:** `docs/ki_dev.md` beschreibt Abläufe, Prüfungen und
-Erfahrungen und gilt für Claude in diesem Projekt. Es gibt kein lokales
-Gedächtnis: Was dauerhaft gelten soll, kommt in eine Repo-Datei und wird
-committet. Offene Punkte und Claudes eigene Entscheidungen stehen in
+**Arbeitsweise:** Die Dokumente in `docs/ki_workflow/` beschreiben Abläufe,
+Prüfungen und Erfahrungen und gelten für Claude in diesem Projekt. Es gibt kein
+lokales Gedächtnis: Was dauerhaft gelten soll, kommt in eine Repo-Datei und
+wird committet. Offene Punkte und Claudes eigene Entscheidungen stehen in
 `docs/offene-punkte.md`.
 
 Erklären statt nur liefern: Zu jeder umgesetzten Aufgabe gibt es eine
@@ -96,7 +96,7 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
 | `docs/game_bible/` | Obsidian-Vault mit den Spieldaten (Komponenten, Preise, Prospekte) |
 | `docs/game_design.md` | Game Design Document |
-| `docs/ki_dev.md` | Arbeitsweise mit KI: Abläufe, Prüfungen, Erfahrungen |
+| `docs/ki_workflow/` | Arbeitsweise mit KI: Abläufe, Prüfungen, Erfahrungen |
 | `docs/offene-punkte.md` | offene Fragen, Lücken und Claudes eigene Entscheidungen |
 | `.claude/skills/` | Projekt-Skills, Präfix `dcl-` (eigene) und `speckit-` (Spec Kit) |
 | `.claude/agents/` | Projekt-Agents, z.B. `godot-entwickler` für `[A]`-Aufgaben |

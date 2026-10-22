@@ -1,7 +1,7 @@
 # Offene Punkte
 
-Hier steht, was Klaus noch entscheiden oder bestätigen muss (`docs/ki_dev.md`, „Entscheidungen
-nicht stillschweigend treffen“):
+Hier steht, was Klaus noch entscheiden oder bestätigen muss (`docs/ki_workflow/ki_dev.md`,
+„Entscheidungen nicht stillschweigend treffen“):
 - **Offen:** Fragen, die Klaus entscheidet, und Lücken oder Widersprüche in den Dokumenten.
 - **Eigene Entscheidungen von Claude:** Festlegungen, die nicht aus den Dokumenten folgten. Sie
   sind umgesetzt, aber noch nicht von Klaus bestätigt.
