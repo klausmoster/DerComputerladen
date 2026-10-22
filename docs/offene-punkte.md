@@ -84,6 +84,51 @@ in einem eigenen Schritt. Zahlen in `docs/ki_workflow/ki_pruefung.md`, „Nachme
   - Verworfen: die Maße der Lochränder. Sie stehen im Baustein Bildrahmen, den Claude dem Prüfer
     nicht mitgegeben hatte, und der Code hält sie ein.
 
+### Probelauf des Text-Prüfers an Feature 001 und der Werkstatt (2026-10-22)
+
+Der Text-Prüfer hat rund 740 Texte und alle 27 Ereignisse des Katalogs gegen den Abschnitt
+„Sprache“ und für die Werkstatt gegen „Werkzeuge“ geprüft, Claude hat jeden Befund im Code
+nachgesehen. Feature 001: keine Befunde. Alles Weitere betrifft die Werkstatt, an der gerade die
+Sitzung „[003] Schwierigkeitsgrade ab dem Plan“ arbeitet; repariert wird also erst nach Feature 003,
+wenn Klaus es will.
+- **Bestätigt:**
+  - **Prozent ohne Leerzeichen (mittel):** Wirkungen stehen als „-30%“
+    (`core/timeline/event_effect.gd:85`), verlangt ist „−30 %“ wie „3,5 %“ unter „Werkzeuge“.
+  - **Datum als „02-30“ (mittel):** `core/timeline/catalog_validator.gd:165`; zwei Zeilen davor steht
+    „29.02.“. Empfehlung: „30.02.“.
+  - **Englische Fehlertexte der Engine (mittel):** `error_string()` und `json.get_error_message()`
+    enden in deutschen Sätzen auf Englisch, etwa „… lässt sich nicht schreiben: Can't open.“ Sechs
+    Stellen. Tritt nur bei Dateifehlern auf.
+  - **Ein Feld, drei Namen (mittel):** „Chance“ im Formular, „Grundchance“ im Verlauf und in den
+    Prüfregeln; beim Folgeereignis „Chance“ und „Wahrscheinlichkeit“.
+  - **Einzahl fehlt (niedrig):** „dauert 1 Tage“, „nach 1 Tagen“, „Rechnet 1 Spiele“ sind möglich
+    (Prüfregeln V19 und Nachbarn, Statistik).
+  - **Würfel und Chance in verschiedenen Einheiten (niedrig):** „Würfel 0,4120 < 50 %“
+    (`core/timeline/schedule_entry.gd:164`).
+  - **Tastennamen englisch (niedrig):** „Ctrl+Shift+Z“ und „Enter“; deutsch wären „Strg“ und
+    „Eingabetaste“. Die Schreibweise steht so im Vertrag von Feature 002 (R15); Klaus entscheidet.
+  - **Beispiel ohne Vorzeichen (niedrig):** „+5, -6 oder 2,5“ in
+    `tools/werkstatt/intervention_dialog.tscn:51`, obwohl der Satz Vorzeichen verlangt.
+  - **Zwei Namen für Dauer 0 (niedrig):** „0 heißt Augenblick“ neben „ohne Dauer“
+    (`tools/werkstatt/event_form.gd`).
+  - **Grammatik im Katalog (niedrig):** „Preise müssen umgedacht werden“ (`euro_buchgeld`);
+    Vorschlag „umgerechnet“. Den Katalog pflegt Klaus in der Werkstatt.
+- **Verworfen:**
+  - Seed ohne Tausenderpunkt: Der Seed ist eine Kennnummer, keine Menge (siehe Lücken).
+  - Beispieldatum „1.3.1993“: Es zeigt bewusst, dass die kurze Eingabe geht.
+  - „High-End“ im Katalog: ein Computerwort der Zeit, das der Abschnitt „Sprache“ erlaubt.
+- **Lücken im Style-Guide:**
+  - Gilt „ein Satz pro Meldung“ auch für Dialoge und Tooltips der Werkzeuge? Dort stehen bis zu vier
+    Sätze, auch im Beispiel des Abschnitts „Werkzeuge“.
+  - Witz in Beispielwerten der Werkzeuge, etwa „etwa Ware vom windigen Händler“?
+  - Fachwörter im Werkzeug: Ist „Seed“ erlaubt, und schreibt man Kennnummern mit Tausenderpunkt?
+  - Daten in Dateien und auf der Kommandozeile stehen als JJJJ-MM-TT; der Abschnitt regelt nur
+    angezeigte Daten.
+  - Minuszeichen: „-“ oder „−“? Im Code steht beides.
+  - Kategorie „Tech“: ein Anglizismus, sobald sie im Spiel erscheint; deutsch wäre „Technik“.
+  - Versionsnummer „V0.1“ mit Punkt statt Komma.
+- **Unsicher:** die Mehrzahl „Beginne“ in der Statistik; „Vorkommen“ stünde schon im Kern.
+
 ### Ältere Punkte aus Claudes bisherigem lokalem Gedächtnis
 
 - **Spielfenster ragt 6 Pixel in den Bereich des Docks** (Feature 002, Abnahme von Phase 4,
