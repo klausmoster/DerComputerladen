@@ -221,12 +221,33 @@ Schon gemessen wird:
   Relief, Fehlerkontur, Fokuslinie, Pixelschatten;
 - in `test_ui_palette.gd`: die 15 Farben und die Kategorienfarben mit genug Kontrast.
 
-Dazu kommen in Schritt 7, gebaut vom Godot-Agent, jeder mit Fehlerprobe:
-- `test_bilder.gd`: Bilder in `src/assets/images/` nur in Farben der Hauptpalette
-  (`docs/art/hauptpalette.gpl`). Er heißt nicht `test_palette.gd`, damit ihn niemand mit
-  `test_ui_palette.gd` verwechselt.
-- `test_texte.gd`: kein „Sie“ oder „Ihnen“ als Anrede in den Texten von Spiel und Werkzeugen; später
-  auch: Jeder Text passt in sein Feld.
+Seit Schritt 7 dazu, gebaut vom Godot-Agent, jeder mit Fehlerprobe (2026-10-22):
+- `test_bilder.gd`: Jede PNG-Datei in `src/assets/images/` ist Pixel für Pixel ganz durchsichtig
+  oder ganz deckend in einer Farbe der Hauptpalette (`docs/art/hauptpalette.gpl`). Dazu: Die
+  Palette hat 256 Farben, Index 0 ist Magenta für die Transparenz, Index 1 bis 15 sind die Farben
+  aus `UiPalette`. Er heißt nicht `test_palette.gd`, damit ihn niemand mit `test_ui_palette.gd`
+  verwechselt.
+- `test_texte.gd`: kein „Sie“, „Ihnen“ oder „Ihr“ als Anrede in Szenen und Skripten unter
+  `scenes/`, `tools/werkstatt/` und `core/`. Stellen, an denen „Sie“ die Mehrzahl meint, stehen
+  mit Grund in der Liste `ERLAUBT`; ein eigener Test meldet Einträge, die es nicht mehr gibt.
+  Später, mit der Reparatur nach Feature 003: Einzahl bei 1 („1 Tag“), Prozent mit Leerzeichen,
+  jeder Text passt in sein Feld (Klaus, 2026-10-22).
+
+Lernnotiz zu Schritt 7, Einzelheiten in den Doc-Kommentaren der beiden Tests:
+- **Datei statt Resource:** `load("res://…png")` liefert die importierte Textur, die der Import
+  verändert haben kann. `Image.load_from_file(ProjectSettings.globalize_path(…))` liest die
+  PNG-Datei selbst; nur so prüft der Test, was wirklich im Repo liegt.
+- **Rohdaten statt `get_pixel()`:** Das Bild wird nach `FORMAT_RGBA8` umgerechnet und mit
+  `get_data()` als Bytes gelesen; die Farben der Palette stehen als Zahl in einem `Dictionary`.
+  So kostet die Frage „gehört die Farbe dazu?“ einen `has()`-Aufruf je Pixel.
+- **`\p{L}` statt `\b`:** Godots `RegEx` zählt bei `\b` Umlaute nicht als Buchstaben. Die
+  Abgrenzung „kein Buchstabe davor und danach“ steht deshalb mit `\p{L}` da, damit „Ihringen“ kein
+  Treffer ist.
+- **Kleiner Leser statt Regex für Skripte:** Ein Regex allein hält `"#Farbe"` und `# "Sie"` nicht
+  auseinander. Der Test geht den Quelltext Zeichen für Zeichen durch: `#` außerhalb einer
+  Zeichenkette beendet die Zeile, `"` beginnt eine Zeichenkette.
+- **Prüffunktionen mit Pfad:** Sie nehmen einen Pfad oder Text. So lief die Fehlerprobe mit
+  denselben Funktionen an Kopien außerhalb des Repos, und die Tests brauchen keine Fixture-Dateien.
 
 Es gelten die Regeln aus `ki_dev.md`, „Tests“. Dazu kommt: Alle Arbeitsordner teilen sich `user://`
 von „Der Computerladen“, und die Tests schreiben in feste Unterordner wie `user://test_simulator/`.
@@ -277,7 +298,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 | 4 | Abschnitt „Sprache“ im Style-Guide | [C] schreibt, [K] entscheidet den Ton | erledigt, 2026-10-22 |
 | 5 | Text-Prüfer mit Probelauf an den Texten von Feature 001 und der Werkstatt | [C] | erledigt, 2026-10-22 |
 | 6 | Skill `dcl-phasenpruefung` mit den Hilfsskripten für Bildschirmfotos und Textliste | [C] | erledigt, 2026-10-22 |
-| 7 | Tests `test_bilder.gd` und `test_texte.gd` | [A] | |
+| 7 | Tests `test_bilder.gd` und `test_texte.gd` | [A] | erledigt, 2026-10-22 |
 | 8 | Hook, wenn gewollt: Tests laufen von selbst, sobald der Godot-Agent fertig ist | [C] | |
 | 9 | Pilot in einer echten Phase mit Sichtbarem oder Texten, mit Zählung | [C] | |
 | 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | |
