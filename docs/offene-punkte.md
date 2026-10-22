@@ -21,14 +21,11 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ### Feature 003, Plan (2026-10-21)
 
-Beides blockiert nichts.
 - **Startwerte der Profile (R18):** Claudes Vorschlag für die sechs Ereignisse über
   Wahrscheinlichkeit steht in `specs/003-schwierigkeitsgrade/research.md`, R18. Klaus legt die
-  Profile zur Abnahme von Phase 3 in der Werkstatt an und stellt sie mit der Statistik nach.
-- **Verfassung, Grundsatz V:** Die Ausnahme Ereigniskatalog nennt „die Ereignisse der
-  Zeitleiste“. Die Profile sind keine Ereignisse, stehen aber in derselben Datei und werden
-  genauso gepflegt. Empfehlung: so lassen, denn die Ausnahme deckt das. Klarer würde es mit einem
-  PATCH 2.1.2: „die Ereignisse und die Profile der Schwierigkeitsgrade“.
+  Profile zur Abnahme von Phase 3 in der Werkstatt an und stellt sie mit der Statistik nach. Seit
+  2026-10-22 steht fest, dass beide Profile zur Gesamtabnahme gefüllt sein müssen
+  (Checkliste, CHK008). Offen sind nur noch die Werte.
 
 ### Ältere Punkte aus Claudes bisherigem lokalem Gedächtnis
 
@@ -114,9 +111,7 @@ stehen in `specs/003-schwierigkeitsgrade/research.md`.
 - **Aufbau des Abschnitts (R2):** Die Katalogdatei hat den Abschnitt `"profiles"` mit `"leicht"`
   und `"schwer"`. Ein Start-Modifikator hat dieselben Schlüssel wie ein Modifikator in einer
   Probe. Die Listen behalten ihre Reihenfolge und werden nicht sortiert.
-- **Formatnummer (R3):** Sie bleibt 1, Dateien aus Feature 002 laden weiter. Zur Abnahme von
-  Phase 1 speichert Klaus den echten Katalog einmal in der Werkstatt, damit er den leeren
-  Abschnitt hat. So gilt „eine Änderung, eine Zeile“ dort weiter.
+- **Formatnummer (R3):** Sie bleibt 1, Dateien aus Feature 002 laden weiter.
 - **Profil für Mittel oder einen unbekannten Grad (R4):** ein Strukturfehler V22, wie jeder
   unbekannte Schlüssel.
 - **Kennungen (R5):** Start-Modifikatoren und Eingriffe stehen im Lauf in zwei Listen, die
@@ -125,26 +120,28 @@ stehen in `specs/003-schwierigkeitsgrade/research.md`.
 - **Ganze Profile im Verlauf (R10):** Jede Änderung an einem Start-Modifikator ersetzt in der
   Werkstatt das ganze Profil durch eine Kopie. So stimmt Rückgängig auch, wenn ein Löschen zwei
   Start-Modifikatoren eines Profils mitnimmt.
-- **Reiter (R11):**
-  - Er steht als vierter hinter „Statistik“.
-  - „Neu“ legt ohne Dialog an.
-  - „Löschen“ fragt nicht nach, Cmd+Z holt den Start-Modifikator zurück.
-- **Wechsel des Grads im Simulator (R13):** Der Lauf wird so neu gebaut, wie er war: derselbe
-  Seed und Tag, dieselben angewandten Eingriffe. Nur der Grad ändert sich. Der Text „Stand: …“
-  nennt den Grad nicht, das tut die Auswahl daneben. Die Texte der Markierungen ändern sich nur
-  beim Vergleich mit Mittel.
-- **Probe mit unbekanntem Grad (R14):** Sie ist unlesbar, wie bei einem Seed außerhalb des
-  Bereichs.
-- **Statistik (R15):** Beim Vergleich stehen kleinste und größte Anzahl als „Spanne“ in einer
-  Spalte, und die Verteilung auf die Jahre ist ausgeblendet. Der Ergebnistext nennt den Grad
-  immer, auch Mittel.
-- **Kopfzeile der Textausgabe (R16):** Sie nennt den Grad immer, auch bei Mittel.
 
 ## Erledigt
 
-- **Verweise beim Umbenennen (Feature 003, FR-017):** Klaus, 2026-10-21, im Plan: Start-Modifikatoren
-  ziehen still mit wie Folgen und Bedingungen; genannt wird nur beim Löschen. Steht in der Spec
-  und in `specs/003-schwierigkeitsgrade/research.md`, R9.
+- **Eigene Festlegungen des Plans von Feature 003, bestätigt im Review:** Klaus hat am
+  2026-10-22 die Vorschläge der Checkliste freigegeben und damit diese Festlegungen bestätigt:
+  - der Reiter mit „Neu“ ohne Dialog und „Löschen“ ohne Rückfrage (R11, CHK016);
+  - der Wechsel des Grads im Simulator, „so, wie er war“ (R13, CHK011, CHK029, CHK033);
+  - der Stand im Simulator ohne Grad und die Texte der Markierungen (R13, CHK017);
+  - die unlesbare Probe bei einem unbekannten Grad (R14, CHK031);
+  - „Spanne“ und keine Verteilung beim Vergleich, der Grad im Ergebnistext (R15, CHK015,
+    CHK017);
+  - die Kopfzeile der Textausgabe mit Grad (R16, CHK017);
+  - das einmalige Speichern des echten Katalogs in Phase 1 (R3, CHK037).
+
+  Steht in `specs/003-schwierigkeitsgrade/checklists/review.md`.
+- **Verfassung, Grundsatz V und die Profile (Feature 003):** Klaus, 2026-10-22, nach Empfehlung:
+  so lassen. Die Ausnahme Ereigniskatalog gilt der Datei und ihrer Pflege in der Werkstatt, also
+  auch den Profilen darin; die Verfassung bleibt bei 2.1.1. Steht in
+  `specs/003-schwierigkeitsgrade/checklists/review.md`, CHK022.
+- **Verweise beim Umbenennen (Feature 003, FR-017):** Klaus, 2026-10-21, im Plan:
+  Start-Modifikatoren ziehen still mit wie Folgen und Bedingungen; genannt wird nur beim Löschen.
+  Steht in der Spec und in `specs/003-schwierigkeitsgrade/research.md`, R9.
 - **`CLAUDE.md` verweist auf `docs/ki_dev.md`** (Claudes Ergänzung nach Klaus' Satz „ki_dev ist in
   claude.md“): Klaus hat den Absatz „Arbeitsweise“ mit dem Merge von Feature 002 nach `main`
   freigegeben (2026-10-21).

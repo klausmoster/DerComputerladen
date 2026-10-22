@@ -34,9 +34,10 @@ echten Katalog gilt wieder, sobald Klaus ihn zur Abnahme von Phase 1 einmal gesp
 
 Erwartet: alle Tests grün, bei zwei Läufen mit derselben Zahl von Prüfungen. Sobald die jeweilige
 Phase fertig ist, sind damit belegt:
-- FR-012 und FR-014: Jede Regel V25 bis V30 schlägt bei ihrer kaputten Fixture an, und der echte
-  Katalog hat auch in seinen Profilen keinen Fehler (ab Phase 1).
-- Feste Größe: Mittel ergibt für die Seeds 1, 4711 und 99999 Fahrplan und Protokoll wie die
+- FR-012 und FR-014: Jede Fehlerregel V25 bis V30 schlägt bei ihrer kaputten Fixture an, V31
+  warnt. Der echte Katalog hat auch in seinen Profilen keinen Fehler (ab Phase 1). Ab Phase 3 sind
+  Leicht und Schwer im echten Katalog nicht leer (CHK008).
+- SC-007: Mittel ergibt für die Seeds 1, 4711 und 99999 Fahrplan und Protokoll wie die
   eingefrorene Grundlinie, Zeichen für Zeichen (ab Phase 2).
 - SC-001: 100 Wiederholungen von Seed und Grad ergeben 100 gleiche Fahrpläne (Phase 2).
 - SC-002: In 100 Seeds unterscheiden sich Mittel und Schwer nur bei den veränderten Ereignissen
@@ -109,9 +110,11 @@ Geprüft wird im maximierten Fenster bei Klaus' Größe, derzeit 1920 × 925 log
 | Reklamationswelle in der Liste wählen, Grad „Leicht“, „Neu“ | neue Zeile auf die Reklamationswelle, 01.01.1985 bis 31.12.1999, Fokus in „Wert“; die Prüfung zeigt V29, bis ein Grund dasteht | FR-002, R11 |
 | Wert „-2“, Grund „Nachsichtige Kunden“, Cmd+S, Werkstatt schließen und wieder öffnen | der Start-Modifikator steht in „Leicht“, mit „-2“ | US2, Szenario 1 |
 | Im Formular die Art der Reklamationswelle auf „fix, jährlich“ stellen, dann Cmd+Z | Fehler V26 an „Ereignis“ des Start-Modifikators und in der Prüfung, das Ereignis steht als „Reklamationswelle (fix, jährlich)“ in der Auswahl; nach Cmd+Z ist der Fehler weg | US2, Szenario 2 |
-| Ende vor Beginn; Grund leeren | Fehler V27 bzw. V29, die Meldung nennt Grad und Start-Modifikator | US2, Szenario 3 |
+| Ende vor Beginn; Grund leeren | Fehler V27 bzw. V29, die Meldung nennt Grad und Start-Modifikator; in der Prüfung steht in der Spalte „Ereignis“ „Profil Leicht“ | US2, Szenario 3; FR-016 |
+| Beginn 15.03.1990 | Warnung V31 am Feld „Beginn“: „… wirkt ab der Würfelrunde am 01.04.1990“; Speichern geht ohne Rückfrage zu Fehlern | FR-012 |
 | Eine dieser Meldungen in der Prüfung anklicken | Reiter „Schwierigkeitsgrade“, richtiger Grad, Zeile gewählt, Fokus im Feld | FR-016 |
 | „Duplizieren“, „Löschen“, Cmd+Z | Kopie direkt dahinter mit `_2`; Löschen ohne Rückfrage; Cmd+Z holt ihn zurück; die Toolbar zeigt „ungespeichert“ | FR-015, FR-016 |
+| Die Reklamationswelle in der Liste duplizieren | die Kopie hat in keinem Profil einen Start-Modifikator; die der Reklamationswelle bleiben | Edge Case „Ereignis dupliziert“ |
 | In „Schwer“ einen Start-Modifikator auf „Konkurrent eröffnet“, dann das Ereignis in der Liste löschen | der Dialog nennt „In den Profilen: Schwer: …“; nach dem Löschen ist auch der Start-Modifikator weg; Cmd+Z holt beides zurück | US2, Szenario 4; FR-017 |
 | Die Kennung von „Konkurrent eröffnet“ ändern | der Start-Modifikator zeigt danach auf die neue Kennung, ohne Rückfrage | FR-017, R9 |
 | „Leicht -2“ und „Schwer +5“ auf der Reklamationswelle, Formular der Reklamationswelle | „Je Grad“: Leicht 1 %, Mittel 3 %, Schwer 8 %, nur zum Lesen | US2, Szenario 6 |
@@ -134,13 +137,15 @@ Geprüft wird im maximierten Fenster bei Klaus' Größe, derzeit 1920 × 925 log
 | „Neu starten ohne Eingriffe“, dann Grad wechseln | der neue Lauf ist wieder ohne Eingriffe; „Neu starten mit Eingriffen“ hat sie noch | R13 |
 | Probe „Schwer mit Engpass“ speichern, Grad auf Mittel stellen, Probe laden | Seed, Grad Schwer und Eingriffe wieder gesetzt; die Liste der Proben zeigt die Spalte „Grad“ | US3, Szenario 3; FR-019 |
 | In der Datei der Probe unter `src/tools/werkstatt/proben/` die Zeile `"difficulty"` löschen, dann laden | gilt als Mittel | US3, Szenario 4 |
-| Ein Profil ändern, während ein Lauf steht | „Katalog geändert, neu starten“ | FR-042 von Feature 002 |
+| Ein Profil ändern, während ein Lauf steht | „Katalog geändert, neu starten“ | FR-018; FR-042 von Feature 002 |
+| Danach den Grad wechseln | der neue Lauf nimmt den geänderten Katalog, der Hinweis „Katalog geändert“ ist weg | FR-018 |
+| Mit Schwer einen gewürfelten Termin absagen, dann auf Mittel wechseln | gibt es den Termin bei Mittel nicht, nennt der Hinweis die Absage als nicht anwendbar | FR-018 |
 
 ### 4.3 Statistik mit Graden (ab Phase 5)
 
 | Prüfung | Erwartet | Bezug |
 |---|---|---|
-| Grad „Alle drei vergleichen“, 1.000 Spiele, „Starten“, mit der Uhr | Fortschritt „… von 1.000 Spielen je Grad“, fertig nach höchstens 90 Sekunden | US4, Szenario 1; SC-004 |
+| Echter Katalog samt Profilen, ohne Eingriffe, Grad „Alle drei vergleichen“, 1.000 Spiele, „Starten“ | Fortschritt „… von 1.000 Spielen je Grad“; vom Starten bis 100 % höchstens 90 Sekunden, die Statistik nennt die Zeit | US4, Szenario 1; SC-004 |
 | Tabelle | je Ereignis Ø, Spanne und „ohne“ für Leicht, Mittel und Schwer nebeneinander; alle Spalten ohne Rollen sichtbar; die Verteilung auf die Jahre ist ausgeblendet, mit Text | FR-020, R15 |
 | Noch einmal starten | dieselben Werte | US4, Szenario 2 |
 | Fixe und jährliche Ereignisse, etwa das Weihnachtsgeschäft | in allen drei Graden dieselben Werte | US4, Szenario 3 |
@@ -163,9 +168,9 @@ Geprüft wird im maximierten Fenster bei Klaus' Größe, derzeit 1920 × 925 log
 
 | Phase | Abschnitte |
 |---|---|
-| 1 Grundlage | 1, 2; danach öffnet Klaus den echten Katalog in der Werkstatt und speichert einmal, damit er den leeren Abschnitt hat (research.md, R3) |
+| 1 Grundlage | 1, 2; danach schließt Klaus jede ältere Werkstatt, öffnet den echten Katalog in der neuen und speichert einmal, damit er den leeren Abschnitt hat (research.md, R3; CHK037) |
 | 2 Spielstart mit Grad (US1) | 1, 2, 3 |
-| 3 Profile in der Werkstatt (US2) | 1, 2, 4.1; danach legt Klaus die Profile im echten Katalog an (research.md, R18) |
+| 3 Profile in der Werkstatt (US2) | 1, 2, 4.1; danach legt Klaus die Profile im echten Katalog an (research.md, R18), und der Test, dass beide nicht leer sind, kommt dazu (CHK008) |
 | 4 Simulator (US3) | 1, 4.2 |
 | 5 Statistik (US4) | 1, 4.3 |
 | 6 Abschluss | alles, dazu der Quickstart von Feature 002 |

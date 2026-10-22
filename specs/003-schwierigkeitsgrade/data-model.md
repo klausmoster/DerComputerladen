@@ -58,6 +58,12 @@ Ein leeres Profil verhält sich wie „Mittel“ (Edge Case „Leeres Profil“)
 Start-Modifikatoren auf dasselbe Ereignis addieren sich, auch mit überlappenden Zeiträumen (Edge
 Case).
 
+**Wenn sich das Ereignis ändert:**
+- Löschen: Die Start-Modifikatoren darauf werden mit entfernt (FR-017).
+- Umbenennen: Sie ziehen still mit (FR-017).
+- Duplizieren: Die Kopie bekommt keine Start-Modifikatoren (Edge Case „Ereignis dupliziert“).
+- Art ändern: Sie bleiben stehen, und V26 meldet sie (Edge Case „Art geändert“).
+
 **Stelle eines Start-Modifikators:** Im Profil hat er seine Stelle i, ab 0. In Prüfmeldungen heißt
 sie wie in der Datei, `profiles.<key>[<i>].<schlüssel>`, etwa `profiles.schwer[2].reason`. Im Text
 heißt sie „Profil „Schwer“, Start-Modifikator „reklamationswelle““, ohne Kennung „Profil
@@ -90,9 +96,13 @@ für ein Feld, das beim Lesen fehlt (dann mit V22):
 wie bei einem Modifikator in einer Probe (R2). Im Speicher sind es Tagesindizes.
 
 **Wann er wirkt:** Gewürfelt wird am Monatsersten, mit der Chance dieses Tags (R8 von Feature
-002). Ein Start-Modifikator, der am 15.03.1990 beginnt, wirkt deshalb ab der Würfelrunde am
-01.04.1990. Einer, der am 31.12.1994 endet, wirkt noch in der Würfelrunde am 01.12.1994. Die
-Werkstatt nennt die Tage, wie sie im Profil stehen.
+002). Ein Start-Modifikator wirkt in den Würfelrunden, deren Tag in seinem Zeitraum liegt (FR-007):
+- Beginnt er am 15.03.1990, wirkt er ab der Würfelrunde am 01.04.1990.
+- Endet er am 15.06.1994, wirkt er noch in der Würfelrunde am 01.06.1994.
+- Einer, der am 31.12.1994 endet, wirkt zuletzt in der Würfelrunde am 01.12.1994.
+
+Die Werkstatt nennt die Tage, wie sie im Profil stehen. Ist der Beginn kein Monatserster oder das
+Ende kein Monatsletzter, warnt V31 und nennt die Würfelrunde (Klaus, 2026-10-22).
 
 ## EventCatalog
 
@@ -167,16 +177,20 @@ Signal (R6).
 
 ## Prüfregeln
 
-Die Tabelle aus Feature 002 (V01 bis V24) wird fortgesetzt. Alle neuen Regeln sind Fehler:
+Die Tabelle aus Feature 002 (V01 bis V24) wird fortgesetzt:
 
-| Regel | Prüft | Feld |
-|---|---|---|
-| V25 | Start-Modifikator verweist auf ein unbekanntes Ereignis, auch ein leeres | `event_id` |
-| V26 | Start-Modifikator auf ein Ereignis, das nicht über Wahrscheinlichkeit kommt: fix, jährlich, beim Start gesetzt oder nur als Folge | `event_id` |
-| V27 | Ende vor dem Beginn | `to_day` |
-| V28 | Beginn oder Ende außerhalb 01.01.1985 bis 31.12.1999 | `from_day` bzw. `to_day` |
-| V29 | Grund leer oder nur Leerzeichen | `reason` |
-| V30 | Kennung leer, mit anderen Zeichen als a–z, 0–9 und _, oder im Profil doppelt; eine Dublette wird bei jedem Start-Modifikator mit dieser Kennung gemeldet | `id` |
+| Regel | Prüft | Feld | Stufe |
+|---|---|---|---|
+| V25 | Start-Modifikator verweist auf ein unbekanntes Ereignis, auch ein leeres | `event_id` | Fehler |
+| V26 | Start-Modifikator auf ein Ereignis, das nicht über Wahrscheinlichkeit kommt: fix, jährlich, beim Start gesetzt oder nur als Folge | `event_id` | Fehler |
+| V27 | Ende vor dem Beginn | `to_day` | Fehler |
+| V28 | Beginn oder Ende außerhalb 01.01.1985 bis 31.12.1999 | `from_day` bzw. `to_day` | Fehler |
+| V29 | Grund leer oder nur Leerzeichen | `reason` | Fehler |
+| V30 | Kennung leer, mit anderen Zeichen als a–z, 0–9 und _, oder im Profil doppelt; eine Dublette wird bei jedem Start-Modifikator mit dieser Kennung gemeldet | `id` | Fehler |
+| V31 | Beginn kein Monatserster oder Ende kein Monatsletzter; die Meldung nennt die erste bzw. letzte Würfelrunde, in der er wirkt, oder dass er in keiner wirkt (Klaus, 2026-10-22) | `from_day` bzw. `to_day` | Warnung |
+
+V31 kommt zu den Warnregeln V13, V20 und V23. Eine Warnung nimmt nichts aus: Ein Start-Modifikator
+mit V31 gilt im Spiel, in den Würfelrunden seines Zeitraums.
 
 V22 deckt beim Lesen zusätzlich ab:
 - `profiles` ist kein Objekt, ein Profil keine Liste, ein Eintrag kein Objekt;
@@ -198,7 +212,20 @@ in den Profilen der Kopie zwei Arten von Start-Modifikatoren weg (R8):
 
 Spiel, Simulator, Statistik und Textausgabe rechnen deshalb nur mit Start-Modifikatoren, die die
 Prüfung bestehen. Die Zeitleiste meldet jeden weggelassenen mit Grad, Kennung und Grund über
-`push_error()` (FR-013).
+`push_error()` (FR-013); Simulator und Statistik nennen ihn im Hinweis auf Ausgenommenes, die
+Textausgabe auf stderr.
+
+## Abhängige Ereignisse
+
+Für FR-009 und SC-002: Abhängig von einer Menge veränderter Ereignisse ist jedes Ereignis, das von
+einem davon aus erreichbar ist, auch über mehrere Stufen:
+- über ein Folgeereignis, von der Quelle zur Folge;
+- über eine Bedingung, vom Ereignis in der Bedingung zum Ereignis, das die Bedingung hat.
+
+Verändert ist ein Ereignis, wenn ein geltender Start-Modifikator des Grads darauf zeigt. Bei zwei
+Graden zählen die Start-Modifikatoren beider Profile. Alle übrigen Ereignisse haben in beiden
+Graden dieselben Termine. Ein Test bildet die Hülle aus dem Katalog und prüft jede Markierung von
+`ScheduleDiff` dagegen.
 
 ## Chance je Zeitabschnitt
 
@@ -214,7 +241,8 @@ zurück, je `{"from_day": int, "to_day": int, "chance": float}`:
 
 `describe_periods()` macht daraus den Text: „8 %“ bei einem Abschnitt, sonst „3 % bis
 31.12.1994, 6 % ab 01.01.1995“, in der Mitte „5 % vom 01.01.1990 bis 31.12.1994“. Prozent mit
-deutschem Komma und höchstens zwei Nachkommastellen, etwa „2,5 %“.
+deutschem Komma und höchstens zwei Nachkommastellen, etwa „2,5 %“. Die Zahl der Abschnitte hat
+keine Grenze; im Formular bricht die Zeile eines Grads um.
 
 ## WhatIfProbe
 

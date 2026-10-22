@@ -23,7 +23,7 @@ src/
 │       ├── difficulty_profile.gd     # neu: DifficultyProfile, ein Profil und die Chance je Zeitabschnitt
 │       ├── chance_modifier.gd        # geändert: from_dict(), to_dict()
 │       ├── event_catalog.gd          # geändert: profiles, get_profile(), to_dict()
-│       ├── catalog_validator.gd      # geändert: V25 bis V30
+│       ├── catalog_validator.gd      # geändert: V25 bis V31
 │       ├── timeline_run.gd           # geändert: Grad, Start-Modifikatoren
 │       ├── timeline_message.gd       # geändert: Art START_MODIFIER
 │       ├── schedule_text.gd          # geändert: Kopfzeile mit Grad
@@ -153,15 +153,19 @@ Geändert:
 
 ```gdscript
 class_name CatalogValidator extends RefCounted
-## Geändert: nach Ereignissen und Kategorien folgen die Profile mit V25 bis V30, Leicht vor
+## Geändert: nach Ereignissen und Kategorien folgen die Profile mit V25 bis V31, Leicht vor
 ## Schwer, je Profil nach Stelle, je Start-Modifikator nach Regel.
 static func validate(catalog: EventCatalog) -> Array[CatalogIssue]
-## Nur die Regeln der Profile, V25 bis V30; validate() nutzt sie.
+## Nur die Regeln der Profile, V25 bis V31; validate() nutzt sie.
 static func validate_profiles(catalog: EventCatalog) -> Array[CatalogIssue]
 ```
 
 `validate_event()` bleibt, wie es ist, denn die Regeln der Profile sind keine Regeln eines
-Ereignisses. Meldungen zu Profilen haben ein leeres `event_id` (R8).
+Ereignisses. Meldungen zu Profilen haben ein leeres `event_id` (R8). `WARNING_RULES` bekommt
+`"V31"`: Ein Beginn, der kein Monatserster ist, oder ein Ende, das kein Monatsletzter ist, ergibt
+eine Warnung mit der Würfelrunde, in der der Start-Modifikator zuerst bzw. zuletzt wirkt, oder dem
+Hinweis, dass er in keiner wirkt (data-model.md, „Prüfregeln“). `without_faulty()` nimmt wegen
+einer Warnung nichts aus.
 
 ## Der Lauf
 
@@ -281,9 +285,9 @@ func get_difficulty() -> int
 Geändert:
 - **Beim Laden:** `_load_catalog()` meldet Fehler in Profilen wie die übrigen mit `push_error()`.
   Bei einem Start-Modifikator heißt es dahinter „Der Start-Modifikator wird übersprungen.“ Einen
-  Start-Modifikator, der nur wegfällt, weil sein Ereignis ausgenommen ist, nennt es eigens: „Zeitleiste:
-  Profil „Schwer“, Start-Modifikator „reklamationswelle“: Das Ereignis „reklamationswelle“ wird
-  übersprungen, deshalb auch dieser Start-Modifikator.“ (FR-013)
+  Start-Modifikator, der nur wegfällt, weil sein Ereignis ausgenommen ist, nennt es eigens:
+  „Zeitleiste: Profil „Schwer“, Start-Modifikator „reklamationswelle“: Das Ereignis
+  „reklamationswelle“ wird übersprungen, deshalb auch dieser Start-Modifikator.“ (FR-013)
 - **Beim Start:** `start_game()` legt `TimelineRun.new(catalog, game_seed, difficulty)` an. Steht
   danach etwas in `run.start_refusals`, meldet es jeden Satz mit `push_error()`.
 - **Signale:** `_send()` macht aus `START_MODIFIER` kein Signal.
@@ -315,11 +319,11 @@ Neu oder geändert, alle mit Test-Katalogen unter `src/test/fixtures/` und feste
 | `test_difficulty.gd` | neu: `key()`, `label()`, `from_key()` mit unbekanntem Namen und großem S, `is_valid()` mit 7 und −1 |
 | `test_difficulty_profile.gd` | neu: `from_list()`/`to_list()`, `field_prefix()`, `place()` mit und ohne Kennung, `faulty_indices()`. Dazu `chance_periods()` und `describe_periods()`: US2, Szenario 6 (1 %, 3 %, 8 %), Szenario 7 (3 % bis 31.12.1994, 6 % ab 01.01.1995), drei Abschnitte, Begrenzung auf 0 % und 100 %, Fehlerhaftes zählt nicht, Mittel |
 | `test_event_catalog.gd` | geändert, siehe Liste unten |
-| `test_catalog_validator.gd` | geändert: V25 bis V30 je mit einer kaputten Fixture, alle als `ERROR`, `event_id` leer, Feld und Ort im Text; Reihenfolge Ereignisse, Kategorien, Profile |
+| `test_catalog_validator.gd` | geändert: V25 bis V31 je mit einer kaputten Fixture, V25 bis V30 als `ERROR`, V31 als `WARNING` mit der Würfelrunde im Text, auch „in keiner Würfelrunde“; `event_id` leer, Feld und Ort im Text; Reihenfolge Ereignisse, Kategorien, Profile; Beginn 01.01.1985 und Ende 31.12.1999 ohne Meldung |
 | `test_difficulty_run.gd` | neu, siehe Liste unten |
 | `test_difficulty_baseline.gd` | neu: Mittel gegen die eingefrorene Grundlinie, Fahrplan ohne Kopfzeile und Protokoll für die Seeds 1, 4711 und 99999, Zeichen für Zeichen (R17) |
 | `test_schedule_text.gd` | geändert: die drei Erwartungen an die Kopfzeile mit „Grad Mittel“; eine Kopfzeile mit „Grad Schwer“ |
-| `test_timeline.gd` | geändert: Vorgabe Mittel; `start_game()` mit Schwer, `get_difficulty()`; zwei Starts ohne Seed mit Schwer haben je einen eigenen Seed (US1, Szenario 2); ein unbekannter Grad wird abgelehnt, und das laufende Spiel bleibt (FR-011); ein Start-Modifikator auf ein fehlendes Ereignis wird übersprungen und gemeldet, die übrigen gelten (US1, Szenario 6) |
+| `test_timeline.gd` | geändert: Vorgabe Mittel; `start_game()` mit Schwer, `get_difficulty()`; zwei Starts ohne Seed mit Schwer haben je einen eigenen Seed, bei festgesetztem globalem Zufall (`seed()`), damit der Test wiederholbar ist (US1, Szenario 2; Review, CHK027); ein unbekannter Grad wird abgelehnt, und das laufende Spiel bleibt (FR-011); ein Start-Modifikator auf ein fehlendes Ereignis wird übersprungen und mit Grad, Kennung und Grund gemeldet, die übrigen gelten (US1, Szenario 6); ebenso einer, dessen Ereignis wegen eines Fehlers ausgenommen ist (FR-013) |
 | `test_timeline_statistics.gd` | geändert: Liste der Grade; Seed für Seed; ein Abbruch mitten im Seed lässt alle Grade gleich; SC-003; US4, Szenarien 2 bis 4; `results_for()` |
 
 `test_event_catalog.gd` prüft dazu:
@@ -353,10 +357,15 @@ Neu oder geändert, alle mit Test-Katalogen unter `src/test/fixtures/` und feste
   Kennung wie ein Start-Modifikator wird angenommen;
 - `start_refusals` bei einem ungeprüften Katalog, ein unbekannter Grad gilt als Mittel.
 
-Bleiben unverändert und müssen grün bleiben: `test_shipped_catalog.gd` (prüft die Profile über
-`validate()` mit, FR-014), `test_uebernahme.gd`, `test_interventions.gd`,
+Bleiben unverändert und müssen grün bleiben: `test_uebernahme.gd`, `test_interventions.gd`,
 `test_schedule_diff.gd` und `test_large_catalog.gd`. Dessen Fixture bekommt den leeren
 Abschnitt, siehe unten.
+
+`test_shipped_catalog.gd` prüft die Profile über `validate()` ohne Änderung mit (FR-014). In
+Phase 3 bekommt er einen Test dazu, sobald Klaus die Profile im echten Katalog angelegt hat:
+Leicht und Schwer haben je mindestens einen Start-Modifikator, die Werte prüft er nicht (Klaus,
+2026-10-22, CHK008). Vorher bliebe der Test rot, denn der echte Katalog hat bis dahin leere
+Profile.
 
 Fixtures aus Feature 002, schon in Phase 1 (research.md, R17):
 - `event_catalog_uebernahme.json` bleibt Byte für Byte, wie sie ist.
@@ -374,7 +383,7 @@ Fixtures, Namen als Vorschlag:
   - ein fixes und ein beim Start gesetztes Ereignis;
   - „Leicht −2“ und „Schwer +5“ auf die Reklamationswelle, je für das ganze Spiel.
 - `catalog_us1_profil_kaputt.json` für US1, Szenario 6.
-- `catalog_v25_profil_ereignis_unbekannt.json` bis `catalog_v30_profil_kennung_doppelt.json`, je
+- `catalog_v25_profil_ereignis_unbekannt.json` bis `catalog_v31_profil_monatsmitte.json`, je
   eine Regel.
 - `catalog_v22_profil_mittel.json`, `catalog_v22_profil_unbekannt.json`,
   `catalog_v22_profil_wert_text.json`.

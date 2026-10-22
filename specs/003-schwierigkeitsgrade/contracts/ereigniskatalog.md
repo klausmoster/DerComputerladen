@@ -122,7 +122,8 @@ Die Schreibregeln 1 bis 5 von Feature 002 gelten auch hier. Für den Abschnitt h
     gibt es nur für „leicht“ und „schwer“.“
 - **Felder der Meldungen:** `profiles`, `profiles.mittel`, `profiles.schwer[2]` oder
   `profiles.schwer[2].value`, `event_id` leer (data-model.md, „Prüfmeldungen zu Profilen“).
-- **Weitere Regeln:** Was sich lesen lässt, prüft danach `CatalogValidator` mit V25 bis V30.
+- **Weitere Regeln:** Was sich lesen lässt, prüft danach `CatalogValidator` mit V25 bis V31;
+  V31 ist eine Warnung für einen Beginn oder ein Ende mitten im Monat.
 - **Im Spiel:** Spiel, Simulator, Statistik und Textausgabe rechnen nur mit Start-Modifikatoren,
   die die Prüfung bestehen (`without_faulty()`, data-model.md).
 

@@ -7,13 +7,16 @@ Grundlage: [spec.md](spec.md) mit den Klärungen vom 2026-10-21,
 unter `src/core/timeline/`, `src/core/timeline.gd` und `src/tools/werkstatt/` auf dem Stand von
 `72b743a`. Godot-Stand: 4.7.2.
 
-Die Entscheidungen hier sind R1 bis R18 von Feature 003. Verweise auf Feature 002 tragen immer
+Die Entscheidungen hier sind R1 bis R19 von Feature 003. Verweise auf Feature 002 tragen immer
 den Zusatz, etwa „R5 von Feature 002“. Die Prüfregeln dagegen zählen weiter, V25 bis V30, weil
 es ein einziger Prüfer mit einer Tabelle bleibt.
 
 Die drei Fragen, die der Plan klären sollte, beantworten R2 (Aufbau des Abschnitts), R4 (Profil
 für einen unbekannten Grad oder für „Mittel“) und R5 (Kennungen von Start-Modifikatoren und
-Eingriffen). Klaus' Entscheidung im Plan steht in R9.
+Eingriffen). Klaus' Entscheidung im Plan steht in R9. Aus dem Review der Checkliste
+[review.md](checklists/review.md) am 2026-10-22 kommen V31 in R8, die gefüllten Profile in R17
+und R18 und R19; die übrigen Vorschläge sind in die Entscheidungen eingearbeitet, auf die sie sich
+beziehen.
 
 ## R1 Der Grad als Aufzählung
 
@@ -259,9 +262,9 @@ Eingriffen). Klaus' Entscheidung im Plan steht in R9.
   Grad ein ganz anderes Spiel, und der Vergleich der Grade wäre Rauschen. Die Spec verlangt
   denselben Seed.
 
-## R8 Prüfregeln V25 bis V30 für Profile
+## R8 Prüfregeln V25 bis V31 für Profile
 
-*Claude, 2026-10-21*
+*Claude, 2026-10-21; V31 Klaus, 2026-10-22, im Review nach Empfehlung (CHK013)*
 
 - **Entscheidung:** `CatalogValidator.validate()` prüft nach den Ereignissen und Kategorien die
   Profile, mit neuen Regeln im Anschluss an V01 bis V24 aus Feature 002:
@@ -274,6 +277,20 @@ Eingriffen). Klaus' Entscheidung im Plan steht in R9.
   | V28 | Beginn oder Ende außerhalb 01.01.1985 bis 31.12.1999 | Fehler |
   | V29 | Grund leer oder nur Leerzeichen | Fehler |
   | V30 | Kennung leer, mit anderen Zeichen als a–z, 0–9 und _, oder im Profil doppelt | Fehler |
+  | V31 | Beginn kein Monatserster oder Ende kein Monatsletzter | Warnung |
+
+  - **V31:** Gewürfelt wird am Monatsersten. Die Warnung nennt deshalb die Würfelrunde, in der der
+    Start-Modifikator wirklich zuerst bzw. zuletzt wirkt:
+    - am Beginn: „Der Beginn 15.03.1990 ist kein Monatserster; der Start-Modifikator wirkt ab der
+      Würfelrunde am 01.04.1990.“
+    - am Ende: „Das Ende 15.06.1994 ist kein Monatsletzter; der Start-Modifikator wirkt noch in der
+      Würfelrunde am 01.06.1994.“
+
+    Eine Warnung hält weder Speichern noch Tests auf. Ein Beginn nach dem letzten Monatsersten des
+    Zeitraums, etwa vom 02.03. bis 31.03., wirkt in keiner Würfelrunde; das sagt die Warnung dann
+    so. Verworfen hat Klaus, es nur zu beschreiben, und nur ganze Monate zu erlauben. Das Erste
+    ließe „ab 15.03.1990“ im Formular unerklärt stehen. Das Zweite wiche von den tagesgenauen Daten
+    aus Feature 002 ab.
 
   Dazu kommen Strukturfehler V22 beim Lesen, etwa ein Wert, der keine Zahl ist, ein Datum, das
   kein Kalendertag ist, ein fehlender oder unbekannter Schlüssel und Profile nach R4.
@@ -293,7 +310,7 @@ Eingriffen). Klaus' Entscheidung im Plan steht in R9.
     V21. FR-012 nennt nur die doppelte Kennung. Ohne gültige Kennung ließe sich ein
     Start-Modifikator aber beim Spielstart nicht benennen.
 - **Begründung:** Werkstatt, Spielstart und Tests prüfen mit denselben Regeln (FR-012, FR-014).
-  `test_shipped_catalog.gd` erfasst die Profile damit ohne Änderung. Das leere `event_id` hat
+  `test_shipped_catalog.gd` erfasst die Profile damit über `validate()`. Das leere `event_id` hat
   einen Grund: Ein Fehler im Profil darf kein richtiges Ereignis aus dem Spiel nehmen.
 - **Alternativen:**
   - Ein eigener Prüfer für Profile: Zwei Stellen müssten zusammenpassen, etwa für die Zahl der
@@ -405,11 +422,16 @@ Eingriffen). Klaus' Entscheidung im Plan steht in R9.
   - **„Löschen“** fragt nicht nach, wie „−“ bei den Wirkungen; Cmd+Z holt den Start-Modifikator
     zurück.
   - **Prüfmeldungen:** Ein Klick auf eine Meldung mit einem Feld `profiles…` wechselt in den
-    Reiter, wählt Grad und Zeile und setzt den Fokus ins Feld (FR-016).
+    Reiter, wählt Grad und Zeile und setzt den Fokus ins Feld (FR-016). In der Spalte „Ereignis“
+    der Prüfung steht bei solchen Meldungen „Profil Schwer“ statt „–“ (Review, CHK009).
+  - **Platz:** Bei Klaus' Fenstergröße 1920 × 925 zeigt der Reiter in der Vorgabe-Teilung
+    mindestens vier Zeilen der Tabelle und alle Felder ohne Rollen. Der Agent belegt es mit einem
+    Bildschirmfoto (Review, CHK028).
   - **Look:** Es gibt nur Bausteine, die die Werkstatt schon hat: Tabelle mit Zebra,
     `OptionButton`, Eingabefeld mit Fehlerkontur, gedämpfter Text, Fehlerhinweis. Der Style-Guide
-    braucht deshalb nichts Neues (Grundsatz IV). Braucht der Agent doch einen neuen Baustein, kommt
-    er zuerst in den Style-Guide.
+    braucht deshalb nichts Neues (Grundsatz IV). Braucht der Agent doch einen neuen Baustein, etwa
+    Farben für die Grade, hält er an und fragt; der Baustein kommt dann zuerst in den Style-Guide
+    (Review, CHK023).
 - **Alternativen:**
   - In den Zellen der Tabelle bearbeiten: Godots `Tree` macht das bei Datum und Prüfhinweisen
     umständlich, und eine Fehlerkontur je Zelle gibt es nicht.
@@ -437,9 +459,13 @@ Eingriffen). Klaus' Entscheidung im Plan steht in R9.
     Ereignis und am Tag nach seinem Ende. Gleiche Nachbarn werden zusammengelegt.
   - Mit drei Abschnitten heißt es etwa „3 % bis 31.12.1989, 5 % vom 01.01.1990 bis 31.12.1994,
     3 % ab 01.01.1995“.
-  - Start-Modifikatoren mit einem Fehler zählen nicht mit, wie im Spiel.
+  - Start-Modifikatoren mit einem Fehler zählen nicht mit, wie im Spiel (FR-015).
   - Das Zeitfenster des Ereignisses schneidet die Anzeige nicht zu. So steht es auch in US2,
     Szenario 7.
+  - Viele Abschnitte haben keine Grenze; die Zeile eines Grads bricht dann um. Weil gleiche
+    Nachbarn zusammengelegt werden, erscheinen nur echte Wechsel (Review, CHK032).
+  - Die Anzeige nennt die Tage, wie sie im Profil stehen. Beginnt ein Start-Modifikator mitten im
+    Monat, sagt die Warnung V31, ab welcher Würfelrunde er wirkt (R8).
 - **Alternativen:**
   - Eine Zeile „Leicht 1 % · Mittel 3 % · Schwer 8 %“: Mit Zeitabschnitten würde sie zu lang.
   - Nur innerhalb des Zeitfensters: Das wiche vom Beispiel in US2, Szenario 7 ab und von den Daten
@@ -460,8 +486,12 @@ Eingriffen). Klaus' Entscheidung im Plan steht in R9.
     - dieselben angewandten Eingriffe (`run.interventions`) in der Reihenfolge des Nachspielens.
 
     War der Lauf „ohne Eingriffe“ gestartet, ist es der neue auch. Die gesammelten Eingriffe
-    bleiben in jedem Fall erhalten (FR-018). Was im neuen Lauf nicht anwendbar ist, nennt der
-    Hinweis wie nach „Neu starten mit Eingriffen“.
+    bleiben in jedem Fall erhalten (FR-018). Was im neuen Lauf nicht anwendbar ist, etwa die
+    Absage eines gewürfelten Termins, den es im neuen Grad nicht gibt, nennt der Hinweis wie nach
+    „Neu starten mit Eingriffen“. Eingriffe, die schon im alten Lauf nicht anwendbar waren,
+    versucht ein Wechsel nicht neu; das tut „Neu starten mit Eingriffen“ (Review, CHK029). Gebaut
+    wird mit dem aktuellen Katalog wie bei jedem Neustart; der Hinweis „Katalog geändert“
+    verschwindet danach (Review, CHK033).
   - **Vergleich:** Neben „nur Unterschiede“ steht `%CompareMittel`, ein Häkchen „mit Mittel
     vergleichen“. Ohne Häkchen gilt die Vorgabe aus Feature 002: derselbe Seed und Grad ohne
     Eingriffe. Ein Text `%CompareLabel` nennt den Vergleichslauf: „Vergleich: Schwer ohne
@@ -611,25 +641,38 @@ Eingriffen). Klaus' Entscheidung im Plan steht in R9.
     Gleich bleiben der Stand im Simulator und die Texte der Markierungen beim Vergleich mit
     demselben Grad (R13).
   - **Fixtures:** Test-Kataloge liegen unter `src/test/fixtures/` und tragen ihren Zweck im Namen:
-    - je Regel eine kaputte Fixture, `catalog_v25_…` bis `catalog_v30_…` (wie SC-006 von Feature
-      002);
+    - je Regel eine kaputte Fixture, `catalog_v25_…` bis `catalog_v31_…` (wie SC-006 von Feature
+      002); bei V31 eine Warnung, keine Fehler;
     - je Strukturfehler eine, etwa `catalog_v22_profil_mittel.json`;
     - Kataloge für die Szenarien, etwa `catalog_us1_grade.json` mit 3 % pro Monat, „Schwer +5“,
       „Leicht −2“ und abhängigen Ereignissen für SC-002.
-  - **Messbar:** SC-001 mit 100 Wiederholungen, SC-002 mit 100 Seeds, SC-003 über die Statistik
-    mit 1.000 Seeds, SC-006 über den Diff einer gespeicherten Datei.
-  - **Echter Katalog:** `test_shipped_catalog.gd` bleibt unverändert. Weil `validate()` die Profile
-    prüft, deckt er FR-014 ab.
+  - **Messbar:**
+    - SC-001 mit 100 Wiederholungen;
+    - SC-002 mit 100 Seeds und `ScheduleDiff`: Jede Markierung gehört zur Hülle der abhängigen
+      Ereignisse nach FR-009;
+    - SC-003 über die Statistik mit 1.000 Seeds;
+    - SC-006 über den Diff einer gespeicherten Datei, die den Abschnitt schon hat;
+    - SC-007 an der Grundlinie.
+  - **Eigener Seed (US1, Szenario 2):** Ein gewürfelter Seed hängt am globalen Zufall. Der Test
+    setzt ihn mit `seed()` fest, startet zweimal ohne Seed und erwartet zwei verschiedene Seeds
+    zwischen 0 und 2.147.483.647. So ist er wiederholbar (Review, CHK027).
+  - **Echter Katalog:** Weil `validate()` die Profile prüft, deckt `test_shipped_catalog.gd` FR-014
+    ohne Änderung ab. Dazu prüft er ab Phase 3, dass Leicht und Schwer nicht leer sind (Klaus,
+    2026-10-22, CHK008). Der Test kommt erst, nachdem Klaus die Profile angelegt hat, denn bis
+    dahin ist der echte Katalog ohne Profile, und die Phasen 1 und 2 müssen grün enden.
 - **Begründung:** `docs/ki_dev.md`, Abschnitt „Tests“: feste Seeds, nie echte Daten, Ausgaben als
   Ganzes vergleichen.
 
 ## R18 Startwerte der Profile
 
-*Vorschlag von Claude, 2026-10-21; Klaus entscheidet in der Werkstatt*
+*Vorschlag von Claude, 2026-10-21; Klaus entscheidet in der Werkstatt. Dass die Profile zur
+Gesamtabnahme gefüllt sind, hat Klaus am 2026-10-22 im Review entschieden (CHK008).*
 
-Die Profile im echten Katalog legt Klaus selbst in der Werkstatt an. Das ist zugleich die Probe
-für SC-005. Als Ausgangspunkt schlägt Claude vor: Unangenehmes kommt bei „Leicht“ seltener und
-bei „Schwer“ öfter, Erfreuliches umgekehrt. Jeder Start-Modifikator gilt das ganze Spiel.
+Die Profile im echten Katalog legt Klaus selbst in der Werkstatt an, zur Abnahme von Phase 3. Das
+ist zugleich die Probe für SC-005. Zur Gesamtabnahme haben Leicht und Schwer je mindestens einen
+Start-Modifikator; `test_shipped_catalog.gd` prüft das, aber keine Werte. Als Ausgangspunkt
+schlägt Claude vor: Unangenehmes kommt bei „Leicht“ seltener und bei „Schwer“ öfter, Erfreuliches
+umgekehrt. Jeder Start-Modifikator gilt das ganze Spiel.
 
 | Ereignis | Grundchance (Mittel) | Leicht | Schwer |
 |---|---|---|---|
@@ -642,3 +685,17 @@ bei „Schwer“ öfter, Erfreuliches umgekehrt. Jeder Start-Modifikator gilt da
 
 Das blockiert nichts: Die Werte ändert Klaus jederzeit und prüft sie mit dem Vergleich in der
 Statistik (US4).
+
+## R19 Wohin die Auswahl des Grads gehört
+
+*Klaus, 2026-10-22, im Review nach Empfehlung (CHK021)*
+
+- **Entscheidung:** Den Bildschirm, auf dem der Spieler den Grad wählt, bringt 01-05. Es heißt
+  dann „Neues Spiel: Startdatum, Seed und Grad“ und übergibt alles mit
+  `Timeline.start_game(seed, difficulty)`. In Phase 6 bekommt der Eintrag in
+  `docs/features/Feature_Ideas.md` diesen Hinweis; die Spec bleibt, wie sie ist.
+- **Begründung:** Startdatum, Seed und Grad stehen alle beim Start fest. Ein Bildschirm dafür
+  reicht.
+- **Alternativen (von Klaus verworfen):**
+  - Die Auswahl kommt mit 11-05 „Spielziel und Schwierigkeitsgrade“.
+  - Der Bildschirm bekommt eine eigene Nummer im Backlog.
