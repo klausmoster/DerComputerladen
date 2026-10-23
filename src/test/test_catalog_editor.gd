@@ -2,7 +2,9 @@ extends GutTest
 
 ## Prüft den CatalogEditor der Werkstatt (Feature 002, T033): Bearbeiten mit Rückgängig und
 ## Wiederholen, Kennungen und Verweise, Löschen, Artwechsel, Kategorien und ihre Farben,
-## Speichern, Verwerfen, Meldungen beim Lesen und die Sicherungskopie.
+## Speichern, Verwerfen, Meldungen beim Lesen und die Sicherungskopie. Seit Feature 003 (T014) auch
+## die Profile: Start-Modifikatoren anlegen, duplizieren, löschen und ändern, ihre Verweise beim
+## Löschen und Umbenennen von Ereignissen und die Meldungen beim Lesen eines Profils.
 ##
 ## Jeder Test arbeitet mit einer Kopie eines Test-Katalogs in einem eigenen Ordner unter user://,
 ## der auch der Ordner der Sicherungskopien ist; after_each() räumt beides weg. Die Fixtures unter
@@ -18,9 +20,48 @@ const MINIMAL := "res://test/fixtures/catalog_minimal.json"
 const UEBERNAHME := "res://test/fixtures/event_catalog_uebernahme.json"
 ## Kein gültiges JSON: In Zeile 12 fehlt am Ende das Komma, der Parser merkt es in Zeile 13.
 const KAPUTT := "res://test/fixtures/catalog_v22_kaputt.json"
+## Sieben Ereignisse, drei davon über Wahrscheinlichkeit: kundenflucht (Bedingung
+## reklamationswelle), lieferengpass und reklamationswelle (Folge zeitungsartikel_reklamation).
+## Leicht hat „Nachsichtige Kunden“ −2, Schwer „Anspruchsvolle Kunden“ +5, beide auf die
+## Reklamationswelle, je mit der Kennung reklamationswelle und für das ganze Spiel.
+const GRADE := "res://test/fixtures/catalog_us1_grade.json"
+## Schwer hat zwei Start-Modifikatoren; der zweite hat den Wert „fünf“, also V22 an
+## profiles.schwer[1].value.
+const WERT_TEXT := "res://test/fixtures/catalog_v22_profil_wert_text.json"
+## Neben leicht und schwer ein Profil mittel; V22 an profiles.mittel.
+const PROFIL_MITTEL := "res://test/fixtures/catalog_v22_profil_mittel.json"
 ## 01.01.1985 = 0; der 22.03.1993 ist Tag 3002, der 15.04.1993 Tag 3026.
 const PENTIUM_TAG := 3002
 const NEUER_TAG := 3026
+## 01.01.1990 und 31.12.1994.
+const TAG_1990 := 1826
+const TAG_ENDE_1994 := 3651
+
+## Jede ändernde Methode, die Profile betrifft, einmal mit GRADE: Methode, Argumente, erwarteter
+## Name der Aktion. Dazu Löschen und Umbenennen eines Ereignisses, auf das beide Profile zeigen.
+const START_AENDERUNGEN := [
+	["add_start_modifier", [Difficulty.Level.SCHWER, "lieferengpass"],
+		"Neuer Start-Modifikator in Schwer"],
+	["add_start_modifier", [Difficulty.Level.LEICHT], "Neuer Start-Modifikator in Leicht"],
+	["duplicate_start_modifier", [Difficulty.Level.SCHWER, 0],
+		"Start-Modifikator Schwer: reklamationswelle duplizieren"],
+	["delete_start_modifier", [Difficulty.Level.LEICHT, 0],
+		"Start-Modifikator Leicht: reklamationswelle löschen"],
+	["set_start_modifier_field", [Difficulty.Level.SCHWER, 0, &"event_id", "lieferengpass"],
+		"Ereignis von Schwer: reklamationswelle"],
+	["set_start_modifier_field", [Difficulty.Level.SCHWER, 0, &"value", 0.08],
+		"Wert von Schwer: reklamationswelle"],
+	["set_start_modifier_field", [Difficulty.Level.SCHWER, 0, &"from_day", TAG_1990],
+		"Beginn von Schwer: reklamationswelle"],
+	["set_start_modifier_field", [Difficulty.Level.LEICHT, 0, &"to_day", TAG_ENDE_1994],
+		"Ende von Leicht: reklamationswelle"],
+	["set_start_modifier_field", [Difficulty.Level.SCHWER, 0, &"reason", "Strenge Kunden"],
+		"Grund von Schwer: reklamationswelle"],
+	["set_start_modifier_field", [Difficulty.Level.SCHWER, 0, &"id", "strenge_kunden"],
+		"Kennung von Schwer: reklamationswelle"],
+	["delete_event", ["reklamationswelle"], "Reklamationswelle löschen"],
+	["rename_event", ["reklamationswelle", "reklamationen"], "Kennung von Reklamationswelle"],
+]
 
 ## Jede ändernde Methode einmal: Methode, Argumente, erwarteter Name der Aktion.
 const AENDERUNGEN := [
@@ -1042,6 +1083,444 @@ func test_inhaltsschluessel_ist_so_genau_wie_die_kanonische_form() -> void:
 	assert_eq(CatalogEditor.new().content_key(), "", "Ohne Katalog ist er leer.")
 
 
+# --- Profile (Feature 003, T014) --------------------------------------------------------------
+
+func test_jede_aenderung_an_profilen_ist_ein_schritt_der_das_profil_ersetzt(
+		fall: Array = use_parameters(START_AENDERUNGEN)) -> void:
+	# Arrange
+	_oeffnen(GRADE)
+	var vorher := _editor.catalog.to_json()
+	var schluessel_vorher := _editor.content_key()
+	var profile_vorher := _editor.catalog.profiles.duplicate()
+	var texte_vorher := _profiltexte(profile_vorher)
+
+	# Act
+	_editor.callv(fall[0], fall[1])
+	var nachher := _editor.catalog.to_json()
+	var profile_nachher := _editor.catalog.profiles.duplicate()
+
+	# Assert: eine Aktion mit Namen, wie bei Ereignissen …
+	assert_ne(nachher, vorher, "%s muss den Katalog ändern." % fall[0])
+	assert_eq(_editor.undo_name(), fall[2])
+	assert_true(_editor.is_dirty(), "Eine Änderung an einem Profil ist ungespeichert (FR-016).")
+	assert_ne(_editor.content_key(), schluessel_vorher, "content_key() sieht das Profil (U1).")
+	# … die jedes geänderte Profil durch ein neues Objekt ersetzt und das alte nicht anfasst (R10).
+	for i in profile_vorher.size():
+		var alt: DifficultyProfile = profile_vorher[i]
+		assert_eq(JSON.stringify(alt.to_dict()), texte_vorher[i],
+			"Das alte Profil %d ist nicht an Ort und Stelle geändert." % i)
+		var neu: DifficultyProfile = profile_nachher[i]
+		var geaendert: bool = JSON.stringify(neu.to_dict()) != texte_vorher[i]
+		if geaendert:
+			assert_ne(neu, alt, "Ein geändertes Profil ist ein neues Objekt.")
+		else:
+			assert_same(neu, alt, "Ein unverändertes Profil bleibt, wie es ist.")
+	# Ein Rückgängig nimmt alles zurück, mit denselben Objekten …
+	assert_true(_editor.undo())
+	assert_eq(_editor.catalog.to_json(), vorher, "Rückgängig stellt den Stand davor her.")
+	assert_eq(_editor.catalog.profiles, profile_vorher, "Die alten Profile kehren zurück.")
+	assert_eq(_editor.content_key(), schluessel_vorher)
+	assert_false(_editor.can_undo(), "Mehr als ein Schritt war es nicht.")
+	assert_eq(_editor.redo_name(), fall[2])
+	assert_false(_editor.is_dirty())
+	# … und Wiederholen stellt die Änderung wieder her, ebenfalls mit denselben Objekten.
+	assert_true(_editor.redo())
+	assert_eq(_editor.catalog.to_json(), nachher)
+	assert_eq(_editor.catalog.profiles, profile_nachher)
+	assert_true(_editor.is_dirty())
+
+
+func test_wert_aendern_aendert_genau_eine_zeile() -> void:
+	# Arrange: SC-006. Die Datei hat den Abschnitt profiles schon.
+	var ziel := _oeffnen(GRADE)
+	var vorher := FileAccess.get_file_as_string(ziel).split("\n")
+
+	# Act
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"value", 0.08)
+	var fehler := _editor.save()
+
+	# Assert
+	assert_eq(fehler, OK)
+	var nachher := FileAccess.get_file_as_string(ziel).split("\n")
+	assert_eq(nachher.size(), vorher.size(), "Keine Zeile kommt dazu oder fällt weg.")
+	var geaendert := []
+	for i in mini(vorher.size(), nachher.size()):
+		if vorher[i] != nachher[i]:
+			geaendert.append(nachher[i].strip_edges())
+	assert_eq(geaendert, ["\"value\": 0.08"], "Genau die Zeile mit dem Wert ändert sich.")
+	assert_false(_editor.is_dirty())
+
+
+func test_neu_hat_die_vorgaben() -> void:
+	# Arrange: data-model.md, „Vorgaben“ (G5). Der minimale Katalog hat ein Ereignis über
+	# Wahrscheinlichkeit, reklamationswelle, und leere Profile.
+	_oeffnen(MINIMAL)
+
+	# Act
+	var erster := _editor.add_start_modifier(Difficulty.Level.SCHWER)
+	var gleich_danach := _editor.catalog.get_profile(Difficulty.Level.SCHWER).modifiers[0]
+	var zweiter := _editor.add_start_modifier(Difficulty.Level.SCHWER)
+
+	# Assert
+	assert_same(gleich_danach, erster, "Zurück kommt der Start-Modifikator im Katalog.")
+	var schwer := _editor.catalog.get_profile(Difficulty.Level.SCHWER)
+	assert_eq(schwer.modifiers.size(), 2)
+	assert_same(schwer.modifiers[1], zweiter, "Neue kommen ans Ende.")
+	assert_ne(schwer.modifiers[0], erster,
+		"Die nächste Änderung ersetzt das Profil; wer ihn braucht, holt ihn neu.")
+	assert_eq(erster.event_id, "reklamationswelle")
+	assert_eq([erster.id, zweiter.id], ["reklamationswelle", "reklamationswelle_2"],
+		"Die Kennung des Ereignisses, im Profil eindeutig.")
+	assert_eq([erster.from_day, erster.to_day], [0, 5477], "Das ganze Spiel (FR-002).")
+	assert_eq(typeof(erster.value), TYPE_FLOAT)
+	assert_eq(erster.value, 0.0)
+	assert_eq(erster.reason, "", "Den Grund schreibt Klaus; bis dahin meldet V29.")
+	var stellen := _editor.issues().map(
+		func(meldung: CatalogIssue) -> String: return "%s %s" % [meldung.rule, meldung.field])
+	assert_eq(stellen, ["V29 profiles.schwer[0].reason", "V29 profiles.schwer[1].reason"])
+	assert_eq(_editor.catalog.get_profile(Difficulty.Level.LEICHT).modifiers.size(), 0,
+		"Leicht bleibt leer.")
+
+
+func test_neu_nimmt_das_uebergebene_oder_das_erste_ereignis_nach_kennung() -> void:
+	# Arrange: Über Wahrscheinlichkeit kommen kundenflucht, lieferengpass und reklamationswelle.
+	_oeffnen(GRADE)
+
+	# Act
+	var ohne := _editor.add_start_modifier(Difficulty.Level.LEICHT)
+	var mit := _editor.add_start_modifier(Difficulty.Level.LEICHT, "reklamationswelle")
+	var noch_einer := _editor.add_start_modifier(Difficulty.Level.LEICHT, "reklamationswelle")
+
+	# Assert
+	assert_eq([ohne.event_id, ohne.id], ["kundenflucht", "kundenflucht"],
+		"Ohne Ereignis das erste über Wahrscheinlichkeit nach Kennung.")
+	assert_eq([mit.event_id, mit.id], ["reklamationswelle", "reklamationswelle_2"],
+		"reklamationswelle gibt es in Leicht schon.")
+	assert_eq(noch_einer.id, "reklamationswelle_3")
+	var leicht := _editor.catalog.get_profile(Difficulty.Level.LEICHT)
+	assert_eq(leicht.modifiers.map(func(m: ChanceModifier) -> String: return m.id),
+		["reklamationswelle", "kundenflucht", "reklamationswelle_2", "reklamationswelle_3"])
+
+
+func test_neu_ohne_profil_oder_ohne_ereignis_ueber_wahrscheinlichkeit_ergibt_null() -> void:
+	# Arrange: Mittel hat kein Profil; der neue Katalog hat kein Ereignis.
+	_oeffnen(GRADE)
+
+	# Act
+	var mittel := _editor.add_start_modifier(Difficulty.Level.MITTEL)
+	_editor.new_catalog()
+	var leer := _editor.add_start_modifier(Difficulty.Level.SCHWER)
+	var genannt := _editor.add_start_modifier(Difficulty.Level.SCHWER, "reklamationswelle")
+
+	# Assert
+	assert_null(mittel, "Mittel ist der Katalog ohne Start-Modifikatoren.")
+	assert_null(leer, "Ohne Ereignis über Wahrscheinlichkeit entsteht keiner.")
+	assert_null(genannt, "Auch mit einer Kennung nicht, wenn es keins gibt.")
+	assert_false(_editor.can_undo(), "Keine Aktion im Verlauf.")
+	assert_eq(_editor.catalog.get_profile(Difficulty.Level.SCHWER).modifiers.size(), 0)
+
+
+func test_duplizieren_legt_die_kopie_direkt_dahinter() -> void:
+	# Arrange
+	_oeffnen(GRADE)
+	_editor.add_start_modifier(Difficulty.Level.SCHWER, "lieferengpass")
+
+	# Act
+	var erste := _editor.duplicate_start_modifier(Difficulty.Level.SCHWER, 0)
+	var erste_im_profil := _editor.catalog.get_profile(Difficulty.Level.SCHWER).modifiers[1]
+	var zweite := _editor.duplicate_start_modifier(Difficulty.Level.SCHWER, 0)
+
+	# Assert
+	assert_eq(_ids(Difficulty.Level.SCHWER),
+		["reklamationswelle", "reklamationswelle_3", "reklamationswelle_2", "lieferengpass"],
+		"Jede Kopie steht direkt hinter dem Original, mit freier Kennung.")
+	assert_same(erste_im_profil, erste, "Zurück kommt die Kopie im Katalog.")
+	var schwer := _editor.catalog.get_profile(Difficulty.Level.SCHWER)
+	assert_same(schwer.modifiers[1], zweite)
+	var original := schwer.modifiers[0]
+	assert_eq([erste.event_id, erste.value, erste.reason, erste.from_day, erste.to_day],
+		[original.event_id, original.value, original.reason, original.from_day, original.to_day],
+		"Alles außer der Kennung bleibt gleich.")
+	assert_ne(erste, original, "Die Kopie ist ein eigenes Objekt.")
+	assert_eq(_regeln("V30"), [], "Keine doppelte Kennung.")
+
+
+func test_loeschen_entfernt_genau_die_stelle() -> void:
+	# Arrange
+	_oeffnen(GRADE)
+	_editor.add_start_modifier(Difficulty.Level.SCHWER, "lieferengpass")
+	_editor.add_start_modifier(Difficulty.Level.SCHWER, "kundenflucht")
+
+	# Act
+	_editor.delete_start_modifier(Difficulty.Level.SCHWER, 1)
+
+	# Assert
+	assert_eq(_ids(Difficulty.Level.SCHWER), ["reklamationswelle", "kundenflucht"])
+	assert_eq(_editor.undo_name(), "Start-Modifikator Schwer: lieferengpass löschen")
+	_editor.undo()
+	assert_eq(_ids(Difficulty.Level.SCHWER), ["reklamationswelle", "lieferengpass", "kundenflucht"],
+		"Rückgängig setzt ihn an seine Stelle.")
+
+
+func test_felder_nehmen_jeden_text_und_jede_zahl() -> void:
+	# Arrange: Was nicht passt, zeigt die Prüfung, nicht der Editor.
+	_oeffnen(GRADE)
+
+	# Act
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"value", 1)
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"from_day", 3000.0)
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"to_day", 100)
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"reason", &"  ")
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"id", "Böse Kennung")
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"event_id", "gibt_es_nicht")
+
+	# Assert
+	var modifikator := _editor.catalog.get_profile(Difficulty.Level.SCHWER).modifiers[0]
+	assert_eq(typeof(modifikator.value), TYPE_FLOAT, "Eine ganze Zahl wird zur Kommazahl.")
+	assert_eq(modifikator.value, 1.0)
+	assert_eq(typeof(modifikator.from_day), TYPE_INT, "Ein Tag ohne Nachkommastellen bleibt ganz.")
+	assert_eq([modifikator.from_day, modifikator.to_day], [3000, 100])
+	assert_eq(typeof(modifikator.reason), TYPE_STRING)
+	var regeln := _editor.issues().map(func(meldung: CatalogIssue) -> String: return meldung.rule)
+	assert_eq(regeln, ["V25", "V27", "V29", "V30"], "Die Prüfung zeigt, was nicht passt.")
+	assert_eq(_editor.undo_name(), "Ereignis von Schwer: Böse Kennung",
+		"Die Aktion heißt nach der Kennung vor der Änderung.")
+
+
+func test_gleicher_wert_bei_start_modifikatoren_ergibt_keinen_schritt() -> void:
+	# Arrange: Der Reiter übernimmt beim Verlassen jedes Felds, auch ohne Änderung.
+	_oeffnen(GRADE)
+	var schwer := _editor.catalog.get_profile(Difficulty.Level.SCHWER)
+
+	# Act
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"value", 0.05)
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"to_day", 5477.0)
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"reason", "Anspruchsvolle Kunden")
+
+	# Assert
+	assert_false(_editor.can_undo(), "Nichts geändert, nichts im Verlauf.")
+	assert_same(_editor.catalog.get_profile(Difficulty.Level.SCHWER), schwer)
+
+
+func test_falsche_aufrufe_bei_start_modifikatoren_werden_abgelehnt() -> void:
+	# Arrange
+	_oeffnen(GRADE)
+
+	# Act
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"wert", 0.1)
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"from_day", "1990-01-01")
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"to_day", 100.5)
+	_editor.delete_start_modifier(Difficulty.Level.SCHWER, 1)
+	_editor.duplicate_start_modifier(Difficulty.Level.LEICHT, -1)
+	_editor.set_start_modifier_field(Difficulty.Level.MITTEL, 0, &"value", 0.1)
+
+	# Assert
+	assert_push_error("Das Feld „wert“ hat ein Start-Modifikator nicht.")
+	assert_push_error("1990-01-01 passt nicht in das Feld „from_day“.")
+	assert_push_error("100.5 passt nicht in das Feld „to_day“.")
+	assert_push_error("Das Profil „Schwer“ hat keinen Start-Modifikator 1.")
+	assert_push_error("Das Profil „Leicht“ hat keinen Start-Modifikator -1.")
+	assert_push_error("Der Grad „Mittel“ hat kein Profil.")
+	assert_false(_editor.can_undo(), "Keine der Änderungen kam an.")
+
+
+func test_loeschen_eines_ereignisses_nimmt_die_start_modifikatoren_mit() -> void:
+	# Arrange: FR-017. In Schwer zeigen zwei Start-Modifikatoren auf die Reklamationswelle, ein
+	# dritter dazwischen auf den Lieferengpass; dazu der in Leicht.
+	_oeffnen(GRADE)
+	_editor.add_start_modifier(Difficulty.Level.SCHWER, "lieferengpass")
+	_editor.add_start_modifier(Difficulty.Level.SCHWER, "reklamationswelle")
+	var vorher := _editor.catalog.to_json()
+
+	# Act
+	var verweise := _editor.profile_references_to("reklamationswelle")
+	_editor.delete_event("reklamationswelle")
+	var nachher := _editor.catalog.to_json()
+
+	# Assert: Der Dialog nennt sie, Leicht vor Schwer, ohne Grund mit der Kennung …
+	assert_eq(verweise, PackedStringArray(["Leicht: Nachsichtige Kunden",
+		"Schwer: Anspruchsvolle Kunden", "Schwer: reklamationswelle_2"]))
+	# … und sie sind im selben Schritt mit weg.
+	assert_eq(_editor.undo_name(), "Reklamationswelle löschen")
+	assert_eq(_ids(Difficulty.Level.LEICHT), [])
+	assert_eq(_ids(Difficulty.Level.SCHWER), ["lieferengpass"])
+	assert_eq(_editor.profile_references_to("reklamationswelle").size(), 0)
+	assert_eq(_regeln("V25"), [], "Kein Start-Modifikator zeigt ins Leere.")
+	# Rückgängig stellt alle drei in ihrer Reihenfolge wieder her, Wiederholen löscht wieder.
+	_editor.undo()
+	assert_eq(_ids(Difficulty.Level.SCHWER),
+		["reklamationswelle", "lieferengpass", "reklamationswelle_2"])
+	assert_eq(_editor.catalog.to_json(), vorher, "Rückgängig stellt den Stand exakt wieder her.")
+	_editor.redo()
+	assert_eq(_editor.catalog.to_json(), nachher)
+	_editor.undo()
+	assert_eq(_editor.catalog.to_json(), vorher)
+
+
+func test_umbenennen_zieht_start_modifikatoren_still_nach() -> void:
+	# Arrange: R9. Die Kennung der Start-Modifikatoren bleibt, nur ihr Ereignis wandert mit.
+	var ziel := _oeffnen(GRADE)
+	_editor.add_start_modifier(Difficulty.Level.SCHWER, "lieferengpass")
+	var vorher := _editor.catalog.to_json()
+
+	# Act
+	var fehler := _editor.rename_event("reklamationswelle", "reklamationen")
+	_editor.save()
+
+	# Assert
+	assert_eq(fehler, OK)
+	var gelesen := _neuer_editor()
+	assert_eq(gelesen.open(ziel), OK)
+	var ereignisse := []
+	for level: int in Difficulty.WITH_PROFILE:
+		for modifikator in gelesen.catalog.get_profile(level).modifiers:
+			ereignisse.append("%s %s" % [modifikator.id, modifikator.event_id])
+	assert_eq(ereignisse, ["reklamationswelle reklamationen", "reklamationswelle reklamationen",
+		"lieferengpass lieferengpass"])
+	assert_eq(_regeln("V25"), [], "Kein Verweis ins Leere.")
+	assert_eq(_editor.profile_references_to("reklamationen").size(), 2)
+	_editor.undo()
+	assert_eq(_editor.catalog.to_json(), vorher, "Ein Rückgängig nimmt beides zurück.")
+
+
+func test_duplizieren_eines_ereignisses_laesst_die_profile_wie_sie_sind() -> void:
+	# Arrange: Edge Case „Ereignis dupliziert“ (G7).
+	_oeffnen(GRADE)
+	var profile := _editor.catalog.profiles.duplicate()
+
+	# Act
+	var kopie := _editor.duplicate_event("reklamationswelle")
+
+	# Assert
+	assert_eq(_editor.catalog.profiles, profile, "Kein Profil wird ersetzt.")
+	assert_eq(_editor.profile_references_to(kopie.id).size(), 0,
+		"Die Kopie bekommt keine Start-Modifikatoren.")
+
+
+func test_art_aendern_laesst_start_modifikatoren_stehen_und_v26_meldet_sie() -> void:
+	# Arrange: Edge Case „Art geändert“ (G7; R10).
+	_oeffnen(GRADE)
+	var profile := _editor.catalog.profiles.duplicate()
+
+	# Act
+	_editor.set_event_kind("reklamationswelle", TimelineEvent.Kind.PRESET)
+
+	# Assert
+	assert_eq(_editor.catalog.profiles, profile, "Still verschwindet nichts.")
+	assert_eq(_editor.profile_references_to("reklamationswelle").size(), 2)
+	assert_eq(_regeln("V26"), ["profiles.leicht[0].event_id", "profiles.schwer[0].event_id"])
+
+
+func test_neuer_katalog_hat_zwei_leere_profile() -> void:
+	# Act
+	_editor.new_catalog()
+
+	# Assert
+	var grade := _editor.catalog.profiles.map(
+		func(profil: DifficultyProfile) -> String:
+			return "%s %d" % [Difficulty.key(profil.level), profil.modifiers.size()])
+	assert_eq(grade, ["leicht 0", "schwer 0"])
+
+
+func test_sicherung_mit_profilen_bringt_sie_wieder() -> void:
+	# Arrange: FR-016; die Sicherungskopie enthält die Profile wie die Datei.
+	var ziel := _oeffnen(GRADE)
+	_editor.add_start_modifier(Difficulty.Level.SCHWER, "lieferengpass")
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 1, &"reason", "Engpässe")
+	_editor.write_backup()
+	var gesichert := _editor.catalog.to_json()
+	var neustart := _neuer_editor()
+	assert_eq(neustart.open(ziel), OK)
+
+	# Act
+	var fehler := neustart.restore_backup()
+
+	# Assert
+	assert_eq(fehler, OK)
+	assert_eq(neustart.catalog.to_json(), gesichert, "Die Profile sind wieder da.")
+	assert_eq(neustart.catalog.get_profile(Difficulty.Level.SCHWER).modifiers[1].reason, "Engpässe")
+	assert_true(neustart.is_dirty())
+
+
+func test_meldung_zu_profiles_mittel_bleibt_bis_zum_speichern() -> void:
+	# Arrange: Eine Meldung zum Abschnitt gehört zu keinem Profil, das der Editor ersetzt.
+	_oeffnen(PROFIL_MITTEL)
+	assert_eq(_lesemeldungen(), ["profiles.mittel"])
+
+	# Act und Assert
+	_editor.add_start_modifier(Difficulty.Level.SCHWER)
+	_editor.add_start_modifier(Difficulty.Level.LEICHT)
+	assert_eq(_lesemeldungen(), ["profiles.mittel"], "Beide Profile ersetzt, die Meldung bleibt.")
+	_editor.undo()
+	assert_eq(_lesemeldungen(), ["profiles.mittel"])
+	assert_eq(_editor.save(), OK)
+	assert_eq(_lesemeldungen(), [], "Nach dem Speichern steht mittel nicht mehr in der Datei.")
+
+
+func test_lesemeldungen_eines_ersetzten_profils_werden_verworfen() -> void:
+	# Arrange: U2. Schwer hat an Stelle 1 den Wert „fünf“.
+	var ziel := _oeffnen(WERT_TEXT)
+	assert_eq(_lesemeldungen(), ["profiles.schwer[1].value"])
+	assert_eq(DifficultyProfile.faulty_indices(_editor.issues(), Difficulty.Level.SCHWER),
+		{1: true})
+
+	# Act und Assert: Ein neuer Start-Modifikator in Leicht ersetzt nur Leicht.
+	_editor.add_start_modifier(Difficulty.Level.LEICHT)
+	assert_eq(_lesemeldungen(), ["profiles.schwer[1].value"], "Schwer ist unberührt.")
+	# Löschen der Stelle 0 verschiebt die Stellen in Schwer; die Meldung fiele sonst auf Stelle 1,
+	# die es nicht mehr gibt, oder auf einen anderen Start-Modifikator.
+	_editor.delete_start_modifier(Difficulty.Level.SCHWER, 0)
+	assert_eq(_lesemeldungen(), [], "Die Meldung zu Schwer ist verworfen.")
+	assert_eq(DifficultyProfile.faulty_indices(_editor.issues(), Difficulty.Level.SCHWER), {})
+	var ausgelassen := _editor.catalog.skipped_start_modifiers(_editor.issues()).filter(
+		func(eintrag: Dictionary) -> bool: return eintrag["level"] == Difficulty.Level.SCHWER)
+	assert_eq(ausgelassen.size(), 0, "In Schwer fällt nichts weg.")
+	# Rückgängig bringt sie nicht zurück, denn sie gilt der Datei.
+	_editor.undo()
+	assert_eq(_ids(Difficulty.Level.SCHWER), ["reklamationswelle", "reklamationswelle_2"])
+	assert_eq(_lesemeldungen(), [], "Rückgängig bringt die Meldung nicht zurück.")
+	assert_eq(DifficultyProfile.faulty_indices(_editor.issues(), Difficulty.Level.SCHWER), {})
+	_editor.redo()
+	assert_eq(_lesemeldungen(), [])
+	# Erst die Datei selbst hat sie wieder.
+	assert_eq(_editor.open(ziel), OK)
+	assert_eq(_lesemeldungen(), ["profiles.schwer[1].value"], "open() derselben Datei schon.")
+
+
+func test_lesemeldungen_werden_nach_ganzen_pfadteilen_verworfen() -> void:
+	# Arrange: Neben schwer steht von Hand ein Grad „schwerr“, den es nicht gibt. Seine Meldung
+	# beginnt wie die von Schwer, gehört aber zu keinem Profil (data-model.md, „Prüfmeldungen zu
+	# Profilen“).
+	var text := FileAccess.get_file_as_string(WERT_TEXT).replace("\"leicht\": [],",
+		"\"leicht\": [],\n\t\t\"schwerr\": [],")
+	var ziel := ORDNER + "katalog.json"
+	_schreiben(ziel, text)
+	assert_eq(_editor.open(ziel), OK)
+	assert_eq(_lesemeldungen(), ["profiles.schwerr", "profiles.schwer[1].value"])
+
+	# Act
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"reason", "Strenge Kunden")
+
+	# Assert
+	assert_eq(_lesemeldungen(), ["profiles.schwerr"], "profiles.schwerr gehört nicht zu Schwer.")
+
+
+func test_inhaltsschluessel_aendert_sich_mit_dem_profil() -> void:
+	# Arrange: Simulator und Statistik merken so eine Änderung an einem Profil (FR-042, R10).
+	_oeffnen(GRADE)
+	var anfang := _editor.content_key()
+
+	# Act und Assert
+	_editor.set_start_modifier_field(Difficulty.Level.LEICHT, 0, &"value", -0.03)
+	var geaendert := _editor.content_key()
+	assert_ne(geaendert, anfang)
+	assert_string_contains(geaendert, "\"value\":-0.03")
+	_editor.undo()
+	assert_eq(_editor.content_key(), anfang)
+	_editor.set_start_modifier_field(Difficulty.Level.LEICHT, 0, &"value", -0.03)
+	assert_eq(_editor.content_key(), geaendert, "Gleicher Inhalt, gleicher Text.")
+
+
 # --- Speicher ---------------------------------------------------------------------------------
 
 func test_editor_wird_samt_verlauf_freigegeben() -> void:
@@ -1087,3 +1566,27 @@ func _schreiben(ziel: String, text: String) -> void:
 	var datei := FileAccess.open(ziel, FileAccess.WRITE)
 	datei.store_string(text)
 	datei.close()
+
+
+## Die Kennungen der Start-Modifikatoren im Profil von [param level], in ihrer Reihenfolge.
+func _ids(level: Difficulty.Level) -> Array:
+	return _editor.catalog.get_profile(level).modifiers.map(
+		func(modifikator: ChanceModifier) -> String: return modifikator.id)
+
+
+## Je Profil sein Text aus to_dict(), um zu sehen, ob es sich geändert hat.
+func _profiltexte(profile: Array) -> Array:
+	return profile.map(
+		func(profil: DifficultyProfile) -> String: return JSON.stringify(profil.to_dict()))
+
+
+## Die Felder der Meldungen nach [param regel] im Editor, etwa „V25“.
+func _regeln(regel: String) -> Array:
+	return _editor.issues().filter(
+		func(meldung: CatalogIssue) -> bool: return meldung.rule == regel).map(
+		func(meldung: CatalogIssue) -> String: return meldung.field)
+
+
+## Die Felder der Meldungen V22 im Editor.
+func _lesemeldungen() -> Array:
+	return _regeln("V22")

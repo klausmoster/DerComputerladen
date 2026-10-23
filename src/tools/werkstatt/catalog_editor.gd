@@ -15,6 +15,12 @@ extends RefCounted
 ## Nach jeder Änderung prüft der Editor den ganzen Katalog neu und meldet catalog_changed und
 ## issues_changed, erst wenn UndoRedo fertig ist; is_dirty() stimmt dann schon. Wer darauf hört,
 ## zeichnet neu und ändert den Katalog dabei nicht.
+##
+## Seit Feature 003 gehören die Profile von Leicht und Schwer dazu (research.md, R10). Für sie gilt
+## dieselbe Regel, eine Ebene gröber: Jede Änderung an einem Start-Modifikator ersetzt das ganze
+## Profil durch eine Kopie aus DifficultyProfile.duplicate_profile(). So hält der Verlauf je
+## Profil nur zwei Objekte, vorher und nachher, und muss sich keine Stellen im Profil merken, die
+## nach dem ersten Entfernen nicht mehr stimmten.
 
 signal catalog_changed()
 signal issues_changed(issues: Array[CatalogIssue])
@@ -97,6 +103,16 @@ const LISTS := {
 		"of": "der Bedingung",
 		"fields": {&"event": "Ereignis", &"occurred": "Zustand"},
 	},
+}
+## Die Felder eines Start-Modifikators, die set_start_modifier_field() ändert, mit ihrem Namen im
+## Verlauf wie im Reiter „Schwierigkeitsgrade“ (contracts/werkstatt.md, „DifficultyPanel“).
+const START_MODIFIER_FIELDS := {
+	&"event_id": "Ereignis",
+	&"value": "Wert",
+	&"from_day": "Beginn",
+	&"to_day": "Ende",
+	&"reason": "Grund",
+	&"id": "Kennung",
 }
 
 var catalog: EventCatalog
@@ -260,6 +276,10 @@ func has_errors() -> bool:
 ## sind das statt 14 ms für to_json() Bruchteile einer Millisekunde. Die Ereignisse stehen nach
 ## Kennung sortiert im Katalog wie in der Datei: Lesen sortiert sie, und jeder Schritt setzt sie
 ## an ihre Stelle.
+##
+## Nach den Ereignissen folgen die Profile (Feature 003; Analyse, U1). Eine Änderung an einem
+## Start-Modifikator bringt ein neues Profil-Objekt und damit einen neuen Text; so merken
+## Simulator und Statistik auch sie.
 func content_key() -> String:
 	if catalog == null:
 		return ""
@@ -267,10 +287,14 @@ func content_key() -> String:
 	var parts := PackedStringArray()
 	for category in catalog.categories:
 		parts.append(_text_of(category, texts))
-	# Eine leere Zeile trennt die Kategorien von den Ereignissen.
+	# Eine leere Zeile trennt die Kategorien von den Ereignissen, eine weitere die Ereignisse von
+	# den Profilen.
 	parts.append("")
 	for event in catalog.events:
 		parts.append(_text_of(event, texts))
+	parts.append("")
+	for profile in catalog.profiles:
+		parts.append(_text_of(profile, texts))
 	# Nur die Objekte von jetzt behalten; ersetzte fallen aus dem Zwischenspeicher.
 	_texts = texts
 	return "\n".join(parts)
@@ -490,9 +514,9 @@ func references_to(id: String) -> PackedStringArray:
 	return result
 
 
-## Entfernt das Ereignis samt der Folgeereignisse und Bedingungen, die darauf zeigen, in einem
-## Schritt (FR-036). Haben zwei Ereignisse dieselbe Kennung (V02), bleiben die Verweise stehen,
-## denn sie gelten dann dem anderen.
+## Entfernt das Ereignis samt der Folgeereignisse, Bedingungen und Start-Modifikatoren, die darauf
+## zeigen, in einem Schritt (FR-036; Feature 003, FR-017). Haben zwei Ereignisse dieselbe Kennung
+## (V02), bleiben die Verweise stehen, denn sie gelten dann dem anderen.
 func delete_event(id: String) -> void:
 	var event := _event(id)
 	if event == null:
@@ -502,11 +526,13 @@ func delete_event(id: String) -> void:
 		for other in catalog.events:
 			if other != event and _points_to(other, id):
 				steps.append([&"replace", other, _redirected(other, id, "")])
+		steps.append_array(_profile_redirections(id, ""))
 	steps.append([&"remove", event, catalog.events.find(event)])
 	_commit("%s löschen" % _event_name(event), steps)
 
 
-## Gibt dem Ereignis eine neue Kennung und zieht alle Verweise nach, in einem Schritt (FR-032).
+## Gibt dem Ereignis eine neue Kennung und zieht alle Verweise nach, in einem Schritt (FR-032),
+## auch das event_id der Start-Modifikatoren, still (Feature 003, R9). Deren eigene Kennung bleibt.
 ## ERR_ALREADY_EXISTS bei einer Dublette, ERR_DOES_NOT_EXIST bei unbekannter alter Kennung,
 ## ERR_INVALID_PARAMETER bei leerer neuer. Zeichen außer a–z, 0–9 und _ meldet danach die Prüfung
 ## (V03). Die neue Kennung sortiert das Ereignis an seine neue Stelle.
@@ -527,6 +553,7 @@ func rename_event(old_id: String, new_id: String) -> Error:
 		for other in catalog.events:
 			if other != event and _points_to(other, old_id):
 				steps.append([&"replace", other, _redirected(other, old_id, new_id)])
+		steps.append_array(_profile_redirections(old_id, new_id))
 	var renamed: TimelineEvent = _redirected(event, old_id, new_id) if follow else _copy(event)
 	renamed.id = new_id
 	steps.append([&"remove", event, catalog.events.find(event)])
@@ -568,7 +595,8 @@ func set_event_fields(id: String, changes: Dictionary) -> void:
 
 ## Behält Werte, die auch die neue Art hat (Zeitfenster, Mindestabstand, Dauer), setzt die übrigen
 ## Felder der neuen Art auf Vorgaben, verwirft die der alten (FR-031). Rückgängig setzt das alte
-## Ereignis mit allen Werten wieder ein.
+## Ereignis mit allen Werten wieder ein. Start-Modifikatoren auf das Ereignis bleiben stehen, auch
+## wenn es nicht mehr über Wahrscheinlichkeit kommt; dann meldet sie V26 (Feature 003, R10).
 func set_event_kind(id: String, kind: TimelineEvent.Kind) -> void:
 	var event := _event(id)
 	if event == null or event.kind == kind:
@@ -692,6 +720,122 @@ func delete_category(id: String) -> Error:
 	return OK
 
 
+# --- Profile -----------------------------------------------------------------------------------
+#
+# Feature 003, FR-015 bis FR-017 und R10. level ist LEICHT oder SCHWER, index die Stelle im Profil
+# ab 0. Jede ändernde Methode ist genau eine Aktion im Verlauf und ersetzt das ganze Profil durch
+# eine geänderte Kopie: [&"replace", altes_profil, neues_profil]. Ein Start-Modifikator wird nie an
+# Ort und Stelle geändert, auch nicht der im alten Profil; das liegt unverändert im Verlauf, bis
+# Rückgängig es wieder einsetzt.
+
+
+## Legt einen Start-Modifikator mit den Vorgaben aus data-model.md am Ende des Profils an und gibt
+## ihn zurück: auf [param event_id], leer heißt das erste Ereignis über Wahrscheinlichkeit nach
+## Kennung; das ganze Spiel, Wert 0, Grund leer; die Kennung aus der des Ereignisses, im Profil
+## eindeutig wie reklamationswelle_2. null ohne Aktion, wenn [param level] kein Profil hat oder es
+## im Katalog kein Ereignis über Wahrscheinlichkeit gibt.
+##
+## Der zurückgegebene Start-Modifikator steht im Katalog, bis sich das Profil das nächste Mal
+## ändert; danach steht dort eine Kopie. Wer ihn später braucht, holt ihn über Grad und Stelle neu,
+## wie ein Ereignis über seine Kennung. Dasselbe gilt für duplicate_start_modifier().
+func add_start_modifier(level: Difficulty.Level, event_id: String = "") -> ChanceModifier:
+	var profile := catalog.get_profile(level)
+	var first := _first_chance_id()
+	if profile == null or first.is_empty():
+		return null
+	var modifier := ChanceModifier.new()
+	modifier.event_id = event_id if not event_id.is_empty() else first
+	modifier.id = unique_id(modifier.event_id, _modifier_ids(profile))
+	modifier.value = 0.0
+	modifier.reason = ""
+	modifier.from_day = TimelineRun.FIRST_DAY
+	modifier.to_day = TimelineRun.LAST_DAY
+	var changed := profile.duplicate_profile()
+	changed.modifiers.append(modifier)
+	_commit("Neuer Start-Modifikator in %s" % Difficulty.label(level),
+		[[&"replace", profile, changed]])
+	return modifier
+
+
+## Kopie direkt hinter dem Original, mit einer Kennung, die im Profil frei ist (_2, _3 …); alles
+## andere bleibt gleich, auch der Grund. Ohne Kennung entsteht die neue aus der des Ereignisses.
+func duplicate_start_modifier(level: Difficulty.Level, index: int) -> ChanceModifier:
+	var profile := _profile_at(level, index)
+	if profile == null:
+		return null
+	var original := profile.modifiers[index]
+	var changed := profile.duplicate_profile()
+	# Die Kopie im neuen Profil ist schon ein eigenes Objekt; das Duplikat braucht noch eins.
+	var copy: ChanceModifier = _copy(changed.modifiers[index])
+	var base := original.id
+	if base.is_empty():
+		base = id_from(original.event_id, "start_modifikator")
+	copy.id = unique_id(base, _modifier_ids(profile))
+	changed.modifiers.insert(index + 1, copy)
+	_commit("Start-Modifikator %s duplizieren" % _modifier_name(level, index, original),
+		[[&"replace", profile, changed]])
+	return copy
+
+
+## Entfernt den Start-Modifikator an [param index], ohne Rückfrage; Rückgängig holt ihn an seine
+## Stelle zurück (R11).
+func delete_start_modifier(level: Difficulty.Level, index: int) -> void:
+	var profile := _profile_at(level, index)
+	if profile == null:
+		return
+	var changed := profile.duplicate_profile()
+	changed.modifiers.remove_at(index)
+	_commit("Start-Modifikator %s löschen" % _modifier_name(level, index, profile.modifiers[index]),
+		[[&"replace", profile, changed]])
+
+
+## [param field] ist &"event_id", &"value", &"reason", &"from_day", &"to_day" oder &"id". Jeder
+## Text und jede Zahl wird angenommen; was nicht passt, etwa ein Ende vor dem Beginn, zeigt die
+## Prüfung (V25 bis V31). Zahlen dürfen als int oder float kommen, Tage als float nur ohne
+## Nachkommastellen. Ein Wert, der dem alten gleicht, legt keine Aktion an.
+func set_start_modifier_field(level: Difficulty.Level, index: int, field: StringName,
+		value: Variant) -> void:
+	var profile := _profile_at(level, index)
+	if profile == null:
+		return
+	if not START_MODIFIER_FIELDS.has(field):
+		push_error("CatalogEditor: Das Feld „%s“ hat ein Start-Modifikator nicht." % field)
+		return
+	var modifier := profile.modifiers[index]
+	var converted: Variant = _coerce(modifier.get(field), value)
+	if converted == null:
+		push_error("CatalogEditor: %s passt nicht in das Feld „%s“." % [value, field])
+		return
+	if converted == modifier.get(field):
+		return
+	var changed := profile.duplicate_profile()
+	changed.modifiers[index].set(field, converted)
+	_commit("%s von %s" % [START_MODIFIER_FIELDS[field], _modifier_name(level, index, modifier)],
+		[[&"replace", profile, changed]])
+
+
+## Je Start-Modifikator, der auf [param event_id] zeigt, ein Text wie „Schwer: Anspruchsvolle
+## Kunden“, ohne Grund mit der Kennung, ohne beides mit der Nummer ab 1: „Schwer: Nr. 3“. In der
+## Reihenfolge Leicht, Schwer und der Stellen. Der Löschdialog nennt sie (FR-017).
+func profile_references_to(event_id: String) -> PackedStringArray:
+	var result := PackedStringArray()
+	for level: int in Difficulty.WITH_PROFILE:
+		var profile := catalog.get_profile(level)
+		if profile == null:
+			continue
+		for index in profile.modifiers.size():
+			var modifier := profile.modifiers[index]
+			if modifier.event_id != event_id:
+				continue
+			var what := modifier.reason.strip_edges()
+			if what.is_empty():
+				what = modifier.id
+			if what.is_empty():
+				what = "Nr. %d" % (index + 1)
+			result.append("%s: %s" % [Difficulty.label(level), what])
+	return result
+
+
 # --- Verlauf -----------------------------------------------------------------------------------
 
 func undo() -> bool:
@@ -738,7 +882,8 @@ func redo_name() -> String:
 # - [&"replace", alt, neu]: neu tritt an die Stelle von alt;
 # - [&"insert", objekt, stelle]: objekt kommt an diese Stelle;
 # - [&"remove", objekt, stelle]: objekt fällt weg, stelle ist, wo es stand.
-# Ob die Bewegung Ereignisse oder Kategorien betrifft, zeigt die Klasse des Objekts. Rückgängig
+# Ob die Bewegung Ereignisse, Kategorien oder Profile betrifft, zeigt die Klasse des Objekts.
+# Profile werden nur ersetzt, nie eingefügt oder entfernt; der Katalog hat immer zwei. Rückgängig
 # sind dieselben Bewegungen umgekehrt und in umgekehrter Folge (_inverse()). Weil Tun und
 # Rückgängig immer im Stand davor laufen, stimmen die gemerkten Stellen.
 
@@ -772,12 +917,20 @@ static func _replay(editor: WeakRef, steps: Array) -> void:
 ## Führt die Bewegungen eines Schritts aus, beim Tun wie beim Rückgängig, und prüft neu. Melden
 ## dürfen erst die Aufrufer, wenn UndoRedo fertig ist: Es zählt seine Version erst nach dieser
 ## Methode weiter, und is_dirty() hinge sonst einen Schritt hinterher.
+##
+## Ersetzt ein Schritt ein Profil, verwirft es dessen Meldungen beim Lesen (Analyse, U2): Ab da
+## können sich die Stellen im Profil verschieben, und eine gemerkte Stelle träfe den falschen
+## Start-Modifikator. Rückgängig und Wiederholen laufen auch hier durch und bringen sie nicht
+## zurück, denn sie gelten der Datei.
 func _run(steps: Array) -> void:
 	for step: Array in steps:
 		var item: Object = step[1]
 		var list: Array = catalog.categories
 		if item is TimelineEvent:
 			list = catalog.events
+		elif item is DifficultyProfile:
+			list = catalog.profiles
+			_drop_read_issues((item as DifficultyProfile).level)
 		if step[0] == &"insert":
 			list.insert(step[2], item)
 			continue
@@ -979,6 +1132,86 @@ func _free_color() -> StringName:
 	return best
 
 
+# --- Hilfen zu Profilen ------------------------------------------------------------------------
+
+## Das Profil von [param level], wenn es dort einen Start-Modifikator [param index] gibt, sonst
+## null mit Fehlermeldung. Der Reiter kennt nur Grade mit Profil und Stellen aus der Tabelle; alles
+## andere ist ein Fehler im Aufrufer, wie eine unbekannte Kennung bei _event().
+func _profile_at(level: int, index: int) -> DifficultyProfile:
+	var profile := catalog.get_profile(level)
+	if profile == null:
+		push_error("CatalogEditor: Der Grad „%s“ hat kein Profil." % Difficulty.label(level))
+		return null
+	if index < 0 or index >= profile.modifiers.size():
+		push_error("CatalogEditor: Das Profil „%s“ hat keinen Start-Modifikator %d."
+			% [Difficulty.label(level), index])
+		return null
+	return profile
+
+
+## Die Kennung des ersten Ereignisses über Wahrscheinlichkeit nach Kennung, verglichen mit < wie
+## beim Sortieren; leer, wenn es keins gibt.
+func _first_chance_id() -> String:
+	var first := ""
+	for event in catalog.events:
+		if event.kind == TimelineEvent.Kind.CHANCE and (first.is_empty() or event.id < first):
+			first = event.id
+	return first
+
+
+## Die Kennungen im Profil als { kennung: true }, für unique_id().
+static func _modifier_ids(profile: DifficultyProfile) -> Dictionary:
+	var ids := {}
+	for modifier in profile.modifiers:
+		ids[modifier.id] = true
+	return ids
+
+
+## Der Start-Modifikator im Namen einer Aktion: „Schwer: reklamationswelle“, ohne Kennung
+## „Schwer: Nr. 3“, gezählt ab 1 wie in DifficultyProfile.place().
+static func _modifier_name(level: int, index: int, modifier: ChanceModifier) -> String:
+	if not modifier.id.is_empty():
+		return "%s: %s" % [Difficulty.label(level), modifier.id]
+	return "%s: Nr. %d" % [Difficulty.label(level), index + 1]
+
+
+## Je Profil mit einem Start-Modifikator auf [param old_id] die Bewegung, die es durch eine Kopie
+## ersetzt, in der diese auf [param new_id] zeigen; mit leerem [param new_id] fallen sie weg. Die
+## übrigen behalten ihre Reihenfolge. Profile ohne solchen Verweis bleiben, wie sie sind.
+func _profile_redirections(old_id: String, new_id: String) -> Array:
+	var steps := []
+	for profile in catalog.profiles:
+		var pointing := profile.modifiers.any(
+			func(modifier: ChanceModifier) -> bool: return modifier.event_id == old_id)
+		if not pointing:
+			continue
+		var changed := profile.duplicate_profile()
+		var kept: Array[ChanceModifier] = []
+		for modifier in changed.modifiers:
+			if modifier.event_id != old_id:
+				kept.append(modifier)
+			elif not new_id.is_empty():
+				modifier.event_id = new_id
+				kept.append(modifier)
+		changed.modifiers = kept
+		steps.append([&"replace", profile, changed])
+	return steps
+
+
+## Verwirft die Meldungen beim Lesen, die zum Profil von [param level] gehören: Feld
+## „profiles.<key>“ oder mit „profiles.<key>[“ am Anfang, also nach ganzen Pfadteilen. Zu
+## „profiles.schwerr“ oder „profiles.mittel“ gehört keins; sie bleiben bis zum Speichern.
+func _drop_read_issues(level: int) -> void:
+	var whole := "profiles.%s" % Difficulty.key(level)
+	var kept: Array[CatalogIssue] = []
+	for issue in _read_issues:
+		var belongs := issue.event_id.is_empty() \
+			and (issue.field == whole or issue.field.begins_with(whole + "["))
+		if not belongs:
+			kept.append(issue)
+	_read_issues = kept
+
+
 # --- Kopien und Werte --------------------------------------------------------------------------
 
 ## Genaue Kopie eines Ereignisses, einer Kategorie oder eines Listeneintrags: jedes Feld, Listen
@@ -1054,14 +1287,15 @@ func _changed_outside() -> bool:
 		or FileAccess.get_sha256(path) != _file_hash
 
 
-## Der Text einer Kategorie oder eines Ereignisses für content_key(): to_dict() mit sortierten
-## Schlüsseln in einer Zeile, wie es auch to_json() schreibt. Ein Dictionary mit Objekten als
-## Schlüssel vergleicht nach der Identität des Objekts, nicht nach dem Inhalt; genau das braucht
-## der Zwischenspeicher.
+## Der Text einer Kategorie, eines Ereignisses oder eines Profils für content_key(): to_dict() mit
+## sortierten Schlüsseln in einer Zeile, wie es auch to_json() schreibt. Ein Dictionary mit
+## Objekten als Schlüssel vergleicht nach der Identität des Objekts, nicht nach dem Inhalt; genau
+## das braucht der Zwischenspeicher.
 func _text_of(item: Object, texts: Dictionary) -> String:
 	var text: String = _texts.get(item, "")
 	if text.is_empty():
-		# EventCategory und TimelineEvent haben beide to_dict(); call() ruft es über den Namen.
+		# EventCategory, TimelineEvent und DifficultyProfile haben to_dict(); call() ruft es über
+		# den Namen.
 		text = JSON.stringify(item.call(&"to_dict"), "", true)
 	texts[item] = text
 	return text

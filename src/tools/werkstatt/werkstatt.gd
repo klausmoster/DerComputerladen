@@ -6,8 +6,8 @@ extends Control
 ## Katalog über einen CatalogEditor, fragt nach, bevor etwas verloren gehen könnte, und verdrahtet
 ## die Teile.
 ##
-## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung, Zeitstrahl, Simulator und
-## Statistik. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft sie von oben
+## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung, Zeitstrahl, Simulator,
+## Statistik und die Schwierigkeitsgrade. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft sie von oben
 ## auf (refresh(), show_event() …); untereinander kennen sie sich nicht. Den Katalog ändert nur der
 ## CatalogEditor, die Auswahl gehört der Werkstatt.
 ##
@@ -71,6 +71,7 @@ var _open_error := OK
 @onready var _timeline_view: TimelineView = %TimelineView
 @onready var _simulator_panel: SimulatorPanel = %SimulatorPanel
 @onready var _statistics_panel: StatisticsPanel = %StatisticsPanel
+@onready var _difficulty_panel: DifficultyPanel = %DifficultyPanel
 @onready var _backup_timer: Timer = %BackupTimer
 @onready var _settings_timer: Timer = %SettingsTimer
 @onready var _close_dialog: ConfirmationDialog = %CloseDialog
@@ -97,11 +98,13 @@ func _ready() -> void:
 	_tabs.set_tab_title(0, "Prüfung")
 	_tabs.set_tab_title(_tabs.get_tab_idx_from_control(_simulator_panel), "Simulator")
 	_tabs.set_tab_title(_tabs.get_tab_idx_from_control(_statistics_panel), "Statistik")
+	_tabs.set_tab_title(_tabs.get_tab_idx_from_control(_difficulty_panel), "Schwierigkeitsgrade")
 	_event_list.editor = editor
 	_event_form.editor = editor
 	_timeline_view.editor = editor
 	_simulator_panel.editor = editor
 	_statistics_panel.editor = editor
+	_difficulty_panel.editor = editor
 	# Das Häkchen der Statistik nimmt die Eingriffe, die der Simulator gesammelt hat (FR-045). Die
 	# Werkstatt reicht sie als Callable weiter; so kennen sich die beiden Teile nicht.
 	_statistics_panel.interventions_source = _simulator_interventions
@@ -145,6 +148,8 @@ func _on_selection_changed(id: String) -> void:
 	_event_list.select_event(id)
 	_event_form.show_event(id)
 	_timeline_view.select_event(id)
+	# „Neu“ im Reiter „Schwierigkeitsgrade“ nimmt das gewählte Ereignis (R11).
+	_difficulty_panel.selected_event_id = id
 
 
 ## Nach einer Änderung kann das gewählte Ereignis fehlen, etwa nach Löschen oder Rückgängig.
@@ -512,6 +517,7 @@ func _on_catalog_changed() -> void:
 	_timeline_view.refresh()
 	_simulator_panel.refresh()
 	_statistics_panel.refresh()
+	_difficulty_panel.refresh()
 	_update_toolbar()
 	_check_selection.call_deferred()
 
@@ -525,6 +531,7 @@ func _on_issues_changed(issues: Array[CatalogIssue]) -> void:
 	_event_form.refresh()
 	_simulator_panel.refresh()
 	_statistics_panel.refresh()
+	_difficulty_panel.refresh()
 	_update_toolbar()
 
 
@@ -555,7 +562,9 @@ func _on_edit_requested(id: String) -> void:
 	_event_form.focus_title()
 
 
-## Löschen fragt nach und nennt die Ereignisse, die darauf verweisen (FR-036).
+## Löschen fragt nach und nennt, was darauf verweist (FR-036): erst die Ereignisse, dann die
+## Start-Modifikatoren in den Profilen (Feature 003, FR-017). delete_event() entfernt beides im
+## selben Schritt mit.
 func _on_delete_requested(id: String) -> void:
 	var event := editor.catalog.get_event(id)
 	if event == null:
@@ -563,11 +572,19 @@ func _on_delete_requested(id: String) -> void:
 	_pending_delete = id
 	var text := "„%s“ löschen?" % _title_of(event)
 	var references := editor.references_to(id)
-	if not references.is_empty():
-		var names := PackedStringArray()
-		for reference in references:
-			names.append("„%s“" % _title_of(editor.catalog.get_event(reference)))
-		text += ("\n\nDarauf verweisen: %s. Diese Verweise werden mit entfernt.") % ", ".join(names)
+	var in_profiles := editor.profile_references_to(id)
+	var names := PackedStringArray()
+	for reference in references:
+		names.append("„%s“" % _title_of(editor.catalog.get_event(reference)))
+	if not references.is_empty() and not in_profiles.is_empty():
+		text += "\n\nDarauf verweisen: %s. In den Profilen: %s." % [", ".join(names),
+			", ".join(in_profiles)]
+	elif not references.is_empty():
+		text += "\n\nDarauf verweisen: %s." % ", ".join(names)
+	elif not in_profiles.is_empty():
+		text += "\n\nIn den Profilen verweisen darauf: %s." % ", ".join(in_profiles)
+	if not references.is_empty() or not in_profiles.is_empty():
+		text += " Diese Verweise werden mit entfernt."
 	text += "\n\nRückgängig holt alles zurück."
 	_delete_dialog.dialog_text = text
 	_delete_dialog.popup_centered(Vector2i(440, 0))
@@ -630,12 +647,24 @@ static func _focus_ring(control: Control) -> Rect2:
 
 
 ## Ein Klick in der Prüfung wählt das Ereignis und setzt den Fokus ins Feld (FR-033). Meldungen zu
-## Kategorien haben kein Ereignis; ihr Feld liegt im Bereich für Kategorien.
+## Kategorien haben kein Ereignis; ihr Feld liegt im Bereich für Kategorien. Meldungen zu Profilen
+## haben auch keins: Ihr Feld beginnt mit „profiles“ und liegt im Reiter „Schwierigkeitsgrade“; die
+## Auswahl des Ereignisses bleibt dann, wie sie ist (Feature 003, FR-016).
 func _on_issue_activated(event_id: String, field: String) -> void:
+	if _is_profile_field(field):
+		_tabs.current_tab = _tabs.get_tab_idx_from_control(_difficulty_panel)
+		_difficulty_panel.focus_field(field)
+		return
 	if not event_id.is_empty() and editor.catalog != null \
 			and editor.catalog.get_event(event_id) != null:
 		select_event(event_id)
 	_event_form.focus_field(field)
+
+
+## Ob [param field] zu den Profilen gehört: „profiles“ selbst oder alles darunter, nach ganzen
+## Pfadteilen; „profiles.schwer[2].reason“ ja, ein Feld „profilesx“ nicht.
+static func _is_profile_field(field: String) -> bool:
+	return field == "profiles" or field.begins_with("profiles.") or field.begins_with("profiles[")
 
 
 # --- Toolbar ----------------------------------------------------------------------------------

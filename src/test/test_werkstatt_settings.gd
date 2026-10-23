@@ -22,6 +22,7 @@ const SIMULATOR := "Layout/Main/Center/Tabs/SimulatorPanel/Split"
 const SIMULATOR_FAHRPLAN := "Layout/Main/Center/Tabs/SimulatorPanel/Split/PlanSplit"
 const SIMULATOR_PROTOKOLL := "Layout/Main/Center/Tabs/SimulatorPanel/Split/ProtocolBox"
 const STATISTIK := "Layout/Main/Center/Tabs/StatisticsPanel/Split"
+const SCHWIERIGKEITSGRADE := "Layout/Main/Center/Tabs/DifficultyPanel/Split"
 ## Die Fenstergröße, die Klaus' Bildschirm hat (1920 × 925), und eine kleine.
 const GROSS := Vector2(1920, 925)
 const KLEIN := Vector2(1280, 720)
@@ -52,8 +53,9 @@ func test_alle_teiler_sind_dabei_und_die_vorgabe_liegt_unter_user() -> void:
 	for split in werkstatt.splits():
 		namen.append(String(werkstatt.get_path_to(split)))
 	assert_eq(namen, [LISTE_MITTE_FORMULAR, ZEITSTRAHL_REITER, SIMULATOR, SIMULATOR_FAHRPLAN,
-		SIMULATOR_PROTOKOLL, STATISTIK], "Liste | Mitte | Formular, Zeitstrahl über Reitern, "
-		+ "die drei im Simulator und der in der Statistik.")
+		SIMULATOR_PROTOKOLL, STATISTIK, SCHWIERIGKEITSGRADE], "Liste | Mitte | Formular, "
+		+ "Zeitstrahl über Reitern, die drei im Simulator, der in der Statistik und der zwischen "
+		+ "Tabelle und Feldern im Reiter „Schwierigkeitsgrade“.")
 
 
 func test_ziehen_speichert_die_teiler_entprellt() -> void:
@@ -84,7 +86,7 @@ func test_ziehen_speichert_die_teiler_entprellt() -> void:
 	assert_eq(datei.load(EINSTELLUNGEN), OK)
 	assert_eq(datei.get_value(Werkstatt.SPLITS_SECTION, LISTE_MITTE_FORMULAR),
 		PackedInt32Array([420, -460]))
-	assert_eq(datei.get_section_keys(Werkstatt.SPLITS_SECTION).size(), 6,
+	assert_eq(datei.get_section_keys(Werkstatt.SPLITS_SECTION).size(), 7,
 		"Alle Teiler stehen drin.")
 	assert_eq(_stand(ECHTE_DATEI), echte_vorher, "Die echte Einstellungsdatei bleibt unberührt.")
 
@@ -121,17 +123,18 @@ func test_zu_grosse_lage_wird_begrenzt_und_jeder_bereich_bleibt_sichtbar() -> vo
 	var weit := {
 		LISTE_MITTE_FORMULAR: [5000, -5000], ZEITSTRAHL_REITER: [5000], SIMULATOR: [-5000],
 		SIMULATOR_FAHRPLAN: [5000], SIMULATOR_PROTOKOLL: [-5000], STATISTIK: [5000],
+		SCHWIERIGKEITSGRADE: [5000],
 	}
 	for teiler: String in weit:
 		datei.set_value(Werkstatt.SPLITS_SECTION, teiler, PackedInt32Array(weit[teiler]))
 	datei.save(EINSTELLUNGEN)
 
-	# Act: ein kleines Fenster, beide Reiter einmal vorn
+	# Act: ein kleines Fenster, jeder Reiter mit Teiler einmal vorn
 	var werkstatt := await _werkstatt(KLEIN)
 	var tabs: TabContainer = werkstatt.get_node("%Tabs")
 	var geprueft := 0
 	for reiter: Control in [werkstatt.get_node("%SimulatorPanel"),
-			werkstatt.get_node("%StatisticsPanel")]:
+			werkstatt.get_node("%StatisticsPanel"), werkstatt.get_node("%DifficultyPanel")]:
 		tabs.current_tab = tabs.get_tab_idx_from_control(reiter)
 		await wait_process_frames(2)
 
@@ -151,8 +154,29 @@ func test_zu_grosse_lage_wird_begrenzt_und_jeder_bereich_bleibt_sichtbar() -> vo
 				assert_gte(bereich.position[achse], 0.0, "%s beginnt im Teiler." % stelle)
 				assert_lte(bereich.position[achse] + bereich.size[achse],
 					split.size[achse] + 0.5, "%s endet im Teiler." % stelle)
-	assert_eq(geprueft, 8, "Je Reiter Liste | Mitte | Formular und Zeitstrahl über Reitern, dazu "
-		+ "die drei Teiler im Simulator bzw. der in der Statistik.")
+	assert_eq(geprueft, 11, "Je Reiter Liste | Mitte | Formular und Zeitstrahl über Reitern, dazu "
+		+ "die drei Teiler im Simulator, der in der Statistik bzw. der im Reiter "
+		+ "„Schwierigkeitsgrade“.")
+
+
+func test_im_kleinen_fenster_passt_jeder_reiter_in_die_breite() -> void:
+	# Arrange (Feature 003, T017): Ist die Mitte breiter, als Liste und Formular ihr lassen, wächst
+	# Layout über das Fenster hinaus, nach beiden Seiten, und Toolbar und Formular sind am Rand
+	# abgeschnitten. Der Reiter „Schwierigkeitsgrade“ tat das zuerst mit 40 Pixeln je Seite.
+	var werkstatt := await _werkstatt(KLEIN)
+	var tabs: TabContainer = werkstatt.get_node("%Tabs")
+	var layout: Control = werkstatt.get_node("Layout")
+
+	for i in tabs.get_tab_count():
+		# Act
+		tabs.current_tab = i
+		await wait_process_frames(2)
+
+		# Assert
+		var titel := tabs.get_tab_title(i)
+		assert_gte(layout.position.x, 0.0, "„%s“: Layout beginnt im Fenster." % titel)
+		assert_lte(layout.position.x + layout.size.x, KLEIN.x,
+			"„%s“: Layout endet im Fenster." % titel)
 
 
 func test_kaputte_datei_laesst_die_vorgaben_ohne_meldung() -> void:

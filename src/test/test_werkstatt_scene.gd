@@ -6,7 +6,9 @@ extends GutTest
 ## Katalog (T078), die Kürzel und die Liste (T034, T035, T038), Klicks mit offener Eingabe in
 ## Liste, Prüfung, Zeitstrahl und Formular (T076, T077, T080), der Zeitstrahl in der Werkstatt
 ## (T049) und der Simulator (T054): Er rechnet, ohne Spieluhr und Katalog anzufassen, und sein
-## Protokoll ist das der Textausgabe.
+## Protokoll ist das der Textausgabe. Aus Feature 003 (T017) kommt der Reiter
+## „Schwierigkeitsgrade“ dazu: sein Platz, der Sprung aus der Prüfung, der Löschdialog und der Grad
+## in der Spalte „Ereignis“ der Prüfung.
 ##
 ## Jeder Test öffnet eine Kopie eines Test-Katalogs in einem eigenen Ordner unter user:// und setzt
 ## diesen Ordner auch für die Sicherungskopien, dazu eine eigene Einstellungsdatei, bevor die Szene
@@ -26,6 +28,12 @@ const KATEGORIE_FARBE := "res://test/fixtures/catalog_v21_kategorie_farbe.json"
 ## Kein gültiges JSON: Der Parser stolpert in Zeile 13.
 const KAPUTT := "res://test/fixtures/catalog_v22_kaputt.json"
 const UEBERNAHME := "res://test/fixtures/event_catalog_uebernahme.json"
+## Leicht −2 und Schwer +5 auf die Reklamationswelle; Kundenflucht hat sie als Bedingung.
+const GRADE := "res://test/fixtures/catalog_us1_grade.json"
+## Leicht: ein Start-Modifikator ohne Grund (V29).
+const GRUND_LEER := "res://test/fixtures/catalog_v29_profil_grund_leer.json"
+## Schwer: ein Start-Modifikator auf das jährliche Weihnachtsgeschäft (V26).
+const JAEHRLICH := "res://test/fixtures/catalog_v26_profil_ereignis_jaehrlich.json"
 
 
 func before_each() -> void:
@@ -1710,6 +1718,142 @@ func test_bis_zum_ende_dauert_unter_einer_sekunde() -> void:
 	assert_true(simulator.run.is_finished())
 	assert_gt(_zeilen(simulator.get_node("%Protocol")).size(), 0)
 	assert_lt(dauer, 1000.0, "SC-004: unter 1 Sekunde.")
+
+
+# --- Schwierigkeitsgrade (Feature 003, T017) --------------------------------------------------
+
+func test_vierter_reiter_schwierigkeitsgrade() -> void:
+	# Arrange und Act
+	var werkstatt := await _werkstatt(GRADE)
+
+	# Assert: Die drei bisherigen Reiter behalten ihren Platz.
+	var tabs: TabContainer = _node(werkstatt, "%Tabs")
+	var titel := []
+	for i in tabs.get_tab_count():
+		titel.append(tabs.get_tab_title(i))
+	assert_eq(titel, ["Prüfung", "Simulator", "Statistik", "Schwierigkeitsgrade"])
+	var panel: DifficultyPanel = _node(werkstatt, "%DifficultyPanel")
+	assert_eq(tabs.get_tab_idx_from_control(panel), 3)
+	assert_same(panel.editor, werkstatt.editor)
+	assert_eq(_zeilen(panel.get_node("%Table")).size(), 1, "Leicht steht schon da.")
+
+	# Act und Assert: Die Auswahl der Werkstatt kommt im Panel an, eine Änderung auch.
+	werkstatt.select_event("lieferengpass")
+	assert_eq(panel.selected_event_id, "lieferengpass")
+	werkstatt.editor.add_start_modifier(Difficulty.Level.LEICHT, "lieferengpass")
+	await wait_process_frames(1)
+	assert_eq(_zeilen(panel.get_node("%Table")).size(), 2)
+	assert_eq(panel.get_node("%CountLabel").text, "2 Start-Modifikatoren")
+
+
+func test_meldung_zu_einem_profil_fuehrt_in_den_reiter_und_ins_feld() -> void:
+	# Arrange: Leicht hat einen Start-Modifikator ohne Grund (V29); gewählt ist ein Ereignis.
+	var werkstatt := await _werkstatt(GRUND_LEER)
+	werkstatt.select_event("intel_pentium")
+	var pruefung: IssuesPanel = _node(werkstatt, "%IssuesPanel")
+	await wait_process_frames(1)
+	var zeile := pruefung.get_root().get_child(0)
+	assert_eq([zeile.get_text(IssuesPanel.Column.EVENT), zeile.get_text(IssuesPanel.Column.FIELD)],
+		["Profil Leicht", "profiles.leicht[0].reason"])
+
+	# Act: die Zeile wählen und aktivieren, wie mit Enter oder einem Doppelklick
+	zeile.select(0)
+	pruefung.item_activated.emit()
+
+	# Assert: FR-016
+	var tabs: TabContainer = _node(werkstatt, "%Tabs")
+	var panel: DifficultyPanel = _node(werkstatt, "%DifficultyPanel")
+	assert_eq(tabs.current_tab, tabs.get_tab_idx_from_control(panel), "Der Reiter ist vorn.")
+	assert_eq(panel.shown_difficulty(), Difficulty.Level.LEICHT)
+	assert_same(get_viewport().gui_get_focus_owner(), panel.get_node("%ReasonEdit"),
+		"Der Fokus steht im Grund.")
+	assert_eq((panel.get_node("%ReasonEdit") as LineEdit).theme_type_variation, &"ErrorLineEdit")
+	assert_eq(werkstatt.selected_id, "intel_pentium", "Die Auswahl des Ereignisses bleibt.")
+
+	# Act und Assert: Eine Meldung zu einem Ereignis geht weiter ans Formular.
+	pruefung.issue_activated.emit("intel_pentium", "title")
+	assert_same(get_viewport().gui_get_focus_owner(),
+		(_node(werkstatt, "%EventForm") as EventForm).get_input("title"))
+
+
+func test_pruefung_nennt_den_grad_in_der_spalte_ereignis() -> void:
+	# Arrange: Schwer hat einen Start-Modifikator auf das Weihnachtsgeschäft (V26).
+	var werkstatt := await _werkstatt(JAEHRLICH)
+	var pruefung: IssuesPanel = _node(werkstatt, "%IssuesPanel")
+	await wait_process_frames(1)
+
+	# Assert: FR-016, CHK009
+	var zeile := pruefung.get_root().get_child(0)
+	assert_eq([zeile.get_text(IssuesPanel.Column.EVENT), zeile.get_text(IssuesPanel.Column.FIELD)],
+		["Profil Schwer", "profiles.schwer[0].event_id"])
+
+	# Act: nach dem zweiten Pfadteil des Felds (Analyse, U4)
+	var felder := ["profiles.leicht[2].reason", "profiles.schwer", "profiles", "profiles.mittel",
+		"profiles.extrem", "profiles.schwerr[0].reason", "categories[0].color"]
+	var meldungen: Array[CatalogIssue] = []
+	for feld: String in felder:
+		meldungen.append(CatalogIssue.new(CatalogIssue.Severity.ERROR, "V22", "", feld, "Text"))
+	meldungen.append(CatalogIssue.new(CatalogIssue.Severity.ERROR, "V06", "intel_pentium", "date",
+		"Text"))
+	pruefung.show_issues(meldungen)
+	await wait_process_frames(1)
+
+	# Assert
+	var spalte := []
+	for eintrag in pruefung.get_root().get_children():
+		spalte.append(eintrag.get_text(IssuesPanel.Column.EVENT))
+	assert_eq(spalte, ["Profil Leicht", "Profil Schwer", "Profile", "Profile", "Profile",
+		"Profile", "–", "intel_pentium"])
+
+
+func test_loeschdialog_nennt_ereignisse_und_start_modifikatoren() -> void:
+	# Arrange: FR-017. Kundenflucht hat die Reklamationswelle als Bedingung, beide Profile zeigen
+	# darauf.
+	var werkstatt := await _werkstatt(GRADE)
+	var vorher := werkstatt.editor.catalog.to_json()
+
+	# Act
+	werkstatt._on_delete_requested("reklamationswelle")
+
+	# Assert
+	var dialog: ConfirmationDialog = _node(werkstatt, "%DeleteDialog")
+	assert_true(dialog.visible)
+	assert_eq(dialog.dialog_text, "„Reklamationswelle“ löschen?\n\nDarauf verweisen: "
+		+ "„Kundenflucht“. In den Profilen: Leicht: Nachsichtige Kunden, Schwer: Anspruchsvolle "
+		+ "Kunden. Diese Verweise werden mit entfernt.\n\nRückgängig holt alles zurück.")
+
+	# Act und Assert: Löschen entfernt die Start-Modifikatoren mit, Cmd+Z holt alles zurück.
+	dialog.get_ok_button().pressed.emit()
+	assert_eq(werkstatt.editor.catalog.get_profile(Difficulty.Level.LEICHT).modifiers.size(), 0)
+	assert_eq(werkstatt.editor.catalog.get_profile(Difficulty.Level.SCHWER).modifiers.size(), 0)
+	await wait_process_frames(1)
+	assert_eq(_zeilen(_node(werkstatt, "%DifficultyPanel").get_node("%Table")).size(), 0)
+	werkstatt.editor.undo()
+	assert_eq(werkstatt.editor.catalog.to_json(), vorher)
+
+
+func test_loeschdialog_nur_mit_start_modifikatoren() -> void:
+	# Arrange: Auf den Lieferengpass verweist kein Ereignis, nur ein Start-Modifikator (Analyse, I3).
+	var werkstatt := await _werkstatt(GRADE)
+	werkstatt.editor.add_start_modifier(Difficulty.Level.SCHWER, "lieferengpass")
+	werkstatt.editor.set_start_modifier_field(Difficulty.Level.SCHWER, 1, &"reason",
+		"Engpass bei Speicher")
+
+	# Act
+	werkstatt._on_delete_requested("lieferengpass")
+
+	# Assert
+	var dialog: ConfirmationDialog = _node(werkstatt, "%DeleteDialog")
+	assert_eq(dialog.dialog_text, "„Lieferengpass“ löschen?\n\nIn den Profilen verweisen darauf: "
+		+ "Schwer: Engpass bei Speicher. Diese Verweise werden mit entfernt.\n\nRückgängig holt "
+		+ "alles zurück.")
+	dialog.hide()
+
+	# Act und Assert: ohne jeden Verweis wie bisher
+	werkstatt._on_delete_requested("windows_95")
+	assert_eq(dialog.dialog_text, "„Windows 95 erscheint“ löschen?\n\nRückgängig holt alles "
+		+ "zurück.")
+	dialog.hide()
 
 
 # --- Helfer -----------------------------------------------------------------------------------

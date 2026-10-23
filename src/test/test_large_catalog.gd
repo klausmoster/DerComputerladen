@@ -8,7 +8,8 @@ extends GutTest
 ## Erzeugt hat die Datei einmal ein Skript außerhalb des Repos, deterministisch aus festen Formeln,
 ## geschrieben mit EventCatalog.write_file(). Sie ändert sich danach nicht mehr; nur den leeren
 ## Abschnitt „profiles“ hat sie mit Feature 003 bekommen. Start-Modifikatoren kommen für die Messung
-## im Speicher dazu, 20 je Profil (Feature 003, T007; Analyse, G9).
+## im Speicher dazu, 20 je Profil, für die Prüfung (T007) und eine Änderung im Editor (T014;
+## Analyse, G9).
 ##
 ## Zeiten schwanken, weil der Rechner nebenher anderes tut. Jede Messung läuft deshalb mehrmals,
 ## und es zählt der Median: Ein einzelner Ausreißer nach oben, etwa wenn das Betriebssystem den
@@ -148,6 +149,38 @@ func test_aenderung_samt_pruefung_unter_100_ms() -> void:
 		"Rückgängig holt das Gelöschte zurück.")
 	assert_eq(_editor.catalog.get_event("zufall_040").follow_ups.size(), 1,
 		"… samt dem Verweis darauf.")
+
+
+func test_aenderung_an_start_modifikator_samt_pruefung_unter_100_ms() -> void:
+	# Arrange (Feature 003, T014; Analyse, G9): der große Katalog mit 20 Start-Modifikatoren je
+	# Profil, als Kopie geschrieben und im Editor geöffnet. Die Fixture behält ihre leeren Profile.
+	var meldungen: Array[CatalogIssue] = []
+	var katalog := EventCatalog.read_file(KATALOG, meldungen)
+	_start_modifikatoren_dazu(katalog)
+	var ziel := ORDNER + "katalog.json"
+	assert_eq(katalog.write_file(ziel), OK)
+	assert_eq(_editor.open(ziel), OK)
+	var zeiten: Array[float] = []
+
+	# Act: je Lauf ein anderer Wert an einer anderen Stelle in Schwer, also jedes Mal eine Aktion
+	# mit neuem Profil und neuer Prüfung.
+	for lauf in LAEUFE:
+		var beginn := Time.get_ticks_usec()
+		var wert := 0.02 + lauf / 100.0
+		_editor.set_start_modifier_field(Difficulty.Level.SCHWER, lauf, &"value", wert)
+		zeiten.append((Time.get_ticks_usec() - beginn) / 1000.0)
+
+	# Assert
+	var median := _median(zeiten)
+	gut.p("Feature 003, Wert eines Start-Modifikators samt Prüfung, 500 Ereignisse und 20 "
+		+ "Start-Modifikatoren je Profil: Median %.1f ms aus %s" % [median, _liste(zeiten)])
+	var schwer := _editor.catalog.get_profile(Difficulty.Level.SCHWER)
+	assert_almost_eq(schwer.modifiers[LAEUFE - 1].value, 0.02 + (LAEUFE - 1) / 100.0, 0.00001,
+		"Die letzte Änderung ist angekommen.")
+	var letzte := START_MODIFIKATOREN + LAEUFE - 1
+	assert_eq(_editor.undo_name(), "Wert von Schwer: start_%03d" % letzte,
+		"Der Name nennt Grad und Kennung.")
+	assert_lt(median, AENDERUNG_MSEC, "Eine Änderung samt Prüfung braucht unter 100 ms (G9).")
 
 
 func test_ein_spiel_unter_2_sekunden() -> void:

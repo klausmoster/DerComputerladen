@@ -25,7 +25,10 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   Wahrscheinlichkeit steht in `specs/003-schwierigkeitsgrade/research.md`, R18. Klaus legt die
   Profile zur Abnahme von Phase 3 in der Werkstatt an und stellt sie mit der Statistik nach. Seit
   2026-10-22 steht fest, dass beide Profile zur Gesamtabnahme gefüllt sein müssen
-  (Checkliste, CHK008). Offen sind nur noch die Werte.
+  (Checkliste, CHK008). Offen sind nur noch die Werte. Stand 2026-10-23 (T020): Klaus hat je drei
+  Start-Modifikatoren angelegt, alle auf „Großkunde meldet sich“, als vorläufige Werte (Leicht
+  zusammen −2, Schwer +3). Er stellt sie später mit der Statistik ein, die mit Phase 5 die Grade
+  vergleicht.
 
 ### Ältere Punkte aus Claudes bisherigem lokalem Gedächtnis
 
@@ -183,6 +186,38 @@ Auslegungen des Agents, die Claude angenommen hat:
   Textausgabe selbst prüfte. Er startet Godot als eigenen Prozess und kostet rund 6 Sekunden.
 - **Textausgabe und `start_refusals`:** Sie gibt die Liste nicht aus; nach `without_faulty()` und
   der Prüfung des Grads ist sie dort immer leer.
+
+### Feature 003, Phase 3, Teil 1 (2026-10-23)
+
+Auslegungen des Agents, die Claude angenommen hat:
+- **Ungültige Aufrufe:** Duplizieren, Löschen und Felder setzen mit Mittel oder einer Stelle, die es
+  nicht gibt, melden es mit `push_error()` und tun nichts, wie bei einer unbekannten
+  Ereigniskennung. `add_start_modifier()` gibt dann still null, wie der Vertrag sagt.
+- **Namen im Verlauf:** etwa „Wert von Schwer: reklamationswelle“, „Start-Modifikator Schwer:
+  reklamationswelle duplizieren“; ohne Kennung „Schwer: Nr. 3“.
+- **Kennung beim Duplizieren:** wie bei Ereignissen mit Anhang, also `reklamationswelle_2` und
+  davon `reklamationswelle_2_2`.
+- **Löschdialog ohne Grund:** Fehlt der Grund, nennt er die Kennung, sonst „Schwer: Nr. 3“.
+- **Werte mit mehr als vier Nachkommastellen** werden bei der nächsten Änderung im selben Profil
+  gerundet; geschrieben wird ohnehin gerundet.
+- **Regelverstoß, behoben:** Für eine kurze Probe lag einige Sekunden eine Datei
+  `src/zz_probe_kanon.gd` im Repo; sie ist gelöscht, `git status` zeigt nur die drei Dateien von
+  T014.
+
+### Feature 003, Phase 3, Teil 2 (2026-10-23)
+
+- **Höhe bei 1280 × 720 (Claudes Entscheidung):** Mit einem langen Hinweis V31 bricht er in der
+  schmalen Feldspalte auf sechs Zeilen um, und die Werkstatt wird 23 px höher als ihr Fenster. Ohne
+  Hinweis passt alles, bei 1920 × 925 sowieso, und der Simulator ist in dieser Größe schon vorher
+  98 px zu hoch. Claude lässt es so; ein ScrollContainer um `%Fields` wiche vom Vertrag ab.
+- Auslegungen des Agents, die Claude angenommen hat:
+  - Bei 1280 × 720 rollt die Tabelle waagerecht, statt Spalten zu quetschen, wie im Simulator.
+  - Nach „Löschen“ ist keine Zeile gewählt.
+  - Ein Start-Modifikator ohne Ereignis heißt in Tabelle und Auswahl „– kein Ereignis –“.
+  - Die Auswahl „Ereignis“ zeigt nur Titel; die Kennung steht im Hinweis des Eintrags.
+  - Nach „Neu“ ist der Wert „+0“ markiert, damit Klaus gleich die Zahl tippt.
+  - Zusätzliche Hinweise beim Überfahren an „Duplizieren“, „Löschen“, Wert und Kennung.
+  - Die linke Seite des Teilers heißt `TableBox`; der Pfad `…/Tabs/DifficultyPanel/Split` stimmt.
 
 ## Erledigt
 

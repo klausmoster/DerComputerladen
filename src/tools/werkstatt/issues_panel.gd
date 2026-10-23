@@ -5,6 +5,8 @@ extends Tree
 ## Meldungen des Katalogs als Tabelle mit Stufe, Ereignis, Feld und Text. Ein Klick auf eine
 ## Meldung sendet issue_activated; die Werkstatt wählt dann das Ereignis und setzt den Fokus ins
 ## Feld. Meldungen zu Kategorien haben kein Ereignis und führen zum Bereich für Kategorien.
+## Meldungen zu Profilen haben auch keins; statt „–“ nennt die Spalte „Ereignis“ dann den Grad, etwa
+## „Profil Schwer“, und sie führen in den Reiter „Schwierigkeitsgrade“ (Feature 003, FR-016).
 ##
 ## Das Panel ist selbst ein Tree: Ein Tree kann Spalten mit Überschriften und markiert die ganze
 ## Zeile, eine ItemList nur einen Eintrag. Die Zeilen hängen unter einer unsichtbaren Wurzel
@@ -95,12 +97,37 @@ func _fill() -> void:
 			item.set_text(Column.SEVERITY, "? Warnung")
 			_zebra.keep_cell(item, Column.SEVERITY, UiPalette.PAPIER)
 			item.set_custom_color(Column.SEVERITY, UiPalette.HOLZ)
-		item.set_text(Column.EVENT, issue.event_id if not issue.event_id.is_empty() else "–")
+		item.set_text(Column.EVENT, _event_text(issue))
 		item.set_text(Column.FIELD, issue.field)
 		item.set_text(Column.TEXT, issue.message)
 		item.set_tooltip_text(Column.TEXT, issue.message)
 		item.set_metadata(Column.SEVERITY, {"event_id": issue.event_id, "field": issue.field})
 	_zebra.paint_all()
+
+
+## Was in der Spalte „Ereignis“ steht: die Kennung des Ereignisses, sonst bei einer Meldung zu
+## einem Profil der Grad, sonst „–“. Entschieden wird nach dem zweiten Pfadteil des Felds, bis zum
+## nächsten „[“ oder „.“ (Analyse, U4): „leicht“ ergibt „Profil Leicht“, „schwer“ „Profil Schwer“;
+## alles andere „Profile“, also „profiles“ allein, „profiles.mittel“, ein unbekannter Grad wie
+## „profiles.extrem“ und auch „profiles.schwerr“.
+static func _event_text(issue: CatalogIssue) -> String:
+	if not issue.event_id.is_empty():
+		return issue.event_id
+	var field := issue.field
+	if field != "profiles" and not field.begins_with("profiles.") \
+			and not field.begins_with("profiles["):
+		return "–"
+	var second := ""
+	if field.begins_with("profiles."):
+		second = field.substr("profiles.".length())
+		for stop: String in ["[", "."]:
+			var at := second.find(stop)
+			if at >= 0:
+				second = second.left(at)
+	var level := Difficulty.from_key(second)
+	if Difficulty.WITH_PROFILE.has(level):
+		return "Profil %s" % Difficulty.label(level)
+	return "Profile"
 
 
 func _on_item_mouse_selected(_position: Vector2, button: int) -> void:

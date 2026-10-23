@@ -119,3 +119,66 @@ Klaus eine Task selbst, schreibt Claude die Notiz beim Review.
 - **Fehlerprobe:** Von 15 eingebauten Fehlern fanden die Tests 14. Durch fiel nur „die
   Textausgabe nennt einen fehlerhaften Start-Modifikator doppelt“, denn bis dahin prüfte kein Test
   die Textausgabe selbst. Dafür gibt es jetzt `test_fahrplan_ausgabe.gd`.
+
+## Phase 3
+
+### T014 `CatalogEditor` mit Start-Modifikatoren
+
+- **Ganze Profile im Verlauf** (`_run()`, `_profile_redirections()`): `UndoRedo` merkt sich hier
+  keine Stellen, sondern alte und neue Objekte. Löscht Klaus ein Ereignis, auf das in Schwer die
+  Stellen 0 und 2 zeigen, stimmte nach dem ersten Entfernen eine gemerkte 2 nicht mehr. Deshalb
+  kommt ein ganz neues Profil-Objekt hinein, und Rückgängig setzt einfach das alte wieder ein. Weil
+  Profile `RefCounted` sind, lebt das alte Objekt weiter, solange der Verlauf es hält.
+- **Identität statt Inhalt:** `list.find(item)` in `_run()` sucht das Objekt selbst, und `_texts` in
+  `content_key()` hat Objekte als Schlüssel. Ein neues Objekt heißt also „geändert“; Simulator und
+  Statistik merken eine Profiländerung, ohne dass `to_json()` laufen muss.
+- **Die Kehrseite:** Ein Start-Modifikator, den `add_start_modifier()` zurückgibt, steht nur bis zur
+  nächsten Änderung an diesem Profil im Katalog. Wer ihn danach braucht, holt ihn über Grad und
+  Stelle neu, so wie ein Ereignis über seine Kennung. Das muss das Panel in T016 beachten.
+- **Typisierte Arrays:** Gefiltert wird in ein neues `Array[ChanceModifier]` oder
+  `Array[CatalogIssue]`, das dann zugewiesen wird; so bleibt der Typ der Liste erhalten.
+- **Lesemeldungen** (`_drop_read_issues()`): Ersetzt ein Schritt ein Profil, verschwinden dessen
+  Meldungen V22, nach ganzen Pfadteilen, auch beim Rückgängigmachen. Eine gemerkte Stelle kann so
+  nie den falschen Start-Modifikator treffen.
+- **GUT:** `assert_same` vergleicht die Identität von Objekten, `assert_eq` auf Arrays Element für
+  Element. Damit prüft ein Test, dass ein unverändertes Profil dasselbe Objekt bleibt.
+- **Fehlerprobe:** elf eingebaute Fehler, alle gefunden. Den Test zu `profiles.schwerr` hatte der
+  Agent vorher ergänzt, weil er sah, dass ihn sonst keiner gefunden hätte.
+
+### T016 bis T018 Reiter „Schwierigkeitsgrade“, Verdrahtung, „Je Grad“
+
+- **Stelle statt Objekt merken** (`difficulty_panel.gd`, `_modifier()`, `_index`): Jede Änderung
+  ersetzt das ganze Profil durch eine Kopie; ein gemerkter `ChanceModifier` stünde danach nicht
+  mehr im Katalog. Das Panel merkt sich nur Grad und Stelle und holt den Start-Modifikator bei jedem
+  Zugriff frisch, so wie Ereignisse über ihre Kennung.
+- **Felder einmal in der Szene, Zeilen neu am Ende des Bilds:** Die sechs Felder stehen fest in der
+  `.tscn`, `refresh()` setzt nur ihre Werte und lässt das Feld mit dem Fokus aus. Die
+  Tabellenzeilen baut `_fill_rows_later()` mit `call_deferred()` erst am Ende des Bilds, sonst träfe
+  ein Klick, der einem Feld den Fokus nimmt, schon eine neue Zeile.
+- **Cmd+Z und `gui_input`** (`_set_up_edit()`): `gui_input` kommt, bevor das LineEdit die Taste
+  verarbeitet. Zeigt das Feld noch den übernommenen Text, verschluckt `accept_event()` die Taste;
+  sonst nähme der eigene Verlauf des Felds das Setzen des Texts zurück, und das Feld wäre leer.
+- **`_commit_focused()` vor jedem Wechsel:** Ein Knopfdruck aus dem Code oder ein Gradwechsel nimmt
+  dem Feld den Fokus nicht; ohne diesen Aufruf ginge die offene Eingabe verloren.
+- **GridContainer und Mindestgrößen:** Eine Zeile des Rasters ist so hoch wie ihre höchste Zelle,
+  deshalb bekommt die Beschriftung die Höhe des Felds und steht oben. Mindestgrößen wandern im Baum
+  nach oben: Eine feste Breite von 340 px für `%Fields` machte bei 1280 px die ganze Werkstatt zu
+  breit. Jetzt teilen sich beide Seiten mit `size_flags_stretch_ratio` (2,3 : 1).
+- **Signale nach oben, Aufrufe nach unten** (`werkstatt.gd`): Das Panel kennt Liste und Formular
+  nicht. Die Werkstatt reicht `selected_event_id` herunter, ruft `refresh()` und `focus_field()` und
+  wechselt den Reiter; die Prüfung meldet nur `issue_activated`.
+- **Hinweis an der Zeile** (`event_form.gd`, `_add_difficulty_row()`): Labels lassen die Maus
+  durch, und Godot sucht den Hinweis bei den Eltern weiter; ein `tooltip_text` an der HBox reicht.
+  Vor „%“ steht ein geschütztes Leerzeichen (U+00A0), damit der Umbruch Zahl und Zeichen nie trennt.
+- **Fehlerprobe:** neun eingebaute Fehler; einer fiel zuerst durch, `refresh()` überschrieb das Feld
+  mit dem Fokus. Dafür gibt es jetzt `test_refresh_laesst_das_feld_mit_dem_fokus_stehen`.
+
+### T021 Profile im echten Katalog nicht leer
+
+- `test_leicht_und_schwer_haben_je_mindestens_einen_start_modifikator()` in
+  `src/test/test_shipped_catalog.gd` geht über `Difficulty.WITH_PROFILE` und `get_profile()`, statt
+  „leicht“ und „schwer“ auszuschreiben; welche Grade ein Profil haben, steht so nur an einer Stelle.
+- Er prüft absichtlich nur `modifiers.is_empty()`. Ein Test, der Werte festschreibt, bräche bei
+  jeder Änderung in der Werkstatt.
+- Die Fehlerprobe zeigte: Der Test „keine Fehler“ bemerkt ein leeres Profil nicht, denn ein leeres
+  Profil ist kein Prüffehler. Gegen ein leer gewordenes Profil schützt nur dieser Test.

@@ -385,6 +385,7 @@ func _build_event(event: TimelineEvent) -> void:
 			_add_window_row(event)
 			_row(_fields, "Chance", [_percent_input("monthly_chance", event.monthly_chance,
 				_set_field(&"monthly_chance")), _muted("% pro Monat")], ["monthly_chance"])
+			_add_difficulty_row(event)
 			_row(_fields, "Höchstzahl", [_line("max_occurrences",
 				format_whole(event.max_occurrences), parse_whole, format_whole,
 				_set_field(&"max_occurrences"), NUMBER_WIDTH), _muted("0 heißt unbegrenzt")],
@@ -396,6 +397,37 @@ func _build_event(event: TimelineEvent) -> void:
 	_build_effects(event)
 	_build_follow_ups(event)
 	_build_conditions(event)
+
+
+## „Je Grad“ unter der Chance (Feature 003, FR-015; research.md, R12): je Grad eine Zeile mit der
+## wirksamen Chance über das ganze Spiel, nur zum Lesen, etwa „Schwer 3 % bis 31.12.1994, 6 % ab
+## 01.01.1995“. Gerechnet und formuliert wird im Kern (DifficultyProfile); Start-Modifikatoren mit
+## einem Fehler zählen nicht, wie im Spiel. Viele Abschnitte brechen in der Zeile ihres Grads um.
+## Bearbeitet wird im Reiter „Schwierigkeitsgrade“; das sagt der Hinweis beim Überfahren. Weil das
+## Formular nach jeder Änderung am Katalog neu baut, ist die Zeile auch nach einer Änderung im
+## Profil sofort aktuell. Zwischen Zahl und „%“ bricht die Zeile nie um.
+func _add_difficulty_row(event: TimelineEvent) -> void:
+	var lines := VBoxContainer.new()
+	lines.name = "DifficultyLines"
+	lines.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var issues := editor.issues()
+	for level in Difficulty.Level.values():
+		var profile := editor.catalog.get_profile(level)
+		var skip := DifficultyProfile.faulty_indices(issues, level)
+		var text := DifficultyProfile.describe_periods(
+			DifficultyProfile.chance_periods(event, profile, skip))
+		# Zahl und Prozentzeichen gehören zusammen: Ein geschütztes Leerzeichen (U+00A0) davor
+		# lässt den Umbruch dort nie zu, sonst stünde „8“ am Ende der einen Zeile und „%“ am Anfang
+		# der nächsten. Der Text aus dem Kern bleibt, wie er ist.
+		var line := _muted("%s %s" % [Difficulty.label(level), text.replace(" %", "\u00a0%")])
+		line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lines.add_child(line)
+	_row(_fields, "Je Grad", [lines], [])
+	# Der Hinweis hängt an der ganzen Zeile samt Beschriftung. Labels lassen die Maus durch, und
+	# Godot sucht den Hinweis bei den Eltern weiter, bis einer einen hat.
+	var row: Control = _fields.get_child(_fields.get_child_count() - 1)
+	(row.get_child(0) as Control).tooltip_text = "Ändern im Reiter „Schwierigkeitsgrade“"
 
 
 func _add_description_row(event: TimelineEvent) -> void:

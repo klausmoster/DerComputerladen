@@ -56,7 +56,7 @@ was sonst Tests aus Feature 002 bräche.
 **⚠️ CRITICAL**: Keine User Story beginnt, bevor diese Phase abgenommen ist. T001 kommt vor jeder
 Änderung am Code.
 
-- [ ] T001 [A] Grundlinie einfrieren (research.md, R17; SC-007), mit dem Code auf dem Stand von
+- [x] T001 [A] Grundlinie einfrieren (research.md, R17; SC-007), mit dem Code auf dem Stand von
   `994b9f5`, bevor sich irgendetwas am Lauf ändert:
   - Mit der Textausgabe und `--no-header` für die Seeds 1, 4711 und 99999 und dem Katalog
     `res://test/fixtures/event_catalog_uebernahme.json`:
@@ -71,7 +71,7 @@ was sonst Tests aus Feature 002 bräche.
       Zeichen für Zeichen wie die Fixtures.
 
     Er ist sofort grün und muss es bis zum Ende des Features bleiben (Analyse, U9).
-- [ ] T002 [A] [P] `src/core/timeline/difficulty.gd` (`Difficulty`) laut zeitleiste.md:
+- [x] T002 [A] [P] `src/core/timeline/difficulty.gd` (`Difficulty`) laut zeitleiste.md:
   - `enum Level { LEICHT, MITTEL, SCHWER }`, `DEFAULT := Level.MITTEL`,
     `WITH_PROFILE: Array[int] = [Level.LEICHT, Level.SCHWER]`;
   - `key()` mit `"leicht"`, `"mittel"`, `"schwer"`, leer bei einem unbekannten Grad; `label()`
@@ -80,7 +80,7 @@ was sonst Tests aus Feature 002 bräche.
 
   Test `src/test/test_difficulty.gd`: alle drei Namen hin und zurück, `from_key("Schwer")` und
   `from_key("extrem")` ergeben −1, `is_valid(7)` und `is_valid(-1)` sind falsch.
-- [ ] T003 [A] [P] `src/core/timeline/chance_modifier.gd` laut zeitleiste.md, Abschnitt
+- [x] T003 [A] [P] `src/core/timeline/chance_modifier.gd` laut zeitleiste.md, Abschnitt
   „ChanceModifier“; Felder, Vorgaben der Klasse und `is_active()` bleiben:
   - `KEYS := ["event_id", "from_day", "id", "reason", "to_day", "value"]`;
   - `from_dict(data, issues)` liest die Form der Katalogdatei. Ein fehlender Schlüssel, ein
@@ -91,7 +91,7 @@ was sonst Tests aus Feature 002 bräche.
   - `to_dict()`: Tage als `"JJJJ-MM-TT"`, `value` „auf vier Nachkommastellen“ gerundet.
 
   Tests kommen mit T004 in `src/test/test_difficulty_profile.gd`.
-- [ ] T004 [A] `src/core/timeline/difficulty_profile.gd` (`DifficultyProfile`) laut zeitleiste.md:
+- [x] T004 [A] `src/core/timeline/difficulty_profile.gd` (`DifficultyProfile`) laut zeitleiste.md:
   - `level`, `modifiers` „in der Reihenfolge der Datei“, `_init()`, `from_list()`, `to_list()`,
     `to_dict()` als `{ "schwer": to_list() }` (Analyse, U1), `duplicate_profile()`.
   - `from_list()` setzt vor die Felder der Meldungen aus `ChanceModifier.from_dict()`
@@ -121,7 +121,7 @@ was sonst Tests aus Feature 002 bräche.
     01.01.1995), drei Abschnitte, Begrenzung auf 0 % und 100 %, Fehlerhaftes zählt nicht, Mittel.
 
   Hängt an T002 und T003.
-- [ ] T005 [A] `src/core/timeline/event_catalog.gd` laut zeitleiste.md und ereigniskatalog.md:
+- [x] T005 [A] `src/core/timeline/event_catalog.gd` laut zeitleiste.md und ereigniskatalog.md:
   - `KEYS` mit `"profiles"`; `profiles` „immer zwei: [0] Leicht, [1] Schwer, auch leer“, angelegt
     in `_init()`; `get_profile()` gibt für Mittel und unbekannte Grade `null`.
   - `to_dict()` als einzige Stelle für die oberste Ebene, den Abschnitt aus
@@ -149,7 +149,7 @@ was sonst Tests aus Feature 002 bräche.
   - Die Übernahme selbst bleibt Byte für Byte, wie sie ist.
 
   Danach die Startprobe mit `-d`: still. Hängt an T004.
-- [ ] T006 [A] Was sonst Tests aus Feature 002 bräche (research.md, R17; Klaus, 2026-10-22,
+- [x] T006 [A] Was sonst Tests aus Feature 002 bräche (research.md, R17; Klaus, 2026-10-22,
   CHK036):
   - `src/test/fixtures/catalog_minimal.json` und `src/test/fixtures/catalog_500.json` bekommen nur
     den leeren Abschnitt: Komma hinter `"format": 1`, dazu vier Zeilen. Ihre Ereignisse bleiben, wie
@@ -161,7 +161,7 @@ was sonst Tests aus Feature 002 bräche.
     jede.
 
   Hängt an T005.
-- [ ] T007 [A] `src/core/timeline/catalog_validator.gd` laut data-model.md, „Prüfregeln“:
+- [x] T007 [A] `src/core/timeline/catalog_validator.gd` laut data-model.md, „Prüfregeln“:
   - `validate_profiles()` mit V25 bis V31; `validate()` hängt sie hinter die Kategorien, „Leicht
     vor Schwer, je Profil nach Stelle und je Start-Modifikator nach Regel“.
   - `WARNING_RULES` bekommt `"V31"`.
@@ -187,7 +187,7 @@ was sonst Tests aus Feature 002 bräche.
     Start-Modifikatoren je Profil, und die Prüfung bleibt unter 100 ms (Analyse, G9).
 
   Hängt an T006, denn die neuen Fixtures entstehen aus dem geänderten `catalog_minimal.json`.
-- [ ] T008 [K] Phase 1 abnehmen nach quickstart.md, Abschnitte 1 und 2. Danach schließt Klaus jede
+- [x] T008 [K] Phase 1 abnehmen nach quickstart.md, Abschnitte 1 und 2. Danach schließt Klaus jede
   ältere Werkstatt, öffnet den echten Katalog in der neuen und speichert einmal mit Cmd+S. So hat
   `src/data/event_catalog.json` den leeren Abschnitt, und Claude committet die Datei mit der Phase
   (R3, CHK037).
@@ -208,11 +208,11 @@ und einmal mit Mittel; `diff` zeigt nur die Reklamationswelle und ihre Abhängig
 
 ### Implementation for User Story 1
 
-- [ ] T009 [A] [US1] `src/core/timeline/timeline_message.gd`: `Kind.START_MODIFIER` am Ende der
+- [x] T009 [A] [US1] `src/core/timeline/timeline_message.gd`: `Kind.START_MODIFIER` am Ende der
   Aufzählung, `KIND_LABELS` bekommt „Grad“; die übrigen Arten behalten ihre Nummern. In
   `src/test/test_timeline_run.gd` bekommt der Test der Zeilen je Art „Grad“ als achte Art in seiner
   Liste (Analyse, B1).
-- [ ] T010 [A] [US1] `src/core/timeline/timeline_run.gd` laut zeitleiste.md, „Der Lauf“:
+- [x] T010 [A] [US1] `src/core/timeline/timeline_run.gd` laut zeitleiste.md, „Der Lauf“:
   - `difficulty`, `start_modifiers`, `start_refusals`;
     `_init(p_catalog, p_seed, p_difficulty = Difficulty.DEFAULT)`; ein unbekannter Grad „gilt als
     Mittel und steht in start_refusals“.
@@ -247,7 +247,7 @@ und einmal mit Mittel; `diff` zeigt nur die Reklamationswelle und ihre Abhängig
 
   In `src/test/test_difficulty_baseline.gd` kommt Mittel ausdrücklich dazu, ebenso Schwer mit
   leerem Profil, beide wie die Grundlinie (SC-007). Hängt an T009.
-- [ ] T011 [A] [P] [US1] `src/core/timeline.gd` (Autoload) laut zeitleiste.md, „Autoload
+- [x] T011 [A] [P] [US1] `src/core/timeline.gd` (Autoload) laut zeitleiste.md, „Autoload
   `Timeline`“:
   - `start_game(seed = -1, difficulty = Difficulty.DEFAULT)`: Ein Seed über `MAX_SEED` oder ein
     unbekannter Grad ergibt `ERR_INVALID_PARAMETER` und ein `push_error()`; das laufende Spiel
@@ -269,7 +269,7 @@ und einmal mit Mittel; `diff` zeigt nur die Reklamationswelle und ihre Abhängig
     der dritte gilt.
 
   Danach die Startprobe mit `-d`: still (Analyse, U3). Hängt an T010.
-- [ ] T012 [A] [P] [US1] Kopfzeile und Textausgabe:
+- [x] T012 [A] [P] [US1] Kopfzeile und Textausgabe:
   - `src/core/timeline/schedule_text.gd`: Kopfzeile „# Seed 4711, Grad Schwer, bis 31.12.1999“,
     auch mit „Grad Mittel“.
   - `src/tools/werkstatt/fahrplan_ausgabe.gd`: `--grad leicht|mittel|schwer`, Vorgabe `mittel`.
@@ -284,7 +284,7 @@ und einmal mit Mittel; `diff` zeigt nur die Reklamationswelle und ihre Abhängig
 
   Tests in `src/test/test_schedule_text.gd`: die drei Erwartungen an die Kopfzeile mit „Grad
   Mittel“, dazu eine mit „Grad Schwer“. Hängt an T010.
-- [ ] T013 [K] [US1] Phase 2 abnehmen nach quickstart.md, Abschnitte 1, 2 und 3
+- [x] T013 [K] [US1] Phase 2 abnehmen nach quickstart.md, Abschnitte 1, 2 und 3
 
 **Checkpoint**: Ein Spiel startet mit einem Grad, wiederholbar und nur dort anders, wo das Profil
 wirkt. Abnahme durch Klaus, dann Auftrag für Phase 3.
@@ -306,7 +306,7 @@ er die echten an (T020).
 
 ### Implementation for User Story 2
 
-- [ ] T014 [A] [US2] Teil 1: `src/tools/werkstatt/catalog_editor.gd` laut werkstatt.md,
+- [x] T014 [A] [US2] Teil 1: `src/tools/werkstatt/catalog_editor.gd` laut werkstatt.md,
   „CatalogEditor“:
   - `add_start_modifier()`, `duplicate_start_modifier()`, `delete_start_modifier()`,
     `set_start_modifier_field()`, `profile_references_to()`.
@@ -336,10 +336,10 @@ er die echten an (T020).
   In `src/test/test_large_catalog.gd` bleibt eine Änderung über `set_start_modifier_field()` samt
   Prüfung mit 20 Start-Modifikatoren je Profil unter 100 ms (G9). Dazu die Fehlerprobe: In einer
   Kopie baut der Agent Fehler ein und zeigt, dass die Tests sie finden (Analyse, I9).
-- [ ] T015 [C] [US2] Teil 1 prüfen, bevor die Oberfläche beginnt: Tests zweimal, die Fehlerprobe
+- [x] T015 [C] [US2] Teil 1 prüfen, bevor die Oberfläche beginnt: Tests zweimal, die Fehlerprobe
   des Agents, Verlauf, verworfene Lesemeldungen und Sicherungskopie an den kritischen Stellen im
   Code lesen. Hängt an T014.
-- [ ] T016 [A] [P] [US2] Teil 2: `src/tools/werkstatt/difficulty_panel.tscn` und
+- [x] T016 [A] [P] [US2] Teil 2: `src/tools/werkstatt/difficulty_panel.tscn` und
   `src/tools/werkstatt/difficulty_panel.gd` (`DifficultyPanel`), Aufbau und Verhalten laut
   werkstatt.md:
   - `%DifficultyOption` mit Vorgabe Leicht, `show_difficulty()`, `shown_difficulty()` (Analyse,
@@ -357,7 +357,7 @@ er die echten an (T020).
 
   Test `src/test/test_difficulty_panel.gd`, die Liste aus werkstatt.md. Den Platz belegt T017,
   denn erst dann steht der Reiter im Fenster. Hängt an T015.
-- [ ] T017 [A] [US2] Verdrahtung in `src/tools/werkstatt/werkstatt.tscn`,
+- [x] T017 [A] [US2] Verdrahtung in `src/tools/werkstatt/werkstatt.tscn`,
   `src/tools/werkstatt/werkstatt.gd` und `src/tools/werkstatt/issues_panel.gd`:
   - der vierte Reiter „Schwierigkeitsgrade“ und `editor`;
   - `refresh()` nach `catalog_changed` und `issues_changed`; `selected_event_id` nach
@@ -379,7 +379,7 @@ er die echten an (T020).
   und alle Felder ohne Rollen. Belegt wird das mit einem Bildschirmfoto aus dem echten Fenster, auf
   einer Kopie des echten Katalogs mit mindestens vier Start-Modifikatoren in einem Profil (CHK028;
   Analyse, G10). Hängt an T016.
-- [ ] T018 [A] [P] [US2] `src/tools/werkstatt/event_form.gd`: Zeile „Je Grad“ bei Ereignissen über
+- [x] T018 [A] [P] [US2] `src/tools/werkstatt/event_form.gd`: Zeile „Je Grad“ bei Ereignissen über
   Wahrscheinlichkeit laut werkstatt.md, „EventForm“:
   - drei Zeilen in `MutedLabel` aus `DifficultyProfile.describe_periods()`;
   - Fehlerhaftes über `faulty_indices(editor.issues(), level)` ausgelassen;
@@ -390,16 +390,16 @@ er die echten an (T020).
   waagerechtes Rollen (Analyse, G10). Tests in `src/test/test_event_form.gd`: US2, Szenarien 6 und
   7, keine Zeile bei anderen Arten, Fehlerhaftes zählt nicht, aktuell nach einer Änderung im
   Profil. Gut als `[K]`-Aufgabe (plan.md, „Was Klaus dabei lernt“). Hängt an T015.
-- [ ] T019 [K] [US2] Prüfen nach quickstart.md, Abschnitt 4.1, auf einer Kopie des echten
+- [x] T019 [K] [US2] Prüfen nach quickstart.md, Abschnitt 4.1, auf einer Kopie des echten
   Katalogs, die entsteht, solange seine Profile noch leer sind (Analyse, I1). Darin liegt SC-005
   (ein frisches Profil mit drei Start-Modifikatoren in unter 5 Minuten) und SC-006. Hängt an T017
   und T018.
-- [ ] T020 [K] [US2] Profile im echten Katalog anlegen: In der Werkstatt bekommen Leicht und Schwer
+- [x] T020 [K] [US2] Profile im echten Katalog anlegen: In der Werkstatt bekommen Leicht und Schwer
   je mindestens einen Start-Modifikator, Ausgangspunkt ist der Vorschlag in research.md, R18; dann
   speichern. Hängt an T019.
-- [ ] T021 [A] [US2] `src/test/test_shipped_catalog.gd`: ein Test, dass Leicht und Schwer im
+- [x] T021 [A] [US2] `src/test/test_shipped_catalog.gd`: ein Test, dass Leicht und Schwer im
   echten Katalog nicht leer sind; Werte prüft er nicht (FR-014, CHK008). Hängt an T020.
-- [ ] T022 [K] [US2] Phase 3 abnehmen: quickstart.md, Abschnitte 1 und 2, mit dem echten Katalog
+- [x] T022 [K] [US2] Phase 3 abnehmen: quickstart.md, Abschnitte 1 und 2, mit dem echten Katalog
   samt Profilen und dem Test aus T021
 
 **Checkpoint**: Klaus pflegt Profile ohne Datei, der echte Katalog hat gefüllte Profile. Abnahme
