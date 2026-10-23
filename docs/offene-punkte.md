@@ -219,6 +219,30 @@ Auslegungen des Agents, die Claude angenommen hat:
   - Zusätzliche Hinweise beim Überfahren an „Duplizieren“, „Löschen“, Wert und Kennung.
   - Die linke Seite des Teilers heißt `TableBox`; der Pfad `…/Tabs/DifficultyPanel/Split` stimmt.
 
+### Feature 003, Phase 4, Kern (2026-10-23)
+
+Auslegungen des Agents, die Claude angenommen hat:
+- **`write_file()` lehnt einen unbekannten Grad ab,** etwa 7, mit `ERR_INVALID_PARAMETER`, wie eine
+  ungültige Kennung. Sonst entstünde `"difficulty": ""`, eine Datei, die `read_file()` nicht liest.
+- **Meldung bei einem Wert, der kein Text ist:** `"difficulty": 1` ergibt „… nennt den
+  Schwierigkeitsgrad 1, den es nicht gibt.“; ein Text steht in „…“.
+- **Erst das Format, dann der Grad:** Eine Datei mit `"format": 2` meldet das Format.
+- **Übergang bis T025:** Bis der Simulator den Grad kennt, speichert er Proben immer als Mittel.
+
+### Feature 003, Phase 4, Oberfläche (2026-10-23)
+
+- **FilterBar als `HFlowContainer` (Claudes Entscheidung, angenommen vom Agent):** Kürzen des
+  Texts allein reichte nicht, das Häkchen braucht 176 px. In 1280 × 720 bricht die Leiste jetzt in
+  zwei Zeilen um, statt aus dem Fenster zu ragen; bei 1920 × 925 bleibt sie einzeilig. Steht im
+  Vertrag.
+- **Entschieden von Klaus (T027, 2026-10-23): stört nicht.** Mit Schwer wird die Zeile zur Chance bei 1920 × 925 vier statt zwei
+  Zeilen hoch; der Simulator wächst um 46 px, die dem Zeitstrahl fehlen. Mit Mittel bleibt alles.
+- Auslegungen des Agents, die Claude angenommen hat:
+  - `%ExcludedNotice` nennt weggelassene Start-Modifikatoren aller Profile, mit dem Grad im Ort.
+  - „Katalog geändert“ merkt auch, wenn nur eine Lesemeldung zu einem Profil verschwindet.
+  - Spalten der Proben: Name, Seed, Grad, Stand, Eingriffe.
+  - Derselbe Grad noch einmal gewählt baut nicht neu.
+
 ## Erledigt
 
 - **Analyse von Feature 003:** Klaus, 2026-10-22: alle 41 Befunde nach Empfehlung einarbeiten.

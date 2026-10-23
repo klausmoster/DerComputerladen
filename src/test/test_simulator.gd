@@ -12,6 +12,11 @@ extends GutTest
 ## Grundlage ist catalog_us6_reklamation: die Reklamationswelle mit 3 % pro Monat, ihr Folgeereignis
 ## Zeitungsartikel, die Kundenflucht mit der Bedingung „Reklamationswelle eingetreten“, „Konkurrent
 ## eröffnet“ beim Start auf den 01.06.1992 gesetzt und Windows 95 als fixes Ereignis.
+##
+## Die Schwierigkeitsgrade (Feature 003, T025 und T026; US3) prüft der Teil am Ende mit
+## catalog_us1_grade: dieselben Ereignisse und dazu der Lieferengpass mit 4 %, auf den kein Profil
+## zeigt, ein jährliches Ereignis und die Profile „Leicht −2“ und „Schwer +5“ auf die
+## Reklamationswelle. Fehlerhafte Start-Modifikatoren kommen aus catalog_us1_profil_kaputt.
 
 const SZENE := preload("res://tools/werkstatt/werkstatt.tscn")
 const ORDNER := "user://test_simulator/"
@@ -21,6 +26,15 @@ const US6 := "res://test/fixtures/catalog_us6_reklamation.json"
 const SCHWELLE := "res://test/fixtures/catalog_us6_schwelle.json"
 const HAENDLER := "Ware vom windigen Händler"
 const PROBE := "Windiger Händler ab 1990"
+## Feature 003: Profile „Leicht −2“ und „Schwer +5“ auf die Reklamationswelle.
+const GRADE := "res://test/fixtures/catalog_us1_grade.json"
+## Feature 003: drei Start-Modifikatoren in Schwer; einer zeigt auf ein Ereignis, das es nicht gibt,
+## einer auf den Lieferengpass, der wegen einer Grundchance von 150 % ausgenommen ist, einer gilt.
+const KAPUTT := "res://test/fixtures/catalog_us1_profil_kaputt.json"
+const ENGPASS := "Engpass beim Großhändler"
+## Die erste Zeile des Protokolls mit Schwer, wie TimelineMessage.to_line() sie schreibt.
+const GRAD_SCHWER := ("31.12.1984  Grad  Reklamationswelle: Start-Modifikator „Anspruchsvolle "
+	+ "Kunden“ (Schwer) +5 Prozentpunkte vom 01.01.1985 bis 31.12.1999")
 ## Was von der Reklamationswelle abhängt: ihr Folgeereignis und die Kundenflucht mit Bedingung.
 const ABHAENGIGE := ["reklamationswelle", "zeitungsartikel_reklamation", "kundenflucht"]
 
@@ -594,7 +608,8 @@ func test_szenario_7_probe_speichern_und_laden() -> void:
 	var laden: ConfirmationDialog = simulator.get_node("%LoadProbeDialog")
 	var liste: Tree = simulator.get_node("%ProbeList")
 	assert_true(laden.visible)
-	assert_eq(_zeilen(liste), [[PROBE, "4711", "31.12.1993", "2"]])
+	assert_eq(_zeilen(liste), [[PROBE, "4711", "Mittel", "31.12.1993", "2"]],
+		"Seit Feature 003 mit der Spalte „Grad“ (Analyse, B2).")
 	liste.get_root().get_child(0).select(0)
 	laden.get_ok_button().pressed.emit()
 
@@ -737,6 +752,522 @@ func test_probenknoepfe_brechen_nur_gemeinsam_um() -> void:
 	assert_eq(strich.self_modulate.a, 1.0)
 
 
+# --- Schwierigkeitsgrade: Grad und Neubau (Feature 003, T025; US3, FR-018, FR-019) -------------
+
+func test_vorgabe_mittel_und_fahrplan_erzeugen_mit_schwer() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	var auswahl: OptionButton = simulator.get_node("%DifficultyOption")
+	var leiste: HFlowContainer = simulator.get_node("%RunBar")
+
+	# Assert: hinter „Würfeln“ der Text „Grad“ und die Auswahl, dann „Fahrplan erzeugen“
+	var reihe := []
+	for kind: Node in leiste.get_children():
+		reihe.append(String(kind.name))
+	var stelle := reihe.find("RollButton")
+	assert_eq(reihe.slice(stelle, stelle + 4),
+		["RollButton", "DifficultyCaption", "DifficultyOption", "GenerateButton"])
+	assert_eq(leiste.get_node("DifficultyCaption").text, "Grad")
+	var eintraege := []
+	for i in auswahl.item_count:
+		eintraege.append([auswahl.get_item_text(i), auswahl.get_item_id(i)])
+	assert_eq(eintraege, [["Leicht", Difficulty.Level.LEICHT], ["Mittel", Difficulty.Level.MITTEL],
+		["Schwer", Difficulty.Level.SCHWER]])
+	assert_eq(simulator.selected_difficulty(), Difficulty.Level.MITTEL, "Vorgabe Mittel")
+
+	# Act: ohne Lauf merkt sich die Auswahl den Grad nur
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	assert_null(simulator.run, "Ohne Lauf entsteht keiner.")
+	_erzeugen(simulator, "4711")
+
+	# Assert: „Fahrplan erzeugen“ nimmt den Grad; das Protokoll beginnt mit der Zeile „Grad“.
+	assert_eq([simulator.run.seed, simulator.run.difficulty], [4711, Difficulty.Level.SCHWER])
+	assert_eq(_kennungen(simulator.run.start_modifiers), ["reklamationswelle"])
+	assert_eq(_zeilen(simulator.get_node("%Protocol")), [[GRAD_SCHWER]])
+	assert_eq(simulator.get_node("%DateLabel").text, "Stand: vor dem 01.01.1985 · Seed 4711",
+		"Der Stand bleibt, wie er ist; den Grad zeigt die Auswahl.")
+
+
+func test_us3_szenario_1_wechsel_baut_denselben_lauf_mit_dem_neuen_grad() -> void:
+	# Arrange: Mittel, ein Eingriff vor Spielbeginn und einer am 01.01.1990
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	_erzeugen(simulator, "4711")
+	_modifikator(simulator, ENGPASS, "-4", "1.1.1990", "31.12.1999", "lieferengpass")
+	_bis(simulator, "1.1.1990")
+	_modifikator(simulator, "Werbung", "+1", "1.1.1990", "31.12.1999")
+	var angewandt := simulator.run.interventions.duplicate(true)
+	var gesammelt := simulator.probe.interventions.duplicate(true)
+	var unabhaengig := _unabhaengige_termine(simulator.run)
+
+	# Act
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+
+	# Assert: derselbe Seed und Tag, dieselben angewandten Eingriffe, nur der Grad ist neu.
+	var lauf := simulator.run
+	assert_eq([lauf.seed, lauf.today, lauf.difficulty],
+		[4711, _tag(1990, 1, 1), Difficulty.Level.SCHWER])
+	assert_eq(_kennungen(lauf.start_modifiers), ["reklamationswelle"])
+	assert_eq(lauf.interventions, angewandt, "Die angewandten Eingriffe bleiben angewandt.")
+	assert_eq(_kennungen(lauf.modifiers), ["engpass_beim_grosshaendler", "werbung"])
+	assert_eq(simulator.probe.interventions, gesammelt, "Die gesammelten bleiben unberührt.")
+	assert_eq(simulator.probe.difficulty, Difficulty.Level.SCHWER)
+	assert_eq(simulator.selected_difficulty(), Difficulty.Level.SCHWER)
+	assert_eq(simulator.get_node("%DateLabel").text, "Stand: 01.01.1990 · Seed 4711")
+	assert_false(simulator.get_node("%ProbeNotice").visible, "Alles ließ sich anwenden.")
+	assert_eq(_unabhaengige_termine(lauf), unabhaengig,
+		"Was nicht von der Reklamationswelle abhängt, liegt wie bei Mittel (FR-009).")
+	assert_eq(_zeilen(simulator.get_node("%Protocol"))[0], [GRAD_SCHWER],
+		"Das Protokoll beginnt neu, mit der Zeile „Grad“.")
+
+	# Act und Assert: ohne Eingriffe neu gestartet bleibt der Lauf beim Wechsel ohne.
+	_druecken(simulator, "%RestartWithoutButton")
+	assert_eq([simulator.run.difficulty, simulator.run.interventions.size()],
+		[Difficulty.Level.SCHWER, 0], "Der Neustart behält den Grad.")
+	_grad_waehlen(simulator, Difficulty.Level.LEICHT)
+	assert_eq([simulator.run.difficulty, simulator.run.today, simulator.run.interventions.size()],
+		[Difficulty.Level.LEICHT, _tag(1990, 1, 1), 0])
+	assert_eq(simulator.run.start_modifiers[0].reason, "Nachsichtige Kunden")
+	assert_eq(simulator.probe.interventions, gesammelt,
+		"„Neu starten mit Eingriffen“ hat sie noch.")
+	_druecken(simulator, "%RestartWithButton")
+	assert_eq([simulator.run.difficulty, simulator.run.interventions.size()],
+		[Difficulty.Level.LEICHT, 2])
+
+	# Act und Assert: derselbe Grad noch einmal baut nichts neu.
+	var vorher := simulator.run
+	_grad_waehlen(simulator, Difficulty.Level.LEICHT)
+	assert_same(simulator.run, vorher)
+
+
+func test_wechsel_nennt_eine_absage_die_es_im_neuen_grad_nicht_gibt() -> void:
+	# Arrange: Mit Schwer ein gewürfelter Termin der Reklamationswelle, den es bei Mittel mit
+	# demselben Seed nicht gibt; Monat für Monat, bis einer geplant im Fahrplan steht.
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	var mittel := TimelineRun.new(simulator.run.catalog, 4711)
+	var gesucht: ScheduleEntry = null
+	while gesucht == null and not simulator.run.is_finished():
+		_druecken(simulator, "%MonthButton")
+		mittel.advance_to(simulator.run.today)
+		for termin in simulator.run.entries:
+			if termin.event.id == "reklamationswelle" \
+					and termin.state == ScheduleEntry.State.PLANNED \
+					and termin.day > simulator.run.today \
+					and mittel.find_planned("reklamationswelle", termin.day) == null:
+				gesucht = termin
+	assert_not_null(gesucht, "Mit Seed 4711 gibt es so einen Termin.")
+	if gesucht == null:
+		return
+	_absagen(simulator, gesucht, "Kunden beruhigt")
+	assert_eq(simulator.run.interventions.size(), 1)
+
+	# Act
+	_grad_waehlen(simulator, Difficulty.Level.MITTEL)
+
+	# Assert: Die Absage ist nicht anwendbar und genannt; gesammelt bleibt sie (FR-018).
+	var hinweis: Label = simulator.get_node("%ProbeNotice")
+	assert_true(hinweis.visible)
+	assert_string_contains(hinweis.text, "Absage: Reklamationswelle hat am %s keinen"
+		% EventForm.format_date(gesucht.day))
+	assert_eq([simulator.run.difficulty, simulator.run.interventions.size()],
+		[Difficulty.Level.MITTEL, 0])
+	assert_eq(simulator.probe.interventions.size(), 1)
+
+
+func test_us3_szenario_2_start_modifikatoren_im_protokoll_und_in_der_liste() -> void:
+	# Arrange: Schwer mit einem Eingriff
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	_modifikator(simulator, ENGPASS, "-4", "1.1.1990", "31.12.1999", "lieferengpass")
+
+	# Assert: im Protokoll „Grad“ vor „Eingriff“ (FR-010)
+	var protokoll := _zeilen(simulator.get_node("%Protocol"))
+	assert_eq(protokoll.size(), 2)
+	assert_eq(protokoll[0], [GRAD_SCHWER])
+	assert_string_contains(protokoll[1][0], "31.12.1984  Eingriff  Lieferengpass: Modifikator")
+
+	# Assert: in der Liste zuerst der Start-Modifikator, mit dem Grad vor dem Grund
+	var liste: Tree = simulator.get_node("%ModifierList")
+	assert_eq(_zeilen(liste), [
+		["Reklamationswelle", "+5", "01.01.1985", "31.12.1999", "Schwer: Anspruchsvolle Kunden"],
+		["Lieferengpass", "−4", "01.01.1990", "31.12.1999", ENGPASS],
+	])
+	# Keine eigene Farbe (Analyse, U10): kein Text in eigener Farbe, der Hintergrund vom Zebra.
+	var zeilen := liste.get_root().get_children()
+	for spalte in liste.columns:
+		assert_eq(zeilen[0].get_custom_color(spalte), Color(),
+			"Spalte %d ohne eigene Farbe" % spalte)
+	assert_ne(zeilen[0].get_custom_bg_color(0), UiPalette.ENDLOS_GRUEN, "Erste Zeile ohne Streifen")
+	assert_eq(zeilen[1].get_custom_bg_color(0), UiPalette.ENDLOS_GRUEN, "Zweite mit Streifen")
+
+	# Assert: Die Chance nennt den Anteil des Grads; ohne Start-Modifikator wie bisher.
+	var chance: Label = simulator.get_node("%ChanceLabel")
+	assert_eq(chance.text, "Nächste Würfelrunde am 01.01.1985:\n"
+		+ "Reklamationswelle: Grundchance 3 %, Schwer +5, Summe 8 % → 8 %\n"
+		+ "Lieferengpass: Grundchance 4 %, Summe 4 % → 4 %")
+
+	# Act und Assert: Der Start-Modifikator gewählt, „Entfernen“ gesperrt mit Hinweis (FR-010, I4)
+	var entfernen: Button = simulator.get_node("%RemoveModifierButton")
+	var vorgabe := entfernen.tooltip_text
+	zeilen[0].select(0)
+	assert_true(entfernen.disabled)
+	assert_eq(entfernen.tooltip_text, "Start-Modifikatoren gehören zum Grad und lassen sich im "
+		+ "laufenden Spiel nicht entfernen; ändern lassen sie sich im Reiter „Schwierigkeitsgrade“")
+	assert_eq(zeilen[0].get_custom_bg_color(0), UiPalette.PETROL, "Gewählt wie jede Zeile")
+	_druecken(simulator, "%RemoveModifierButton")
+	assert_eq(_kennungen(simulator.run.start_modifiers), ["reklamationswelle"], "Er bleibt.")
+	assert_eq(simulator.probe.interventions.size(), 1, "Nichts ist dazugekommen.")
+	# Der Eingriff gewählt: wie bisher
+	liste.get_root().get_child(1).select(0)
+	assert_false(entfernen.disabled)
+	assert_eq(entfernen.tooltip_text, vorgabe)
+	assert_eq(vorgabe, "Den gewählten Modifikator ab der nächsten Würfelrunde entfernen")
+
+
+func test_us3_szenarien_3_und_4_proben_mit_grad() -> void:
+	# Arrange: Schwer mit Engpass bis Ende 1993, als Probe gespeichert
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	_modifikator(simulator, ENGPASS, "-4", "1.1.1990", "31.12.1999", "lieferengpass")
+	_bis(simulator, "31.12.1993")
+	var fahrplan := ScheduleText.plan_lines(simulator.run)
+	_speichern(simulator, "Schwer mit Engpass")
+	var datei := FileAccess.get_file_as_string(PROBEN + "schwer_mit_engpass.json")
+	assert_true(datei.begins_with("{\n\t\"difficulty\": \"schwer\",\n"), "Der Grad steht darin.")
+
+	# Act: Mittel, dann die Probe laden
+	_grad_waehlen(simulator, Difficulty.Level.MITTEL)
+	assert_eq(simulator.run.difficulty, Difficulty.Level.MITTEL)
+	_druecken(simulator, "%LoadProbeButton")
+	var liste: Tree = simulator.get_node("%ProbeList")
+	assert_eq(liste.get_column_title(SimulatorPanel.ProbeColumn.DIFFICULTY), "Grad")
+	assert_eq(_zeilen(liste), [["Schwer mit Engpass", "4711", "Schwer", "31.12.1993", "1"]])
+	liste.get_root().get_child(0).select(0)
+	simulator.get_node("%LoadProbeDialog").get_ok_button().pressed.emit()
+
+	# Assert: Seed, Grad und Eingriffe sind wieder gesetzt (Szenario 3).
+	assert_eq(simulator.selected_difficulty(), Difficulty.Level.SCHWER)
+	assert_eq([simulator.run.seed, simulator.run.difficulty, simulator.run.today],
+		[4711, Difficulty.Level.SCHWER, _tag(1993, 12, 31)])
+	assert_eq(_kennungen(simulator.run.modifiers), ["engpass_beim_grosshaendler"])
+	assert_eq(ScheduleText.plan_lines(simulator.run), fahrplan, "Derselbe Fahrplan.")
+
+	# Arrange: dieselbe Probe ohne Grad, wie aus Feature 002
+	var alt := datei.replace("\t\"difficulty\": \"schwer\",\n", "").replace(
+		"\"name\": \"Schwer mit Engpass\"", "\"name\": \"Aus Feature 002\"")
+	assert_false(alt.contains("difficulty"))
+	var schreiben := FileAccess.open(PROBEN + "aus_feature_002.json", FileAccess.WRITE)
+	schreiben.store_string(alt)
+	schreiben.close()
+
+	# Act
+	_druecken(simulator, "%LoadProbeButton")
+	assert_eq(_zeilen(liste)[0], ["Aus Feature 002", "4711", "Mittel", "31.12.1993", "1"])
+	liste.get_root().get_child(0).select(0)
+	simulator.get_node("%LoadProbeDialog").get_ok_button().pressed.emit()
+
+	# Assert: Sie gilt als Mittel (Szenario 4).
+	assert_eq(simulator.selected_difficulty(), Difficulty.Level.MITTEL)
+	assert_eq([simulator.run.difficulty, simulator.run.start_modifiers.size()],
+		[Difficulty.Level.MITTEL, 0])
+	assert_eq(_kennungen(simulator.run.modifiers), ["engpass_beim_grosshaendler"])
+
+
+func test_neustart_nach_probe_mit_schwer_und_erzeugen_mit_leicht_bleibt_bei_leicht() -> void:
+	# Arrange: eine Probe mit Schwer laden, dann Leicht wählen und neu erzeugen
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	_modifikator(simulator, ENGPASS, "-4", "1.1.1990", "31.12.1999", "lieferengpass")
+	_speichern(simulator, "Schwer mit Engpass")
+	_druecken(simulator, "%LoadProbeButton")
+	simulator.get_node("%ProbeList").get_root().get_child(0).select(0)
+	simulator.get_node("%LoadProbeDialog").get_ok_button().pressed.emit()
+	assert_eq(simulator.probe.difficulty, Difficulty.Level.SCHWER)
+	_grad_waehlen(simulator, Difficulty.Level.LEICHT)
+	_erzeugen(simulator, "4711")
+	# Über die Oberfläche hält schon der Wechsel die Probe auf dem Grad des Laufs. Den Grad, den
+	# eine früher geladene Probe dort hinterlässt, setzt der Test deshalb selbst (werkstatt.md,
+	# „Neu starten mit Eingriffen“): Den Grad des Laufs muss restart() übernehmen.
+	simulator.probe.difficulty = Difficulty.Level.SCHWER
+
+	# Act
+	_druecken(simulator, "%RestartWithButton")
+
+	# Assert
+	assert_eq(simulator.run.difficulty, Difficulty.Level.LEICHT)
+	assert_eq(simulator.probe.difficulty, Difficulty.Level.LEICHT)
+	assert_eq(simulator.selected_difficulty(), Difficulty.Level.LEICHT)
+	assert_eq(_kennungen(simulator.run.modifiers), ["engpass_beim_grosshaendler"])
+
+	# Act und Assert: ohne Eingriffe ebenso
+	_druecken(simulator, "%RestartWithoutButton")
+	assert_eq(simulator.run.difficulty, Difficulty.Level.LEICHT)
+
+
+func test_ausgenommen_nennt_beide_arten_weggelassener_start_modifikatoren() -> void:
+	# Arrange (FR-013; Analyse, G1)
+	var werkstatt := await _werkstatt(KAPUTT)
+	var simulator := _simulator(werkstatt)
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+
+	# Act
+	_erzeugen(simulator, "4711")
+
+	# Assert: das ausgenommene Ereignis, der Start-Modifikator mit eigenem Fehler und der, dessen
+	# Ereignis ausgenommen ist; es gilt nur der dritte.
+	var hinweis: Label = simulator.get_node("%ExcludedNotice")
+	assert_true(hinweis.visible)
+	assert_eq(hinweis.text, "! Ausgenommen, weil fehlerhaft: „Lieferengpass“, Profil „Schwer“, "
+		+ "Start-Modifikator „geisterereignis“, Profil „Schwer“, Start-Modifikator "
+		+ "„lieferengpass“. Die Gründe stehen in der Prüfung.")
+	assert_eq(_kennungen(simulator.run.start_modifiers), ["reklamationswelle"])
+	assert_eq(simulator.run.start_refusals, PackedStringArray(), "Der Lauf lehnt nichts mehr ab.")
+
+
+func test_katalog_geaendert_nach_profilaenderung_und_wechsel_nimmt_den_aktuellen() -> void:
+	# Arrange (FR-018; Analyse, G4)
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	var hinweis: Label = simulator.get_node("%CatalogNotice")
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	_bis(simulator, "1.1.1990")
+	var lauf := simulator.run
+
+	# Act: Schwer +8 statt +5, ungespeichert
+	werkstatt.editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"value", 0.08)
+	await wait_process_frames(1)
+
+	# Assert: der Hinweis; der Lauf rechnet mit seiner Kopie weiter.
+	assert_true(hinweis.visible)
+	assert_same(simulator.run, lauf)
+	assert_almost_eq(lauf.start_modifiers[0].value, 0.05, 0.0001)
+
+	# Act und Assert: Rückgängig nimmt den Hinweis, Wiederholen bringt ihn.
+	werkstatt.editor.undo()
+	await wait_process_frames(1)
+	assert_false(hinweis.visible)
+	werkstatt.editor.redo()
+	await wait_process_frames(1)
+	assert_true(hinweis.visible)
+
+	# Act: ein Wechsel des Grads baut mit dem aktuellen Katalog.
+	_grad_waehlen(simulator, Difficulty.Level.LEICHT)
+
+	# Assert
+	assert_false(hinweis.visible, "Der Hinweis „Katalog geändert“ verschwindet (CHK033).")
+	var schwer := simulator.run.catalog.get_profile(Difficulty.Level.SCHWER)
+	assert_almost_eq(schwer.modifiers[0].value, 0.08, 0.0001)
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	assert_almost_eq(simulator.run.start_modifiers[0].value, 0.08, 0.0001)
+	assert_string_contains(simulator.get_node("%ChanceLabel").text, "Schwer +8, Summe 11 % → 11 %")
+
+
+# --- Schwierigkeitsgrade: Vergleich mit Mittel (Feature 003, T026; US3, FR-018) ---------------
+
+func test_us3_szenario_5_mit_haekchen_markiert_nur_den_grad_und_abhaengige() -> void:
+	# Arrange: Schwer ohne Eingriffe bis zum Ende
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	var vergleich: Label = simulator.get_node("%CompareLabel")
+	var haekchen: CheckBox = simulator.get_node("%CompareMittel")
+	var tabelle: Tree = simulator.get_node("%PlanTable")
+	assert_eq(haekchen.text, "mit Mittel vergleichen")
+	assert_eq(vergleich.text, "", "Ohne Lauf nennt er nichts.")
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	_druecken(simulator, "%EndButton")
+
+	# Assert: Ohne Häkchen gibt es keinen Vergleichslauf (Analyse, A3).
+	assert_eq(tabelle.columns, 4)
+	assert_eq(vergleich.text, "Kein Vergleich: Der Lauf hat keine Eingriffe.")
+	assert_true(simulator.get_node("%DiffFilter").disabled)
+
+	# Act
+	haekchen.button_pressed = true
+
+	# Assert: verglichen mit Mittel ohne Eingriffe; markiert nur, was vom Profil abhängt.
+	assert_true(simulator.compare_with_mittel)
+	assert_eq(vergleich.text, "Vergleich: Mittel ohne Eingriffe")
+	assert_eq(vergleich.tooltip_text, vergleich.text, "Ganz zu lesen beim Überfahren")
+	assert_eq(tabelle.columns, 5)
+	var markiert := _markierte_ereignisse(simulator)
+	assert_true(markiert.has("reklamationswelle"), "Das Profil verändert die Reklamationswelle.")
+	for kennung: String in markiert:
+		assert_has(ABHAENGIGE, kennung, "%s hängt von der Reklamationswelle ab." % kennung)
+	assert_false(simulator.get_node("%DiffFilter").disabled)
+
+	# Act und Assert: Häkchen aus, wieder ohne Vergleich
+	haekchen.button_pressed = false
+	assert_eq([tabelle.columns, vergleich.text],
+		[4, "Kein Vergleich: Der Lauf hat keine Eingriffe."])
+
+
+func test_us3_szenario_6_mit_eingriff_vergleicht_mit_demselben_grad() -> void:
+	# Arrange: Schwer mit „Lieferengpass −4 Prozentpunkte ab 01.01.1990“, Häkchen aus
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	var vergleich: Label = simulator.get_node("%CompareLabel")
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	_modifikator(simulator, ENGPASS, "-4", "1.1.1990", "31.12.1999", "lieferengpass")
+
+	# Act
+	_druecken(simulator, "%EndButton")
+
+	# Assert: markiert nur, was der Eingriff ändert; der Text nennt den Vergleichslauf.
+	assert_eq(vergleich.text, "Vergleich: Schwer ohne Eingriffe")
+	assert_eq(_markierte_ereignisse(simulator).keys(), ["lieferengpass"],
+		"Der Lieferengpass hat keine Abhängigen, und den Grad haben beide Läufe.")
+
+	# Act und Assert: mit Häkchen kommt der Grad dazu.
+	simulator.compare_with_mittel = true
+	assert_true(simulator.get_node("%CompareMittel").button_pressed, "Das Häkchen zieht mit.")
+	assert_eq(vergleich.text, "Vergleich: Mittel ohne Eingriffe")
+	var markiert := _markierte_ereignisse(simulator)
+	assert_true(markiert.has("lieferengpass") and markiert.has("reklamationswelle"))
+	for kennung: String in markiert:
+		assert_has(ABHAENGIGE + ["lieferengpass"], kennung)
+
+
+func test_mittel_mit_haekchen_aendert_keine_markierung() -> void:
+	# Arrange: Mittel ohne Eingriffe (Edge Case „Vergleich bei Mittel“)
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	var vergleich: Label = simulator.get_node("%CompareLabel")
+	var haekchen: CheckBox = simulator.get_node("%CompareMittel")
+	_erzeugen(simulator, "4711")
+	_druecken(simulator, "%EndButton")
+	var vorher := _ansicht(simulator)
+
+	# Act und Assert: Häkchen an, kein Vergleichslauf
+	haekchen.button_pressed = true
+	assert_eq(_ansicht(simulator), vorher)
+	assert_eq(vergleich.text, "Kein Vergleich: Der Lauf hat keine Eingriffe.")
+	assert_eq(simulator.get_node("%PlanTable").columns, 4)
+
+	# Arrange: mit Eingriff
+	haekchen.button_pressed = false
+	_druecken(simulator, "%GenerateButton")
+	_modifikator(simulator, HAENDLER, "+5", "1.1.1990", "31.12.1993")
+	_druecken(simulator, "%EndButton")
+	vorher = _ansicht(simulator)
+	assert_eq(vergleich.text, "Vergleich: Mittel ohne Eingriffe")
+
+	# Act
+	haekchen.button_pressed = true
+
+	# Assert: Markierungen, ihre Texte und der Hinweis am Filter bleiben, wie sie sind.
+	assert_eq(_ansicht(simulator), vorher)
+	assert_eq(vergleich.text, "Vergleich: Mittel ohne Eingriffe")
+
+
+func test_texte_der_markierungen_beim_vergleich_mit_demselben_grad_wie_bisher() -> void:
+	# Arrange: Schwer; die Reklamationswelle fällt ganz weg (3 + 5 − 8), der Lieferengpass kommt
+	# öfter, „Konkurrent eröffnet“ wird verschoben. So gibt es „neu“, „weggefallen“ und
+	# „verschoben“.
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	_modifikator(simulator, "Zufriedene Kunden", "-8", "1.1.1985", "31.12.1999")
+	_modifikator(simulator, ENGPASS, "+20", "1.1.1985", "31.12.1999", "lieferengpass")
+	_termin_waehlen(simulator, _termin(simulator, "konkurrent_eroeffnet",
+		ScheduleEntry.Origin.PRESET))
+	_druecken(simulator, "%MoveButton")
+	var dialog := _intervention_dialog(simulator)
+	var tag := EventForm.format_date(_termin(simulator, "konkurrent_eroeffnet",
+		ScheduleEntry.Origin.PRESET).day)
+	_ausfuellen(dialog, {"%DayEdit": "1.1.1999", "%ReasonEdit": "Bauamt hat Verspätung"})
+	dialog.get_ok_button().pressed.emit()
+	_druecken(simulator, "%EndButton")
+	var filter: CheckBox = simulator.get_node("%DiffFilter")
+
+	# Assert: Vergleich mit demselben Grad: die Texte aus Feature 002
+	var verschoben := "Ein Eingriff hat den Termin vom %s hierher verschoben." % tag
+	assert_eq(_texte_je_markierung(simulator), {
+		"+ neu": "Neu durch die Eingriffe; ohne sie gäbe es den Termin nicht.",
+		"− weggefallen": "Fällt durch die Eingriffe weg; ohne sie stünde der Termin hier.",
+		"→ verschoben": verschoben,
+	})
+	assert_eq(filter.tooltip_text,
+		"Nur Termine zeigen, die mit den Eingriffen anders sind als ohne sie")
+	simulator.struck_rows()[0].select(0)
+	assert_string_contains(simulator.get_node("%DetailText").text,
+		"Unterschied: Fällt durch die Eingriffe weg; ohne sie stünde der Termin hier.")
+
+	# Act: mit Mittel vergleichen
+	simulator.get_node("%CompareMittel").button_pressed = true
+
+	# Assert: die zweite Reihe, die den Vergleichslauf nennt
+	assert_eq(_texte_je_markierung(simulator), {
+		"+ neu": "Neu gegenüber Mittel ohne Eingriffe; dort gibt es den Termin nicht.",
+		"− weggefallen": "Fällt gegenüber Mittel ohne Eingriffe weg; dort stünde der Termin hier.",
+		"→ verschoben": verschoben,
+	})
+	assert_eq(filter.tooltip_text,
+		"Zeigt nur Termine, die anders sind als bei Mittel ohne Eingriffe.")
+	simulator.struck_rows()[0].select(0)
+	assert_string_contains(simulator.get_node("%DetailText").text,
+		"Unterschied: Fällt gegenüber Mittel ohne Eingriffe weg; dort stünde der Termin hier.")
+
+	# Act und Assert: Häkchen aus, wieder die Texte aus Feature 002
+	simulator.get_node("%CompareMittel").button_pressed = false
+	assert_eq(_texte_je_markierung(simulator)["− weggefallen"],
+		"Fällt durch die Eingriffe weg; ohne sie stünde der Termin hier.")
+
+
+func test_filterleiste_bleibt_im_kleinen_fenster_so_breit() -> void:
+	# Arrange (Analyse, G10): die kleine Fenstergröße aus test_werkstatt_settings.gd
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	var leiste: Control = simulator.get_node("FilterBar")
+	var layout: Control = werkstatt.get_node("Layout")
+	var vergleich: Label = simulator.get_node("%CompareLabel")
+	werkstatt.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	werkstatt.size = Vector2(1280, 720)
+	await wait_process_frames(3)
+	var breite := leiste.size.x
+
+	# Act: Schwer mit Eingriff, Häkchen und „nur Unterschiede“, der längste Stand der Leiste
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	_modifikator(simulator, ENGPASS, "-4", "1.1.1990", "31.12.1999", "lieferengpass")
+	_druecken(simulator, "%EndButton")
+	simulator.compare_with_mittel = true
+	(simulator.get_node("%DiffFilter") as CheckBox).button_pressed = true
+	await wait_process_frames(3)
+
+	# Assert: nicht breiter als vorher, das Layout bleibt im Fenster, der Text kürzt mit „…“.
+	assert_eq(leiste.size.x, breite)
+	assert_gte(layout.position.x, 0.0)
+	assert_lte(layout.position.x + layout.size.x, 1280.0)
+	assert_eq(vergleich.text_overrun_behavior, TextServer.OVERRUN_TRIM_ELLIPSIS)
+	assert_eq(vergleich.tooltip_text, "Vergleich: Mittel ohne Eingriffe")
+
+	# Act: bei Klaus' Größe
+	werkstatt.size = Vector2(1920, 925)
+	await wait_process_frames(3)
+
+	# Assert: alles in einer Zeile, der Text ganz
+	for kind: Control in leiste.get_children():
+		assert_true(SimulatorPanel._same_line(kind, vergleich), "%s in der Zeile" % kind.name)
+	var schrift := vergleich.get_theme_font(&"font")
+	var noetig := schrift.get_string_size(vergleich.text, HORIZONTAL_ALIGNMENT_LEFT, -1,
+		vergleich.get_theme_font_size(&"font_size")).x
+	assert_gte(vergleich.size.x, noetig, "Bei 1920 × 925 ist der Text nicht gekürzt.")
+
+
 # --- Helfer -----------------------------------------------------------------------------------
 
 func _tag(jahr: int, monat: int, tag: int) -> int:
@@ -776,6 +1307,24 @@ func _erzeugen(simulator: SimulatorPanel, seed_text: String) -> void:
 	feld.text = seed_text
 	feld.text_changed.emit(seed_text)
 	_druecken(simulator, "%GenerateButton")
+
+
+## Wählt [param grad] in %DifficultyOption wie mit der Maus: erst die Auswahl, dann ihr Signal.
+func _grad_waehlen(simulator: SimulatorPanel, grad: Difficulty.Level) -> void:
+	var auswahl: OptionButton = simulator.get_node("%DifficultyOption")
+	var stelle := auswahl.get_item_index(grad)
+	auswahl.select(stelle)
+	auswahl.item_selected.emit(stelle)
+
+
+## Die Termine der Ereignisse, die nicht von der Reklamationswelle abhängen, je [Tag, Kennung,
+## Herkunft, Zustand]; sie liegen in jedem Grad gleich.
+func _unabhaengige_termine(run: TimelineRun) -> Array:
+	var termine := []
+	for termin in run.entries:
+		if not ABHAENGIGE.has(termin.event.id):
+			termine.append([termin.day, termin.event.id, termin.origin, termin.state])
+	return termine
 
 
 func _druecken(simulator: SimulatorPanel, knopf: String) -> void:
@@ -888,6 +1437,40 @@ func _termin_waehlen(simulator: SimulatorPanel, termin: ScheduleEntry) -> void:
 func _ereignis_der_zeile(simulator: SimulatorPanel, zeile: TreeItem) -> String:
 	zeile.select(0)
 	return simulator.get_node("%DetailTitle").text.get_slice("(", 1).trim_suffix(")")
+
+
+## Die Kennungen der Ereignisse mit Markierung im Fahrplan, auch weggefallene, als
+## { kennung: true }.
+func _markierte_ereignisse(simulator: SimulatorPanel) -> Dictionary:
+	var markiert := {}
+	var tabelle: Tree = simulator.get_node("%PlanTable")
+	if tabelle.columns <= SimulatorPanel.PlanColumn.DIFF:
+		return markiert
+	for zeile in tabelle.get_root().get_children():
+		if not zeile.get_text(SimulatorPanel.PlanColumn.DIFF).is_empty():
+			markiert[_ereignis_der_zeile(simulator, zeile)] = true
+	return markiert
+
+
+## Je Markierung der Text darunter im Hinweis der Zeile, für jede vorkommende Markierung einer.
+func _texte_je_markierung(simulator: SimulatorPanel) -> Dictionary:
+	var texte := {}
+	var tabelle: Tree = simulator.get_node("%PlanTable")
+	for zeile in tabelle.get_root().get_children():
+		var markierung := zeile.get_text(SimulatorPanel.PlanColumn.DIFF)
+		if not markierung.is_empty():
+			texte[markierung] = zeile.get_tooltip_text(0).get_slice("\n", 2)
+	return texte
+
+
+## Was der Fahrplan zeigt: Zeilen mit Hinweisen, Spalten, Zahl und den Hinweis am Filter.
+func _ansicht(simulator: SimulatorPanel) -> Array:
+	var tabelle: Tree = simulator.get_node("%PlanTable")
+	var hinweise := []
+	for zeile in tabelle.get_root().get_children():
+		hinweise.append(zeile.get_tooltip_text(0))
+	return [_zeilen(tabelle), hinweise, tabelle.columns, simulator.get_node("%PlanCount").text,
+		simulator.get_node("%DiffFilter").tooltip_text, simulator.struck_rows().size()]
 
 
 func _anzahl_unterschiede(simulator: SimulatorPanel) -> int:

@@ -280,6 +280,8 @@ var compare_with_mittel: bool = false
     Fenstergröße aus `test_werkstatt_settings.gd` ist. `%CompareLabel` kürzt seinen Text dafür
     mit „…“ (`text_overrun_behavior`) und zeigt ihn beim Überfahren ganz. Der Agent belegt die
     Leiste mit Bildschirmfotos bei 1920 × 925 und in dieser kleinen Größe (Analyse, G10).
+  - Umgesetzt in Phase 4 (2026-10-23): Die FilterBar ist ein `HFlowContainer`. In der kleinen
+    Größe bricht sie in zwei Zeilen um statt breiter zu werden; bei 1920 × 925 bleibt sie einzeilig.
 - **Texte der Markierungen:**
   - Beim Vergleich mit demselben Grad ohne Eingriffe bleiben `DIFF_TIPS`, der Hinweis an
     `%DiffFilter` und der Text „Unterschied: …“ wie in Feature 002, denn jeder Unterschied kommt

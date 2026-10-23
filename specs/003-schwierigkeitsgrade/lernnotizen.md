@@ -182,3 +182,42 @@ Klaus eine Task selbst, schreibt Claude die Notiz beim Review.
   jeder Änderung in der Werkstatt.
 - Die Fehlerprobe zeigte: Der Test „keine Fehler“ bemerkt ein leeres Profil nicht, denn ein leeres
   Profil ist kein Prüffehler. Gegen ein leer gewordenes Profil schützt nur dieser Test.
+
+## Phase 4
+
+### T023 Proben mit Grad
+
+- **Eine Aufzählung ist zur Laufzeit eine Zahl** (`what_if_probe.gd`): `write_file()` prüft den
+  Grad mit `Difficulty.is_valid()`, `read_file()` wandelt erst nach der Prüfung mit
+  `as Difficulty.Level` um. `typeof(value) != TYPE_STRING` steht vor `Difficulty.from_key()`, denn
+  `"difficulty": 1` wäre als Zahl Mittel, soll aber abgelehnt werden.
+- **JSON liefert `Variant`:** `JSON.parse()` kennt keine Typen. `_read_difficulty()` prüft deshalb
+  mit `typeof()`, wie es `_structure_problem()` mit `seed` und `format` tut.
+- **Kanonisch über sortierte Schlüssel:** `JSON.stringify(data, "\t", true)` setzt „difficulty“ von
+  selbst vor „format“, ohne Sonderregel.
+- **Der Grad wirkt im Lauf, nicht in der Probe:** Die Probe speichert nur den Namen. Die
+  Start-Modifikatoren setzt `TimelineRun._init()` aus dem Profil des Katalogs, wie er gerade ist.
+  Ändert Klaus ein Profil, spielt eine alte Probe mit dem neuen Profil.
+- **`:=` braucht einen bekannten Typ:** Der Zugriff auf ein untypisiertes Dictionary liefert
+  `Variant`, und `var pfad := …` scheitert mit „Cannot infer the type“. Ein solcher Parse-Fehler
+  lässt GUT die ganze Datei still überspringen: Die Suite zeigt ein Skript weniger und trotzdem
+  „All tests passed“. Auf die Zahl der Skripte zu achten lohnt sich.
+- **GUT verfolgt Fehler:** Jedes `push_error()` muss genau einmal mit `assert_push_error()`
+  abgehakt werden, sonst wird der Test rot.
+
+### T025 und T026 Simulator mit Grad und Vergleich mit Mittel
+
+- **Der Grad gehört zum Lauf:** `TimelineRun.difficulty` ist ab `_init()` fest, deshalb baut ein
+  Wechsel einen neuen Lauf (`_switch_difficulty()`), über eine kurzlebige `WhatIfProbe` mit
+  `build_run()`, statt eine zweite Logik zum Nachspielen zu schreiben.
+- `_start_run()` setzt die Auswahl mit `select()`, das kein `item_selected` sendet: Nur Klaus'
+  Klick baut neu, ein geladener Lauf stellt nur die Auswahl um.
+- **Metadaten in TreeItems:** Zeilen mit Start-Modifikatoren erkennt die Liste an
+  `set_metadata()`, nicht an Farbe oder Text.
+- **Property mit Setter:** `compare_with_mittel` zieht das Häkchen mit `set_pressed_no_signal()`
+  nach; ohne `no_signal` liefen Signal und Setter im Kreis.
+- **`HFlowContainer` statt `HBoxContainer`:** Eine HBox ist mindestens so breit wie alle Kinder
+  zusammen und drückt sonst das Layout aus dem Fenster; ein FlowContainer bricht um.
+  `%CompareLabel` kürzt mit `text_overrun_behavior` und braucht `mouse_filter = PASS` für den
+  Hinweis.
+- **Fehlerprobe:** 19 eingebaute Fehler, alle gefunden.

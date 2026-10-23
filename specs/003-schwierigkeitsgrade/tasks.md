@@ -418,7 +418,7 @@ Protokoll nennt die Start-Modifikatoren, markiert sind nur veränderte und abhä
 
 ### Implementation for User Story 3
 
-- [ ] T023 [A] [US3] `src/tools/werkstatt/what_if_probe.gd` laut werkstatt.md, „WhatIfProbe“:
+- [x] T023 [A] [US3] `src/tools/werkstatt/what_if_probe.gd` laut werkstatt.md, „WhatIfProbe“:
   - `difficulty` mit Vorgabe Mittel;
   - `write_file()` schreibt `"difficulty"` immer, auch bei Mittel;
   - `read_file()`: Fehlt der Schlüssel, gilt Mittel. Ist er kein Text oder ein unbekannter Grad,
@@ -427,9 +427,9 @@ Protokoll nennt die Start-Modifikatoren, markiert sind nur veränderte und abhä
 
   Tests in `src/test/test_what_if_probe.gd`: die Liste aus werkstatt.md. Der Vergleich der ganzen
   Datei erwartet `"difficulty": "mittel"` als ersten Schlüssel.
-- [ ] T024 [C] [US3] Den Kern aus T023 prüfen, bevor die Oberfläche beginnt (`docs/ki_dev.md`,
+- [x] T024 [C] [US3] Den Kern aus T023 prüfen, bevor die Oberfläche beginnt (`docs/ki_dev.md`,
   „Ablauf je Feature“, Punkt 4; Analyse, I9). Hängt an T023.
-- [ ] T025 [A] [US3] `src/tools/werkstatt/simulator_panel.tscn` und
+- [x] T025 [A] [US3] `src/tools/werkstatt/simulator_panel.tscn` und
   `src/tools/werkstatt/simulator_panel.gd`, Grad und Neubau laut werkstatt.md:
   - `%DifficultyOption` hinter „Würfeln“, Vorgabe Mittel; `selected_difficulty()` und
     `select_difficulty()`;
@@ -453,7 +453,7 @@ Protokoll nennt die Start-Modifikatoren, markiert sind nur veränderte und abhä
   - „Katalog geändert“ nach einer Änderung an einem Profil und der Wechsel des Grads danach (G4).
 
   Hängt an T024.
-- [ ] T026 [A] [US3] Vergleich umschaltbar in `src/tools/werkstatt/simulator_panel.tscn` und
+- [x] T026 [A] [US3] Vergleich umschaltbar in `src/tools/werkstatt/simulator_panel.tscn` und
   `src/tools/werkstatt/simulator_panel.gd`:
   - `%CompareMittel` „mit Mittel vergleichen“ und `%CompareLabel` „Vergleich: Schwer ohne
     Eingriffe“, „Vergleich: Mittel ohne Eingriffe“ oder „Kein Vergleich: Der Lauf hat keine
@@ -473,7 +473,7 @@ Protokoll nennt die Start-Modifikatoren, markiert sind nur veränderte und abhä
   - der Text ohne Vergleichslauf.
 
   Gut als `[K]`-Aufgabe (plan.md). Hängt an T025.
-- [ ] T027 [K] [US3] Phase 4 abnehmen nach quickstart.md, Abschnitte 1 und 4.2
+- [x] T027 [K] [US3] Phase 4 abnehmen nach quickstart.md, Abschnitte 1 und 4.2
 
 **Checkpoint**: Grade lassen sich im Simulator durchspielen und vergleichen. Abnahme durch Klaus,
 dann Auftrag für Phase 5.

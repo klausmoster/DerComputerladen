@@ -27,6 +27,24 @@ layout_mode = 2
 tooltip_text = "Einen zufälligen Seed ins Feld schreiben"
 text = "Würfeln"
 
+[node name="DifficultyCaption" type="Label" parent="RunBar"]
+layout_mode = 2
+text = "Grad"
+
+[node name="DifficultyOption" type="OptionButton" parent="RunBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Der Schwierigkeitsgrad des Laufs; seine Start-Modifikatoren gelten ab Spielbeginn.
+Ein Wechsel baut den Lauf neu: derselbe Seed, derselbe Tag, dieselben angewandten Eingriffe."
+selected = 1
+item_count = 3
+popup/item_0/text = "Leicht"
+popup/item_0/id = 0
+popup/item_1/text = "Mittel"
+popup/item_1/id = 1
+popup/item_2/text = "Schwer"
+popup/item_2/id = 2
+
 [node name="GenerateButton" type="Button" parent="RunBar"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -150,7 +168,7 @@ layout_mode = 2
 theme_type_variation = &"WarningLabel"
 autowrap_mode = 3
 
-[node name="FilterBar" type="HBoxContainer" parent="."]
+[node name="FilterBar" type="HFlowContainer" parent="."]
 layout_mode = 2
 
 [node name="StateCaption" type="Label" parent="FilterBar"]
@@ -167,6 +185,20 @@ unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Nur Termine zeigen, die mit den Eingriffen anders sind als ohne sie"
 text = "nur Unterschiede"
+
+[node name="CompareMittel" type="CheckBox" parent="FilterBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Mit demselben Seed unter Mittel ohne Eingriffe vergleichen statt mit demselben Grad ohne Eingriffe; so zeigt der Fahrplan, was der Grad bewirkt. Bei Mittel ändert es nichts."
+text = "mit Mittel vergleichen"
+
+[node name="CompareLabel" type="Label" parent="FilterBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+theme_type_variation = &"MutedLabel"
+text_overrun_behavior = 3
 
 [node name="PlanCount" type="Label" parent="FilterBar"]
 unique_name_in_owner = true
@@ -343,7 +375,7 @@ ok_button_text = "Laden"
 cancel_button_text = "Abbrechen"
 
 [node name="LoadFields" type="VBoxContainer" parent="LoadProbeDialog"]
-custom_minimum_size = Vector2(540, 240)
+custom_minimum_size = Vector2(620, 240)
 
 [node name="ProbeList" type="Tree" parent="LoadProbeDialog/LoadFields"]
 unique_name_in_owner = true
