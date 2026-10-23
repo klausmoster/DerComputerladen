@@ -74,3 +74,48 @@ Klaus eine Task selbst, schreibt Claude die Notiz beim Review.
   sofort. Der zwölfte, ein Zeitraum aus genau einem Monatsersten, galt fälschlich als „wirkt nie“;
   dafür gibt es jetzt
   `test_v31_zeitraum_mit_genau_einem_monatsersten_wirkt_in_dieser_wuerfelrunde`.
+
+## Phase 2
+
+### T009 und T010 Meldung „Grad“ und der Lauf mit Grad
+
+- **Ein optionaler Parameter hält alte Aufrufe gültig** (`TimelineRun._init()`):
+  `p_difficulty: Difficulty.Level = Difficulty.DEFAULT` heißt, dass `TimelineRun.new(catalog,
+  seed)` weiter Mittel ist. Simulator, Statistik und Proben laufen deshalb unverändert, bis sie in
+  späteren Phasen ihren Grad bekommen.
+- **Eine Aufzählung ist zur Laufzeit eine Zahl:** Der typisierte Parameter nimmt trotzdem eine 7
+  an. Deshalb prüft `_init()` mit `Difficulty.is_valid()`; ein unbekannter Grad gilt als Mittel und
+  steht in `start_refusals`.
+- **Zwei Listen statt einer Markierung** (R5): `start_modifiers` steht neben `modifiers`.
+  `remove_modifier()` und die Prüfung auf doppelte Kennungen sehen nur `modifiers`. Dass sich ein
+  Start-Modifikator nicht entfernen lässt, folgt aus dem Aufbau und braucht keine Namensregel.
+- **Protokoll statt Rückgabe, also kein Signal:** `_set_start_modifiers()` hängt die Meldung
+  „Grad“ nur an `protocol`, nie an die Liste, die `begin()` zurückgibt. Das Autoload macht nur aus
+  Rückgaben Signale.
+- **Reihenfolge beim Addieren von Kommazahlen** (`chance_info()`): erst die Start-Modifikatoren,
+  dann die Eingriffe. Bei Mittel ist die erste Schleife leer, es wird also addiert wie in Feature
+  002, und jede Schwelle bleibt bis aufs Bit gleich. Darum hält die Grundlinie.
+- **Der Seed hängt nicht am Grad:** Die Würfel entstehen weiter nur aus Seed, Zweck und Kennung
+  (`EventDice.make`); der Grad verschiebt nur die Schwelle.
+
+### T011 Autoload `Timeline`
+
+- `start_game(seed, difficulty)` lehnt einen unbekannten Grad ab, bevor es etwas ändert; das
+  laufende Spiel bleibt.
+- **Eine Regel, eine Stelle:** `_at_start_modifier()` fragt `DifficultyProfile.faulty_indices()`,
+  dieselbe Regel wie `without_faulty()`. Jeder weggelassene Start-Modifikator steht so genau einmal
+  da: mit seiner eigenen Meldung oder, mit `by_event`, aus `skipped_start_modifiers()`.
+- **Fehler in GUT prüfen:** `assert_push_error(text)` hakt eine erwartete Meldung ab,
+  `assert_push_error_count(3)` sichert, dass keine doppelt kam.
+
+### T012 Kopfzeile und Textausgabe
+
+- Die Kopfzeile nennt den Grad auch bei Mittel. Deshalb fehlt sie in der Grundlinie aus T001.
+- **Ein Kommandozeilen-Skript testen** (`test_fahrplan_ausgabe.gd`): `fahrplan_ausgabe.gd` erbt
+  von `SceneTree` und läuft nur als eigener Prozess. Der Test startet es mit `OS.execute()`, wie der
+  Quickstart. Mit `read_stderr = false` kommt nur stdout zurück, mit `true` beides; was der zweite
+  Aufruf mehr hat, ist stderr. Die Erwartung rechnet der Test selbst mit `TimelineRun` und
+  `ScheduleText` und vergleicht sie als Ganzes.
+- **Fehlerprobe:** Von 15 eingebauten Fehlern fanden die Tests 14. Durch fiel nur „die
+  Textausgabe nennt einen fehlerhaften Start-Modifikator doppelt“, denn bis dahin prüfte kein Test
+  die Textausgabe selbst. Dafür gibt es jetzt `test_fahrplan_ausgabe.gd`.

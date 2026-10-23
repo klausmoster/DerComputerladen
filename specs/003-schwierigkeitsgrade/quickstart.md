@@ -91,7 +91,7 @@ diff /tmp/mittel.txt /tmp/schwer_a.txt
 | Prüfung | Erwartet | Bezug |
 |---|---|---|
 | `diff` der beiden Läufe mit Schwer | keine Ausgabe; erste Zeile „# Seed 4711, Grad Schwer, bis 31.12.1999“ | US1, Szenario 3; SC-001; FR-021 |
-| `diff` Mittel gegen Schwer | anders sind nur die Kopfzeile und Zeilen der Reklamationswelle, ihrer Folge und des Ereignisses mit Bedingung darauf; Lieferengpass und das fixe Ereignis gleich | US1, Szenario 4; FR-009 |
+| `diff` Mittel gegen Schwer | anders sind höchstens die Kopfzeile und Zeilen der Reklamationswelle, ihrer Folge und des Ereignisses mit Bedingung darauf; mit Seed 4711 bleibt das Ereignis mit Bedingung gleich, weil die erste Reklamationswelle in beiden Graden am 22.07.1985 kommt; Lieferengpass und das fixe Ereignis gleich | US1, Szenario 4; FR-009 |
 | Ohne `--grad` | wie `--grad mittel`, Zeichen für Zeichen | FR-006 |
 | Mittel mit `--katalog res://test/fixtures/event_catalog_uebernahme.json`, ab der zweiten Zeile gegen `src/test/fixtures/fahrplan_uebernahme_seed_4711.txt` | `diff` ohne Ausgabe | feste Größe |
 | `--grad schwer --protokoll` mit `catalog_us1_grade.json` | die erste Zeile ist „31.12.1984  Grad  Reklamationswelle: Start-Modifikator „…“ (Schwer) +5 Prozentpunkte vom 01.01.1985 bis 31.12.1999“ | FR-010; US3, Szenario 2 |

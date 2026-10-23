@@ -1,0 +1,98 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "software",
+			"name": "Software"
+		},
+		{
+			"color": "petrol",
+			"id": "reklamation",
+			"name": "Reklamation"
+		},
+		{
+			"color": "holz-dunkel",
+			"id": "lieferung",
+			"name": "Lieferung"
+		}
+	],
+	"events": [
+		{
+			"category": "lieferung",
+			"conditions": [],
+			"description": "Der Großhändler kann nicht liefern. Die Chance über 100 % ist ein Fehler (V12).",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "lieferengpass",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 1.5,
+			"title": "Lieferengpass",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "reklamation",
+			"conditions": [],
+			"description": "Mehrere Kunden kommen gleichzeitig mit defekter Ware zurück.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "reklamationswelle",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 0.03,
+			"title": "Reklamationswelle",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "software",
+			"date": "1995-08-24",
+			"description": "Microsoft bringt Windows 95.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "windows_95",
+			"kind": "fixed",
+			"title": "Windows 95 erscheint"
+		}
+	],
+	"format": 1,
+	"profiles": {
+		"leicht": [],
+		"schwer": [
+			{
+				"event_id": "gibt_es_nicht",
+				"from_day": "1985-01-01",
+				"id": "geisterereignis",
+				"reason": "Ein Ereignis, das es nicht gibt",
+				"to_day": "1999-12-31",
+				"value": 0.05
+			},
+			{
+				"event_id": "lieferengpass",
+				"from_day": "1985-01-01",
+				"id": "lieferengpass",
+				"reason": "Unzuverlässige Großhändler",
+				"to_day": "1999-12-31",
+				"value": 0.02
+			},
+			{
+				"event_id": "reklamationswelle",
+				"from_day": "1985-01-01",
+				"id": "reklamationswelle",
+				"reason": "Anspruchsvolle Kunden",
+				"to_day": "1999-12-31",
+				"value": 0.05
+			}
+		]
+	}
+}

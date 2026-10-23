@@ -21,6 +21,13 @@ extends RefCounted
 ## [member interventions] und als Meldung INTERVENTION im Protokoll; ein abgelehnter hinterlässt
 ## nichts außer seinem Grund in [member last_refusal]. Würfe kosten Eingriffe nie: Ein
 ## Modifikator verschiebt nur die Schwelle, und Würfel und Würfelzwecke bleiben, wie sie sind.
+##
+## Seit Feature 003 hat ein Spiel einen Schwierigkeitsgrad (research.md von Feature 003, R5 bis
+## R7). Die Start-Modifikatoren aus dem Profil des Grads setzt _init(), bevor begin() zum ersten Mal
+## würfelt. Sie stehen in einer eigenen Liste, [member start_modifiers], nie in
+## [member modifiers] und nie im Eingriffsprotokoll, und lassen sich nicht entfernen. Sie
+## verschieben wie Eingriffe nur Schwellen; der Seed und die Würfel hängen nicht am Grad. Mit
+## Mittel oder einem leeren Profil läuft alles wie in Feature 002, Zeichen für Zeichen.
 
 const FIRST_DAY := 0          # 01.01.1985
 const LAST_DAY := 5477        # 31.12.1999
@@ -42,13 +49,25 @@ var catalog: EventCatalog
 ## Der Seed des Spiels; aus ihm folgen alle Zufallsentscheidungen (R5).
 @warning_ignore("shadowed_global_identifier")
 var seed: int
+## Der Grad des Spiels, fest ab _init() (Feature 003, FR-006).
+var difficulty: Difficulty.Level = Difficulty.DEFAULT
+## Die Start-Modifikatoren des Grads, als Kopien in der Reihenfolge des Profils. _init() setzt
+## sie, bevor begin() zum ersten Mal würfelt (FR-007); danach ändern sie sich nie.
+var start_modifiers: Array[ChanceModifier] = []
+## Je Start-Modifikator, den der Lauf nicht setzen konnte, ein Satz mit dem Ort aus
+## DifficultyProfile.place() und dem Grund, etwa „Profil „Schwer“, Start-Modifikator
+## „reklamationswelle“: Das Ereignis „reklamationswelle“ gibt es im Katalog nicht.“ Dazu ein Satz,
+## wenn der Grad unbekannt war. Meist leer, denn die Aufrufer rechnen mit without_faulty() und
+## lehnen unbekannte Grade vorher ab.
+var start_refusals: PackedStringArray = PackedStringArray()
 ## Zuletzt abgespielter Tag; −1 vor begin().
 var today: int = -1
 ## Der Fahrplan: nach Tag sortiert, an einem Tag in der Reihenfolge, in der die Termine beginnen.
 var entries: Array[ScheduleEntry] = []
-## Die Modifikatoren der Chancen in der Reihenfolge, in der sie gesetzt wurden. Gesetzt und
-## entfernt werden sie über add_modifier() und remove_modifier(); chance_info() und die
-## Würfelrunden rechnen ein, was hier steht. Abgelaufene bleiben stehen und gelten nur nicht mehr.
+## Die Modifikatoren der Chancen aus Eingriffen, in der Reihenfolge, in der sie gesetzt wurden.
+## Gesetzt und entfernt werden sie über add_modifier() und remove_modifier(); chance_info() und die
+## Würfelrunden rechnen ein, was hier und in start_modifiers steht. Abgelaufene bleiben stehen und
+## gelten nur nicht mehr.
 var modifiers: Array[ChanceModifier] = []
 ## Alle Meldungen und Eingriffe des Laufs in der Reihenfolge, in der sie entstanden sind.
 var protocol: Array[TimelineMessage] = []
@@ -103,10 +122,20 @@ var _chain_links: Dictionary = {}
 
 
 ## Kopiert den Katalog und legt den Fahrplan an: fixe, jährliche und beim Start gesetzte Termine
-## (FR-010).
-func _init(p_catalog: EventCatalog, p_seed: int) -> void:
+## (FR-010). Danach setzt es die Start-Modifikatoren des Grads [param p_difficulty] (Feature 003,
+## data-model.md, „Anlegen“). TimelineRun.new(catalog, seed) heißt Mittel, wie bisher.
+##
+## Ein unbekannter Grad, etwa 7, gilt als Mittel und steht in start_refusals. Ablehnen müssen ihn
+## die Aufrufer vorher (FR-011): Ein Parameter vom Typ Difficulty.Level nimmt auch eine 7 an.
+func _init(p_catalog: EventCatalog, p_seed: int,
+		p_difficulty: Difficulty.Level = Difficulty.DEFAULT) -> void:
 	catalog = p_catalog.duplicate_catalog() if p_catalog != null else EventCatalog.new()
 	seed = p_seed
+	if Difficulty.is_valid(p_difficulty):
+		difficulty = p_difficulty
+	else:
+		start_refusals.append("Den Schwierigkeitsgrad %d gibt es nicht; das Spiel läuft mit %s."
+			% [p_difficulty, Difficulty.label(Difficulty.DEFAULT)])
 	_month_starts = _first_days_of_months()
 	# In Kennungsreihenfolge, egal wie der Katalog gerade sortiert ist: Dann vergibt der Lauf
 	# die laufenden Nummern immer gleich, und die Würfelrunde geht nach Kennung (R8).
@@ -127,6 +156,9 @@ func _init(p_catalog: EventCatalog, p_seed: int) -> void:
 				_chance_dice.append(EventDice.make(seed, EventDice.PURPOSE_CHANCE, event.id))
 			TimelineEvent.Kind.FOLLOW_ONLY:
 				pass  # kommt nur als Folge eines anderen Ereignisses
+	# Erst jetzt, mit Fahrplan und Würfeln, aber vor der ersten Würfelrunde in begin() (FR-007). Die
+	# Würfel hängen nur an Seed, Zweck und Kennung; der Grad ändert an ihnen nichts (FR-008).
+	_set_start_modifiers()
 
 
 ## Spielt den 01.01.1985 ab, mit der Würfelrunde für Januar 1985 und den jährlichen Ereignissen,
@@ -186,28 +218,39 @@ func running_entries() -> Array[ScheduleEntry]:
 
 
 ## Die Chance eines Ereignisses über Wahrscheinlichkeit am Tag [param day] (FR-025) als
-## Dictionary mit vier Schlüsseln:
+## Dictionary mit fünf Schlüsseln:
 ## - "base" (float): die Grundchance aus dem Katalog; 0 bei einem unbekannten Ereignis oder
 ##   einem Ereignis anderer Art;
-## - "sum" (float): die Grundchance plus alle Modifikatoren, die an diesem Tag gelten, noch nicht
-##   begrenzt;
+## - "sum" (float): die Grundchance plus alle Start-Modifikatoren und Modifikatoren, die an diesem
+##   Tag gelten, noch nicht begrenzt;
 ## - "effective" (float): sum, begrenzt auf 0 bis 1; damit wird gewürfelt;
-## - "modifiers" (Array[ChanceModifier]): die Modifikatoren, die an diesem Tag gelten, in ihrer
-##   Reihenfolge.
+## - "start_modifiers" (Array[ChanceModifier]): die Start-Modifikatoren des Grads, die an diesem
+##   Tag gelten, in der Reihenfolge des Profils (Feature 003);
+## - "modifiers" (Array[ChanceModifier]): die Modifikatoren aus Eingriffen, die an diesem Tag
+##   gelten, in ihrer Reihenfolge; wie bisher.
 ##
-## Beispiel aus US6, Szenario 3: 3 % mit −6 Prozentpunkten ergibt sum −0,03 und effective 0.
+## Beispiel aus US6, Szenario 3: 3 % mit −6 Prozentpunkten ergibt sum −0,03 und effective 0. Mit
+## „Schwer +5“ dazu (US1, Szenario 7 von Feature 003) ergibt es 2 %.
 func chance_info(event_id: String, day: int) -> Dictionary:
 	var event: TimelineEvent = _events_by_id.get(event_id)
 	var base := 0.0
 	if event != null and event.kind == TimelineEvent.Kind.CHANCE:
 		base = event.monthly_chance
-	var active: Array[ChanceModifier] = []
 	var total := base
+	# Erst die Start-Modifikatoren, dann die Eingriffe. Ohne Start-Modifikatoren addiert die Schleife
+	# also in derselben Reihenfolge wie in Feature 002, und jede Schwelle bleibt bis aufs Bit gleich.
+	var from_profile: Array[ChanceModifier] = []
+	for modifier in start_modifiers:
+		if modifier.event_id == event_id and modifier.is_active(day):
+			from_profile.append(modifier)
+			total += modifier.value
+	var active: Array[ChanceModifier] = []
 	for modifier in modifiers:
 		if modifier.event_id == event_id and modifier.is_active(day):
 			active.append(modifier)
 			total += modifier.value
-	return {"base": base, "sum": total, "effective": clampf(total, 0.0, 1.0), "modifiers": active}
+	return {"base": base, "sum": total, "effective": clampf(total, 0.0, 1.0),
+		"start_modifiers": from_profile, "modifiers": active}
 
 
 ## Der geplante Termin des Ereignisses [param event_id] am Tag [param day]; null, wenn es dort
@@ -278,9 +321,16 @@ func add_modifier(modifier: ChanceModifier) -> Error:
 ## Entfernt den Modifikator mit der Kennung [param id] (FR-025). Ab der nächsten Würfelrunde gilt
 ## er nicht mehr. Was er vorher bewirkt hat, bleibt: Gewürfelte Termine behalten ihre Schwelle und
 ## in modifier_notes seinen Grund.
+##
+## Gesucht wird nur unter den Eingriffen (R5 von Feature 003). Hat nur ein Start-Modifikator diese
+## Kennung, gibt es ERR_UNAVAILABLE: Start-Modifikatoren lassen sich im Spiel nicht entfernen
+## (FR-010). Haben beide sie, wird der Eingriff entfernt.
 func remove_modifier(id: String) -> Error:
 	var index := _modifier_index(id)
 	if index < 0:
+		if _start_modifier_index(id) >= 0:
+			return _refuse(ERR_UNAVAILABLE, ("„%s“ ist ein Start-Modifikator von %s und lässt sich "
+				+ "im laufenden Spiel nicht entfernen.") % [id, Difficulty.label(difficulty)])
 		return _refuse(ERR_DOES_NOT_EXIST,
 			"Einen Modifikator mit der Kennung „%s“ gibt es nicht." % id)
 	var removed := modifiers[index]
@@ -491,6 +541,79 @@ static func yearly_occurrences(event: TimelineEvent) -> Array[Vector2i]:
 	return result
 
 
+# --- Start-Modifikatoren (Feature 003, R6) ------------------------------------------
+
+## Setzt die Start-Modifikatoren aus dem Profil des Grads, in der Reihenfolge des Profils. Jeder
+## wird geprüft wie in add_modifier(): Das Ereignis gibt es, und es kommt über Wahrscheinlichkeit;
+## Kennung und Grund sind nicht leer; die Kennung kommt im Profil nur einmal vor; das Ende ist
+## gesetzt und liegt nicht vor dem Beginn. Wer besteht, kommt als Kopie nach start_modifiers und
+## mit einer Meldung START_MODIFIER am Tag −1 ins Protokoll; wer durchfällt, mit einem Satz nach
+## start_refusals. Mittel hat kein Profil, dann geschieht nichts.
+func _set_start_modifiers() -> void:
+	var profile := catalog.get_profile(difficulty)
+	if profile == null:
+		return
+	# Kennung → wie oft sie im Profil vorkommt. Kommt sie mehrfach vor, fällt jeder mit ihr durch,
+	# wie V30 jeden meldet; sonst hinge es an der Reihenfolge, welcher gilt.
+	var count := {}
+	for modifier in profile.modifiers:
+		count[modifier.id] = int(count.get(modifier.id, 0)) + 1
+	for index in profile.modifiers.size():
+		var modifier := profile.modifiers[index]
+		var problem := _start_modifier_problem(modifier, count)
+		if not problem.is_empty():
+			start_refusals.append("%s: %s" % [DifficultyProfile.place(difficulty, index, modifier),
+				problem])
+			continue
+		var copy := _modifier_from_record(_modifier_record(modifier))
+		start_modifiers.append(copy)
+		var event: TimelineEvent = _events_by_id[copy.event_id]
+		var message := TimelineMessage.new()
+		# −1 ist der 31.12.1984, wie bei Eingriffen vor Spielbeginn: Er gilt, bevor der erste Tag
+		# abgespielt ist. Die Meldung geht nur ins Protokoll, in keine Rückgabe; so wird sie kein
+		# Signal.
+		message.day = FIRST_DAY - 1
+		message.kind = TimelineMessage.Kind.START_MODIFIER
+		message.event = event
+		message.text = "%s: Start-Modifikator „%s“ (%s) %s vom %s bis %s" % [event.title,
+			copy.reason, Difficulty.label(difficulty), _points_text(copy.value),
+			_date(copy.from_day), _date(copy.to_day)]
+		protocol.append(message)
+
+
+## Warum sich ein Start-Modifikator nicht setzen lässt; leer, wenn er geht. Dieselben Prüfungen in
+## derselben Reihenfolge wie add_modifier(), nur die doppelte Kennung zählt im Profil statt unter
+## den Eingriffen. [param count] ist Kennung → wie oft sie im Profil vorkommt.
+func _start_modifier_problem(modifier: ChanceModifier, count: Dictionary) -> String:
+	var event: TimelineEvent = _events_by_id.get(modifier.event_id)
+	if event == null:
+		return _unknown_event(modifier.event_id)
+	if event.kind != TimelineEvent.Kind.CHANCE:
+		return ("%s ist kein Ereignis über Wahrscheinlichkeit; nur dort gibt es "
+			+ "Start-Modifikatoren.") % event.title
+	if modifier.id.is_empty():
+		return "Der Start-Modifikator hat keine Kennung."
+	if int(count.get(modifier.id, 0)) > 1:
+		return "Die Kennung „%s“ gibt es in diesem Profil mehrfach." % modifier.id
+	if modifier.reason.strip_edges().is_empty():
+		return "Der Start-Modifikator braucht einen Grund."
+	if modifier.to_day == -1:
+		return "Dem Start-Modifikator fehlt das Ende; „unbegrenzt“ heißt bis 31.12.1999."
+	if modifier.to_day < modifier.from_day:
+		return "Der Start-Modifikator endet am %s, vor seinem Beginn am %s." % [
+			_date(modifier.to_day), _date(modifier.from_day)]
+	return ""
+
+
+## Stelle des Start-Modifikators mit der Kennung [param id] in start_modifiers; −1, wenn es ihn
+## nicht gibt.
+func _start_modifier_index(id: String) -> int:
+	for i in start_modifiers.size():
+		if start_modifiers[i].id == id:
+			return i
+	return -1
+
+
 # --- Fahrplan anlegen ----------------------------------------------------------
 
 ## Würfelt die Termine eines Ereignisses „beim Start gesetzt“ (R7):
@@ -663,8 +786,13 @@ func _roll_month(month: int, day: int) -> void:
 		entry.roll = roll
 		entry.threshold = threshold
 		entry.base_chance = info["base"]
+		# Die Begründung nennt zuerst die Start-Modifikatoren mit ihrem Grad, dann die Eingriffe
+		# (R6 von Feature 003): „3 % + Schwer: Anspruchsvolle Kunden +5 + Ware vom windigen …“.
+		var from_profile: Array[ChanceModifier] = info["start_modifiers"]
 		var active: Array[ChanceModifier] = info["modifiers"]
-		entry.modifier_notes = _modifier_notes(active)
+		var notes := _modifier_notes(from_profile, Difficulty.label(difficulty) + ": ")
+		notes.append_array(_modifier_notes(active))
+		entry.modifier_notes = notes
 
 
 ## Schritt 4: Die geplanten Termine des Tags beginnen in der Reihenfolge, in der sie im Fahrplan
@@ -929,11 +1057,12 @@ static func _serial_before(a: ScheduleEntry, b: ScheduleEntry) -> bool:
 
 ## Die Modifikatoren für die Begründung, je „<grund> <wert in Prozentpunkten>“, etwa
 ## „Ware vom windigen Händler +5“. Der Termin behält den Text, auch wenn der Modifikator später
-## entfernt wird (R8).
-static func _modifier_notes(active: Array[ChanceModifier]) -> PackedStringArray:
+## entfernt wird (R8). Start-Modifikatoren bekommen [param prefix] mit ihrem Grad davor, etwa
+## „Schwer: Anspruchsvolle Kunden +5“.
+static func _modifier_notes(active: Array[ChanceModifier], prefix: String = "") -> PackedStringArray:
 	var notes := PackedStringArray()
 	for modifier in active:
-		notes.append("%s %s" % [modifier.reason, _points(modifier.value)])
+		notes.append("%s%s %s" % [prefix, modifier.reason, _points(modifier.value)])
 	return notes
 
 

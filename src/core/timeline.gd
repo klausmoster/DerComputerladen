@@ -9,6 +9,10 @@ extends Node
 ##
 ## Die Zeitleiste wendet keine Wirkung selbst an. Sie meldet nur, über die Signale unten, und
 ## Wirtschaft, Nachfrage und Ruf hängen sich später daran.
+##
+## Seit Feature 003 startet ein Spiel mit einem Schwierigkeitsgrad, Vorgabe Mittel. Der Lauf setzt
+## die Start-Modifikatoren seines Profils; die Zeitleiste reicht den Grad nur durch, prüft ihn und
+## meldet, was sie aus den Profilen weglassen musste.
 
 ## Ein Ereignis beginnt, wie bisher.
 signal event_fired(event: TimelineEvent, date: GameDate)
@@ -55,23 +59,33 @@ func _ready() -> void:
 # Der Parameter heißt laut Vertrag seed, wie die globale Funktion seed(); die Warnung darüber
 # ist abgeschaltet, sonst wäre der Start mit -d nicht still.
 
-## Legt einen neuen Lauf an; [param seed] < 0 heißt würfeln, aus 0 bis 2.147.483.647 (FR-014).
-## Spielt den ersten Tag ab, den 01.01.1985, sendet dessen Meldungen und gibt OK zurück. Ein
-## laufendes Spiel wird dabei ersetzt.
+## Legt einen neuen Lauf mit dem Grad [param difficulty] an; [param seed] < 0 heißt würfeln, aus 0
+## bis 2.147.483.647 (FR-014). Spielt den ersten Tag ab, den 01.01.1985, sendet dessen Meldungen
+## und gibt OK zurück. Ein laufendes Spiel wird dabei ersetzt.
 ##
-## Ein Seed über MAX_SEED gehört nicht zum Wertebereich: Es gibt ERR_INVALID_PARAMETER und eine
-## Meldung, und ein laufendes Spiel bleibt, wie es ist. Textausgabe und Simulator lassen so einen
-## Seed gar nicht erst zu; hier prüft es die Zeitleiste selbst, bevor „Neues Spiel“ (01-05) eigene
-## Seeds übergibt. Den Rückgabewert braucht nur, wer selbst einen Seed vorgibt; der Start am Ende
-## des ersten Bilds würfelt und geht immer.
+## Ein Seed über MAX_SEED oder ein unbekannter Grad gehört nicht zum Wertebereich: Es gibt
+## ERR_INVALID_PARAMETER und eine Meldung, und ein laufendes Spiel bleibt, wie es ist (FR-011).
+## Den Grad prüft die Zeitleiste selbst, denn ein Parameter vom Typ Difficulty.Level nimmt auch
+## eine 7 an. Der Seed wird gewürfelt wie bisher, der Grad ändert daran nichts (FR-008).
+##
+## Den Rückgabewert braucht nur, wer selbst Seed oder Grad vorgibt. Der Start am Ende des ersten
+## Bilds kommt ohne Argumente, also Mittel mit gewürfeltem Seed, und geht immer; den Grad übergibt
+## später „Neues Spiel“ (01-05).
 @warning_ignore("shadowed_global_identifier")
-func start_game(seed: int = -1) -> Error:
+func start_game(seed: int = -1, difficulty: Difficulty.Level = Difficulty.DEFAULT) -> Error:
 	if seed > MAX_SEED:
 		push_error(("Zeitleiste: Der Seed %d ist zu groß, erlaubt sind 0 bis 2.147.483.647. Es "
 			+ "beginnt kein neues Spiel.") % seed)
 		return ERR_INVALID_PARAMETER
+	if not Difficulty.is_valid(difficulty):
+		push_error(("Zeitleiste: Den Schwierigkeitsgrad %d gibt es nicht, bekannt sind Leicht, "
+			+ "Mittel und Schwer. Es beginnt kein neues Spiel.") % difficulty)
+		return ERR_INVALID_PARAMETER
 	var game_seed := seed if seed >= 0 else randi_range(0, MAX_SEED)
-	run = TimelineRun.new(catalog, game_seed)
+	run = TimelineRun.new(catalog, game_seed, difficulty)
+	# Meist leer: Der Katalog ist schon ohne fehlerhafte Start-Modifikatoren (_load_catalog()).
+	for refusal in run.start_refusals:
+		push_error("Zeitleiste: %s" % refusal)
 	_send(run.begin())
 	return OK
 
@@ -79,6 +93,11 @@ func start_game(seed: int = -1) -> Error:
 ## Der Seed des laufenden Spiels; −1, solange keins läuft.
 func get_seed() -> int:
 	return run.seed if run != null else -1
+
+
+## Der Grad des laufenden Spiels; −1, solange keins läuft (FR-006).
+func get_difficulty() -> int:
+	return run.difficulty if run != null else -1
 
 
 ## Ein Ereignis des laufenden Spiels; null, wenn es die Kennung nicht gibt. Es ist dasselbe
@@ -142,7 +161,8 @@ func schedule_event(event_id: String, day: int, reason: String) -> Error:
 	return run.schedule_event(event_id, day, reason)
 
 
-## Liest den Katalog von catalog_path und behält ihn ohne die Ereignisse mit Fehlern (FR-049).
+## Liest den Katalog von catalog_path und behält ihn ohne die Ereignisse mit Fehlern (FR-049)
+## und ohne die fehlerhaften Start-Modifikatoren (FR-013 von Feature 003).
 func _load_catalog() -> void:
 	var issues: Array[CatalogIssue] = []
 	var loaded := EventCatalog.read_file(catalog_path, issues)
@@ -154,15 +174,37 @@ func _load_catalog() -> void:
 		return
 	issues.append_array(CatalogValidator.validate(loaded))
 	catalog = loaded.without_faulty(issues)
-	# Jede Meldung der Stufe ERROR nennt Ereignis bzw. Kategorie und Grund. Fehlt das Ereignis
-	# danach im Katalog, sagt die Meldung das dazu. Warnungen sind für die Werkstatt.
+	# Jede Meldung der Stufe ERROR nennt Ereignis, Kategorie oder Start-Modifikator und Grund.
+	# Fehlt das Ereignis danach im Katalog, sagt die Meldung das dazu; den Zusatz bekommt nur eine
+	# Meldung mit Kennung, sonst träfe er auch Meldungen zu Profilen (Analyse, U5). Eine Meldung an
+	# der Stelle eines Start-Modifikators sagt, dass er wegfällt. Warnungen sind für die Werkstatt.
 	for issue in issues:
 		if issue.severity != CatalogIssue.Severity.ERROR:
 			continue
 		var text := "Zeitleiste: %s" % issue.message
-		if loaded.get_event(issue.event_id) != null and catalog.get_event(issue.event_id) == null:
+		if not issue.event_id.is_empty() and loaded.get_event(issue.event_id) != null \
+				and catalog.get_event(issue.event_id) == null:
 			text += " Das Ereignis wird übersprungen."
+		elif _at_start_modifier(issue):
+			text += " Der Start-Modifikator wird übersprungen."
 		push_error(text)
+	# Wer nur wegfällt, weil sein Ereignis ausgenommen ist, hat keine eigene Meldung. So steht jeder
+	# weggelassene Start-Modifikator genau einmal da (FR-013; Analyse, G1).
+	for skipped in loaded.skipped_start_modifiers(issues):
+		if skipped["by_event"]:
+			push_error("Zeitleiste: %s: %s" % [skipped["place"], skipped["reason"]])
+
+
+## Ob [param issue] zur Stelle eines Start-Modifikators gehört, Feld „profiles.schwer[2]“ oder
+## „profiles.schwer[2].…“. Die Regel steht in DifficultyProfile.faulty_indices(), dieselbe wie in
+## without_faulty(); eine Meldung zum ganzen Abschnitt oder zu einem unbekannten Grad gehört zu
+## keiner Stelle.
+static func _at_start_modifier(issue: CatalogIssue) -> bool:
+	var single: Array[CatalogIssue] = [issue]
+	for level: int in Difficulty.WITH_PROFILE:
+		if not DifficultyProfile.faulty_indices(single, level).is_empty():
+			return true
+	return false
 
 
 ## Spielt den Lauf bis zum Tag der Uhr ab. GameClock meldet jeden Tag einzeln; der Lauf käme
@@ -174,7 +216,7 @@ func _on_day_passed(date: GameDate) -> void:
 
 
 ## Macht aus jeder Meldung das Signal laut Vertrag, in der Reihenfolge der Meldungen. Eingriffe
-## stehen nur im Protokoll des Laufs und werden kein Signal.
+## und Start-Modifikatoren stehen nur im Protokoll des Laufs und werden kein Signal.
 func _send(messages: Array[TimelineMessage]) -> void:
 	for message in messages:
 		var date := GameDate.from_day_index(message.day)
@@ -195,5 +237,5 @@ func _send(messages: Array[TimelineMessage]) -> void:
 				push_warning("Zeitleiste: %s (Ereignis „%s“)" % [message.to_line(),
 					message.event.id])
 				entry_skipped.emit(message.entry, date)
-			TimelineMessage.Kind.INTERVENTION:
+			TimelineMessage.Kind.INTERVENTION, TimelineMessage.Kind.START_MODIFIER:
 				pass

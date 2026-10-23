@@ -165,7 +165,24 @@ Auslegungen des Agents, die Claude angenommen hat. Sie stehen auch im Datenmodel
 - **Datum lesen:** `ChanceModifier._read_day()` wiederholt die zehn Zeilen von
   `TimelineEvent._read_day()`, damit Phase 1 `TimelineEvent` nicht anfasst.
 - **Fund für Phase 2:** `catalog_issue.gd` nennt in Kommentaren noch „V01 bis V24“; der Agent zieht
-  das in Phase 2 mit nach.
+  das in Phase 2 mit nach. Erledigt in Phase 2.
+
+### Feature 003, Phase 2 (2026-10-23)
+
+Auslegungen des Agents, die Claude angenommen hat:
+- **Doppelte Kennung im Profil beim Spielstart:** Alle Start-Modifikatoren mit dieser Kennung
+  fallen durch, nicht nur der zweite, wie V30 jeden meldet. Sonst hinge es an der Reihenfolge,
+  welcher gilt.
+- **Texte, die der Vertrag offenließ,** etwa in der Textausgabe „Den Schwierigkeitsgrad „extrem“
+  gibt es nicht; erlaubt sind leicht, mittel und schwer.“ und im Lauf „Der Start-Modifikator
+  braucht einen Grund.“
+- **Zusatz „Das Ereignis fehlt in der Ausgabe.“** nur an Meldungen mit einer Ereigniskennung, auch
+  in der Textausgabe, wie U5 es für die Zeitleiste verlangt. Eine Meldung V01 zu einer leeren
+  Kennung steht damit ohne Zusatz da.
+- **Neuer Test `test_fahrplan_ausgabe.gd`:** Die Fehlerprobe zeigte, dass kein Test die
+  Textausgabe selbst prüfte. Er startet Godot als eigenen Prozess und kostet rund 6 Sekunden.
+- **Textausgabe und `start_refusals`:** Sie gibt die Liste nicht aus; nach `without_faulty()` und
+  der Prüfung des Grads ist sie dort immer leer.
 
 ## Erledigt
 

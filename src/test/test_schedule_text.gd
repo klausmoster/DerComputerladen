@@ -3,7 +3,8 @@ extends GutTest
 ## Prüft die Textausgabe des Fahrplans (Feature 002, T027): Kopfzeile, Spalten mit fester Breite,
 ## die Spalte „bis“, die Zusätze hinter dem Titel und die verzögerten Wirkungen unter ihrem Termin.
 ## Dazu SC-002: Zehn Läufe mit gleichem Seed ergeben zehn gleiche Ausgaben, ob Tag für Tag oder in
-## Sprüngen geschaltet, auch mit gleichen Eingriffen (T085).
+## Sprüngen geschaltet, auch mit gleichen Eingriffen (T085). Seit Feature 003 (T012) nennt die
+## Kopfzeile den Grad, auch Mittel (FR-021).
 ##
 ## Für die Spalte „bis“ und zwei der Zusätze legt ein Test Termine von Hand in einen leeren Lauf,
 ## so wie der Lauf sie anlegt. ScheduleText formatiert nur, was im Fahrplan steht; wie der Lauf
@@ -23,7 +24,7 @@ func test_kopfzeile_und_zeile_mit_festen_spalten() -> void:
 
 	# Assert: Die leere Spalte „bis“ hat 14 Zeichen, die Kennung 28, Herkunft und Zustand je 12,
 	# jede gefolgt von zwei Leerzeichen.
-	assert_eq(zeilen[0], "# Seed 4711, bis 31.12.1999")
+	assert_eq(zeilen[0], "# Seed 4711, Grad Mittel, bis 31.12.1999")
 	var pentium := zeilen.find("22.03.1993" + _leer(2 + 14 + 2) + "intel_pentium" + _leer(15 + 2)
 		+ "fix" + _leer(9 + 2) + "eingetreten" + _leer(1 + 2) + "Intel Pentium erscheint")
 	assert_gt(pentium, 0, "Die Zeile des Pentiums mit Spalten von 14, 28, 12 und 12 Zeichen.")
@@ -31,6 +32,20 @@ func test_kopfzeile_und_zeile_mit_festen_spalten() -> void:
 		assert_eq(zeilen[pentium + 1],
 			"05.04.1993    └ Nachfrage · ram · +20% — Pentium-Systeme wollen Speicher.",
 			"Die verzögerte Wirkung steht mit ihrem Tag unter ihrem Termin (FR-013).")
+
+
+func test_kopfzeile_nennt_den_grad() -> void:
+	# Arrange (FR-021)
+	var katalog := _katalog("catalog_us1_grade")
+	var schwer := TimelineRun.new(katalog, 4711, Difficulty.Level.SCHWER)
+	var leicht := TimelineRun.new(katalog, 4711, Difficulty.Level.LEICHT)
+
+	# Act und Assert
+	assert_eq(ScheduleText.plan_lines(schwer)[0], "# Seed 4711, Grad Schwer, bis 31.12.1999")
+	assert_eq(ScheduleText.plan_lines(leicht, _tag(1990, 6, 30))[0],
+		"# Seed 4711, Grad Leicht, bis 30.06.1990")
+	assert_string_starts_with(ScheduleText.protocol_lines(schwer)[0], "31.12.1984  Grad  ",
+		"Im Protokoll steht der Start-Modifikator vorn.")
 
 
 func test_bis_zu_einem_tag() -> void:
@@ -43,7 +58,7 @@ func test_bis_zu_einem_tag() -> void:
 	var zeilen := ScheduleText.plan_lines(run, bis)
 
 	# Assert
-	assert_eq(zeilen[0], "# Seed 4711, bis 31.12.1990")
+	assert_eq(zeilen[0], "# Seed 4711, Grad Mittel, bis 31.12.1990")
 	assert_gt(zeilen.size(), 1)
 	for i in range(1, zeilen.size()):
 		if zeilen[i].contains("└"):
@@ -77,7 +92,7 @@ func test_spalte_bis_und_zusaetze() -> void:
 
 	# Assert: Die letzte Zeile ist das Beispiel aus dem Vertrag.
 	assert_eq(Array(zeilen), [
-		"# Seed 4711, bis 31.12.1999",
+		"# Seed 4711, Grad Mittel, bis 31.12.1999",
 		"01.01.1985  bis 28.02.1985  winter" + _leer(22 + 2) + "jährlich" + _leer(4 + 2)
 			+ "beendet" + _leer(5 + 2) + "Winter (lief schon vor Spielbeginn)",
 		"02.06.1993" + _leer(2 + 14 + 2) + "zeitungsartikel" + _leer(13 + 2) + "Folge"

@@ -6,7 +6,8 @@ extends RefCounted
 ##
 ## Der Lauf (TimelineRun) gibt die Meldungen jedes Aufrufs als Liste zurück und sammelt alle im
 ## Protokoll. Das Autoload Timeline macht daraus Signale, die Werkstatt und die Textausgabe
-## zeigen sie als Zeile.
+## zeigen sie als Zeile. Eingriffe und Start-Modifikatoren stehen nur im Protokoll; sie kommen in
+## keiner Rückgabe vor und werden kein Signal.
 
 enum Kind {
 	EVENT_STARTED,   ## ein Termin beginnt
@@ -16,11 +17,13 @@ enum Kind {
 	ENTRY_SKIPPED,   ## ein Termin entfällt, etwa weil eine Bedingung nicht erfüllt ist
 	CHAIN_STOPPED,   ## ein Termin entfällt, weil seine Kette am selben Tag zu lang ist (R10)
 	INTERVENTION,    ## ein Eingriff, etwa eine Absage
+	START_MODIFIER,  ## ein Start-Modifikator des Grads gilt ab Spielbeginn (Feature 003, R6)
 }
 
-## Spalte „Art“ der Protokollzeile, in der Reihenfolge von Kind.
+## Spalte „Art“ der Protokollzeile, in der Reihenfolge von Kind. Neue Arten kommen ans Ende, damit
+## die übrigen ihre Nummern behalten.
 const KIND_LABELS: Array[String] = [
-	"Beginn", "Ende", "Wirkung", "Wirkungsende", "Entfall", "Kettenabbruch", "Eingriff",
+	"Beginn", "Ende", "Wirkung", "Wirkungsende", "Entfall", "Kettenabbruch", "Eingriff", "Grad",
 ]
 
 ## Tag der Meldung als Tagesindex.

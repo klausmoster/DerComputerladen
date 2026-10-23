@@ -3,7 +3,8 @@ extends GutTest
 ## Prüft das Autoload Timeline als Hülle um den Lauf (Feature 002, T025): Es lädt einen Katalog,
 ## hängt sich an eine Uhr und macht aus den Meldungen des Laufs Signale, auch aus den Enden von
 ## Ereignissen und Wirkungen (T085). Dazu die Eingriffe, die es an den Lauf durchreicht (T058),
-## und die Grenze des Seeds (T083).
+## und die Grenze des Seeds (T083). Seit Feature 003 (T011) auch den Start mit Grad und die
+## Meldungen zu Start-Modifikatoren, die wegfallen.
 ##
 ## Wie in test_game_clock.gd arbeiten die Tests nicht mit den Autoloads. Jeder baut sich eine
 ## eigene Zeitleiste mit Test-Katalog und eigener Uhr. Die Knoten entstehen im Test selbst, nicht
@@ -115,6 +116,171 @@ func test_ohne_seed_wird_gewuerfelt() -> void:
 	assert_not_null(zeitleiste.run, "Das Spiel startet am Ende des ersten Bilds von selbst.")
 	assert_between(zeitleiste.get_seed(), 0, ZEITLEISTE.MAX_SEED)
 	assert_eq(zeitleiste.run.today, 0, "Der 01.01.1985 ist abgespielt.")
+
+
+# --- Schwierigkeitsgrade (Feature 003, T011) ----------------------------------------
+
+func test_ohne_grad_gilt_mittel() -> void:
+	# Arrange und Act (US1, Szenario 5): start_game() kommt per call_deferred() ohne Argumente.
+	var zeitleiste := await _zeitleiste("catalog_us1_grade", _uhr())
+
+	# Assert
+	assert_eq(zeitleiste.get_difficulty(), Difficulty.Level.MITTEL)
+	assert_eq(zeitleiste.run.start_modifiers.size(), 0, "Mittel hat keine Start-Modifikatoren.")
+	assert_eq(zeitleiste.start_game(4711), OK)
+	assert_eq(zeitleiste.get_difficulty(), Difficulty.Level.MITTEL, "Auch mit Seed allein.")
+
+
+func test_ohne_spiel_ist_der_grad_minus_eins() -> void:
+	# Arrange: eine Zeitleiste, die nie in den Baum kam
+	var zeitleiste: ZEITLEISTE = autofree(ZEITLEISTE.new())
+
+	# Act und Assert
+	assert_eq(zeitleiste.get_difficulty(), -1)
+
+
+func test_start_mit_schwer_nennt_seed_und_grad_und_sendet_keine_meldung_grad() -> void:
+	# Arrange
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us1_grade", uhr)
+	var spur := []
+	var ereignisse := []
+	_mitschreiben(zeitleiste, spur, ereignisse)
+
+	# Act
+	var ergebnis: Error = zeitleiste.start_game(4711, Difficulty.Level.SCHWER)
+	_vorspulen(uhr, _tag(1990, 1, 1))
+
+	# Assert
+	assert_eq(ergebnis, OK)
+	assert_eq([zeitleiste.get_seed(), zeitleiste.get_difficulty()],
+		[4711, Difficulty.Level.SCHWER], "Die Zeitleiste nennt Seed und Grad (FR-006).")
+	assert_eq(zeitleiste.run.start_modifiers.size(), 1)
+	assert_eq(zeitleiste.run.protocol[0].kind, TimelineMessage.Kind.START_MODIFIER,
+		"Die Meldung steht im Protokoll …")
+	assert_eq(spur, _erwartete_signale(zeitleiste.run), "… und wird kein Signal.")
+	for zeile: String in spur:
+		assert_false(zeile.begins_with("31.12.1984"), zeile)
+
+
+func test_szenario_2_zwei_starts_ohne_seed_haben_je_einen_eigenen_seed() -> void:
+	# Arrange (US1, Szenario 2; CHK027): Der globale Zufall ist festgesetzt, so ist der Test
+	# wiederholbar.
+	var zeitleiste := await _zeitleiste("catalog_us1_grade", _uhr())
+	seed(20261023)
+
+	# Act
+	assert_eq(zeitleiste.start_game(-1, Difficulty.Level.SCHWER), OK)
+	var erster: int = zeitleiste.get_seed()
+	assert_eq(zeitleiste.start_game(-1, Difficulty.Level.SCHWER), OK)
+	var zweiter: int = zeitleiste.get_seed()
+
+	# Assert
+	assert_ne(erster, zweiter, "Jedes Spiel bekommt seinen eigenen Seed.")
+	assert_between(erster, 0, ZEITLEISTE.MAX_SEED)
+	assert_between(zweiter, 0, ZEITLEISTE.MAX_SEED)
+	assert_eq(zeitleiste.get_difficulty(), Difficulty.Level.SCHWER)
+
+
+func test_der_gewuerfelte_seed_haengt_nicht_am_grad() -> void:
+	# Arrange (FR-008): derselbe globale Zufall vor jedem Start
+	var zeitleiste := await _zeitleiste("catalog_us1_grade", _uhr())
+	var seeds := []
+
+	# Act
+	for grad: Difficulty.Level in [Difficulty.Level.LEICHT, Difficulty.Level.MITTEL,
+			Difficulty.Level.SCHWER]:
+		seed(4711)
+		assert_eq(zeitleiste.start_game(-1, grad), OK)
+		seeds.append(zeitleiste.get_seed())
+
+	# Assert
+	assert_eq(seeds, [seeds[0], seeds[0], seeds[0]], "In jedem Grad derselbe gewürfelte Seed.")
+
+
+func test_unbekannter_grad_wird_abgelehnt_und_das_laufende_spiel_bleibt() -> void:
+	# Arrange (FR-011): ein laufendes Spiel mit Schwer am 01.06.1990
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us1_grade", uhr)
+	assert_eq(zeitleiste.start_game(4711, Difficulty.Level.SCHWER), OK)
+	_vorspulen(uhr, _tag(1990, 6, 1))
+	var laufendes := zeitleiste.run
+	watch_signals(zeitleiste)
+
+	# Act
+	var ergebnis: Error = zeitleiste.start_game(99, 7 as Difficulty.Level)
+
+	# Assert
+	assert_eq(ergebnis, ERR_INVALID_PARAMETER)
+	assert_push_error("Zeitleiste: Den Schwierigkeitsgrad 7 gibt es nicht, bekannt sind Leicht, "
+		+ "Mittel und Schwer. Es beginnt kein neues Spiel.", "Die Meldung nennt den Grad.")
+	assert_same(zeitleiste.run, laufendes, "Das laufende Spiel bleibt.")
+	assert_eq([zeitleiste.get_seed(), zeitleiste.get_difficulty(), zeitleiste.run.today],
+		[4711, Difficulty.Level.SCHWER, _tag(1990, 6, 1)])
+	for signal_name in ["event_fired", "effect_applied", "event_ended", "effect_ended",
+			"entry_skipped"]:
+		assert_signal_not_emitted(zeitleiste, signal_name, "Kein neuer erster Tag.")
+	assert_eq(zeitleiste.start_game(99, -1 as Difficulty.Level), ERR_INVALID_PARAMETER,
+		"Auch −1 ist kein Grad.")
+	assert_push_error("Den Schwierigkeitsgrad -1 gibt es nicht")
+	assert_same(zeitleiste.run, laufendes)
+
+
+func test_fehlerhafte_start_modifikatoren_werden_uebersprungen_und_je_einmal_gemeldet() -> void:
+	# Arrange und Act (US1, Szenario 6; FR-013): In Schwer zeigt der erste Start-Modifikator auf
+	# ein Ereignis, das es nicht gibt, der zweite auf den Lieferengpass mit einer Grundchance über
+	# 100 % (V12), und der dritte gilt.
+	var zeitleiste := await _zeitleiste("catalog_us1_profil_kaputt", _uhr())
+	assert_eq(zeitleiste.start_game(4711, Difficulty.Level.SCHWER), OK)
+
+	# Assert: drei Meldungen, jede genau einmal
+	assert_push_error("Zeitleiste: Ereignis „lieferengpass“, Feld „monthly_chance“: Die "
+		+ "Grundchance von 150 % liegt außerhalb von 0 % bis 100 %. Das Ereignis wird "
+		+ "übersprungen.", "Das fehlerhafte Ereignis.")
+	assert_push_error("Zeitleiste: Profil „Schwer“, Start-Modifikator „geisterereignis“, Feld "
+		+ "„profiles.schwer[0].event_id“: Das Ereignis „gibt_es_nicht“ gibt es im Katalog nicht. "
+		+ "Der Start-Modifikator wird übersprungen.", "Mit Grad, Kennung und Fehlergrund.")
+	assert_push_error("Zeitleiste: Profil „Schwer“, Start-Modifikator „lieferengpass“: Das "
+		+ "Ereignis „lieferengpass“ wird übersprungen, deshalb auch dieser Start-Modifikator.",
+		"Der, der nur wegen seines Ereignisses wegfällt.")
+	assert_push_error_count(3, "Keine Meldung doppelt, auch nicht beim Start.")
+	var kennungen := zeitleiste.run.start_modifiers.map(
+		func(modifikator: ChanceModifier) -> String: return modifikator.id)
+	assert_eq(kennungen, ["reklamationswelle"], "Der dritte gilt.")
+	assert_eq(Array(zeitleiste.run.start_refusals), [], "Der Lauf muss nichts ablehnen.")
+	assert_null(zeitleiste.get_event("lieferengpass"))
+
+
+func test_meldung_zu_einem_profil_bekommt_keinen_zusatz_zum_ereignis() -> void:
+	# Arrange (Analyse, U5): ein Katalog mit einem Ereignis ohne Kennung (V01) und einem Profil für
+	# Mittel. Beide Meldungen haben ein leeres event_id. Bisher bekam deshalb auch die Meldung zum
+	# Profil „Das Ereignis wird übersprungen.“, denn das Ereignis ohne Kennung fällt weg.
+	var daten: Dictionary = JSON.parse_string(
+		FileAccess.get_file_as_string(ORDNER + "catalog_v01_kennung_leer.json"))
+	daten["profiles"] = {"mittel": []}
+	var ordner := "user://test_timeline/"
+	var pfad := ordner + "profil_mittel.json"
+	DirAccess.make_dir_recursive_absolute(ordner)
+	var datei := FileAccess.open(pfad, FileAccess.WRITE)
+	datei.store_string(JSON.stringify(daten, "\t", true))
+	datei.close()
+
+	# Act
+	var zeitleiste := await _zeitleiste(pfad, _uhr())
+	DirAccess.remove_absolute(pfad)
+	DirAccess.remove_absolute(ordner)
+
+	# Assert: Die Meldung zum Profil steht ohne Zusatz da. Alle Meldungen sind erwartet.
+	var zum_profil := []
+	for fehler: GutTrackedError in get_errors():
+		var text := "%s %s" % [fehler.code, fehler.rationale]
+		if text.contains("profiles.mittel"):
+			zum_profil.append(text)
+		fehler.handled = true
+	assert_eq(zum_profil.size(), 1, "Eine Meldung zum Profil für Mittel.")
+	for text: String in zum_profil:
+		assert_false(text.contains("übersprungen"), text)
+	assert_not_null(zeitleiste.run)
 
 
 func test_ereignis_mit_fehler_fehlt_im_lauf_und_wird_gemeldet() -> void:
@@ -251,8 +417,7 @@ func _uhr() -> UHR:
 ## start_game() kommt per call_deferred() erst am Ende des ersten.
 func _zeitleiste(katalog: String, uhr: UHR) -> ZEITLEISTE:
 	var zeitleiste := ZEITLEISTE.new()
-	zeitleiste.catalog_path = katalog if katalog.begins_with("res://") \
-		else ORDNER + katalog + ".json"
+	zeitleiste.catalog_path = katalog if katalog.contains("://") else ORDNER + katalog + ".json"
 	zeitleiste.clock = uhr
 	add_child_autofree(zeitleiste)
 	await wait_process_frames(2)

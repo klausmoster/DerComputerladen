@@ -16,6 +16,10 @@ extends GutTest
 ##
 ## Ändert ein Godot-Update die Würfel, entstehen die Fixtures mit dem Befehl oben neu (R5 von
 ## Feature 002); sonst nie.
+##
+## Seit T010 kennt der Lauf einen Grad. Dieselbe Grundlinie gilt dann für den Lauf ohne Grad, für
+## Mittel ausdrücklich und für Leicht und Schwer mit leerem Profil: Die Übernahme hat keinen
+## Abschnitt profiles, beide Profile sind also leer (SC-007).
 
 const UEBERNAHME := "res://test/fixtures/event_catalog_uebernahme.json"
 const ORDNER := "res://test/fixtures/"
@@ -67,11 +71,49 @@ func test_protokoll_wie_die_grundlinie(seed_wert: int = use_parameters(SEEDS)) -
 	_vergleiche(zeilen, ORDNER + "protokoll_uebernahme_seed_%d.txt" % seed_wert)
 
 
+func test_mittel_ausdruecklich_wie_die_grundlinie(seed_wert: int = use_parameters(SEEDS)) -> void:
+	# Arrange
+	var run := _gespielt(seed_wert, Difficulty.Level.MITTEL)
+
+	# Act
+	var fahrplan := ScheduleText.plan_lines(run)
+	fahrplan.remove_at(0)
+	var protokoll := ScheduleText.protocol_lines(run)
+
+	# Assert
+	assert_eq(run.difficulty, Difficulty.Level.MITTEL)
+	_vergleiche(fahrplan, ORDNER + "fahrplan_uebernahme_seed_%d.txt" % seed_wert)
+	_vergleiche(protokoll, ORDNER + "protokoll_uebernahme_seed_%d.txt" % seed_wert)
+
+
+func test_leeres_profil_wie_die_grundlinie(seed_wert: int = use_parameters(SEEDS)) -> void:
+	for grad: Difficulty.Level in [Difficulty.Level.SCHWER, Difficulty.Level.LEICHT]:
+		# Arrange: Die Übernahme hat keinen Abschnitt profiles, das Profil ist leer.
+		assert_eq(_catalog.get_profile(grad).modifiers.size(), 0, "Das Profil ist leer.")
+		var run := _gespielt(seed_wert, grad)
+
+		# Act
+		var fahrplan := ScheduleText.plan_lines(run)
+		fahrplan.remove_at(0)
+		var protokoll := ScheduleText.protocol_lines(run)
+
+		# Assert
+		assert_eq(run.difficulty, grad)
+		assert_eq(run.start_modifiers.size(), 0)
+		_vergleiche(fahrplan, ORDNER + "fahrplan_uebernahme_seed_%d.txt" % seed_wert)
+		_vergleiche(protokoll, ORDNER + "protokoll_uebernahme_seed_%d.txt" % seed_wert)
+
+
 # --- Helfer -----------------------------------------------------------------------------------
 
-## Ein Lauf mit der Übernahme und [param seed_wert], gespielt bis zum 31.12.1999.
-func _gespielt(seed_wert: int) -> TimelineRun:
-	var run := TimelineRun.new(_catalog, seed_wert)
+## Ein Lauf mit der Übernahme und [param seed_wert], gespielt bis zum 31.12.1999. Ohne
+## [param grad] wie in Feature 002, TimelineRun.new(catalog, seed); mit Grad ausdrücklich.
+func _gespielt(seed_wert: int, grad: int = -1) -> TimelineRun:
+	var run: TimelineRun
+	if grad < 0:
+		run = TimelineRun.new(_catalog, seed_wert)
+	else:
+		run = TimelineRun.new(_catalog, seed_wert, grad as Difficulty.Level)
 	run.advance_to(TimelineRun.LAST_DAY)
 	return run
 

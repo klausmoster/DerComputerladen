@@ -74,10 +74,13 @@ func test_meldung_als_zeile_mit_datum_art_und_text() -> void:
 	meldung.day = _tag(1993, 3, 22)
 	meldung.text = "Intel Pentium erscheint"
 	var arten := ["Beginn", "Ende", "Wirkung", "Wirkungsende", "Entfall", "Kettenabbruch",
-		"Eingriff"]
+		"Eingriff", "Grad"]
 
 	# Act und Assert
 	assert_eq(meldung.to_line(), "22.03.1993  Beginn  Intel Pentium erscheint")
+	assert_eq(TimelineMessage.Kind.size(), arten.size(), "Acht Arten, „Grad“ als achte.")
+	assert_eq(TimelineMessage.Kind.START_MODIFIER, 7,
+		"Die neue Art steht am Ende; die übrigen behalten ihre Nummern (Feature 003, T009).")
 	for art: int in TimelineMessage.Kind.values():
 		meldung.kind = art as TimelineMessage.Kind
 		assert_eq(meldung.to_line(), "22.03.1993  %s  Intel Pentium erscheint" % arten[art])
