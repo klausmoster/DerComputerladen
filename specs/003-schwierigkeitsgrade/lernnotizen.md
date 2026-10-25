@@ -221,3 +221,39 @@ Klaus eine Task selbst, schreibt Claude die Notiz beim Review.
   `%CompareLabel` kürzt mit `text_overrun_behavior` und braucht `mouse_filter = PASS` für den
   Hinweis.
 - **Fehlerprobe:** 19 eingebaute Fehler, alle gefunden.
+
+## Phase 5
+
+### T028 Statistik mit mehreren Graden
+
+- **Zählen erst am Ende des Seeds** (`timeline_statistics.gd`): Ein fertiger Lauf wandert nach
+  `_finished_runs`. Erst wenn alle Grade des Seeds fertig sind, zählt `_count_seed()` jeden in die
+  Zählung seines Grads, und `games_done` steigt. Bricht die Werkstatt ab, gehen die wartenden Läufe
+  verloren, und jeder Grad hat gleich viele Spiele.
+- **Mit nur Mittel** zählt der Seed im selben Schritt wie in Feature 002; die Rechnung bleibt
+  Schritt für Schritt gleich.
+- **Verschachtelte typisierte Arrays:** GDScript kennt kein `Array[Array[EventStatistic]]`.
+  `_statistics` ist deshalb `Array[Array]`, jedes Element ein echtes `Array[EventStatistic]`; den Typ
+  prüft Godot beim Übergeben zur Laufzeit.
+- **Gemessen:** SC-003 mit Mittel 5,601 und Schwer 14,715 Reklamationswellen im Mittel; alle drei
+  Grade mit je 1.000 Spielen auf dem echten Katalog headless in 25,5 s.
+
+### T030 Statistik-Panel mit Grad
+
+- **Die Rechnung entscheidet, nicht die Auswahl** (`_is_comparing()` liest
+  `statistics.difficulties`): Stellt Klaus die Auswahl nach der Rechnung um, gehören Tabelle und
+  Text weiter zum Ergebnis, das dasteht.
+- **Kennung statt Stelle im `OptionButton`:** Das Panel liest `get_selected_id()`; die Kennung ist
+  direkt der Grad, „Alle drei“ hat die Konstante `COMPARE_ALL`. So darf sich die Reihenfolge der
+  Einträge ändern.
+- **Typisierte Arrays:** `TimelineStatistics.new()` erwartet `Array[int]`. `assign()` kopiert in ein
+  typisiertes Array und prüft dabei jedes Element; ein untypisiertes `[]` fiele erst zur Laufzeit
+  auf.
+- **Ein Tree kann seine Spaltenzahl ändern** (`_table.columns = n`): Danach setzt
+  `_set_up_columns()` Titel, Ausrichtung und Breiten neu. Godot verbreitert eine Spalte selbst bis
+  zur Breite ihres Titels; die Breiten in `COMPARE_WIDTHS` sind Untergrenzen.
+- **Ein Schlüssel für „Katalog geändert“:** Er beschreibt den Katalog, mit dem ein neuer Start
+  rechnen würde. Was `without_faulty()` weglässt, hängt auch an den Meldungen, deshalb gehören
+  die weggelassenen Stellen hinein, wie im Simulator.
+- **Gemessen:** „Alle drei vergleichen“ mit 1.000 Spielen auf dem echten Katalog im Fenster 26,6 s;
+  SC-004 erlaubt 90 s.

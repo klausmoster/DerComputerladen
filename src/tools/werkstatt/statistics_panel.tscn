@@ -19,6 +19,26 @@ custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 tooltip_text = "Wie viele Spiele, von 1 bis 100.000. Gerechnet werden die Seeds 1, 2, 3 und so weiter; Enter startet."
 
+[node name="DifficultyCaption" type="Label" parent="InputBar"]
+layout_mode = 2
+text = "Grad"
+
+[node name="DifficultyOption" type="OptionButton" parent="InputBar"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Der Schwierigkeitsgrad der Spiele; seine Start-Modifikatoren gelten ab Spielbeginn.
+„Alle drei vergleichen“ spielt jeden Seed in Leicht, Mittel und Schwer und zeigt die Werte nebeneinander."
+selected = 1
+item_count = 4
+popup/item_0/text = "Leicht"
+popup/item_0/id = 0
+popup/item_1/text = "Mittel"
+popup/item_1/id = 1
+popup/item_2/text = "Schwer"
+popup/item_2/id = 2
+popup/item_3/text = "Alle drei vergleichen"
+popup/item_3/id = 3
+
 [node name="WithInterventions" type="CheckBox" parent="InputBar"]
 unique_name_in_owner = true
 layout_mode = 2

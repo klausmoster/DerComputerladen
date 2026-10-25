@@ -490,7 +490,7 @@ bei Mittel zwischen 4,9 und 5,9, bei Schwer zwischen 13,4 und 15,4 (SC-003).
 
 ### Implementation for User Story 4
 
-- [ ] T028 [A] [US4] `src/core/timeline/timeline_statistics.gd` laut zeitleiste.md, „Statistik“:
+- [x] T028 [A] [US4] `src/core/timeline/timeline_statistics.gd` laut zeitleiste.md, „Statistik“:
   - `difficulties: Array[int]`, „leer heißt nur Mittel“;
   - ein Spiel ist ein Seed, gespielt in jedem Grad der Liste mit denselben Eingriffen. Gezählt
     wird er erst, wenn alle Grade fertig sind, und ein Abbruch verwirft ihn in allen;
@@ -500,9 +500,9 @@ bei Mittel zwischen 4,9 und 5,9, bei Schwer zwischen 13,4 und 15,4 (SC-003).
 
   Tests in `src/test/test_timeline_statistics.gd`: SC-003, US4, Szenarien 2 bis 4, ein Abbruch
   mitten im Seed lässt alle Grade gleich, `results_for()`.
-- [ ] T029 [C] [US4] Den Kern aus T028 prüfen, bevor die Oberfläche beginnt (`docs/ki_dev.md`,
+- [x] T029 [C] [US4] Den Kern aus T028 prüfen, bevor die Oberfläche beginnt (`docs/ki_dev.md`,
   „Ablauf je Feature“, Punkt 4; Analyse, I9). Hängt an T028.
-- [ ] T030 [A] [US4] `src/tools/werkstatt/statistics_panel.tscn` und
+- [x] T030 [A] [US4] `src/tools/werkstatt/statistics_panel.tscn` und
   `src/tools/werkstatt/statistics_panel.gd` laut werkstatt.md, „Statistik“:
   - `%DifficultyOption` mit Leicht, Mittel, Schwer und „Alle drei vergleichen“, Vorgabe Mittel;
     `difficulties` immer als `Array[int]` (Analyse, I2);
@@ -519,7 +519,7 @@ bei Mittel zwischen 4,9 und 5,9, bei Schwer zwischen 13,4 und 15,4 (SC-003).
   - `%ExcludedNotice` mit beiden Arten weggelassener Start-Modifikatoren (G1).
 
   Hängt an T029.
-- [ ] T031 [K] [US4] Phase 5 abnehmen nach quickstart.md, Abschnitte 1 und 4.3, darin SC-004
+- [x] T031 [K] [US4] Phase 5 abnehmen nach quickstart.md, Abschnitte 1 und 4.3, darin SC-004
 
 **Checkpoint**: Alle vier User Stories sind erfüllt. Abnahme durch Klaus, dann Auftrag für die
 letzte Phase.

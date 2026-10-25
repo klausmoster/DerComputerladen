@@ -32,6 +32,14 @@ extends RefCounted
 ## Modifikator auf ein gelöschtes Ereignis lehnt jedes Spiel ab, einen gültigen keins. Was das erste
 ## Spiel annimmt und ablehnt, zählt die Statistik deshalb einmal mit, in [member accepted] und
 ## [member refused].
+##
+## Grade (Feature 003, FR-020; research.md, R15): [member difficulties] nennt die Grade, die die
+## Statistik rechnet, Vorgabe nur Mittel. Ein Spiel ist ein Seed: run_for() spielt ihn erst im
+## ersten Grad der Liste bis zum 31.12.1999, dann im zweiten und so weiter, jeden mit denselben
+## Eingriffen. Gezählt wird der Seed erst, wenn er in allen Graden fertig ist; bis dahin warten
+## die fertigen Läufe in _finished_runs. Bricht die Werkstatt mitten im Seed ab, zählt er in
+## keinem Grad, und jeder Grad hat gleich viele Spiele mit denselben Seeds. Mit nur Mittel ist
+## das genau die Rechnung von Feature 002: ein Lauf je Seed, gezählt, sobald er fertig ist.
 
 ## Die Arten im Eingriffsprotokoll, die sich auf jeden Seed übertragen lassen (R11).
 const SEED_FREE_KINDS: Array[String] = [
@@ -42,26 +50,34 @@ const SEED_FREE_KINDS: Array[String] = [
 
 ## Der Katalog aller Spiele: eine eigene Kopie, ohne fehlerhafte Ereignisse.
 var catalog: EventCatalog
+## Die Grade, die die Statistik rechnet, je ein Wert aus Difficulty.Level, in dieser Reihenfolge.
+## Fest ab _init(), denn dort entsteht je Grad die Zählung.
+var difficulties: Array[int] = [Difficulty.DEFAULT]
 ## Der Seed des ersten Spiels; jedes weitere Spiel hat den nächsten.
 var first_seed: int = 1
 var game_count: int = 1000
-## Wie viele Spiele fertig gerechnet sind.
+## Wie viele Spiele fertig gerechnet sind: Seeds, die in allen Graden der Liste fertig sind.
 var games_done: int = 0
 ## Eingriffsprotokoll aus dem Simulator; angewandt werden nur add_modifier, remove_modifier und
 ## schedule, je Spiel an ihrem at_day über TimelineRun.apply_intervention() (R11, FR-045). Setzen
 ## vor dem ersten run_for(); danach gilt, was das erste Spiel vorgefunden hat.
 var interventions: Array[Dictionary] = []
-## Wie viele Modifikatoren und Einplanungen in jedem Spiel gelten: die, die das erste Spiel
-## angenommen hat. Fertig gezählt, sobald das erste Spiel fertig ist (games_done ≥ 1).
+## Wie viele Modifikatoren und Einplanungen in jedem Spiel gelten: die, die das erste Spiel im
+## ersten Grad der Liste angenommen hat. Fertig gezählt, sobald das erste Spiel fertig ist
+## (games_done ≥ 1).
 var accepted: int = 0
-## Die Modifikatoren und Einplanungen, die das erste Spiel abgelehnt hat und deshalb keins annimmt,
+## Die Modifikatoren und Einplanungen, die das erste Spiel im ersten Grad abgelehnt hat,
 ## in der Reihenfolge des Nachspielens; je { "record": der Eintrag des Protokolls, "reason": der
 ## Grund aus TimelineRun.last_refusal }, etwa „Das Ereignis „reklamationswelle“ gibt es im Katalog
 ## nicht.“ So nennt die Werkstatt sie, statt sie still mitzuzählen (FR-045). Fertig wie accepted.
 var refused: Array[Dictionary] = []
 
-## Das angefangene Spiel; null zwischen zwei Spielen.
+## Der angefangene Lauf; null zwischen zwei Läufen.
 var _run: TimelineRun
+## Die fertigen Läufe des angefangenen Seeds, je einer für die ersten Grade der Liste. Ihr Grad ist
+## difficulties[_finished_runs.size()] für den nächsten Lauf. Gezählt werden sie zusammen, wenn
+## der letzte Grad fertig ist.
+var _finished_runs: Array[TimelineRun] = []
 ## Das ganze Eingriffsprotokoll als Kopien, nach at_day geordnet beim Start des ersten Spiels, und
 ## welcher Eintrag davon im laufenden Spiel als nächster an der Reihe ist. Auch Absagen und
 ## Verschiebungen stehen darin: Sie gelten nicht, aber bis zu ihrem Tag spielt das Spiel ab, wie in
@@ -69,9 +85,10 @@ var _run: TimelineRun
 var _records: Array[Dictionary] = []
 var _records_chosen := false
 var _next_record := 0
-## Je Ereignis die Zählung über die fertigen Spiele, nach Kennung; dazu Kennung → Stelle und an
-## derselben Stelle die Obergrenze, −1 ohne.
-var _statistics: Array[EventStatistic] = []
+## Je Grad an seiner Stelle in difficulties die Zählung über die fertigen Spiele, je Ereignis
+## nach Kennung, als Array[EventStatistic]; dazu Kennung → Stelle und an derselben Stelle die
+## Obergrenze, −1 ohne. Stelle und Obergrenze sind in allen Graden gleich.
+var _statistics: Array[Array] = []
 var _index: Dictionary = {}
 var _limits: PackedInt32Array = PackedInt32Array()
 ## Der Erste jedes Monats von Januar 1985 bis Dezember 1999, dazu der 01.01.2000.
@@ -79,33 +96,46 @@ var _month_starts: PackedInt32Array = PackedInt32Array()
 
 
 ## [param p_catalog] kommt ohne fehlerhafte Ereignisse (siehe oben); die Statistik rechnet
-## [param p_game_count] Spiele mit den Seeds ab [param p_first_seed].
-func _init(p_catalog: EventCatalog, p_game_count: int = 1000, p_first_seed: int = 1) -> void:
+## [param p_game_count] Spiele mit den Seeds ab [param p_first_seed], jedes in den Graden
+## [param p_difficulties]. Leer heißt nur Mittel.
+func _init(p_catalog: EventCatalog, p_game_count: int = 1000, p_first_seed: int = 1,
+		p_difficulties: Array[int] = []) -> void:
 	catalog = p_catalog.duplicate_catalog() if p_catalog != null else EventCatalog.new()
 	game_count = maxi(p_game_count, 0)
 	first_seed = p_first_seed
+	if not p_difficulties.is_empty():
+		difficulties = p_difficulties.duplicate()
 	_month_starts = _first_days_of_months()
 	var by_id: Array[TimelineEvent] = catalog.events.duplicate()
 	by_id.sort_custom(func(a: TimelineEvent, b: TimelineEvent) -> bool: return a.id < b.id)
+	var events: Array[TimelineEvent] = []
 	for event in by_id:
 		# Eine doppelte Kennung (V02) ist ein Fehler und kommt hier nicht an; käme sie doch, zählte
 		# die Statistik beide Ereignisse zusammen.
 		if _index.has(event.id):
 			continue
-		var statistic := EventStatistic.new()
-		statistic.event_id = event.id
-		statistic.title = event.title
-		var limit := upper_limit(event)
-		statistic.games_at_max = 0 if limit >= 0 else -1
-		_index[event.id] = _statistics.size()
-		_statistics.append(statistic)
-		_limits.append(limit)
+		_index[event.id] = events.size()
+		events.append(event)
+		_limits.append(upper_limit(event))
+	for _position in difficulties.size():
+		var statistics: Array[EventStatistic] = []
+		for i in events.size():
+			var statistic := EventStatistic.new()
+			statistic.event_id = events[i].id
+			statistic.title = events[i].title
+			statistic.games_at_max = 0 if _limits[i] >= 0 else -1
+			statistics.append(statistic)
+		_statistics.append(statistics)
 
 
 ## Rechnet weiter, bis [param budget_msec] Millisekunden verbraucht sind: das laufende Spiel Monat
 ## für Monat, dann das nächste (R17). Die Zeit prüft run_for() nach jedem Monat; es kehrt also
 ## höchstens um die Rechenzeit eines Monats später zurück und rechnet auch mit dem Budget 0 einen
 ## Monat. Gibt true zurück, wenn alle Spiele fertig sind.
+##
+## Mit mehreren Graden spielt es den Seed Grad für Grad (siehe oben) und zählt ihn erst nach dem
+## letzten. Ein Budget kann mitten im Seed enden; dann geht es beim nächsten Aufruf im selben Lauf
+## weiter.
 func run_for(budget_msec: int) -> bool:
 	# Time.get_ticks_usec() zählt Mikrosekunden seit dem Programmstart. Für ein Budget von 15 ms ist
 	# das genauer als get_ticks_msec(), das ganze Millisekunden abschneidet.
@@ -115,21 +145,27 @@ func run_for(budget_msec: int) -> bool:
 			_start_game()
 		_play_month()
 		if _run.is_finished():
-			_count_game()
+			_finished_runs.append(_run)
 			_run = null
-			games_done += 1
+			if _finished_runs.size() >= difficulties.size():
+				_count_seed()
+				_finished_runs.clear()
+				games_done += 1
 		if Time.get_ticks_usec() >= deadline:
 			break
 	return games_done >= game_count
 
 
-## Je Ereignis eine EventStatistic über die fertigen Spiele, nach Kennung. Jeder Aufruf liefert neue
-## Objekte; was jemand daran ändert, erreicht die Rechnung nicht.
+## Je Ereignis eine EventStatistic über die fertigen Spiele des ersten Grads der Liste, nach
+## Kennung. Jeder Aufruf liefert neue Objekte; was jemand daran ändert, erreicht die Rechnung nicht.
 func results() -> Array[EventStatistic]:
-	var copies: Array[EventStatistic] = []
-	for statistic in _statistics:
-		copies.append(_copy(statistic))
-	return copies
+	return _copies_of(0)
+
+
+## Wie results(), für den Grad [param level]; leer, wenn er nicht in der Liste steht. Steht er
+## zweimal darin, gilt die erste Stelle.
+func results_for(level: int) -> Array[EventStatistic]:
+	return _copies_of(difficulties.find(level))
 
 
 ## Die Obergrenze eines Ereignisses (FR-044): die Höchstzahl bei Ereignissen über Wahrscheinlichkeit
@@ -147,7 +183,9 @@ static func upper_limit(event: TimelineEvent) -> int:
 
 # --- Ein Spiel --------------------------------------------------------------------------------
 
-## Beginnt das nächste Spiel, mit dem Seed first_seed + games_done. Vor dem ersten Spiel ordnet die
+## Beginnt den nächsten Lauf, mit dem Seed first_seed + games_done und dem nächsten Grad des Seeds,
+## difficulties[_finished_runs.size()]. Jeder Lauf spielt die Eingriffe von vorn nach. Vor dem
+## ersten Spiel ordnet die
 ## Statistik das ganze Eingriffsprotokoll nach at_day, wie beim Neu abspielen einer Probe. Erst
 ## ordnen, dann aussuchen: Ein Eintrag ohne lesbaren Tag gilt so hinter seinem Vorgänger im ganzen
 ## Protokoll, auch wenn der eine Absage ist, die hier nicht gilt (siehe _play_month()).
@@ -155,7 +193,8 @@ func _start_game() -> void:
 	if not _records_chosen:
 		_records = _copies(TimelineRun.in_replay_order(interventions))
 		_records_chosen = true
-	_run = TimelineRun.new(catalog, first_seed + games_done)
+	var level := difficulties[_finished_runs.size()] as Difficulty.Level
+	_run = TimelineRun.new(catalog, first_seed + games_done, level)
 	_next_record = 0
 
 
@@ -181,8 +220,9 @@ func _play_month() -> void:
 		_run.advance_to(at_day)
 		if SEED_FREE_KINDS.has(str(record.get("kind", ""))):
 			var error := _run.apply_intervention(record)
-			# Ob der Lauf ablehnt, hängt nie am Seed (siehe oben); das erste Spiel spricht für alle.
-			if games_done == 0:
+			# Ob der Lauf ablehnt, hängt nie am Seed (siehe oben); das erste Spiel im ersten Grad
+			# spricht für alle (R15).
+			if games_done == 0 and _finished_runs.is_empty():
 				_note(record, error)
 		_next_record += 1
 	_run.advance_to(month_end)
@@ -197,21 +237,28 @@ func _note(record: Dictionary, error: Error) -> void:
 		refused.append({"record": record, "reason": _run.last_refusal})
 
 
-## Zählt das fertige Spiel: je Ereignis die Beginne und das Jahr jedes Beginns.
-func _count_game() -> void:
+## Zählt den fertigen Seed: jeden seiner Läufe in der Zählung seines Grads.
+func _count_seed() -> void:
+	for position in _finished_runs.size():
+		_count_game(_finished_runs[position], _statistics[position])
+
+
+## Zählt das fertige Spiel [param run] in [param statistics]: je Ereignis die Beginne und das Jahr
+## jedes Beginns.
+func _count_game(run: TimelineRun, statistics: Array[EventStatistic]) -> void:
 	var starts := PackedInt32Array()
-	starts.resize(_statistics.size())
+	starts.resize(statistics.size())
 	starts.fill(0)
-	for entry in _run.entries:
+	for entry in run.entries:
 		if not _has_begun(entry):
 			continue
 		var index: int = _index.get(entry.event.id, -1)
 		if index < 0:
 			continue
 		starts[index] += 1
-		_statistics[index].per_year[_year_of(entry.day)] += 1
-	for i in _statistics.size():
-		var statistic := _statistics[i]
+		statistics[index].per_year[_year_of(entry.day)] += 1
+	for i in statistics.size():
+		var statistic := statistics[i]
 		var count := starts[i]
 		if statistic.games == 0 or count < statistic.minimum:
 			statistic.minimum = count
@@ -258,6 +305,16 @@ static func _first_days_of_months() -> PackedInt32Array:
 			days.append(GameDate.new(year, month, 1).to_day_index())
 	days.append(TimelineRun.LAST_DAY + 1)
 	return days
+
+
+## Kopien der Zählung an der Stelle [param position] in difficulties; leer bei −1.
+func _copies_of(position: int) -> Array[EventStatistic]:
+	var copies: Array[EventStatistic] = []
+	if position < 0 or position >= _statistics.size():
+		return copies
+	for statistic: EventStatistic in _statistics[position]:
+		copies.append(_copy(statistic))
+	return copies
 
 
 ## Kopien der Einträge in ihrer Reihenfolge. Ändert der Simulator sein Protokoll während einer

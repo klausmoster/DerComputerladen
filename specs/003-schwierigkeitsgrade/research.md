@@ -603,8 +603,10 @@ beziehen.
     - Nach einem Abbruch zählen nur fertige Seeds. Jeder Grad hat also gleich viele Spiele mit
       denselben Seeds.
   - **Ergebnis:** `results()` liefert wie bisher den ersten Grad der Liste, `results_for()` einen
-    bestimmten. `accepted` und `refused` stammen aus dem ersten Seed im ersten Grad. Sie sind in
-    jedem Grad gleich, weil Eingriffe eine eigene Liste haben (R5).
+    bestimmten. `accepted` und `refused` stammen aus dem ersten Seed im ersten Grad. Ihre Zahl ist in
+    jedem Grad gleich, weil Eingriffe eine eigene Liste haben (R5). Der Grund einer Ablehnung
+    kann je Grad anders lauten, etwa beim Entfernen einer Kennung, die in Schwer ein
+    Start-Modifikator ist; es gilt der des ersten Grads (Phase 5, 2026-10-23).
   - **Oberfläche:** Neben „Anzahl der Spiele“ steht eine Auswahl `%DifficultyOption` mit Leicht,
     Mittel, Schwer und „Alle drei vergleichen“, Vorgabe Mittel wie bisher.
     - Bei einem Grad bleibt die Tabelle, wie sie ist.

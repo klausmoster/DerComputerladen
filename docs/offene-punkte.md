@@ -243,6 +243,32 @@ Auslegungen des Agents, die Claude angenommen hat:
   - Spalten der Proben: Name, Seed, Grad, Stand, Eingriffe.
   - Derselbe Grad noch einmal gewählt baut nicht neu.
 
+### Feature 003, Phase 5, Kern (2026-10-23)
+
+Auslegungen des Agents, die Claude angenommen hat:
+- **Grade nacheinander:** Ein Seed läuft erst ganz in Leicht, dann in Mittel, dann in Schwer. Weil
+  die Würfel nur an Seed, Zweck und Kennung hängen, ändert das kein Ergebnis.
+- **Doppelte oder unbekannte Grade in der Liste** filtert die Statistik nicht; das Panel gibt nur
+  gültige weiter (FR-011).
+- **Grund einer Ablehnung:** Er kommt aus dem ersten Grad. R15 ist dazu präzisiert.
+- **Laufzeit der Tests:** Die Suite braucht jetzt rund 46 statt 31 Sekunden, weil SC-003 drei Grade
+  mit je 1.000 Spielen rechnet.
+
+### Feature 003, Phase 5, Oberfläche (2026-10-25)
+
+- **„Katalog geändert“ in der Statistik (Claudes Entscheidung):** Sie nimmt wie der Simulator die
+  Stellen weggelassener Start-Modifikatoren in den Schlüssel auf, damit beide Werkzeuge im selben
+  Moment „Katalog geändert“ zeigen. Der Vertrag sagte „wie bisher“.
+- Auslegungen des Agents, die Claude angenommen hat:
+  - Der Text während der Rechnung nennt den Grad, etwa „Rechnet 1.000 Spiele je Grad …“.
+  - Während einer Rechnung ist die Auswahl des Grads gesperrt, wie Anzahl und Häkchen.
+  - Beim Vergleich hat jede Zelle einen eigenen Hinweis, nicht nur jede Spalte.
+  - Ob die Tabelle vergleicht, entscheidet die Rechnung, die dasteht, nicht die Auswahl.
+  - In 1280 × 720 rollt die Vergleichstabelle waagerecht.
+- **Bilder:** Am Rechner hing beim Fotografieren nur der eingebaute Bildschirm; die Bilder entstanden
+  bei Faktor 1 in 1920 × 924. Die Breiten sind dieselben wie bei Faktor 2; die Schrift prüft Klaus in
+  T031 am großen Monitor.
+
 ## Erledigt
 
 - **Analyse von Feature 003:** Klaus, 2026-10-22: alle 41 Befunde nach Empfehlung einarbeiten.
