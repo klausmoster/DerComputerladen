@@ -112,7 +112,7 @@ specs/004-neues-spiel/
 ├── checklists/
 │   ├── requirements.md          # Qualitätsprüfung der Spec
 │   └── review.md                # Review der Anforderungen, 36 Punkte, von Klaus freigegeben
-├── tasks.md                     # entsteht mit /speckit-tasks
+├── tasks.md                     # Aufgaben je Phase (/speckit-tasks), T001 bis T035
 └── lernnotizen.md               # entsteht bei der Umsetzung
 ```
 
