@@ -92,10 +92,25 @@ bedient, das von unten hinter der Bedienleiste herausfährt (Tab oder Klick). Em
 Gehäuse um einen festen Inhalt: 1985 ein Zeitplaner nach Art des Filofax, ab 1991 ein
 Organizer wie der Psion Series 3, ab 1996 ein Communicator wie der Nokia 9000 (2.700 DM). Dazu
 kommen Pager (Cityruf 1989, Skyper 1996) als Zusatz. Neue Geräte kauft der Spieler als Ware aus
-dem eigenen Laden. Sie bringen Bequemlichkeit, aber nichts, was man zum Spielen braucht.
+dem eigenen Laden. Sie bringen Bequemlichkeit, aber nichts, was man zum Spielen braucht. Das
+Gerät steuert das Spiel; den Weg zwischen den Orten macht es nicht. Erreichbarkeit (Pager, Handy)
+und Organisation (Zeitplaner, Organizer) sind zwei Stränge, die erst der Communicator vereint
+(Klaus, 2026-10-26).
 
 - Bezug: Bedienleiste im Style-Guide (ihre sechs Knöpfe würden das Gerät auf der passenden Seite
   öffnen); 10-02 Laden-Bildschirm; feste Ereignisse der Zeitleiste schalten die Geräte frei;
   Feature 004: Speichern und „Zum Hauptmenü“ wandern später auf die Seite Ablage.
 - Offen: Gerät neben der Leiste oder an ihrer Stelle? Hält die Uhr an, solange es offen ist?
   LCD-Grün als neue Farbrolle? Echte Namen oder erfundene?
+
+## 2026-10-26 · Erreichbarkeit als Spielelement: Telefon, Anrufbeantworter, Pager
+
+Bis zum Pager klingelt nur das Telefon im Laden. Verpasst du einen Anruf, weißt du nicht, wer es
+war, und eine Lieferanfrage ist weg. Der Anrufbeantworter hilft nur im Laden; mit dem Pager lassen
+sich Anfragen auch unterwegs und hinterher noch lesen, ab 1992 nimmt das Handy Anrufe überall an.
+Erreichbarkeit kostet Gerät und Gebühr und bringt dafür Aufträge (Klaus, 2026-10-26).
+
+- Bezug: [recherche/navigation-taschengeraet.md](recherche/navigation-taschengeraet.md), Nebenidee
+  in Abschnitt 3; Seite Nachrichten im Gerät; 03 Wirtschaftsmodell; 04 Informationssystem
+  (Wissensvorsprung).
+- Offen: Was genau geht verloren, wenn ein Anruf verpasst wird? Ruft jemand wieder an?

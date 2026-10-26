@@ -2,6 +2,9 @@
 
 Stand 2026-10-26. Reine Recherche, nichts gebaut. Für Klaus.
 
+Mit „Navigation“ ist die Bedienung des Spiels gemeint, nicht der Weg zwischen den Orten: Das Gerät
+bringt dich nicht vom Laden zur Bank (Klaus, 2026-10-26).
+
 ## Kurz
 
 Empfehlung: **ein Gerät mit drei Gehäusen.** 1985 ein Zeitplanbuch aus Papier, ab 1991 ein
@@ -10,6 +13,12 @@ Nokia 9000. Alle drei liegen quer und klappen auf, darum passt ein einziger Inha
 drei. Das Gehäuse wechselt, der Inhalt bleibt gleich. Neue Funktionen kommen mit dem neuen Gerät
 und mit Zusätzen wie dem Pager. Das Gerät wird nicht automatisch getauscht. Du kaufst es, denn du
 hast ja einen Computerladen.
+
+Dabei laufen **zwei Stränge** nebeneinander (Klaus, 2026-10-26): **Erreichbarkeit** (Telefon,
+Pager, Handy) und **Organisation** (Zeitplaner, Organizer). Sie haben verschiedene Zwecke, darum
+ersetzt keiner den anderen. Erst der Communicator 1996 vereint beide. Bis zum Pager klingelt nur das
+Telefon im Laden, und ein verpasster Anruf ist verloren. Mit dem Pager lassen sich Lieferanfragen
+auch hinterher noch lesen.
 
 Wichtigster Konflikt: Der Style-Guide hat unten schon die **Bedienleiste** mit sechs Knöpfen
 (Telefon, Lager, Buchhaltung, Zeitung, Kalender, Diskette). Vorschlag: Die Leiste bleibt, und
@@ -25,13 +34,14 @@ Preise in DM nur, wo eine Quelle sie nennt. Sonst steht der Auslandspreis da, al
 
 | Gerät | Erschienen | Aussehen | Bedienung | Konnte | Preis | Als Navigation |
 |---|---|---|---|---|---|---|
-| **Filofax** (Zeitplanbuch, Papier) | seit 1921, Kult in den 80ern | Ringbuch in Leder, farbige Registerlaschen, Einlagen: Kalender, Adressen, Stadtpläne | blättern, schreiben | Termine, Adressen, Notizen, Stadtplan-Einlagen | nicht belegt | **++ für 1985–1990**: Register sind fertige Reiter, Stadtplan-Einlage passt zum Stadtplan |
+| **Filofax** (Zeitplanbuch, Papier) | seit 1921, Kult in den 80ern | Ringbuch in Leder, farbige Registerlaschen, Einlagen: Kalender, Adressen, Stadtpläne | blättern, schreiben | Termine, Adressen, Notizen, Stadtplan-Einlagen | nicht belegt | **++ für 1985–1990**: Register sind fertige Reiter |
 | **Casio Data Bank / Telememo** (Uhr) | ab 1983 | Digitaluhr mit Minitastatur | Minitasten | 10–150 Namen und Nummern, später Weltzeit | nicht belegt | o: Uhr am Handgelenk als Gag, etwa für die Tageszeit |
 | **Psion Organiser II** | 1986 | Ziegel mit Schiebedeckel, 6×6-Tasten, 2 Zeilen à 16 Zeichen | Tasten, Menü in Textzeilen | Datenbank, Kalender, Programmierung (OPL), Steckmodule | UK £82–139, US $210–420; kein DM-Preis gefunden | – als Hauptgerät: zwei Zeilen sind zu wenig. o als Gag |
 | **Casio Digital Diary SF-4000** | 1988 | Taschenrechner zum Aufklappen, 6-Zeilen-LCD | Tasten | Telefonbuch, Notizen, Kalender, Termine, Rechner, „Geheim“-Bereich mit Passwort | nicht belegt | o: Rechner als Zusatz zum Filofax |
 | **Sharp Wizard OZ-7000 / IQ-7000** | 1988/89 (in Europa als IQ-7000) | Klappgerät, 96×64-LCD, Steckkarten | Tasten, Karte über Tastenfeld | Notizen, Telefonbuch, Kalender, Termine, Weltzeit, Rechner | nicht belegt | + als Zwischenstufe möglich |
 | **Atari Portfolio** | Juni 1989 | Klapp-Palmtop, DOS-kompatibel | QWERTZ-Tastatur | Kalender, Adressen, Tabellenkalkulation, Text | US $399,95; kein DM-Preis gefunden | + passt zum Computerladen, Atari war in Deutschland stark |
 | **Cityruf-Pager** (Telekom) | 1989 | Piepser am Gürtel | 1–3 Tasten | Rufnummer oder Kurztext empfangen | Rufempfänger allgemein 90–300 DM | o **als Zusatz ++**: Nachrichten unterwegs |
+| **Handy im D-Netz**, etwa Motorola International 3200 („Knochen“) | D2 30.06.1992, D1 01.07.1992 | Knochen mit Antenne, schwer wie ein halber Liter Milch | Zifferntasten | telefonieren, wo du bist | etwa **3.000 DM**, dazu um 2 DM je Minute | o **als Zusatz ++**: Anrufe unterwegs annehmen |
 | **Psion Series 3** (3a 1993, 3c 1996) | 1991 | flacher Klapp-Organizer, querliegend, Display über Tastatur | QWERTY-Tastatur, Symbolleiste, Menüs | Termine, Datenbank, Tabellenkalkulation, Text, Rechner, Wecker, Weltzeit | UK £179/£249; kein DM-Preis gefunden | **++ für 1991–1996**: quer, aufklappbar, voll ausgestattet |
 | **Apple Newton MessagePad** | August 1993 | Schiefertafel, etwa DIN A5, 400 g | Stift, Handschrifterkennung | Kalender, Kontakte, Notizen, Fax, E-Mail | US $700; kein DM-Preis gefunden | o: hochkant und groß. Gut als Witz über die Handschrifterkennung |
 | **Scall / Quix / TeLMI** (Pager) | Scall 1994, Quix 1995 | kleiner Piepser | wenige Tasten | Rufnummer oder Kurztext | 90–300 DM je Gerät | o als Zusatz |
@@ -73,16 +83,45 @@ dort nicht. Ein Gerät wäre also eine eigene Note.
 
 ## 3. Das Gimmick mit der Zeit
 
-### Drei Gehäuse, eine Seitenstruktur
+### Zwei Stränge: Erreichbarkeit und Organisation
 
-| ab | Gerät (Arbeitsname) | Vorbild | Neu dazu |
+Pager und Organizer haben verschiedene Zwecke, darum ersetzt keiner den anderen (Klaus,
+2026-10-26):
+
+- **Erreichbarkeit:** Die Welt meldet sich bei dir. Ein Pager empfängt, eintragen kannst du nichts.
+- **Organisation:** Du hältst fest, was du weißt. Ein Organizer speichert, von außen erreicht ihn
+  nichts.
+
+| ab | Erreichbarkeit | ab | Organisation |
 |---|---|---|---|
-| 1985 | **Zeitplaner** | Filofax | Termine, Adressen, Notizen, Kassenbuch nur mit Summen, Stadtplan als Einlage, Ablage |
-| 1988 | + Taschenrechner | Casio Digital Diary | Seite Rechner, etwa für Kalkulation von Preisen |
-| 1989 | + **Pager** an der Ringmechanik | Cityruf | Nachrichten unterwegs: „Lieferung da“, „Kunde wartet“ |
-| 1991 | **Organizer** | Psion Series 3 | Lager als Datenbank (sortieren, suchen), Buchhaltung als Tabelle, Erinnerungen per Wecker |
-| 1996 (Okt.) | + Skyper-Abo | Skyper | Branchenmeldungen kommen von selbst, verbunden mit 04 Informationssystem und Wissensvorsprung |
-| 1996 (Aug.) | **Communicator** | Nokia 9000 | Bestellen per Fax von überall, E-Mail ab 1995/96, später Web: Preise der Konkurrenz |
+| 1985 | **Telefon im Laden.** Es klingelt nur, wenn du da bist. Verpasst ist verpasst, du weißt nicht einmal, wer angerufen hat | 1985 | **Zeitplaner** (Filofax): Termine, Adressen, Notizen, Kassenbuch nur mit Summen, Ablage |
+| | | 1988 | + Taschenrechner (Casio Digital Diary): Seite Rechner, etwa für Kalkulation |
+| 1989 | **Pager** (Cityruf): Nachrichten kommen in Echtzeit, auch unterwegs, und lassen sich **hinterher noch lesen**: „Lieferanfrage Großhändler, bis Freitag“ | 1991 | **Organizer** (Psion Series 3): Lager als Datenbank, Buchhaltung als Tabelle, Erinnerungen per Wecker |
+| 1992 | **Handy im D-Netz**, etwa 3.000 DM: Anrufe annehmen, wo du bist, und zurückrufen | | |
+| 1996 (Okt.) | + **Skyper-Abo**, 149 DM: Branchenmeldungen kommen von selbst, verbunden mit 04 Informationssystem und Wissensvorsprung | | |
+| 1996 (Aug.) | **Communicator** (Nokia 9000), 2.700 DM: **beide Stränge in einem Gerät.** Dazu Bestellen per Fax von überall, E-Mail, später Web mit Preisen der Konkurrenz | | ← |
+
+Für die Spielsteuerung heißt das:
+- Gesteuert wird über den Strang **Organisation**: Zeitplaner, Organizer, Communicator. Das sind die
+  drei Gehäuse.
+- Der Strang **Erreichbarkeit** hängt sich nur an: Pager oder Handy sind bis 1996 ein Zusatz neben
+  dem Gerät, angeklemmt oder in der Hemdtasche, und füllen die Seite Nachrichten.
+- **Der Communicator ist der Moment, in dem beides zusammenkommt.** Das war 1996 tatsächlich die
+  Neuheit und gibt im Spiel einen schönen Moment: Du trägst nicht mehr zwei Geräte herum.
+
+### Nebenidee: Erreichbarkeit als Spielelement
+
+Nicht Kern dieser Recherche, die um die Spielsteuerung geht (Klaus, 2026-10-26), aber eine eigene
+Idee für Spielelemente:
+- **Telefon im Laden:** Bis zum Pager klingelt nur das Telefon im Laden. Bist du nicht da oder
+  verpasst du es, weißt du nicht, wer angerufen hat.
+- **Anrufbeantworter:** Im Laden üblich. Abhören geht nur dort, und es hört nur, wer eine Nachricht
+  hinterlässt.
+- **Pager:** Nachrichten kommen in Echtzeit, auch unterwegs, und lassen sich **hinterher noch
+  lesen**, etwa „Lieferanfrage Großhändler, bis Freitag“.
+- **Handy ab 1992:** Anrufe annehmen, wo du bist.
+- Erreichbarkeit kostet Geld und bringt Geschäft: Gerät und Gebühr gegen entgangene Aufträge. Wer
+  erreichbar ist, reagiert schneller auf Ereignisse der Zeitleiste.
 
 Alle drei Hauptgeräte liegen quer und öffnen sich wie ein Buch: Ringbuch, Klappe, Klappe. Darum
 passen sie in denselben Rahmen. Der Palm Pilot steht hochkant und bräuchte eine zweite Anordnung;
@@ -140,11 +179,12 @@ Höchstens acht, wie beim Menü des Style-Guides:
 3. **Lager**: Bestand, Wert (Leistenknopf Lager)
 4. **Kasse**: Konto, Kassenbuch, Bilanz (Leistenknopf Buchhaltung)
 5. **Nachrichten**: Post, Pager, später Fax und E-Mail; Zeitungsausschnitte (Leistenknopf Zeitung)
-6. **Stadtplan**: Ziel wählen und hinfahren; das Ortsbild der Leiste öffnet diese Seite
-7. **Notizen**: frei, oder Hinweise, die die Figur selbst einträgt
-8. **Ablage**: Speichern, Einstellungen, Zum Hauptmenü (Leistenknopf Diskette)
+6. **Notizen**: frei, oder Hinweise, die die Figur selbst einträgt
+7. **Ablage**: Speichern, Einstellungen, Zum Hauptmenü (Leistenknopf Diskette)
 
-Der Leistenknopf Kalender öffnet Termine.
+Der Leistenknopf Kalender öffnet Termine. Einen Stadtplan hat das Gerät nicht: Den Weg zwischen den
+Orten macht es nicht (Klaus, 2026-10-26), das Ortsbild der Leiste bleibt, wie der Style-Guide es
+vorsieht.
 
 ### Maße auf 640 × 360
 
@@ -173,7 +213,7 @@ Der Leistenknopf Kalender öffnet Termine.
   Style-Guides). Nur das Gehäuse drumherum ist ein Bild auf dem Bildraster, je Gerät eins.
 - Inhalt: 192 Höhe bei 14 Zeilenhöhe ergibt 13 Zeilen. Reiter stehen je nach Gerät links als
   Register (Zeitplaner), oben als Symbolleiste (Organizer) oder als Funktionstasten rechts
-  (Communicator). Sie zeigen jeweils dieselben acht Seiten.
+  (Communicator). Sie zeigen jeweils dieselben sieben Seiten.
 
 ### Grobe Mockups
 
@@ -186,9 +226,9 @@ Der Leistenknopf Kalender öffnet Termine.
  │ Mo 17  Bank, 10 Uhr       │o│ 09:00 Laden auf         ├─┤ Lager
  │ Di 18  ▶ Lieferung Mäuse  │o│ 11:00 Lieferung, 12 Mäuse│ │ Kasse
  │ Mi 19                     │o│ 14:30 Herr Kowalski,    ├─┤ Nachrichten
- │ Do 20  Miete fällig       │o│       will einen 286er  ├─┤ Stadtplan
- │ Fr 21                     │o│                         ├─┤ Notizen
- │                           │o│                         ├─┤ Ablage
+ │ Do 20  Miete fällig       │o│       will einen 286er  ├─┤ Notizen
+ │ Fr 21                     │o│                         ├─┤ Ablage
+ │                           │o│                         │ │
  ╰───────────────────────────┴o┴─────────────────────────┴─╯
 ```
 
@@ -203,7 +243,7 @@ Der Leistenknopf Kalender öffnet Termine.
  │ │   Maus seriell       22    24,90    547,80   │ │
  │ │   Festplatte 40 MB    3   449,00  1.347,00   │ │
  │ │ ─────────────────────────────────────────── │ │
- │ │ [Termine][Adress][LAGER][Kasse][Nachr][Plan] │ │
+ │ │ [Termine][Adress][LAGER][Kasse][Nachr][Ablage│ │
  │ └──────────────────────────────────────────────┘ │
  ├══════════════════ Scharnier ═════════════════════┤
  │ ▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫ Tastatur ▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫ │
@@ -219,7 +259,7 @@ Der Leistenknopf Kalender öffnet Termine.
  │   Mail Kunde Brandt: „Läuft Windows 95?“      │Lager │
  │   Ruf  Bank: bitte zurückrufen                │Kasse │
  │                                               │Nachr.│
- │ [Antworten] [Bestellen] [Löschen]             │Plan  │
+ │ [Antworten] [Bestellen] [Löschen]             │Ablage│
  ├══════════════════════════════════════════════╧══════┤
  │ ▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫ Tastatur ▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫▫ │
  └─────────────────────────────────────────────────────┘
@@ -253,10 +293,8 @@ Abschnitt Sprache geprüft.
    sie weiter?
 4. **Esc im Spiel:** schließt das Gerät; ist es zu, öffnet Esc dann ein Pausenmenü oder die Seite
    Ablage?
-5. **Navigation zwischen Orten:** Stadtplan als Seite im Gerät (Empfehlung) oder als eigener
-   Bildschirm, wie heute im Style-Guide?
-6. **LCD-Farbe:** neue Farbrolle oder mit den vorhandenen 15 auskommen?
-7. **Namen:** Arbeitsnamen, erfundene Marken oder leicht verfremdete echte?
+5. **LCD-Farbe:** neue Farbrolle oder mit den vorhandenen 15 auskommen?
+6. **Namen:** Arbeitsnamen, erfundene Marken oder leicht verfremdete echte?
 
 ### Risiken
 
@@ -300,6 +338,7 @@ Abschnitt Sprache geprüft.
 - Atari Portfolio: [Wikipedia](https://en.wikipedia.org/wiki/Atari_Portfolio)
 - Apple Newton: [Macwelt](https://www.macwelt.de/article/989533/30-jahre-newton-message-pad-das-gescheitere-handheld.html), [Wikipedia](https://en.wikipedia.org/wiki/MessagePad)
 - Palm Pilot: [bild der wissenschaft 1997](https://wissenschaft.de/artikel/us-robotics-pilot-5000-der-ultimative-terminkalender), [Computerwoche](https://www.computerwoche.de/article/2600609/die-evolution-der-palm-geraete.html)
+- D-Netz und Handy 1992: [Computerwoche](https://www.computerwoche.de/article/2704736/funkstille-war-einmal.html), [techbook](https://www.techbook.de/connectivity/mobilfunk/mobilfunknetze-deutschland-geschichte), [teltarif](https://www.teltarif.de/15-jahre-mobilfunk)
 - Nokia 9000: [Tagesspiegel](https://www.tagesspiegel.de/wirtschaft/2700-d-mark-kostete-das-weltweit-erste-smartphone-5226007.html), [ZDFheute](https://www.zdfheute.de/wirtschaft/nokia-9000-communicator-smartphone-geschichte-handy-100.html), [GSMArena](https://m.gsmarena.com/nokia_9000_communicator-16.php)
 - Pager: [bild der wissenschaft zu Skyper 1997](https://wissenschaft.de/artikel/skyper-das-weltgeschehen-in-der-hosentasche), [dewiki Scall](https://dewiki.de/Lexikon/Scall), [dewiki Quix](https://dewiki.de/Lexikon/Quix), [teltarif Paging](https://www.teltarif.de/i/paging.html), [teltarif 2000](https://www.teltarif.de/arch/2000/kw30/s2637.html)
 - Filofax: [Filofax, Geschichte](https://filofax.com/about), [Wikipedia Yuppie](https://en.wikipedia.org/wiki/Yuppie)
