@@ -72,3 +72,14 @@ Preise gegen die game_bible. Was sich messen lässt, prüfen Tests.
   Die beiden Konzepte dazu sind darin aufgegangen und stehen in der Git-Geschichte.
 - Entschieden (Klaus, 2026-10-22): Die Prüfer gelten ab dem Pilot im nächsten Feature nach 003,
   auch für Werkzeuge. Den Maßstab für den Sprach-Prüfer gibt der Abschnitt „Sprache“ im Style-Guide.
+
+## 2026-10-26 · Communicator aus dem jeweiligen Jahr
+
+Das Spiel wird über einen Communicator verwaltet, und der sieht immer aus wie ein Gerät, das es im
+Spieljahr gab: 1985 vielleicht ein Filofax oder Taschenrechner, später ein Psion Organiser, ab 1996
+ein Palm Pilot. Ein lustiges Detail, das die Zeit spürbar macht.
+
+- Bezug: Feature 004, Spielbildschirm (heute nur ein Knopf „Zum Hauptmenü“); 10 Präsentation & UI;
+  Idee von Klaus in clarify zu Feature 004.
+- Offen: Was verwaltet er (Menü, Termine, Nachrichten, Speichern)? Wechselt das Gerät von selbst
+  mit dem Jahr oder kauft der Spieler ein neues? Echte Gerätenamen oder leicht verfremdet?

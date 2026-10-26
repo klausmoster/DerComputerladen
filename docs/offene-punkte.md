@@ -12,6 +12,22 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 004, Spec (2026-10-26)
+
+Eigene Festlegungen von Claude in `specs/004-neues-spiel/spec.md`, die nicht aus Klaus' Antworten
+folgen. Klaus bestätigt sie oder ändert sie, spätestens mit dem Plan:
+- **Esc auf dem Spielbildschirm löst nichts aus** (FR-020), damit niemand versehentlich das Spiel
+  verlässt; raus geht es nur über den Knopf „Zum Hauptmenü“.
+- **Name „Spiel N“ mit N = größte vorhandene Nummer + 1** (FR-009): Nach „Spiel 1“ und „Spiel 3“
+  kommt „Spiel 4“; nach dem Löschen aller Spielstände beginnt es wieder bei „Spiel 1“.
+- **Löschmodus** (FR-017a): erkennbar an der Kopfzeile; er endet nach dem Löschen, nach
+  Abbrechen in der Rückfrage, mit „Zurück“ und Esc. Ist die Liste danach leer, geht es von selbst
+  ins Hauptmenü. Die Rückfrage hat „Abbrechen“ vorgewählt (FR-017).
+- **Nur beschädigte Spielstände machen „Spiel laden“ verfügbar** (FR-002), damit man sie löschen
+  kann; „Weiterspielen“ nimmt nur fortsetzbare.
+- **Kein Speichern während des Spiels** (Annahmen): Solange die Uhr steht, gibt es zwischen
+  Anlegen und Verlassen nichts zu verlieren.
+
 ### Phase 12 von Feature 002 (2026-10-21)
 
 - **Vier Zeilen in den Tabellen (T101):** Mit der neuen Vorgabe zeigen Statistik mit Warnung und
