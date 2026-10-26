@@ -67,16 +67,29 @@ FR-049).
 ## R3 Sicher speichern: neu schreiben, prüfen, dann tauschen
 
 **Entscheidung:** Gespeichert wird in fünf Schritten, alle im Ordner der Spielstände:
-1. den neuen Stand vollständig nach `spiel_2.json.neu` schreiben und schließen;
-2. `spiel_2.json.neu` wieder lesen und prüfen, ob er derselbe Spielstand ist; sonst Abbruch mit
-   Meldung, und nichts am alten Stand ist berührt;
-3. den alten Stand `spiel_2.json` in `spiel_2.json.alt` umbenennen, falls es ihn gibt;
+1. eine übrig gebliebene `spiel_2.json.neu` löschen, dann den neuen Stand vollständig nach
+   `spiel_2.json.neu` schreiben und schließen;
+2. `spiel_2.json.neu` wieder lesen und prüfen: Der Text ist Zeichen für Zeichen gleich
+   `to_json()`. Sonst Abbruch mit Meldung, und nichts am alten Stand ist berührt;
+3. eine übrig gebliebene `spiel_2.json.alt` löschen, dann den alten Stand `spiel_2.json` in
+   `spiel_2.json.alt` umbenennen, falls es ihn gibt;
 4. `spiel_2.json.neu` in `spiel_2.json` umbenennen;
 5. `spiel_2.json.alt` löschen.
 
-Gelesen wird je Nummer die erste lesbare Datei in der Reihenfolge `spiel_2.json`,
-`spiel_2.json.neu`, `spiel_2.json.alt`. Das nächste Speichern räumt übrig gebliebene `.neu` und
-`.alt` dieser Nummer weg.
+Schlägt das Löschen in Schritt 1 oder 3 fehl, bricht das Speichern ab, wie bei jedem anderen
+Schritt. Ein Ordner an der Stelle einer Zwischendatei lässt sich nur löschen, wenn er leer ist; die
+Tests nehmen deshalb einen Ordner mit Inhalt (Analyse, C5).
+
+**Lesen:** Je Nummer gilt (Analyse, B2):
+- Ist `spiel_2.json` fortsetzbar oder **zu neu**, gilt sie. Ein zu neuer Spielstand fällt nie auf
+  eine ältere Zwischendatei zurück; sonst überschriebe das nächste Speichern den neueren Stand.
+- Ist `spiel_2.json` beschädigt oder fehlt sie, gilt die erste fortsetzbare von `spiel_2.json.neu`
+  und `spiel_2.json.alt`. Das ist der Fall nach einem Absturz in Schritt 3 bis 5; das nächste
+  Speichern schreibt dann eine neue `spiel_2.json`.
+- Ist keine fortsetzbar, gilt der Zustand von `spiel_2.json`, ohne sie der von `.alt`. Eine allein
+  stehende `.neu`, die nicht fortsetzbar ist, ergibt keinen Spielstand (data-model.md).
+
+„Lesbar“ heißt in diesem Abschnitt immer „fortsetzbar“ im Sinn von R10.
 
 **Grund:** FR-011 und die Edge Cases verlangen: Ein Abbruch mittendrin lässt den vorigen Stand
 lesbar, und es entsteht nie eine halb geschriebene Datei an seiner Stelle. Was jeder Abbruch
@@ -108,8 +121,13 @@ Spielstand gehören, plus 1, auch unter beschädigten, zu neuen und übrig gebli
 `.alt`. Ohne solche Dateien ist es 1 (FR-009).
 
 Ein neues Spiel schreibt nur unter einer Nummer, zu der es noch keine Datei gibt; findet es dort
-eine, nimmt es die nächste. So überschreibt auch ein zweites Fenster des Spiels, das zur selben Zeit
-ein Spiel anlegt, kein anderes (Checkliste, CHK002).
+eine, nimmt es die nächste. So weicht ein zweites Fenster einer schon angelegten Nummer aus
+(Checkliste, CHK002).
+
+Das ist eine Prüfung vor dem Schreiben, kein atomarer Vorgang: Legen zwei Fenster im selben
+Augenblick ein Spiel an, können beide die Prüfung bestehen. Das Ausweichen verringert den
+Zusammenstoß, schließt ihn aber nicht aus; zwei Fenster gleichzeitig sind kein Fall für dieses
+Feature (Analyse, F10).
 
 **Grund:** Zählen auch beschädigte und zu neue Spielstände mit, überschreibt ein neues Spiel nie
 einen davon (FR-013). Der Name in der Datei ist der, den die Liste zeigt: Hat der Laden später
@@ -128,7 +146,9 @@ wandern aus `WhatIfProbe` in den Kern:
 - `TimelineRun.replay(records, until_day)` spielt die Einträge nach `in_replay_order()` nach und
   dann bis `until_day`; zurück kommen die Einträge, die sich nicht anwenden ließen, mit Grund.
 - `InterventionFile` (neu, `src/core/timeline/intervention_file.gd`) rechnet Tage in Einträgen um,
-  Tagesindex in „JJJJ-MM-TT“ und zurück, und erkennt ein falsches Datum.
+  Tagesindex in „JJJJ-MM-TT“ und zurück, und erkennt ein falsches Datum. Mit ihm ziehen die Hilfen
+  um, die dafür nötig sind, `is_whole_number()` und `shown()`; `WhatIfProbe` ruft auch sie dort
+  auf, statt eigene zu behalten (Analyse, C12).
 
 `WhatIfProbe.build_run()` und `read_file()`/`write_file()` rufen diese Hilfen auf. Was die Werkstatt
 zeigt und schreibt, bleibt Zeichen für Zeichen gleich; die Tests der Proben laufen unverändert.
@@ -181,6 +201,13 @@ es gehört, und die Wege hinein und hinaus. `start_new()`, `resume()`, `save()` 
 setzen Uhr und Zeitleiste und schreiben über `SaveStore` (R3). Es kennt Uhr, Zeitleiste und Ordner
 über Felder, die Tests vorher setzen, wie `Timeline.clock` heute.
 
+Beim Anlegen würfelt `GameSession` den Seed selbst, schreibt erst den Spielstand und ruft dann
+`Timeline.start_game(seed, difficulty)` auf (Analyse, C6). Scheitert das Speichern, hat die
+Zeitleiste so keine Meldung für ein Spiel gesendet, das es nie gab. Die Meldungen des 01.01.1985
+kommen damit noch während der Titel zu sehen ist; Abnehmer, die erst mit dem Spielbildschirm
+entstehen, fragen laufende Termine mit `running_entries()` ab (Feature 002, R12). Gewürfelt wird mit
+einem eigenen `RandomNumberGenerator` als Feld, den Tests mit festem Seed setzen (Analyse, C4).
+
 **Grund:** Das Spiel wechselt zwischen zwei Szenen, Titel und Spielbildschirm. Was das laufende
 Spiel ist, muss den Wechsel überleben; das tut ein Autoload. Außerdem muss das Spiel beim Schließen
 des Fensters speichern, egal welche Szene gerade läuft (R8). Die Szenen bleiben schlank: Sie
@@ -229,7 +256,8 @@ in der Liste weiter unten, obwohl es zuletzt gespielt wurde.
 **Entscheidung:** Die Liste liest jede Datei ganz und prüft sie. Ein Spielstand ist:
 - **zu neu**, wenn `"format"` eine ganze Zahl größer als 1 ist; weiter wird dann nichts geprüft;
 - **beschädigt**, wenn die Datei kein gültiges JSON-Objekt ist, `"format"` fehlt oder kleiner als 1
-  ist, ein Pflichtfeld fehlt oder den falschen Typ hat, der Grad unbekannt ist, der Seed außerhalb
+  ist, ein Pflichtfeld fehlt oder den falschen Typ hat (alle Schlüssel aus data-model.md,
+  „SaveGame“; ein leerer Name zählt wie ein fehlender), der Grad unbekannt ist, der Seed außerhalb
   von 0 bis 2.147.483.647 liegt, das Spieldatum außerhalb vom 01.01.1985 bis 31.12.1999, ein
   Zeitpunkt nicht lesbar ist, ein Eingriff ein falsches Datum hat oder sich der Katalog gar nicht
   lesen lässt;
@@ -237,8 +265,9 @@ in der Liste weiter unten, obwohl es zuletzt gespielt wurde.
   beim Fortsetzen weg (R2).
 
 Jeder Grund ist ein kurzer deutscher Satz für den Hinweis, höchstens zwei Zeilen, ohne Englisch der
-Engine, etwa „Unbekannter Schwierigkeitsgrad „extrem“.“ Die genaue Stelle, etwa die Zeile im JSON,
-kommt zusätzlich mit `push_warning()` ins Protokoll.
+Engine und ohne Werte aus der Datei, etwa „Der Schwierigkeitsgrad ist unbekannt.“ Ein Wert aus der
+Datei könnte beliebig lang sein und den Hinweis sprengen (Analyse, B4). Die genaue Stelle und der
+Wert, etwa die Zeile im JSON oder „extrem“, kommen zusätzlich mit `push_warning()` ins Protokoll.
 
 **Grund:** FR-013 und die Edge Cases. Ein Eingriff mit falschem Datum ist anders als bei Proben ein
 Schaden: Die Probe ist ein Werkzeug, das Klaus von Hand bearbeitet; einen Spielstand schreibt nur
@@ -258,21 +287,23 @@ keiner.
 **Entscheidung:** Gradwahl, Liste und Rückfrage sind Blätter Endlospapier an der Stelle des
 Hauptmenüs (FR-023). Es ist immer genau ein Blatt zu sehen. Alle hängen oben bei y 150 wie das
 Hauptmenü und schließen rechts bei x 616 ab; der Hinweis steht wie bisher links neben der gewählten
-Zeile (Claude, 2026-10-26). Gemessen:
+Zeile (Claude, 2026-10-26). Die Maße hier sind Messungen für den Platz; maßgeblich werden sie erst,
+wenn T001 sie in den Style-Guide einträgt und Klaus sie freigibt. Verträge und Tasks verweisen dann
+auf den Style-Guide (Verfassung, Grundsatz IV; Analyse, D1). Gemessen:
 
 | Blatt | Kopfzeile | Einträge | Breite | Höhe | Lage |
 |---|---|---|---|---|---|
 | Hauptmenü | HAUPTMENÜ | Weiterspielen, Neues Spiel, Spiel laden, Einstellungen, Beenden | 144 | 120 | x 472–616, y 150–270 |
 | Gradwahl | SCHWIERIGKEIT (90 breit) | Leicht, Mittel, Schwer, Zurück | 144 | 100 | x 472–616, y 150–250 |
-| Spielstände | SPIELSTÄNDE, im Löschmodus WELCHES LÖSCHEN? (111) | bis zu 6 Spielstände, Löschen …, Zurück | 296 | bis 180 | x 320–616, y 150–330 |
+| Spielstände | SPIELSTÄNDE, im Löschmodus WELCHES LÖSCHEN? (111) | bis zu 6 Spielstände, Löschen …, Zurück | 304 | bis 180 | x 312–616, y 150–330 |
 | Rückfrage | LÖSCHEN? | Abbrechen, Spiel 2 löschen | 144 | 60 | x 472–616, y 150–210 |
 
 Die Zeilen tragen Text ab 24 vom Rand des Papiers (Lochrand 8, Abstand 4, Pfeil 12) und lassen
 rechts 12 frei. Im Hauptmenü sind also 108 für Text da; der längste Eintrag „Weiterspielen“ ist 73
-breit, „Spiel 999 löschen“ 99. Das Blatt Spielstände reicht links bis x 320 und bleibt damit 24
-rechts vom Logo (bis x 296). Die Unterkante samt Schatten liegt bei 332; die Versionszeile steht
-links und stört nicht. Ein Hinweis mit zwei Zeilen ist 38 hoch; neben der untersten Zeile („Zurück“
-bei y 310) endet er samt Schatten bei 350, innerhalb der 360.
+breit, „Spiel 9999 löschen“ 103. Das Blatt Spielstände reicht links bis x 312 und bleibt damit 16
+rechts vom Logo (bis x 296), genau `raster-16`. Die Unterkante samt Schatten liegt bei 332; die
+Versionszeile steht links und stört nicht. Ein Hinweis mit zwei Zeilen ist 38 hoch; neben der
+untersten Zeile („Zurück“ bei y 310) endet er samt Schatten bei 350, innerhalb der 360.
 
 **Grund:** Ein Blatt an derselben Stelle wirkt wie ein neuer Ausdruck aus demselben Drucker; der
 Blick muss nicht wandern. Das breite Blatt braucht die Breite für vier Spalten (R12).
@@ -284,27 +315,33 @@ Blick muss nicht wandern. Das breite Blatt braucht die Breite für vier Spalten 
 
 ## R12 Die Liste der Spielstände
 
-**Entscheidung:** Jede Zeile hat vier Spalten mit festen Anfängen, gemessen in Ark Pixel 12:
-Name (bis „Spiel 999“, 51, Spalte 56), Grad (bis „Schwer“, 38, Spalte 44), Spieldatum
-(„14.03.1986“, 56, Spalte 64) und zuletzt gespielt („26.10.2026 21:40“, 90). Zusammen 254; mit den
-Rändern ergibt das 296. Der Hinweis der Zeile nennt „zuletzt gespielt“ ausgeschrieben: „Zuletzt
-gespielt am 26.10.2026 um 21:40 Uhr.“ (Claude, 2026-10-26).
+**Entscheidung:** Jede Zeile hat vier Spalten mit festen Anfängen, gemessen in Ark Pixel 12: Name
+(bis „Spiel 9999“, 57, Spalte 64), Grad (bis „Schwer“, 38, Spalte 44), Spieldatum („14.03.1986“, 56,
+Spalte 64) und zuletzt gespielt („26.10.2026 21:40“, 90). Die Spalten beginnen also bei 0, 64, 108
+und 172 ab dem Text der Zeile; zusammen 262. Mit 24 links, 6 Luft und 12 rechts ergibt das 304
+(Analyse, F9, B4). Nummern ab 10.000 passen nicht mehr in die Spalte; der Name wird dann mit „…“
+gekürzt. Der Hinweis der Zeile nennt „zuletzt gespielt“ ausgeschrieben: „Zuletzt gespielt am
+26.10.2026 um 21:40 Uhr.“ (Claude, 2026-10-26).
 
 Weitere Regeln:
 - **Ordnung:** fortsetzbare nach „zuletzt gespielt“, das jüngste oben; bei Gleichstand die höhere
   Nummer zuerst. Darunter die nicht fortsetzbaren nach Nummer absteigend (Claude, 2026-10-26).
-- **Nicht fortsetzbar:** Name wie immer, in den übrigen Spalten „beschädigt“ oder „neuere
-  Version“, alles gedämpft wie ein nicht verfügbarer Eintrag. Der Hinweis nennt den Grund (R10).
-  Wählen geht, fortsetzen nicht; im Löschmodus lässt sich die Zeile löschen (FR-017a).
+- **Nicht fortsetzbar:** Name wie immer, in den Spalten Grad und Spieldatum zusammen „beschädigt“
+  oder „neuere Version“ (81 breit, Platz 108), alles gedämpft wie ein nicht verfügbarer Eintrag. Der
+  Hinweis nennt den Grund (R10). Wählen geht, fortsetzen nicht; im Löschmodus lässt sich die Zeile
+  löschen (FR-017a).
 - **Rollen:** Zu sehen sind höchstens 6 Spielstände. Gibt es mehr, rollt die Liste mit der Auswahl
   und mit dem Mausrad zeilenweise; „Löschen …“ und „Zurück“ bleiben immer unten stehen. Ein kleines
-  Dreieck rechts in der ersten oder letzten sichtbaren Zeile zeigt, dass oben oder unten mehr steht.
+  Dreieck rechts in der Kopfzeile zeigt, dass oben mehr steht, eins rechts in der Zeile „Löschen …“,
+  dass unten mehr steht. Dort stört es keine Spalte (Analyse, F9); Maß und Farbe legt der
+  Style-Guide fest (T001).
   Gebaut wird das als Fenster aus sechs Zeilen, deren Inhalt wechselt, nicht als `ScrollContainer`:
   So bleiben das Zebra der Zeilen und jede Zeile ganz, ohne Rollbalken.
 - **Löschmodus:** „Löschen …“ schaltet ihn ein. Die Kopfzeile lautet dann WELCHES LÖSCHEN?, der
-  Hinweis jeder Zeile „Spiel 2 wird gelöscht. Vorher fragt das Spiel nach.“ „Löschen …“ ist im
-  Modus nicht verfügbar; sein Hinweis sagt, wie es weitergeht (Claude, 2026-10-26). Der Modus endet
-  wie in FR-017a.
+  Hinweis jeder Zeile „Spiel 2 wird gelöscht. Vorher fragt das Spiel nach.“ „Löschen …“ ist im Modus
+  nicht verfügbar; sein Hinweis sagt, wie es weitergeht (Claude, 2026-10-26). „Zurück“ beendet im
+  Löschmodus nur den Modus, wie Esc, und sein Hinweis lautet dann „Nicht löschen. Esc geht auch.“
+  (Analyse, F3). Der Modus endet wie in FR-017a.
 
 **Grund:** FR-015 verlangt alle vier Angaben je Spielstand. Spalten machen sie vergleichbar; in
 einer Proportionalschrift stehen sie nur mit festen Anfängen untereinander. Die Liste hat keine
@@ -338,7 +375,10 @@ nicht in eine Zeile des Menüs.
 **Entscheidung:** Die Rückfrage ist ein Blatt mit der Kopfzeile LÖSCHEN? und den Einträgen
 „Abbrechen“ (vorgewählt) und „Spiel 2 löschen“. Die Hinweise nennen Name, Grad und Spieldatum:
 „Spiel 2, Schwer, 14.03.1986, bleibt. Esc geht auch.“ und „Spiel 2, Schwer, 14.03.1986, ist danach
-weg. Für immer.“ (Checkliste, CHK031) „Abbrechen“ übernimmt die Rolle von „Zurück“ aus FR-023; Esc wirkt genauso
+weg. Für immer.“ (Checkliste, CHK031) Bei einem nicht fortsetzbaren Spielstand steht statt Grad und
+Spieldatum sein Zustand, „beschädigt“ oder „neuere Version“: „Spiel 3, beschädigt, bleibt. Esc geht
+auch.“ und „Spiel 3, neuere Version, ist danach weg. Für immer.“ (Analyse, C9; alle gemessen auf
+zwei Zeilen). „Abbrechen“ übernimmt die Rolle von „Zurück“ aus FR-023; Esc wirkt genauso
 (Claude, 2026-10-26).
 
 **Grund:** FR-017 verlangt die Rückfrage mit Name, Grad und Spieldatum und „Abbrechen“ vorgewählt;
@@ -360,7 +400,8 @@ Hinweis wie im Menü: „Speichert Spiel 2 und führt ins Hauptmenü.“ Enter u
 Esc nichts (FR-020). Der Knopf wird ein eigener, wiederverwendbarer Baustein `Knopf` unter
 `src/ui/` (Claude, 2026-10-26).
 
-Knopf mit Rändern 8 und Text „Zum Hauptmenü“ (83) ist 101 breit und 20 hoch; in der Mitte steht er
+Knopf mit Innenabstand 8 links und rechts, Kontur 1 auf jeder Seite und Text „Zum Hauptmenü“
+(83) ist 8 + 83 + 8 + 2 = 101 breit und 20 hoch; in der Mitte steht er
 bei x 270–371, y 170–190. Der Hinweis mit zwei Zeilen reicht links bis x 106.
 
 **Grund:** Der Spielbildschirm ist ein Platzhalter (FR-019). Der Hinweis nennt das laufende Spiel,
@@ -368,8 +409,8 @@ so sieht Klaus bei der Abnahme, welches Spiel geladen ist, ohne dass der Bildsch
 die Spec erlaubt. Den Knopf braucht später jedes Fenster; deshalb gleich als Baustein.
 
 Auf `nacht` ist die Fokuslinie in `tusche` aus dem Style-Guide nicht zu sehen (Kontrast 1,1 : 1;
-`papier` auf `nacht` hat 13,7 : 1). Vorschlag für den Style-Guide: Auf dunklem Grund ist die Fokuslinie `papier`. Das kommt vor dem
-Bauen in den Style-Guide (Grundsatz IV, R17).
+`papier` auf `nacht` hat 13,7 : 1). Vorschlag für den Style-Guide: Auf dunklem Grund ist die
+Fokuslinie `papier`. Das kommt vor dem Bauen in den Style-Guide (Grundsatz IV, R17).
 
 **Verworfen:**
 - Der Knopf unten rechts wie später in der Bedienleiste: Neben ihm reicht der Platz nach unten
@@ -395,7 +436,12 @@ Bauen in den Style-Guide (Grundsatz IV, R17).
   höchstens einer Sekunde fortgesetzt (Checkliste, CHK024).
 - SC-004: je Fehlerfall ein Test mit einer kaputten Datei als Fixture oder im Testordner erzeugt;
   ein Speichern, das scheitert, entsteht ohne Hilfe im Code: Liegt dort, wo die `.neu` hin soll, ein
-  Ordner, lässt sie sich nicht schreiben.
+  Ordner mit Inhalt, lässt sie sich weder löschen noch schreiben. Ebenso scheitert Löschen, wenn an
+  der Stelle von `spiel_N.json` ein Ordner mit Inhalt liegt (Analyse, E2).
+- FR-022 über `GameSession`: ein Spiel anlegen, den Katalog der Zeitleiste gegen einen anderen
+  tauschen, fortsetzen; der Fahrplan ist der des gespeicherten Katalogs (Analyse, E1).
+- Zwei Fenster: Eine Datei mit der nächsten Nummer liegt schon da, bevor `start_new()` schreibt;
+  das neue Spiel weicht auf die übernächste aus (Analyse, C4).
 
 Als Katalog dienen die eingefrorenen Test-Kataloge unter `src/test/fixtures/`, nie der echte. Jeder
 Test schreibt in einen eigenen Ordner unter `user://`, etwa `user://test_spielstaende/`, und räumt

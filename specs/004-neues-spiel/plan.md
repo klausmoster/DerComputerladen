@@ -74,8 +74,10 @@ Stichtag zu Stichtag, „Bis zum Ende“ dauerte in Feature 002 21 ms.
 
 **Scale/Scope**: drei neue Kernklassen, ein neues Autoload, eine neue Hilfsklasse für Eingriffe;
 geändert `Timeline`, `GameClock`, `TimelineRun`, `EventCatalog`, `WhatIfProbe`. Oberfläche: drei
-neue Blätter, ein neuer Bildschirm, ein neuer Baustein Knopf, Meldung im Hinweis. Rund acht neue
-Testdateien, vier geänderte, etwa zehn kleine Fixtures. Fünf Abschnitte im Style-Guide.
+neue Blätter, ein neuer Bildschirm, ein neuer Baustein Knopf, Meldung im Hinweis. Zehn neue
+Testdateien, sechs geänderte (`test_timeline.gd`, `test_timeline_run.gd`, `test_event_catalog.gd`,
+`test_game_clock.gd`, `test_main_menu.gd`, `test_title_screen.gd`), etwa zehn kleine Fixtures. Im
+Style-Guide fünf Abschnitte und eine Ergänzung im README (R17, T001).
 
 ## Constitution Check
 
@@ -84,15 +86,16 @@ Testdateien, vier geänderte, etwa zehn kleine Fixtures. Fünf Abschnitte im Sty
 | Grundsatz | Prüfung | Vor Phase 0 | Nach Phase 1 |
 |---|---|---|---|
 | I. Nur Desktop | Bedienung mit Maus und Tastatur wie im Hauptmenü: Überfahren wählt, Rechtsklick zeigt den Hinweis, Pfeile, Tab, Enter, Esc, Mausrad zum Rollen. Fenster schließen und Cmd+Q speichern. Keine Touch-Eingaben, Forward+ bleibt | erfüllt | erfüllt |
-| II. Klaus entscheidet, der Agent baut, Claude plant und prüft | Der Plan enthält nur Signaturen. Umgesetzt wird phasenweise auf Klaus' Auftrag, `/speckit-implement` nie; Lernnotizen in `lernnotizen.md` zu jeder umgesetzten Task. Die fünf Festlegungen aus der Spec und die Sätze zu den Graden hat Klaus entschieden; Claudes Festlegungen aus dem Plan stehen gekennzeichnet in research.md und `docs/offene-punkte.md` | erfüllt | erfüllt |
+| II. Klaus entscheidet, der Agent baut, Claude plant und prüft | Der Plan enthält nur Signaturen. Umgesetzt wird phasenweise auf Klaus' Auftrag, eine Phase nach der anderen, auch Phase 1 vor Phase 2 (Analyse, D2), `/speckit-implement` nie; Lernnotizen in `lernnotizen.md` zu jeder umgesetzten Task. Die fünf Festlegungen aus der Spec und die Sätze zu den Graden hat Klaus entschieden; Claudes Festlegungen aus dem Plan stehen gekennzeichnet in research.md und `docs/offene-punkte.md` | erfüllt | erfüllt |
 | III. Erst spezifizieren | Spec mit zehn Klärungen, zwei davon zum Plan, dazu das Review mit 36 Punkten, eigener Branch, Systeme 11, 01 und 10 genannt. 18 Entscheidungen mit verworfenen Alternativen in research.md | erfüllt | erfüllt |
-| IV. Ein Look: der Style-Guide | Neue Bausteine und Regeln kommen in Phase 1 in den Style-Guide, bevor gebaut wird (R17); Specs und Verträge verweisen auf ihn. Maße in R11 und R12 sind Messungen für den Platz, keine neuen Werte | erfüllt, mit Vorarbeit | erfüllt, mit Vorarbeit |
+| IV. Ein Look: der Style-Guide | Neue Bausteine und Regeln kommen in Phase 1 in den Style-Guide, bevor gebaut wird (R17). Die Maße in R11, R12 und R15 sind Messungen für den Platz; T001 trägt sie in den Style-Guide ein, und Verträge und Tasks verweisen danach nur noch auf ihn, statt Werte abzuschreiben (Analyse, D1) | erfüllt, mit Vorarbeit | erfüllt, mit Vorarbeit |
 | V. Daten sauber halten | Spielstände sind Spieldaten des Spielers unter `user://`, nicht Spielinhalt; game_bible unberührt. Der Katalog wird nicht verändert, ein Spielstand führt eine Kopie | erfüllt | erfüllt |
 | Technische Rahmenbedingungen | Godot 4.7, GUT 9.7.1, Projekt in `src/`. `GameClock` und `Timeline` bleiben Autoloads, `GameSession` kommt dazu. Die Timeline meldet weiter nur und bleibt die eine Quelle für Ereignisse; der Spielstand hält nur, was ihren Fahrplan festlegt | erfüllt | erfüllt |
 | Arbeitsweise | Dokumente deutsch. `.uid` der neuen Skripte wird committet; `export_presets.cfg` bleibt unberührt, `test/*` und `tools/*` sind ausgeschlossen. Spielstände entstehen nur unter `user://`, nie im Projekt | erfüllt | erfüllt |
 
 Ergebnis: bestanden, vor und nach dem Entwurf. Zu Grundsatz IV ist Vorarbeit nötig: fünf
-Abschnitte im Style-Guide in Phase 1.
+Abschnitte und eine Ergänzung im Style-Guide in Phase 1. Die Analyse fand zwei Verstöße, Werte im
+Vertrag statt im Style-Guide (D1) und Phase 1 parallel zu Phase 2 und 3 (D2); beide sind behoben.
 
 ## Project Structure
 
@@ -171,19 +174,21 @@ bevor die Oberfläche beginnt.
 | 1 | Style-Guide: Blätter im Titel, Liste, Rückfrage, Meldung, Knopf auf dunklem Grund mit Spielbildschirm (R17); die Sätze zu den Graden nach Klaus' Wahl. Kein Code | Vorarbeit |
 | 2 | Kern Spielstand: `InterventionFile` und `TimelineRun.replay()` mit `WhatIfProbe` darauf, Proben Byte für Byte gleich; `EventCatalog.from_data()`; `SaveGame`, `SaveSlot`, `SaveStore` mit sicherem Schreiben, Liste, Nummer, Löschen; Fixtures; SC-003 im Kern, SC-004, Messung für SC-002 | US3, US4 (Kern) |
 | 3 | Spielablauf: Selbststart entfällt, `resume_game()`, `stop_game()`, `GameClock.set_date()`, `GameSession` mit Anlegen, Fortsetzen, Speichern, Verlassen, Schließen; `test_timeline.gd` angepasst; SC-005, SC-003 über die Autoloads, FR-003 | US1, US2, US3 (Kern) |
-| 4 | Oberfläche Teil 1: `MenuPaper` aus `MainMenu`, Kopfzeile und Einträge zur Laufzeit; Hauptmenü mit fünf Einträgen und Vorwahl; Gradwahl mit Sätzen; Esc; Baustein Knopf; Spielbildschirm mit Hinweis und Meldung; Szenenwechsel. **Erste Phasenprüfung des Piloten** | US1, US2 |
+| 4 | Oberfläche Teil 1: `MenuPaper` aus `MainMenu`, Kopfzeile und Einträge zur Laufzeit; Hauptmenü mit fünf Einträgen und Vorwahl; Gradwahl mit Sätzen; Esc; Baustein Knopf; Spielbildschirm mit Hinweis und Meldung; Szenenwechsel. **Erste Phasenprüfung mit dem Stil-Prüfer** | US1, US2 |
 | 5 | Oberfläche Teil 2: `SaveList` mit Spalten, Rollen, gedämpften Zeilen und Löschmodus; Rückfrage; Fortsetzen und Löschen über die Liste, Rückkehr ins Hauptmenü nach dem letzten | US3, US4 |
 | 6 | Abschluss: CLAUDE.md (Tabelle „Aufbau“ mit `src/core/save/` und `src/scenes/game/`, Autoload `GameSession`, kein Selbststart der Zeitleiste) nur mit Klaus' OK; `docs/features/Features.md` und `Feature_Ideas.md` (11-01 Spielstände, 01-05 Neues Spiel); Zählung des Piloten in `ki_pruefung.md`, „Nachmessen“; Lückensuche mit `/speckit-converge`, die Prüfer einmal über das ganze Feature; Quickstart vollständig; Gesamtabnahme | – |
 
 Phase 2 und 3 sind Kern ohne Oberfläche; Phase 4 und 5 bauen darauf. Phase 3 braucht `SaveStore`
-aus Phase 2, Phase 5 die Blätter aus Phase 4.
+aus Phase 2, Phase 5 die Blätter aus Phase 4. Die Phasen laufen streng nacheinander, auch Phase 1
+vor Phase 2 (Verfassung, Grundsatz II; Analyse, D2).
 
 ## Prüfer je Phase
 
-Pilot der Prüf-Agents (`docs/ki_workflow/ki_pruefung.md`, Schritt 9). Jede Phase mit Sichtbarem
-oder Texten endet mit der [C]-Aufgabe „Phasenprüfung“ durch `/dcl-phasenpruefung` vor Klaus'
-Abnahme. Claude zählt je Prüfer gemeldete, bestätigte und verworfene Befunde und trägt sie unter
-„Nachmessen“ ein.
+Pilot der Prüf-Agents (`docs/ki_workflow/ki_pruefung.md`, Schritt 9). Der Pilot beginnt mit der
+ersten Phase mit Texten, Phase 2, mit dem Text-Prüfer; der Stil-Prüfer kommt in Phase 4 dazu
+(Analyse, F7). Jede Phase mit Sichtbarem oder Texten endet mit der [C]-Aufgabe „Phasenprüfung“ durch
+`/dcl-phasenpruefung` vor Klaus' Abnahme. Claude zählt je Prüfer gemeldete, bestätigte und
+verworfene Befunde und trägt sie unter „Nachmessen“ ein.
 
 | Phase | Ändert | Prüfer | Maßstab für die Prüfer |
 |---|---|---|---|
@@ -192,7 +197,7 @@ Abnahme. Claude zählt je Prüfer gemeldete, bestätigte und verworfene Befunde 
 | 3 Spielablauf | Kern und die Meldungen zum Speichern | Text | `Sprache.md`; Meldungen aus `game_session.gd` |
 | 4 Neues Spiel und Spielbildschirm | Hauptmenü, Gradwahl, Spielbildschirm, Knopf, Hinweise, Sätze zu den Graden | Stil, Text | `README.md`, Bausteine Menü, Hinweis, Knopf und die neuen aus Phase 1, `tokens.json`; `Sprache.md`; Bildschirmfotos aus titelbildschirm.md |
 | 5 Liste und Löschen | Liste, Löschmodus, Rückfrage, Meldung, Gründe im Hinweis | Stil, Text | wie Phase 4, dazu Baustein Liste und Rückfrage |
-| 6 Abschluss | Doku | bei der Lückensuche Stil und Text einmal über das ganze Feature | wie 4 und 5 |
+| 6 Abschluss | Doku | bei der Lückensuche Stil und Text einmal über das ganze Feature; eine Phase für Lücken mit Sichtbarem oder Texten endet mit eigener Phasenprüfung (Analyse, D3) | wie 4 und 5 |
 
 ## Was Klaus dabei lernt
 
@@ -207,8 +212,9 @@ Kandidaten für Lernnotizen und für `[K]`-Aufgaben, die Klaus sich aussucht:
 - Ein Spiel still nachspielen statt alle Signale noch einmal zu senden (Phase 3).
 - Gemeinsames Malen in einer Klasse mit statischen Funktionen, `MenuPaper` (Phase 4).
 - **Gut als `[K]`-Aufgabe:** die Gradwahl als zweite Instanz von `main_menu.tscn` im Editor
-  anlegen, mit drei `MenuEntry` und den Sätzen als Hinweis. Klein, im Inspector machbar, und Klaus
-  sieht, wie eine Szene mehrfach benutzt wird (Phase 4).
+  anlegen: Instanz, Lage und Kopfzeile. Die vier Einträge (Leicht, Mittel, Schwer, Zurück) mit
+  ihren Hinweisen setzt `TitleScreen` zur Laufzeit aus `TitleTexts` (Analyse, F4). Klein, im
+  Inspector machbar, und Klaus sieht, wie eine Szene mehrfach benutzt wird (Phase 4).
 - **Ebenfalls geeignet:** der Spielbildschirm als Szene mit `ColorRect` und Knopf, die Verbindung
   des Signals im Editor (Phase 4).
 - Ein Fenster aus Zeilen, deren Inhalt beim Rollen wechselt (Phase 5).
@@ -217,11 +223,11 @@ Kandidaten für Lernnotizen und für `[K]`-Aufgaben, die Klaus sich aussucht:
 
 | Teil | Bisher | Danach | Wer es merkt |
 |---|---|---|---|
-| Hauptmenü | vier Einträge, „Neues Spiel“ und „Spiel laden“ nie verfügbar | fünf Einträge mit „Weiterspielen“ oben, Verfügbarkeit nach Spielständen (FR-001, FR-002) | `test_title_screen.gd`, Quickstart von 001 |
-| Vorwahl im Hauptmenü | immer die erste Zeile | „Weiterspielen“ oder „Neues Spiel“ (FR-001a) | `test_title_screen.gd` |
+| Hauptmenü | vier Einträge, „Neues Spiel“ und „Spiel laden“ nie verfügbar | fünf Einträge mit „Weiterspielen“ oben, Verfügbarkeit nach Spielständen (FR-001, FR-002) | Quickstart von 001; neue Tests in `test_title_screen.gd`, dessen zwei Tests zur Versionszeile bleiben (Analyse, F11) |
+| Vorwahl im Hauptmenü | immer die erste Zeile | „Weiterspielen“ oder „Neues Spiel“ (FR-001a) | `test_main_menu.gd` bleibt; neue Tests in `test_title_screen.gd` |
 | Hinweise „Neues Spiel“, „Spiel laden“ | „Der Laden hat noch zu …“, „Noch keine Spielstände. Speichern kommt bald.“ | neue Texte (titelbildschirm.md) | Klaus, der Text-Prüfer |
-| `MainMenu` | Kopfzeile in der Szene, Breite fest, Einträge nur in `_ready()` | `header_text`, `paper_width`, `set_entries()`; Malen in `MenuPaper` | `test_main_menu.gd`, Hauptmenü Pixel für Pixel gleich |
-| `Timeline._ready()` | startet per `call_deferred()` ein Spiel mit Mittel | startet keins (FR-003) | `test_timeline.gd`: zwei Tests und der Helfer `_zeitleiste()` |
+| `MainMenu` | Kopfzeile in der Szene, Breite fest, Einträge nur in `_ready()` | `header_text`, `paper_width` mit `PAPER_WIDTH` als Vorgabe, `set_entries()`; Malen in `MenuPaper` | `test_main_menu.gd` unverändert, Hauptmenü Pixel für Pixel gleich |
+| `Timeline._ready()` | startet per `call_deferred()` ein Spiel mit Mittel | startet keins (FR-003) | `test_timeline.gd`: fünf Tests und der Helfer `_zeitleiste()` (Analyse, F1) |
 | `Timeline` | `start_game()` | dazu `resume_game()`, `stop_game()`, `is_running()` | niemand, Neues kommt hinzu |
 | `GameClock` | Datum nur vorwärts | dazu `set_date()` | `test_game_clock.gd` |
 | `WhatIfProbe` | eigene Umrechnung und eigenes Nachspielen | ruft `InterventionFile` und `TimelineRun.replay()` | niemand: Proben und Tests Byte für Byte gleich |
@@ -252,6 +258,41 @@ Vorschläge freigegeben. An Spec und Plan hat das geändert:
   jedem Öffnen neu gelesen (CHK001); FR-012 im Quickstart (CHK026).
 
 Die übrigen Punkte waren erfüllt oder brauchten keine Änderung.
+
+## Änderungen nach der Analyse
+
+Die Analyse mit `/speckit-analyze` am 2026-10-26 fand 44 Befunde: zwei kritische, sieben hohe, 22
+mittlere und 13 niedrige. Ein unabhängiger Prüfer hat sie gefunden, Claude hat sie nachgeprüft, und
+Klaus hat am selben Tag alle nach Empfehlung freigegeben. Die Kürzel stehen an den Stellen, die sie
+geändert haben, etwa „(Analyse, F2)“.
+- **Kritisch, Verfassung:** Werte wie Spalten, Papierbreite und Lage des Knopfs standen im Vertrag;
+  jetzt kommen sie mit T001 in den Style-Guide, und Vertrag und Tasks verweisen darauf (D1). Phase 1
+  lief parallel zu Phase 2 und 3; jetzt laufen alle Phasen nacheinander (D2).
+- **Hoch:**
+  - fünf Tests in `test_timeline.gd` statt zwei rufen künftig `start_game()` selbst auf, mit
+    unveränderten Erwartungen (F1);
+  - das Hauptmenü wird bei jeder Rückkehr neu gelesen, damit ein gelöschter Spielstand nicht über
+    „Weiterspielen“ zurückkommt (F2);
+  - „Zurück“ im Löschmodus beendet nur den Modus und hat einen eigenen Hinweis (F3);
+  - der Vorschlag für Klaus' Aufgabe zur Gradwahl passt zu `TitleTexts` (F4);
+  - scheitert das Speichern beim Fortsetzen, gibt `resume()` OK zurück, und der Spielbildschirm
+    zeigt die Meldung (F5);
+  - `scene_callback` macht den Szenenwechsel testbar, ohne die echte Session (C1);
+  - ein Test belegt FR-022 über `GameSession` (E1).
+- **Sicheres Speichern:** In Schritt 2 heißt „prüfen“ „Text gleich `to_json()`“; „lesbar“ heißt
+  fortsetzbar; ein zu neuer Spielstand fällt nie auf eine Zwischendatei zurück; das Aufräumen hat
+  seinen Platz in Schritt 1 und 3 (B1, B2, C5). Ein zweites Fenster verringert nur den
+  Zusammenstoß (F10).
+- **Maße:** Spalten bei 0, 64, 108, 172, Papier 304 bei x 312, Rollmarken in Kopfzeile und „Löschen
+  …“, Namen bis „Spiel 9999“ (F9, B4); die Rechnung zum Knopf mit Kontur (F13).
+- **Anlegen:** erst Spielstand schreiben, dann `start_game()`; Seed über `rng` (C4, C6).
+- **Texte:** Gründe ohne Werte aus der Datei (B4); Rückfrage bei beschädigten und zu neuen
+  Spielständen (C9); ein Längentest für alle Texte in `test_title_texts.gd` (C10).
+- **Übrige:** Pflichtfelder (B3), `_upgrade()` (E4), Versatz der Ortszeit (C3), `show_text()` (C2),
+  Hilfen in `InterventionFile` (C12), Tag höchstens 31.12.1999 (C11), Fotos mit eigenem Ordner und
+  Vergleichsbild des Hauptmenüs (C7, C8), Tests für Löschen scheitert und Datei von außen (E2, E3),
+  Quickstart 3.2 und 3.4 (F6, F12), Pilot ab Phase 2 (F7), Zahlen, Labels und Abhängigkeiten in Plan
+  und Tasks (F8, F11, F14 bis F20, D3), FR-016 (B5).
 
 ## Eigene Festlegungen des Plans
 

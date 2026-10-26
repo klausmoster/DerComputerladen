@@ -86,6 +86,14 @@ FR-023, SC-002 und SC-006; neu sind Edge Cases zu Fehlerwegen und vier Annahmen.
 - Q: Wie wird SC-002 gemessen? → A: mit 20 Spielständen und je 500 Ereignissen im Katalog, dazu
   das Fortsetzen eines Spielstands vom 31.12.1999 (CHK024).
 
+### Analyse 2026-10-26
+
+Aus `/speckit-analyze` mit 44 Befunden; Klaus hat am 2026-10-26 alle nach Empfehlung freigegeben.
+An der Spec geändert: der Edge Case „Zwei Fenster des Spiels gleichzeitig“ verspricht nicht mehr,
+dass nie etwas überschrieben wird (F10), und FR-016 sagt „zum laufenden Spiel machen“ statt „auf
+dem Spielbildschirm zeigen“ (B5). Alles Übrige betraf Plan, research.md, Datenmodell, Verträge,
+Quickstart und Tasks (plan.md, „Änderungen nach der Analyse“).
+
 ## Überblick
 
 Bisher endet das Spiel am Hauptmenü: „Neues Spiel“ und „Spiel laden“ sind nicht verfügbar, und im
@@ -247,8 +255,9 @@ andere ist unverändert.
   Fortsetzen nimmt den Stand, den die Liste gelesen hat, und das Speichern dabei schreibt ihn
   wieder. Die Liste liest den Ordner jedes Mal neu, wenn sie erscheint.
 - **Zwei Fenster des Spiels gleichzeitig**: Ein neues Spiel schreibt nur unter einer Nummer, zu der
-  es noch keine Datei gibt, sonst nimmt es die nächste; so überschreibt auch dann keins ein anderes.
-  Spielen beide Fenster dasselbe Spiel, gilt das letzte Speichern.
+  es noch keine Datei gibt, sonst nimmt es die nächste. Das verringert einen Zusammenstoß, schließt
+  ihn aber nicht aus, wenn beide im selben Augenblick anlegen; zwei Fenster gleichzeitig sind kein
+  Fall für dieses Feature. Spielen beide Fenster dasselbe Spiel, gilt das letzte Speichern.
 - **Geänderter Ereigniskatalog**: Klaus ändert nach dem Speichern den Katalog in der Werkstatt,
   etwa die Chance von „Konkurrent eröffnet“. Ein gespeichertes Spiel läuft mit seinem eigenen
   Katalog weiter, als wäre nichts geändert; erst ein neues Spiel nutzt den geänderten (FR-022).
@@ -341,8 +350,8 @@ andere ist unverändert.
   Rechners, in der Liste etwa „26.10.2026 21:40“, im Hinweis der Zeile ausgeschrieben „am
   26.10.2026 um 21:40 Uhr“. Passen nicht alle Spielstände aufs Blatt, rollt die Liste mit der
   Auswahl und dem Mausrad; „Löschen …“ und „Zurück“ bleiben immer zu sehen.
-- **FR-016**: Einen Spielstand fortsetzen muss das Spiel am gespeicherten Datum mit dem
-  gespeicherten Grad auf dem Spielbildschirm zeigen und „zuletzt gespielt“ auf jetzt setzen.
+- **FR-016**: Einen Spielstand fortsetzen muss ihn mit gespeichertem Datum, Grad und Seed zum
+  laufenden Spiel machen, den Spielbildschirm zeigen und „zuletzt gespielt“ auf jetzt setzen.
 
 **Löschen**
 
@@ -377,12 +386,13 @@ andere ist unverändert.
   einen neuen Baustein, etwa die Liste der Spielstände oder die Rückfrage, noch nicht regelt, kommt
   vor dem Bauen in den Style-Guide (Verfassung, Grundsatz IV).
 - **FR-023**: Die Wahl des Grads, die Liste der Spielstände und die Rückfrage beim Löschen müssen
-  auf dem Titelbildschirm erscheinen: Titelbild, Logo und Versionszeile bleiben, an der Stelle
-  des Hauptmenüs steht ein eigenes Blatt Endlospapier mit Kopfzeile, etwa „SCHWIERIGKEIT“ und
+  auf dem Titelbildschirm erscheinen: Titelbild, Logo und Versionszeile bleiben, an der Stelle des
+  Hauptmenüs steht ein eigenes Blatt Endlospapier mit Kopfzeile, etwa „SCHWIERIGKEIT“ und
   „SPIELSTÄNDE“. Jedes Blatt hat einen Eintrag, der eine Ebene zurückführt: „Zurück“, in der
   Rückfrage „Abbrechen“ (FR-017). Er und Esc führen aus der Liste und der Gradwahl ins Hauptmenü,
-  aus der Rückfrage in die Liste. Im Hauptmenü selbst tut Esc nichts, wie in Feature 001. Ob ein
-  Blatt dafür breiter sein darf als das Hauptmenü, regelt der Style-Guide.
+  aus der Rückfrage in die Liste; im Löschmodus beenden beide nur den Modus (FR-017a). Im Hauptmenü
+  selbst tut Esc nichts, wie in Feature 001. Ob ein Blatt dafür breiter sein darf als das Hauptmenü,
+  regelt der Style-Guide.
 
 ### Key Entities *(include if feature involves data)*
 

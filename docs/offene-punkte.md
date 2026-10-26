@@ -440,8 +440,8 @@ Festlegungen in `specs/004-neues-spiel/research.md`, die nicht aus Spec und Klä
 nicht umgesetzt; Klaus kann sie bei jeder Abnahme ändern. Die übrigen Festlegungen des Plans hat
 Klaus mit der Checkliste bestätigt (unter „Erledigt“).
 - **Lage der Blätter (R11):** Gradwahl, Liste und Rückfrage hängen oben bei y 150 und schließen
-  rechts bei x 616 ab wie das Hauptmenü; die Liste ist 296 breit und zeigt höchstens sechs
-  Spielstände.
+  rechts bei x 616 ab wie das Hauptmenü; die Liste ist 304 breit (links bei x 312) und zeigt
+  höchstens sechs Spielstände.
 - **Spalte „zuletzt gespielt“ (R12):** in der Form „26.10.2026 21:40“, ohne Spaltenköpfe.
 - **Spielbildschirm (R15):** Vollbild in `nacht`, Knopf in der Mitte, Hinweis nennt das Spiel;
   der Knopf wird ein eigener Baustein unter `src/ui/`. Fokuslinie auf dunklem Grund in `papier`
@@ -460,6 +460,12 @@ Klaus mit der Checkliste bestätigt (unter „Erledigt“).
 
 ## Erledigt
 
+- **Analyse von Feature 004:** Klaus, 2026-10-26: alle 44 Befunde nach Empfehlung einarbeiten.
+  Eingearbeitet in Spec (Clarifications „Analyse 2026-10-26“, Edge Case „Zwei Fenster“, FR-016),
+  Plan („Änderungen nach der Analyse“), research.md, Datenmodell, Verträge, Quickstart und Tasks.
+  Wo Claude anders gelöst hat als der Prüfer vorschlug: Spalten 0, 64, 108, 172 und Papier 304
+  statt nur die 6 px Rest zu benennen (F9, B4), Rollmarken in Kopfzeile und „Löschen …“ statt in
+  Zeilen der Spielstände, Werte im Vertrag als Verweis auf den Style-Guide statt als Zahl (D1).
 - **Review-Checkliste von Feature 004:** Klaus, 2026-10-26: alle 36 Vorschläge freigegeben
   (`specs/004-neues-spiel/checklists/review.md`), eingearbeitet in Spec, Plan, research.md,
   Datenmodell, Verträge und Quickstart. Damit bestätigt sind auch diese Festlegungen des Plans, die

@@ -87,9 +87,14 @@ keine neue Datei (FR-003).
    der Hinweis nennt „zuletzt gespielt“ ausgeschrieben (US3, Szenario 5).
 3. Das älteste wählen: Es erscheint; zurück im Hauptmenü setzt „Weiterspielen“ es fort, und in der
    Liste steht es oben (US3, Szenario 3).
-4. App mit Cmd+Q beenden, neu starten, Enter: Der Spielbildschirm mit dem zuletzt gespielten Spiel,
-   der Hinweis nennt es (US3, Szenario 1; US2, Szenario 2; SC-002).
-5. Mit der Maus: „Spiel laden“, eine Zeile: 2 Klicks bis zum Spielbildschirm (SC-002).
+4. In der Liste ein Spiel fortsetzen, das nicht oben steht, und auf dem Spielbildschirm Cmd+Q
+   drücken: Die App endet. Neu starten, „Spiel laden“: Dieses Spiel steht oben, mit neuem „zuletzt
+   gespielt“ (US2, Szenario 2; Analyse, F12).
+5. Dasselbe mit einem anderen Spiel, aber das Fenster mit dem roten Knopf schließen; nach dem
+   Neustart steht es oben (US2, Szenario 2).
+6. Enter im Hauptmenü: Der Spielbildschirm mit dem zuletzt gespielten Spiel, der Hinweis nennt es
+   (US3, Szenario 1; SC-002).
+7. Mit der Maus: „Spiel laden“, eine Zeile: 2 Klicks bis zum Spielbildschirm (SC-002).
 
 ### 3.3 Löschen (ab Phase 5)
 
@@ -116,10 +121,12 @@ cp src/test/fixtures/spielstaende/spiel_kein_json.json ~/Library/Application\ Su
 cp src/test/fixtures/spielstaende/spiel_format_2.json ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende/spiel_9.json
 ```
 
-1. Die Liste zeigt „Spiel 9 … neuere Version“ und „Spiel 8 … beschädigt“ gedämpft unten; `notizen.txt`
-   erscheint nicht. Enter auf ihnen tut nichts, ihr Hinweis nennt den Grund (Edge Cases).
-2. Beide lassen sich über „Löschen …“ löschen; `notizen.txt` bleibt liegen.
-3. Ein neues Spiel heißt danach „Spiel 10“, solange 8 oder 9 noch da sind (FR-009).
+1. Die Liste zeigt „Spiel 9 … neuere Version“ und „Spiel 8 … beschädigt“ gedämpft unten;
+   `notizen.txt` erscheint nicht. Enter auf ihnen tut nichts, ihr Hinweis nennt den Grund (Edge
+   Cases).
+2. Ein neues Spiel beginnen und verlassen: Es heißt „Spiel 10“, denn 8 und 9 sind noch da (FR-009).
+3. Spiel 8 und Spiel 9 lassen sich über „Löschen …“ löschen; die Rückfrage nennt ihren Zustand
+   statt Grad und Datum; `notizen.txt` bleibt liegen (Analyse, F6).
 
 ### 3.5 Eigener Katalog im Spielstand (ab Phase 5)
 

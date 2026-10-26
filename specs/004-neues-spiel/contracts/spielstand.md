@@ -24,6 +24,8 @@ src/
     ├── test_save_store.gd              # neu
     ├── test_save_resume_run.gd         # neu: SC-003 im Kern
     ├── test_intervention_file.gd       # neu
+    ├── test_timeline_run.gd            # geändert: replay()
+    ├── test_event_catalog.gd           # geändert: from_data()
     └── fixtures/spielstaende/          # neu: kaputte und zu neue Spielstände, ein gültiger
 ```
 
@@ -48,9 +50,16 @@ static func from_file(record: Dictionary) -> Dictionary
 static func wrong_date(record: Dictionary) -> String
 ## Ob [param value] ein Kalendertag „JJJJ-MM-TT“ ist.
 static func is_date(value: Variant) -> bool
+## Ob [param value] eine ganze Zahl ist, als int oder als float ohne Nachkommastellen. Bisher
+## WhatIfProbe._is_whole_number().
+static func is_whole_number(value: Variant) -> bool
+## Ein Wert aus der Datei für Meldungen: Text in „…“, eine ganze Zahl ohne Nachkomma. Bisher
+## WhatIfProbe._shown().
+static func shown(value: Variant) -> String
 ```
 
-`WhatIfProbe` ruft diese Funktionen auf, statt eigene zu haben; ihre übrigen Hilfen bleiben.
+`WhatIfProbe` ruft diese Funktionen auf, statt eigene zu haben, auch `is_whole_number()` und
+`shown()` (Analyse, C12); ihre übrigen Hilfen, etwa `_label()`, bleiben.
 **Feste Größe:** `test_what_if_probe.gd` und `test_simulator.gd` laufen unverändert grün, und eine
 Probe, die die Werkstatt schreibt, ist Byte für Byte dieselbe wie vorher.
 
@@ -113,10 +122,16 @@ func to_json() -> String
 static func from_data(data: Dictionary, p_number: int, problems: Array[String]) -> SaveGame
 ## „14.03.1986“
 func day_text() -> String
-## „26.10.2026 21:40“ in Ortszeit, für die Spalte der Liste.
-static func time_text(unix: int) -> String
+## Steht für „den Versatz des Rechners“, Time.get_time_zone_from_system().bias.
+const SYSTEM_BIAS := -100000
+## „26.10.2026 21:40“ in Ortszeit, für die Spalte der Liste. [param bias_minutes] ist der Versatz
+## zu UTC in Minuten; Tests geben ihn vor (Analyse, C3).
+static func time_text(unix: int, bias_minutes: int = SYSTEM_BIAS) -> String
 ## „am 26.10.2026 um 21:40 Uhr“ in Ortszeit, für Hinweise.
-static func time_sentence(unix: int) -> String
+static func time_sentence(unix: int, bias_minutes: int = SYSTEM_BIAS) -> String
+## Bringt gelesene Daten einer älteren Formatversion Schritt für Schritt auf FORMAT (FR-014). Mit
+## Format 1 gibt es nichts umzuwandeln; die Funktion ist die Stelle für Format 2 (Analyse, E4).
+static func _upgrade(data: Dictionary, from_format: int) -> Dictionary
 ```
 
 ## SaveSlot
@@ -153,7 +168,8 @@ var folder: String = FOLDER
 var last_error: String = ""
 
 func _init(p_folder: String = FOLDER) -> void
-## Alle Spielstände im Ordner, geordnet nach research.md, R12; fehlt der Ordner, leer.
+## Alle Spielstände im Ordner nach der Regel „Lesen“ in research.md, R3, geordnet nach R12; fehlt
+## der Ordner, leer. Wer aus .neu oder .alt liest, meldet das mit push_warning().
 func list_slots() -> Array[SaveSlot]
 ## Größte Nummer unter den Dateien eines Spielstands plus 1; ohne solche Dateien 1 (R4).
 func next_number() -> int
@@ -165,7 +181,9 @@ func next_number() -> int
 ## „Die Datei user://spielstaende/spiel_2.json.neu lässt sich nicht schreiben.“ Den Satz für den
 ## Spieler wählt GameSession (spielablauf.md).
 func write(game: SaveGame, is_new: bool = false) -> Error
-## Löscht spiel_<N>.json, .neu und .alt dieser Nummer, sonst nichts (FR-018).
+## Löscht spiel_<N>.json, .neu und .alt dieser Nummer, sonst nichts (FR-018), in dieser
+## Reihenfolge. Scheitert eine, hört es dort auf, gibt den Fehler zurück, und last_error nennt die
+## Datei; die übrigen bleiben, so ist der Spielstand noch lesbar.
 func delete(p_number: int) -> Error
 ## Pfad der Datei zu einer Nummer, etwa „user://spielstaende/spiel_2.json“.
 func path_of(p_number: int) -> String
@@ -178,9 +196,11 @@ sie in `after_each()` ab. Kataloge kommen aus `src/test/fixtures/`, nie aus `src
 
 | Test | prüft | Anforderung |
 |---|---|---|
-| `test_intervention_file.gd` | Umrechnung hin und zurück, falsches Datum mit Satz, −1 als „1984-12-31“ | R5 |
-| `test_save_game.gd` | Rundreise Speicher → Text → Speicher, Text Zeichen für Zeichen gegen eine Erwartung; jede Zeile der Tabelle „Zustand“ mit ihrem Grund; Zeitpunkte als UTC; `default_name()` | FR-007, FR-013, FR-014 |
-| `test_save_store.gd` | Liste mit Ordnung, fremde Dateien, fehlender Ordner; nächste Nummer mit Lücken, beschädigten und `.neu`; Schreiben über einen vorhandenen Stand; jeder Abbruch aus R3 mit dem lesbaren Stand danach; Speichern scheitert, weil an der Stelle der `.neu` ein Ordner liegt: alter Stand unverändert, `last_error` gesetzt; Löschen nur der drei Dateien einer Nummer; beschädigte und zu neue werden nie überschrieben; ein neues Spiel weicht einer vorhandenen Nummer aus; Lesen aus `.neu` oder `.alt` meldet `push_warning()`; 20 Spielstände mit `catalog_500.json` in höchstens 1 s gelesen | FR-009, FR-011, FR-013, FR-018, SC-002, SC-004 |
+| `test_intervention_file.gd` | Umrechnung hin und zurück, falsches Datum mit Satz, −1 als „1984-12-31“, `is_whole_number()`, `shown()` | R5 |
+| `test_timeline_run.gd` | `replay()`: dieselben Fahrpläne wie das bisherige Nachspielen der Probe, ein abgelehnter Eintrag mit Grund | R5 |
+| `test_event_catalog.gd` | `from_data()` mit Objekt, Zahl statt Objekt, Format 2; die Meldungen von `from_json()` unverändert | R2 |
+| `test_save_game.gd` | Rundreise Speicher → Text → Speicher, Text Zeichen für Zeichen gegen eine Erwartung; jede Zeile der Tabelle „Zustand“ mit ihrem Grund, auch ein leerer Name und je ein fehlendes Pflichtfeld; kein Wert aus der Datei im Grund; Zeitpunkte als UTC; Ortszeit mit vorgegebenem `bias_minutes`; `default_name()` | FR-007, FR-013, FR-014 |
+| `test_save_store.gd` | Liste mit Ordnung, fremde Dateien, fehlender Ordner; nächste Nummer mit Lücken, beschädigten und `.neu`; Schreiben über einen vorhandenen Stand; jeder Abbruch aus R3 mit dem lesbaren Stand danach; die Regel „Lesen“ aus R3, auch eine zu neue `.json` neben einer fortsetzbaren `.alt`; Speichern scheitert, weil an der Stelle der `.neu` ein Ordner mit Inhalt liegt: alter Stand unverändert, `last_error` gesetzt; Löschen nur der drei Dateien einer Nummer; Löschen scheitert, weil an der Stelle von `spiel_N.json` ein Ordner mit Inhalt liegt, neben einer fortsetzbaren `.alt`: Fehler, `last_error` gesetzt, der Spielstand noch in der Liste (Analyse, E2); beschädigte und zu neue werden nie überschrieben; ein neues Spiel weicht einer vorhandenen Nummer aus; Lesen aus `.neu` oder `.alt` meldet `push_warning()`; 20 Spielstände mit `catalog_500.json` in höchstens 1 s gelesen | FR-009, FR-011, FR-013, FR-018, SC-002, SC-004 |
 | `test_save_resume_run.gd` | SC-003: Seeds 1, 4711, 99999 × drei Grade, Lauf ohne Pause gegen Lauf mit Datei am 14.03.1986, alle Zeilen ab dem 15.03.1986 gleich; dasselbe mit Eingriffen vor und nach dem 14.03.1986; eine Kopie mit einem fehlerhaften Ereignis läuft ohne dieses weiter | FR-008, FR-022, SC-003 |
 
 Die Fixtures unter `fixtures/spielstaende/` sind kleine Dateien je Fehlerfall, benannt nach dem
