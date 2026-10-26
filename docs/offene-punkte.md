@@ -12,6 +12,14 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Spec Kit auf 1.2.3 heben (2026-10-26)
+
+- **Nach dem Abschluss von Feature 004** (Klaus, 2026-10-26): Installiert ist 1.2.0, als Kommando
+  `specify` und im Projekt (`.specify/init-options.json`). Aktuell ist 1.2.3 vom 2026-10-22; die
+  drei Patch-Versionen bringen Fehlerbehebungen an Workflows, Erweiterungen und Presets. Vorher
+  zeigt Claude Klaus, welche Dateien im Projekt sich ändern würden, etwa an einer Probe in einem
+  leeren Ordner; erst nach seinem OK wird aktualisiert.
+
 ### Feature 004, Plan (2026-10-26)
 
 - **Eigener Benutzerordner, später:** Spielstände liegen unter macOS in
