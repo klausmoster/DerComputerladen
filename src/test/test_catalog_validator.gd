@@ -13,6 +13,11 @@ extends GutTest
 ## Danach Randfälle zu den Entscheidungen aus data-model.md, etwa dass drei gleiche Gewichte von
 ## 33,33 noch als 100 gelten. Diese Tests ändern eine frisch gelesene Kopie des Grundkatalogs im
 ## Code, statt für jeden Fall eine weitere Datei anzulegen.
+##
+## Feature 003 (T007) setzt die Tabelle mit V25 bis V31 für die Start-Modifikatoren in den Profilen
+## fort, wieder je Regel mit einer Fixture; V31 warnt nur. Meldungen zu Profilen haben kein
+## Ereignis, ihr Text nennt „Profil „Schwer““ und das volle Feld, etwa
+## „profiles.schwer[0].event_id“.
 
 const ORDNER := "res://test/fixtures/"
 const GRUNDKATALOG := "res://test/fixtures/catalog_minimal.json"
@@ -47,6 +52,15 @@ const FAELLE := [
 	["catalog_v23_kreis_mit_verzoegerung",
 		["V23 WARNING kreis_a follow_ups[0].target", "V23 WARNING kreis_b follow_ups[0].target"]],
 	["catalog_v24_abstand_kuerzer_als_dauer", ["V24 ERROR neubaugebiet min_gap_days"]],
+	["catalog_v25_profil_ereignis_unbekannt", ["V25 ERROR - profiles.schwer[0].event_id"]],
+	["catalog_v26_profil_ereignis_jaehrlich", ["V26 ERROR - profiles.schwer[0].event_id"]],
+	["catalog_v27_profil_ende_vor_beginn", ["V27 ERROR - profiles.schwer[0].to_day"]],
+	["catalog_v28_profil_ausserhalb", ["V28 ERROR - profiles.schwer[0].from_day"]],
+	["catalog_v29_profil_grund_leer", ["V29 ERROR - profiles.leicht[0].reason"]],
+	["catalog_v30_profil_kennung_doppelt",
+		["V30 ERROR - profiles.schwer[0].id", "V30 ERROR - profiles.schwer[1].id"]],
+	["catalog_v31_profil_monatsmitte",
+		["V31 WARNING - profiles.schwer[0].from_day", "V31 WARNING - profiles.schwer[0].to_day"]],
 ]
 ## Regeln, die validate_event() nicht prüft, weil sie den ganzen Katalog brauchen.
 const NUR_IM_GANZEN := ["V02", "V18", "V21", "V23"]
@@ -69,11 +83,13 @@ func test_jede_regel_meldet_sich_an_ihrer_stelle(fall: Array = use_parameters(FA
 
 	# Assert
 	assert_eq(_stellen(gefunden), fall[1], "Meldungen von %s." % name_der_fixture)
-	# Jede Meldung nennt im Text das Feld und das Ereignis bzw. die Kategorie.
+	# Jede Meldung nennt im Text das Feld und das Ereignis, die Kategorie bzw. das Profil.
 	for issue in gefunden:
 		assert_string_contains(issue.message, "Feld „%s“" % issue.field)
 		if issue.field.begins_with("categories"):
 			assert_string_contains(issue.message, "Kategorie „")
+		elif issue.field.begins_with("profiles"):
+			assert_string_contains(issue.message, "Profil „")
 		else:
 			assert_string_contains(issue.message, "Ereignis „")
 		if not issue.event_id.is_empty():
@@ -332,12 +348,304 @@ func test_kreise_folge_auf_sich_selbst_wahrscheinlichkeit_und_gemischte_verzoege
 	])
 
 
+# --- Randfälle der Profile (Feature 003) ------------------------------------
+
+func test_v25_ereignis_leer_oder_unbekannt() -> void:
+	# Arrange
+	var catalog := _grundkatalog()
+	_setze(catalog, Difficulty.Level.SCHWER, [
+		_start_modifikator({"event_id": "", "id": "ohne_ereignis"}),
+		_start_modifikator({"event_id": "gibt_es_nicht"}),
+	])
+
+	# Act
+	var gefunden := CatalogValidator.validate(catalog)
+
+	# Assert
+	assert_eq(_stellen(gefunden), ["V25 ERROR - profiles.schwer[0].event_id",
+		"V25 ERROR - profiles.schwer[1].event_id"])
+	assert_eq(_meldungstexte(gefunden), [
+		"Profil „Schwer“, Start-Modifikator „ohne_ereignis“, Feld "
+			+ "„profiles.schwer[0].event_id“: Der Start-Modifikator nennt kein Ereignis.",
+		"Profil „Schwer“, Start-Modifikator „reklamationswelle“, Feld "
+			+ "„profiles.schwer[1].event_id“: Das Ereignis „gibt_es_nicht“ gibt es im "
+			+ "Katalog nicht.",
+	])
+
+
+func test_v26_fuer_alle_vier_falschen_arten() -> void:
+	# Arrange: Der Grundkatalog hat jede Art einmal; nur die Reklamationswelle kommt über
+	# Wahrscheinlichkeit.
+	var catalog := _grundkatalog()
+	var ziele := ["intel_pentium", "weihnachtsgeschaeft", "neubaugebiet", "zeitungsartikel",
+		"reklamationswelle"]
+	var modifikatoren: Array[ChanceModifier] = []
+	for ziel: String in ziele:
+		modifikatoren.append(_start_modifikator({"event_id": ziel, "id": ziel}))
+	_setze(catalog, Difficulty.Level.SCHWER, modifikatoren)
+
+	# Act
+	var gefunden := CatalogValidator.validate(catalog)
+
+	# Assert
+	assert_eq(_stellen(gefunden), ["V26 ERROR - profiles.schwer[0].event_id",
+		"V26 ERROR - profiles.schwer[1].event_id", "V26 ERROR - profiles.schwer[2].event_id",
+		"V26 ERROR - profiles.schwer[3].event_id"], "Fix, jährlich, gesetzt, nur als Folge.")
+	var texte := _meldungstexte(gefunden)
+	for i in 4:
+		assert_string_contains(texte[i] if i < texte.size() else "",
+			"Start-Modifikatoren gehören nur zu Ereignissen über Wahrscheinlichkeit.")
+	assert_eq(texte[1] if texte.size() > 1 else "", "Profil „Schwer“, Start-Modifikator "
+		+ "„weihnachtsgeschaeft“, Feld „profiles.schwer[1].event_id“: „weihnachtsgeschaeft“ "
+		+ "hat die Art „fix, jährlich“; Start-Modifikatoren gehören nur zu Ereignissen über "
+		+ "Wahrscheinlichkeit.", "US2, Szenario 2.")
+
+
+func test_v27_und_v28_und_dann_keine_warnung_v31() -> void:
+	# Arrange: alle Tage mitten im Monat, damit V31 sich melden könnte.
+	var catalog := _grundkatalog()
+	_setze(catalog, Difficulty.Level.SCHWER, [
+		_start_modifikator({"id": "umgedreht", "from_day": _tag(1995, 3, 15),
+			"to_day": _tag(1990, 6, 15)}),
+		_start_modifikator({"id": "zu_frueh", "from_day": _tag(1984, 3, 15),
+			"to_day": _tag(1994, 6, 15)}),
+		_start_modifikator({"id": "zu_spaet", "from_day": _tag(1990, 3, 15),
+			"to_day": _tag(2000, 6, 15)}),
+		_start_modifikator({"id": "beides", "from_day": _tag(1984, 1, 1),
+			"to_day": _tag(2000, 12, 31)}),
+	])
+
+	# Act
+	var gefunden := CatalogValidator.validate(catalog)
+
+	# Assert: V31 prüft nicht, wenn V27 oder V28 gilt (Analyse, U7).
+	assert_eq(_stellen(gefunden), [
+		"V27 ERROR - profiles.schwer[0].to_day",
+		"V28 ERROR - profiles.schwer[1].from_day",
+		"V28 ERROR - profiles.schwer[2].to_day",
+		"V28 ERROR - profiles.schwer[3].from_day",
+		"V28 ERROR - profiles.schwer[3].to_day",
+	])
+	var texte := _meldungstexte(gefunden)
+	assert_string_ends_with(texte[0] if not texte.is_empty() else "",
+		"Feld „profiles.schwer[0].to_day“: Der Start-Modifikator endet am 15.06.1990, vor seinem "
+		+ "Beginn am 15.03.1995.")
+	assert_string_ends_with(texte[1] if texte.size() > 1 else "",
+		"Feld „profiles.schwer[1].from_day“: Der Beginn 15.03.1984 liegt außerhalb von 01.01.1985 "
+		+ "bis 31.12.1999.")
+
+
+func test_v29_grund_aus_leerzeichen() -> void:
+	# Arrange
+	var catalog := _grundkatalog()
+	_setze(catalog, Difficulty.Level.LEICHT, [
+		_start_modifikator({"reason": "   ", "id": "leerzeichen"}),
+		_start_modifikator({"reason": "\t", "id": "tab"}),
+		_start_modifikator({"reason": " x ", "id": "mit_text"}),
+	])
+
+	# Act und Assert
+	assert_eq(_stellen(CatalogValidator.validate(catalog)),
+		["V29 ERROR - profiles.leicht[0].reason", "V29 ERROR - profiles.leicht[1].reason"])
+
+
+func test_v30_leer_falsche_zeichen_und_doppelt_bei_jedem_eintrag() -> void:
+	# Arrange: „welle“ dreimal in Schwer und einmal in Leicht; doppelt zählt nur im selben Profil.
+	var catalog := _grundkatalog()
+	_setze(catalog, Difficulty.Level.SCHWER, [
+		_start_modifikator({"id": ""}),
+		_start_modifikator({"id": "Reklamations-Welle"}),
+		_start_modifikator({"id": "welle"}),
+		_start_modifikator({"id": "welle"}),
+		_start_modifikator({"id": "einmal"}),
+		_start_modifikator({"id": "welle"}),
+	])
+	_setze(catalog, Difficulty.Level.LEICHT, [_start_modifikator({"id": "welle"})])
+
+	# Act
+	var gefunden := CatalogValidator.validate(catalog)
+
+	# Assert
+	assert_eq(_stellen(gefunden), [
+		"V30 ERROR - profiles.schwer[0].id",
+		"V30 ERROR - profiles.schwer[1].id",
+		"V30 ERROR - profiles.schwer[2].id",
+		"V30 ERROR - profiles.schwer[3].id",
+		"V30 ERROR - profiles.schwer[5].id",
+	], "Eine Dublette bei jedem Start-Modifikator mit dieser Kennung.")
+	assert_eq(_meldungstexte(gefunden).slice(0, 3), [
+		"Profil „Schwer“, Start-Modifikator Nr. 1 ohne Kennung, Feld „profiles.schwer[0].id“: Die "
+			+ "Kennung ist leer.",
+		"Profil „Schwer“, Start-Modifikator „Reklamations-Welle“, Feld „profiles.schwer[1].id“: "
+			+ "Die Kennung „Reklamations-Welle“ enthält andere Zeichen als a–z, 0–9 und _.",
+		"Profil „Schwer“, Start-Modifikator „welle“, Feld „profiles.schwer[2].id“: Die Kennung "
+			+ "„welle“ gibt es in diesem Profil mehrfach.",
+	])
+
+
+func test_v31_beginn_ende_beide_und_wirkt_nie() -> void:
+	# Arrange (R8): Gewürfelt wird am Monatsersten.
+	var catalog := _grundkatalog()
+	_setze(catalog, Difficulty.Level.SCHWER, [
+		_start_modifikator({"from_day": _tag(1990, 3, 15)}),
+		_start_modifikator({"to_day": _tag(1994, 6, 15)}),
+		_start_modifikator({"from_day": _tag(1990, 3, 15), "to_day": _tag(1994, 6, 15)}),
+		_start_modifikator({"from_day": _tag(1990, 3, 2), "to_day": _tag(1990, 3, 31)}),
+		_start_modifikator({"from_day": _tag(1990, 3, 2), "to_day": _tag(1990, 3, 15)}),
+		_start_modifikator({"from_day": _tag(1999, 12, 15), "to_day": _tag(1999, 12, 31)}),
+	])
+	for i in 6:
+		catalog.get_profile(Difficulty.Level.SCHWER).modifiers[i].id = "nr_%d" % i
+
+	# Act
+	var gefunden := CatalogValidator.validate(catalog)
+
+	# Assert
+	assert_eq(_stellen(gefunden), [
+		"V31 WARNING - profiles.schwer[0].from_day",
+		"V31 WARNING - profiles.schwer[1].to_day",
+		"V31 WARNING - profiles.schwer[2].from_day",
+		"V31 WARNING - profiles.schwer[2].to_day",
+		"V31 WARNING - profiles.schwer[3].from_day",
+		"V31 WARNING - profiles.schwer[4].from_day",
+		"V31 WARNING - profiles.schwer[5].from_day",
+	], "Beginn, Ende, beide, und dreimal „wirkt nie“ mit nur einer Warnung.")
+	var gruende := _gruende(gefunden)
+	assert_eq(gruende.slice(0, 2), [
+		"Der Beginn 15.03.1990 ist kein Monatserster; der Start-Modifikator wirkt ab der "
+			+ "Würfelrunde am 01.04.1990.",
+		"Das Ende 15.06.1994 ist kein Monatsletzter; der Start-Modifikator wirkt noch in der "
+			+ "Würfelrunde am 01.06.1994.",
+	])
+	var nie := "Zwischen %s und %s liegt keine Würfelrunde; der Start-Modifikator wirkt nie."
+	assert_eq(gruende.slice(4), [
+		nie % ["02.03.1990", "31.03.1990"],
+		nie % ["02.03.1990", "15.03.1990"],
+		nie % ["15.12.1999", "31.12.1999"],
+	])
+	assert_false(CatalogValidator.has_errors(gefunden), "V31 ist nur eine Warnung.")
+
+
+func test_v31_zeitraum_mit_genau_einem_monatsersten_wirkt_in_dieser_wuerfelrunde() -> void:
+	# Arrange: Beide liegen auf einem Monatsersten oder schließen ihn ein; der erste besteht nur
+	# aus diesem einen Tag. Sie wirken also, und es warnt nur das Ende.
+	var catalog := _grundkatalog()
+	_setze(catalog, Difficulty.Level.SCHWER, [
+		_start_modifikator({"id": "ein_tag", "from_day": _tag(1993, 2, 1),
+			"to_day": _tag(1993, 2, 1)}),
+		_start_modifikator({"id": "fuenf_tage", "from_day": _tag(1990, 3, 1),
+			"to_day": _tag(1990, 3, 5)}),
+	])
+
+	# Act
+	var gefunden := CatalogValidator.validate(catalog)
+
+	# Assert
+	assert_eq(_stellen(gefunden), ["V31 WARNING - profiles.schwer[0].to_day",
+		"V31 WARNING - profiles.schwer[1].to_day"], "Kein „wirkt nie“.")
+	assert_eq(_gruende(gefunden), [
+		"Das Ende 01.02.1993 ist kein Monatsletzter; der Start-Modifikator wirkt noch in der "
+			+ "Würfelrunde am 01.02.1993.",
+		"Das Ende 05.03.1990 ist kein Monatsletzter; der Start-Modifikator wirkt noch in der "
+			+ "Würfelrunde am 01.03.1990.",
+	])
+
+
+func test_ganzes_spiel_und_ganze_monate_ohne_meldung() -> void:
+	# Arrange: 01.01.1985 bis 31.12.1999, ein März, ein Februar im Schaltjahr und einer ohne
+	var catalog := _grundkatalog()
+	_setze(catalog, Difficulty.Level.SCHWER, [
+		_start_modifikator({"id": "ganz"}),
+		_start_modifikator({"id": "maerz", "from_day": _tag(1990, 3, 1),
+			"to_day": _tag(1990, 3, 31)}),
+		_start_modifikator({"id": "schalt", "from_day": _tag(1992, 2, 1),
+			"to_day": _tag(1992, 2, 29)}),
+		_start_modifikator({"id": "februar", "from_day": _tag(1993, 2, 1),
+			"to_day": _tag(1993, 2, 28)}),
+	])
+	_setze(catalog, Difficulty.Level.LEICHT, [_start_modifikator({"value": 0.0})])
+
+	# Act und Assert
+	assert_eq(_stellen(CatalogValidator.validate(catalog)), [], "Auch ein Wert von 0 ist erlaubt.")
+
+
+func test_reihenfolge_ereignisse_kategorien_dann_profile() -> void:
+	# Arrange: ein Fehler am Ereignis, einer an der Kategorie; in Schwer an Stelle 1 zwei Regeln,
+	# an Stelle 0 eine Warnung, in Leicht an Stelle 0 eine leere Kennung.
+	var catalog := _grundkatalog()
+	catalog.categories[0].color = &"papier"
+	catalog.get_event("intel_pentium").date = _tag(2001, 5, 12)
+	_setze(catalog, Difficulty.Level.SCHWER, [
+		_start_modifikator({"from_day": _tag(1990, 3, 15)}),
+		_start_modifikator({"event_id": "", "reason": "", "id": "zweiter"}),
+	])
+	_setze(catalog, Difficulty.Level.LEICHT, [_start_modifikator({"id": ""})])
+
+	# Act
+	var gefunden := CatalogValidator.validate(catalog)
+
+	# Assert: Leicht vor Schwer, je Profil nach Stelle, je Start-Modifikator nach Regel.
+	var profile := [
+		"V30 ERROR - profiles.leicht[0].id",
+		"V31 WARNING - profiles.schwer[0].from_day",
+		"V25 ERROR - profiles.schwer[1].event_id",
+		"V29 ERROR - profiles.schwer[1].reason",
+	]
+	var vorne := ["V06 ERROR intel_pentium date", "V21 ERROR - categories[0].color"]
+	assert_eq(_stellen(gefunden), vorne + profile, "Ereignisse, Kategorien, dann die Profile.")
+	assert_eq(_stellen(CatalogValidator.validate_profiles(catalog)), profile,
+		"validate_profiles() bringt nur die Profile.")
+	for issue in CatalogValidator.validate_profiles(catalog):
+		assert_eq(issue.event_id, "", "Kein Ereignis, auch wenn er auf eines zeigt: %s" % issue)
+
+
 # --- Helfer ---------------------------------------------------------------
 
 ## Eine frisch gelesene Kopie des fehlerfreien Grundkatalogs.
 func _grundkatalog() -> EventCatalog:
 	var issues: Array[CatalogIssue] = []
 	return EventCatalog.read_file(GRUNDKATALOG, issues)
+
+
+## Ein gültiger Start-Modifikator: +5 auf die Reklamationswelle, das ganze Spiel. [param felder]
+## setzt einzelne Felder, etwa {"reason": ""}.
+func _start_modifikator(felder: Dictionary = {}) -> ChanceModifier:
+	var modifikator := ChanceModifier.new()
+	modifikator.id = "reklamationswelle"
+	modifikator.event_id = "reklamationswelle"
+	modifikator.reason = "Anspruchsvolle Kunden"
+	modifikator.value = 0.05
+	modifikator.from_day = TimelineRun.FIRST_DAY
+	modifikator.to_day = TimelineRun.LAST_DAY
+	for feld: String in felder:
+		modifikator.set(feld, felder[feld])
+	return modifikator
+
+
+## Setzt die Start-Modifikatoren des Profils von [param grad] im Katalog.
+func _setze(catalog: EventCatalog, grad: Difficulty.Level,
+		modifikatoren: Array[ChanceModifier]) -> void:
+	catalog.get_profile(grad).modifiers = modifikatoren
+
+
+func _tag(jahr: int, monat: int, tag: int) -> int:
+	return GameDate.new(jahr, monat, tag).to_day_index()
+
+
+## Die Texte der Meldungen in ihrer Reihenfolge.
+func _meldungstexte(issues: Array[CatalogIssue]) -> Array:
+	var texte := []
+	for issue in issues:
+		texte.append(issue.message)
+	return texte
+
+
+## Der Grund jeder Meldung: ihr Text hinter dem Feld.
+func _gruende(issues: Array[CatalogIssue]) -> Array:
+	var gruende := []
+	for issue in issues:
+		gruende.append(issue.message.get_slice("“: ", 1))
+	return gruende
 
 
 ## Die Meldungen als „<Regel> <Stufe> <Kennung> <Feld>“, in ihrer Reihenfolge.

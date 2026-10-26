@@ -198,7 +198,7 @@ Der Spieler muss aktiv Informationsquellen abonnieren um über den Markt informi
 - [ ] Kundentypen und ihr Verhalten ausarbeiten
 - [ ] Dialogsystem-Design (wie berät man Kunden?)
 - [ ] Gewinn/Verlust-Bedingungen (wann hat man gewonnen/verloren?)
-- [ ] Schwierigkeitsgrade?
+- [ ] Schwierigkeitsgrade? Für die Zeitleiste gebaut (Feature 003: Leicht, Mittel, Schwer); offen ist, was ein Grad an Wirtschaft, Startkapital und Kunden ändert (11-05).
 - [ ] Tutorial / Einstieg ins Spiel
 - [ ] Sound und Musik (MIDI-Stil? AdLib/SoundBlaster?)
 - [ ] Speichersystem

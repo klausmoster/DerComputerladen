@@ -4,7 +4,8 @@ extends GutTest
 ## Felder je Art, Eingaben mit Komma, Punkt und Prozent, Daten auch ohne führende Nullen, den
 ## Hinweis bei ungültiger Eingabe, das Verteilen der Gewichte, Meldungen am Feld samt roter Kontur
 ## auch an Auswahlfeldern (T081), die Grenze von 20 Anzahlen (T086), focus_field() und den Bereich
-## für Kategorien.
+## für Kategorien. Aus Feature 003 (T018) die Zeile „Je Grad“ bei Ereignissen über
+## Wahrscheinlichkeit.
 ##
 ## Das Formular steht hier ohne die Werkstatt im Baum, mit einem eigenen CatalogEditor auf einer
 ## Kopie von catalog_minimal.json. Was die Werkstatt verdrahtet, verdrahtet der Test selbst:
@@ -524,6 +525,94 @@ func test_kategorie_anlegen_umbenennen_und_farbe_waehlen() -> void:
 	assert_eq(name_feld.text, "", "Das Feld für den Namen ist wieder leer.")
 
 
+# --- Je Grad (Feature 003, T018) --------------------------------------------------------------
+
+func test_je_grad_nennt_die_chance_jedes_grads_szenario_6() -> void:
+	# Arrange: US2, Szenario 6. Die Reklamationswelle hat 3 % pro Monat.
+	_start_modifikator(Difficulty.Level.LEICHT, -0.02, "Nachsichtige Kunden")
+	_start_modifikator(Difficulty.Level.SCHWER, 0.05, "Anspruchsvolle Kunden")
+
+	# Act
+	_formular.show_event("reklamationswelle")
+
+	# Assert: nur zum Lesen, gedämpft, mit Hinweis auf den Reiter
+	assert_eq(_je_grad(), ["Leicht 1 %", "Mittel 3 %", "Schwer 8 %"])
+	var zeilen: VBoxContainer = _formular.find_child("DifficultyLines", true, false)
+	for zeile: Label in zeilen.get_children():
+		assert_eq(zeile.theme_type_variation, &"MutedLabel")
+		assert_ne(zeile.autowrap_mode, TextServer.AUTOWRAP_OFF, "Viele Abschnitte brechen um.")
+	var reihe: Control = zeilen.get_parent()
+	assert_eq(reihe.tooltip_text, "Ändern im Reiter „Schwierigkeitsgrade“")
+	assert_eq((reihe.get_child(0) as Label).text, "Je Grad")
+
+
+func test_je_grad_mit_zeitabschnitten_szenario_7() -> void:
+	# Arrange: US2, Szenario 7, hier an der Reklamationswelle mit ebenfalls 3 % Grundchance:
+	# Schwer +3 vom 01.01.1995 bis 31.12.1999.
+	_start_modifikator(Difficulty.Level.SCHWER, 0.03, "Die Ketten kommen", 3652)
+
+	# Act
+	_formular.show_event("reklamationswelle")
+
+	# Assert
+	assert_eq(_je_grad(), ["Leicht 3 %", "Mittel 3 %",
+		"Schwer 3 % bis 31.12.1994, 6 % ab 01.01.1995"])
+
+
+func test_je_grad_trennt_zahl_und_prozentzeichen_nie() -> void:
+	# Arrange: Bild formular_je_grad.png aus T018, dort brach „8“ / „% ab 01.01.1995“ um.
+	_start_modifikator(Difficulty.Level.SCHWER, 0.05, "Anspruchsvolle Kunden")
+	_start_modifikator(Difficulty.Level.SCHWER, 0.02, "Billigware aus Fernost", 1826)
+
+	# Act
+	_formular.show_event("reklamationswelle")
+
+	# Assert: vor jedem „%“ ein geschütztes Leerzeichen, nirgends ein gewöhnliches
+	var zeilen: VBoxContainer = _formular.find_child("DifficultyLines", true, false)
+	for zeile: Label in zeilen.get_children():
+		assert_false(zeile.text.contains(" %"), "„%s“ ohne gewöhnliches Leerzeichen vor %%."
+			% zeile.text)
+		assert_eq(zeile.text.count("\u00a0%"), zeile.text.count("%"),
+			"„%s“: jedes %% mit geschütztem Leerzeichen." % zeile.text)
+	assert_eq((zeilen.get_child(2) as Label).text,
+		"Schwer 8\u00a0% bis 31.12.1989, 10\u00a0% ab 01.01.1990")
+
+
+func test_je_grad_nur_bei_ereignissen_ueber_wahrscheinlichkeit() -> void:
+	# Act und Assert: fix, gesetzt, jährlich, nur als Folge
+	for id: String in ["intel_pentium", "neubaugebiet", "weihnachtsgeschaeft", "zeitungsartikel"]:
+		_formular.show_event(id)
+		assert_null(_formular.find_child("DifficultyLines", true, false), "%s hat keine Zeile." % id)
+
+	# Act und Assert: Wird es eins über Wahrscheinlichkeit, steht sie da.
+	_formular.show_event("reklamationswelle")
+	assert_eq(_je_grad().size(), 3)
+
+
+func test_fehlerhafter_start_modifikator_zaehlt_nicht_und_die_zeile_folgt_dem_profil() -> void:
+	# Arrange: Schwer +5 ohne Grund (V29), wie direkt nach „Neu“ und einem Wert
+	_start_modifikator(Difficulty.Level.SCHWER, 0.05, "")
+	_formular.show_event("reklamationswelle")
+
+	# Assert: FR-015, wie im Spiel
+	assert_eq(_je_grad()[2], "Schwer 3 %", "Ein Start-Modifikator mit Fehler zählt nicht.")
+
+	# Act: Grund eintragen, dann den Wert ändern, beides im Profil
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"reason", "Anspruchsvolle Kunden")
+	await wait_process_frames(1)
+
+	# Assert
+	assert_eq(_je_grad()[2], "Schwer 8 %", "Jetzt zählt er.")
+
+	# Act
+	_editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"value", 0.025)
+	await wait_process_frames(1)
+
+	# Assert
+	assert_eq(_je_grad(), ["Leicht 3 %", "Mittel 3 %", "Schwer 5,5 %"],
+		"Nach einer Änderung im Profil sofort aktuell.")
+
+
 # --- Helfer -----------------------------------------------------------------------------------
 
 ## Tippt [param text] in das Feld [param feld] und verlässt es, wie Klaus mit Tab.
@@ -549,6 +638,30 @@ func _text(feld: String) -> String:
 
 func _hinweis(feld: String) -> Label:
 	return _formular.get_hint(feld)
+
+
+## Legt in [param grad] einen Start-Modifikator auf die Reklamationswelle an, mit Wert, Grund und
+## Beginn; das Ende ist das des ganzen Spiels.
+func _start_modifikator(grad: Difficulty.Level, wert: float, grund: String,
+		beginn: int = 0) -> void:
+	_editor.add_start_modifier(grad, "reklamationswelle")
+	var stelle := _editor.catalog.get_profile(grad).modifiers.size() - 1
+	_editor.set_start_modifier_field(grad, stelle, &"value", wert)
+	_editor.set_start_modifier_field(grad, stelle, &"reason", grund)
+	_editor.set_start_modifier_field(grad, stelle, &"from_day", beginn)
+
+
+## Die Texte der Zeile „Je Grad“, Leicht, Mittel, Schwer; leer ohne die Zeile. Das geschützte
+## Leerzeichen vor „%“ wird hier zum gewöhnlichen, damit die Erwartungen lesbar bleiben; es selbst
+## prüft test_je_grad_trennt_zahl_und_prozentzeichen_nie().
+func _je_grad() -> Array:
+	var zeilen: Node = _formular.find_child("DifficultyLines", true, false)
+	if zeilen == null:
+		return []
+	var texte := []
+	for zeile: Label in zeilen.get_children():
+		texte.append(zeile.text.replace("\u00a0", " "))
+	return texte
 
 
 ## Kennung der Kategorie → ihr Knopf „Löschen“.

@@ -30,6 +30,13 @@ extends VBoxContainer
 ## WhatIfProbe ohne Datei. Sie überlebt Neustarts und Änderungen am Katalog und wird erst durch eine
 ## geladene Probe ersetzt. Läuft ein Lauf mit Eingriffen, rechnet das Panel denselben Seed ohne sie
 ## bis zum selben Tag mit und markiert in der Tabelle, was anders ist (ScheduleDiff).
+##
+## Schwierigkeitsgrade (Feature 003, FR-018, R13): Neben dem Seed wählt Klaus in %DifficultyOption
+## einen Grad, Vorgabe Mittel. Jeder Lauf hat seinen Grad fest ab dem Anlegen, wie im Spiel; ein
+## Wechsel baut deshalb einen neuen Lauf, so, wie der alte war, nur mit dem neuen Grad. Die Auswahl
+## zeigt immer den Grad des Laufs. Verglichen wird wie bisher mit demselben Grad ohne Eingriffe;
+## das Häkchen %CompareMittel vergleicht stattdessen mit Mittel ohne Eingriffe und zeigt so, was
+## der Grad bewirkt. Mit Mittel und ohne Häkchen läuft alles wie in Feature 002.
 
 ## Klaus hat im Fahrplan einen Termin gewählt; [param id] ist die Kennung seines Ereignisses. Die
 ## Werkstatt wählt das Ereignis dann auch in Liste, Formular und Zeitstrahl.
@@ -37,7 +44,7 @@ signal event_selected(id: String)
 
 enum PlanColumn { DATE, EVENT, ORIGIN, STATE, DIFF }
 enum ModifierColumn { EVENT, VALUE, FROM, TO, REASON }
-enum ProbeColumn { NAME, SEED, UNTIL, COUNT }
+enum ProbeColumn { NAME, SEED, DIFFICULTY, UNTIL, COUNT }
 enum MenuItem { CANCEL, MOVE }
 
 ## Der größte Seed (FR-014, FR-040), wie im Autoload Timeline und in der Textausgabe.
@@ -57,8 +64,12 @@ const PROTOCOL_TITLES: Array[String] = ["Protokoll"]
 const PROTOCOL_WIDTHS: Array[int] = [0]
 const MODIFIER_TITLES: Array[String] = ["Ereignis", "Wert", "von", "bis", "Grund"]
 const MODIFIER_WIDTHS: Array[int] = [0, 60, 100, 100, 0]
-const PROBE_TITLES: Array[String] = ["Name", "Seed", "Stand", "Eingriffe"]
-const PROBE_WIDTHS: Array[int] = [0, 110, 120, 90]
+## Die Liste beim Laden; „Grad“ steht neben dem Seed, denn beide zusammen bestimmen das Spiel.
+const PROBE_TITLES: Array[String] = ["Name", "Seed", "Grad", "Stand", "Eingriffe"]
+const PROBE_WIDTHS: Array[int] = [0, 110, 80, 120, 90]
+## Der Hinweis an „Entfernen“, solange ein Start-Modifikator gewählt ist (FR-010; Analyse, I4).
+const START_MODIFIER_TIP := ("Start-Modifikatoren gehören zum Grad und lassen sich im laufenden "
+	+ "Spiel nicht entfernen; ändern lassen sie sich im Reiter „Schwierigkeitsgrade“")
 ## Die Markierungen der Unterschiede: nicht nur Farbe, sondern Zeichen und Wort (Style-Guide).
 ## Verschoben nennt dazu den alten Tag.
 const DIFF_TEXTS := {
@@ -67,12 +78,28 @@ const DIFF_TEXTS := {
 	ScheduleDiff.Mark.STATE_CHANGED: "≠ Zustand",
 	ScheduleDiff.Mark.REMOVED: "− weggefallen",
 }
+## Die Texte beim Vergleich mit demselben Grad ohne Eingriffe, wie in Feature 002: Jeder
+## Unterschied kommt dort von den Eingriffen.
 const DIFF_TIPS := {
 	ScheduleDiff.Mark.ADDED: "Neu durch die Eingriffe; ohne sie gäbe es den Termin nicht.",
 	ScheduleDiff.Mark.MOVED: "Ein Eingriff hat den Termin vom %s hierher verschoben.",
 	ScheduleDiff.Mark.STATE_CHANGED: "Mit den Eingriffen in einem anderen Zustand als ohne sie.",
 	ScheduleDiff.Mark.REMOVED: "Fällt durch die Eingriffe weg; ohne sie stünde der Termin hier.",
 }
+## Die zweite Reihe beim Vergleich mit Mittel ohne Eingriffe (Feature 003, R13): Ein Unterschied
+## kann dort vom Grad kommen oder von einem Eingriff; die Texte nennen deshalb den Vergleichslauf.
+## Verschieben kann nur ein Eingriff.
+const DIFF_TIPS_MITTEL := {
+	ScheduleDiff.Mark.ADDED: "Neu gegenüber Mittel ohne Eingriffe; dort gibt es den Termin nicht.",
+	ScheduleDiff.Mark.MOVED: "Ein Eingriff hat den Termin vom %s hierher verschoben.",
+	ScheduleDiff.Mark.STATE_CHANGED: "In einem anderen Zustand als bei Mittel ohne Eingriffe.",
+	ScheduleDiff.Mark.REMOVED:
+		"Fällt gegenüber Mittel ohne Eingriffe weg; dort stünde der Termin hier.",
+}
+## Der Hinweis an „nur Unterschiede“ beim Vergleich mit Mittel; sonst gilt der aus der Szene.
+const DIFF_FILTER_TIP_MITTEL := "Zeigt nur Termine, die anders sind als bei Mittel ohne Eingriffe."
+## %CompareLabel, wenn es keinen Vergleichslauf gibt (Analyse, A3).
+const NO_COMPARISON := "Kein Vergleich: Der Lauf hat keine Eingriffe."
 
 ## Der einzige, der den Katalog ändert; der Simulator liest nur daraus. Die Werkstatt setzt ihn.
 var editor: CatalogEditor
@@ -86,14 +113,31 @@ var run: TimelineRun
 var probe := WhatIfProbe.new()
 ## Hier liegen die Proben; Tests setzen einen eigenen Ordner unter user://.
 var probe_folder: String = WhatIfProbe.FOLDER
+## Ob der Fahrplan mit Mittel ohne Eingriffe vergleicht statt mit demselben Grad ohne Eingriffe
+## (FR-018, R13). Das Häkchen %CompareMittel setzt es; wer es aus dem Code setzt, setzt das Häkchen
+## mit, und der Vergleich rechnet neu. Bei Mittel ändert es nichts (Edge Case „Vergleich bei
+## Mittel“).
+var compare_with_mittel: bool = false:
+	set(value):
+		if value == compare_with_mittel:
+			return
+		compare_with_mittel = value
+		if is_node_ready():
+			_compare_mittel.set_pressed_no_signal(value)
+			_on_comparison_changed()
 
 ## Der Katalog, mit dem der Lauf rechnet, als Text (_catalog_key()). Daran erkennt refresh(), dass
 ## sich der Katalog seitdem geändert hat.
 var _run_key := ""
 ## Ob ein neuer Lauf jetzt mit einem anderen Katalog rechnen würde als der aktuelle.
 var _stale := false
-## Die Titel der Ereignisse, die der Lauf wegen Fehlern auslässt.
+## Was der Lauf wegen Fehlern auslässt: die Titel der Ereignisse, dann die Orte der
+## Start-Modifikatoren.
 var _excluded := PackedStringArray()
+## Der Hinweis an „Entfernen“ aus der Szene; er gilt, solange kein Start-Modifikator gewählt ist.
+var _remove_tip := ""
+## Der Hinweis an „nur Unterschiede“ aus der Szene, für den Vergleich mit demselben Grad.
+var _diff_filter_tip := ""
 ## Was sich beim letzten Neustart mit Eingriffen oder beim Laden nicht anwenden ließ.
 var _not_applicable := PackedStringArray()
 ## Der gewählte Termin: eine laufende Nummer im Lauf, sonst −1; oder ein weggefallener Termin aus
@@ -127,6 +171,7 @@ var _strike_overlay := Control.new()
 @onready var _run_bar: HFlowContainer = %RunBar
 @onready var _seed_edit: LineEdit = %SeedEdit
 @onready var _roll_button: Button = %RollButton
+@onready var _difficulty_option: OptionButton = %DifficultyOption
 @onready var _generate_button: Button = %GenerateButton
 @onready var _restart_with_button: Button = %RestartWithButton
 @onready var _restart_without_button: Button = %RestartWithoutButton
@@ -146,6 +191,8 @@ var _strike_overlay := Control.new()
 @onready var _probe_notice: Label = %ProbeNotice
 @onready var _state_filter: OptionButton = %StateFilter
 @onready var _diff_filter: CheckBox = %DiffFilter
+@onready var _compare_mittel: CheckBox = %CompareMittel
+@onready var _compare_label: Label = %CompareLabel
 @onready var _plan_count: Label = %PlanCount
 @onready var _plan_table: Tree = %PlanTable
 @onready var _cancel_button: Button = %CancelButton
@@ -195,6 +242,9 @@ func _ready() -> void:
 		_state_filter.add_item(probe_entry.state_label())
 	_plan_menu.add_item("Absagen …", MenuItem.CANCEL)
 	_plan_menu.add_item("Verschieben …", MenuItem.MOVE)
+	_remove_tip = _remove_modifier_button.tooltip_text
+	_diff_filter_tip = _diff_filter.tooltip_text
+	_compare_mittel.set_pressed_no_signal(compare_with_mittel)
 	_connect_signals()
 	_reset_protocol()
 	_fill_plan()
@@ -210,6 +260,9 @@ func _connect_signals() -> void:
 	_seed_edit.text_changed.connect(_on_seed_changed)
 	_seed_edit.text_submitted.connect(func(_text: String) -> void: generate_plan())
 	_roll_button.pressed.connect(roll_seed)
+	# Die Kennung eines Eintrags ist sein Grad (Szene: id 0 bis 2 wie Difficulty.Level).
+	_difficulty_option.item_selected.connect(func(index: int) -> void:
+		select_difficulty(_difficulty_option.get_item_id(index) as Difficulty.Level))
 	_generate_button.pressed.connect(generate_plan)
 	_restart_with_button.pressed.connect(restart.bind(true))
 	_restart_without_button.pressed.connect(restart.bind(false))
@@ -224,6 +277,7 @@ func _connect_signals() -> void:
 	_end_button.pressed.connect(func() -> void: play_until(TimelineRun.LAST_DAY))
 	_state_filter.item_selected.connect(func(_index: int) -> void: _fill_plan())
 	_diff_filter.toggled.connect(func(_on: bool) -> void: _fill_plan())
+	_compare_mittel.toggled.connect(func(on: bool) -> void: compare_with_mittel = on)
 	_plan_table.item_selected.connect(_on_plan_item_selected)
 	_plan_table.item_mouse_selected.connect(_on_plan_mouse_selected)
 	_plan_menu.id_pressed.connect(_on_plan_menu)
@@ -263,14 +317,32 @@ func roll_seed() -> void:
 	_update_controls()
 
 
-## „Fahrplan erzeugen“ (FR-040, FR-042): ein neuer Lauf mit dem Seed aus dem Feld, auf einer Kopie
-## des Katalogs, wie er gerade in der Werkstatt steht, ohne die Ereignisse mit Fehlern und ohne
-## Eingriffe; die gesammelten bleiben. Der Lauf steht vor dem 01.01.1985; im Fahrplan stehen alle
-## Termine, die schon feststehen, als „geplant“ (US5, Szenario 1).
+## Der Grad in %DifficultyOption. Mit einem Lauf ist es immer dessen Grad (R13).
+func selected_difficulty() -> Difficulty.Level:
+	return _difficulty_option.get_selected_id() as Difficulty.Level
+
+
+## Wie eine Wahl durch Klaus in %DifficultyOption (FR-018, R13): Gibt es einen Lauf mit einem
+## anderen Grad, baut der Simulator ihn mit dem neuen Grad neu, so, wie er war; siehe
+## _switch_difficulty(). Ohne Lauf merkt sich die Auswahl den Grad nur für „Fahrplan erzeugen“.
+## Ein unbekannter Grad wie 7 ändert nichts.
+func select_difficulty(level: Difficulty.Level) -> void:
+	if not Difficulty.is_valid(level):
+		return
+	_difficulty_option.select(level)
+	if run != null and run.difficulty != level:
+		_switch_difficulty(level)
+
+
+## „Fahrplan erzeugen“ (FR-040, FR-042): ein neuer Lauf mit dem Seed aus dem Feld und dem Grad aus
+## der Auswahl, auf einer Kopie des Katalogs, wie er gerade in der Werkstatt steht, ohne die
+## Ereignisse mit Fehlern und ohne Eingriffe; die gesammelten bleiben. Der Lauf steht vor dem
+## 01.01.1985; im Fahrplan stehen alle Termine, die schon feststehen, als „geplant“ (US5,
+## Szenario 1).
 func generate_plan() -> void:
 	if not _can_generate():
 		return
-	run = TimelineRun.new(_effective_catalog(), _seed_edit.text.to_int())
+	run = TimelineRun.new(_effective_catalog(), _seed_edit.text.to_int(), selected_difficulty())
 	_start_run(PackedStringArray())
 
 
@@ -293,24 +365,30 @@ func play_until(day: int) -> void:
 ## auf dem der alte Lauf stand. Mit Eingriffen spielt WhatIfProbe.build_run() die gesammelten an
 ## ihren Tagen nach (R22), bis zum Endtag aus _end_day(); was nicht passt, nennt ein Hinweis. Die
 ## gesammelten Eingriffe bleiben so oder so.
+##
+## Beide behalten den Grad des Laufs (Feature 003). Die Probe des Panels bekommt ihn deshalb wie
+## den Seed vor build_run(); sonst bliebe dort der Grad einer früher geladenen Probe, und nach
+## „Probe laden“ mit Schwer und „Fahrplan erzeugen“ mit Leicht spielte der Neustart Schwer.
 func restart(with_interventions: bool) -> void:
 	if run == null or not _has_catalog():
 		return
 	if with_interventions:
 		probe.seed = run.seed
+		probe.difficulty = run.difficulty
 		probe.until_day = _end_day()
 		run = probe.build_run(_effective_catalog())
 		_start_run(probe.not_applicable)
 		return
-	var fresh := TimelineRun.new(_effective_catalog(), run.seed)
+	var fresh := TimelineRun.new(_effective_catalog(), run.seed, run.difficulty)
 	fresh.advance_to(run.today)
 	run = fresh
 	_start_run(PackedStringArray())
 
 
-## Lädt eine Probe (FR-051): Ihre Eingriffe ersetzen die gesammelten, der Seed kommt ins Feld, und
-## der Lauf entsteht mit build_run() auf dem Katalog, wie er jetzt dasteht. Eingriffe, die sich
-## nicht mehr anwenden lassen, nennt ein Hinweis (US6, Szenario 8).
+## Lädt eine Probe (FR-051, FR-019): Ihre Eingriffe ersetzen die gesammelten, Seed und Grad kommen
+## in Feld und Auswahl, und der Lauf entsteht mit build_run() auf dem Katalog, wie er jetzt
+## dasteht. Die Auswahl springt dabei ohne eigenen Neubau um, denn die Probe baut ihren Lauf selbst.
+## Eingriffe, die sich nicht mehr anwenden lassen, nennt ein Hinweis (US6, Szenario 8).
 func load_probe(loaded: WhatIfProbe) -> void:
 	if loaded == null or not _has_catalog():
 		return
@@ -320,7 +398,7 @@ func load_probe(loaded: WhatIfProbe) -> void:
 	_start_run(probe.not_applicable)
 
 
-## Schreibt die gesammelten Eingriffe mit dem Seed des aktuellen Laufs und dem Endtag aus
+## Schreibt die gesammelten Eingriffe mit Seed und Grad des aktuellen Laufs und dem Endtag aus
 ## _end_day() als Probe [param probe_name] nach probe_folder (FR-051). Die Kennung, zugleich der
 ## Dateiname, entsteht aus dem Namen; eine Probe mit derselben Kennung wird überschrieben, gefragt
 ## wird vorher im Dialog. Danach gehören Name und Kennung zur Probe des Panels, „Probe löschen“
@@ -332,6 +410,7 @@ func save_probe(probe_name: String) -> Error:
 	saved.name = probe_name.strip_edges()
 	saved.id = CatalogEditor.id_from(saved.name, "probe")
 	saved.seed = run.seed
+	saved.difficulty = run.difficulty
 	saved.until_day = _end_day()
 	saved.interventions = probe.interventions.duplicate(true)
 	var error := saved.write_file(probe_folder)
@@ -339,6 +418,7 @@ func save_probe(probe_name: String) -> Error:
 		probe.id = saved.id
 		probe.name = saved.name
 		probe.seed = saved.seed
+		probe.difficulty = saved.difficulty
 		probe.until_day = saved.until_day
 	_update_controls()
 	return error
@@ -364,9 +444,11 @@ func struck_rows() -> Array[TreeItem]:
 
 # --- Lauf -------------------------------------------------------------------------------------
 
-## Gemeinsam für „Fahrplan erzeugen“, die Neustarts und das Laden einer Probe: Der neue Lauf steht
-## in run; alles, was am alten hing, beginnt neu.
+## Gemeinsam für „Fahrplan erzeugen“, die Neustarts, den Wechsel des Grads und das Laden einer
+## Probe: Der neue Lauf steht in run; alles, was am alten hing, beginnt neu. Die Auswahl zeigt
+## danach seinen Grad. select() meldet kein item_selected, baut also nicht noch einmal neu.
 func _start_run(not_applicable: PackedStringArray) -> void:
+	_difficulty_option.select(run.difficulty)
 	_run_key = _catalog_key()
 	_stale = false
 	_excluded = _excluded_titles()
@@ -383,6 +465,29 @@ func _start_run(not_applicable: PackedStringArray) -> void:
 	_show_detail()
 	_update_notices()
 	_update_controls()
+
+
+## Wechsel des Grads mit einem Lauf (R13): Der neue Lauf entsteht so, wie der alte war, nur mit
+## [param level]. Dafür baut eine eigene, kurzlebige WhatIfProbe ihn auf: derselbe Seed, dieselben
+## angewandten Eingriffe (run.interventions) an ihren Tagen und derselbe Tag, mit dem aktuellen
+## Katalog wie bei jedem Neustart. Ein Lauf ohne Eingriffe bleibt so ohne, und Eingriffe, die schon
+## im alten Lauf nicht anwendbar waren, versucht der Wechsel nicht neu (Review, CHK029).
+##
+## Die gesammelten Eingriffe in [member probe] bleiben unberührt, für „Neu starten mit Eingriffen“;
+## nur ihr Grad wird der neue. Was im neuen Grad nicht anwendbar ist, etwa die Absage eines
+## gewürfelten Termins, den es dort nicht gibt, nennt %ProbeNotice.
+func _switch_difficulty(level: Difficulty.Level) -> void:
+	if not _has_catalog():
+		return
+	var rebuild := WhatIfProbe.new()
+	rebuild.seed = run.seed
+	rebuild.difficulty = level
+	rebuild.interventions = run.interventions.duplicate(true)
+	# Der Lauf steht nie vor seinem letzten Eingriff, denn er spielt nie zurück.
+	rebuild.until_day = run.today
+	run = rebuild.build_run(_effective_catalog())
+	probe.difficulty = level
+	_start_run(rebuild.not_applicable)
 
 
 ## Nach jedem Schritt und jedem Eingriff: Unterschiede, Protokoll, Fahrplan, Modifikatoren und die
@@ -526,9 +631,9 @@ func _update_controls() -> void:
 	elif _seed_edit.text.is_empty():
 		_generate_button.tooltip_text = "Gib zuerst einen Seed ein oder würfle einen."
 	else:
-		_generate_button.tooltip_text = ("Neuer Lauf mit diesem Seed und dem Katalog, wie er "
-			+ "gerade dasteht, auch ungespeichert, ohne Eingriffe. Die Spieluhr bleibt, wie sie "
-			+ "ist.")
+		_generate_button.tooltip_text = ("Neuer Lauf mit diesem Seed und Grad und dem Katalog, "
+			+ "wie er gerade dasteht, auch ungespeichert, ohne Eingriffe. Die Spieluhr bleibt, wie "
+			+ "sie ist.")
 	var can_play := run != null and not run.is_finished()
 	for button: Button in [_day_button, _month_button, _year_button, _until_button, _end_button]:
 		button.disabled = not can_play
@@ -543,8 +648,17 @@ func _update_controls() -> void:
 	_schedule_button.disabled = run == null
 	_cancel_button.disabled = _selected_run_entry() == null
 	_move_button.disabled = _selected_run_entry() == null
-	_remove_modifier_button.disabled = _modifier_list.get_selected() == null
+	# Ein Start-Modifikator gehört zum Grad; „Entfernen“ sagt dann, warum es nicht geht.
+	var chosen := _modifier_list.get_selected()
+	var is_start := chosen != null and _is_start_modifier_row(chosen)
+	_remove_modifier_button.disabled = chosen == null or is_start
+	_remove_modifier_button.tooltip_text = START_MODIFIER_TIP if is_start else _remove_tip
 	_diff_filter.disabled = _diff == null
+	_diff_filter.tooltip_text = DIFF_FILTER_TIP_MITTEL if _compares_with_mittel() \
+		else _diff_filter_tip
+	# Zu lang für die Leiste, endet der Text mit „…“; ganz steht er im Hinweis.
+	_compare_label.text = _comparison_text()
+	_compare_label.tooltip_text = _compare_label.text
 	_date_label.text = _date_text()
 	_probe_label.text = _probe_text()
 
@@ -580,23 +694,30 @@ func _apply_refresh() -> void:
 
 
 ## Der Katalog, mit dem ein neuer Lauf jetzt rechnen würde, als Text: sein Inhalt
-## (CatalogEditor.content_key(), so genau wie die kanonische Form) und die Kennungen, die
-## without_faulty() wegen Fehlern auslässt. Ist beides gleich, rechnete ein neuer Lauf mit
-## demselben Katalog. So verschwindet der Hinweis auch wieder, wenn Klaus eine Änderung
-## rückgängig macht.
+## (CatalogEditor.content_key(), so genau wie die kanonische Form, mit den Profilen), die
+## Kennungen, die without_faulty() wegen Fehlern auslässt, und die Stellen der
+## Start-Modifikatoren, die es weglässt. Ist alles gleich, rechnete ein neuer Lauf mit demselben
+## Katalog. So verschwindet der Hinweis auch wieder, wenn Klaus eine Änderung rückgängig macht.
 func _catalog_key() -> String:
 	if not _has_catalog():
 		return ""
+	var issues := editor.issues()
 	var faulty := PackedStringArray()
-	for issue in editor.issues():
+	for issue in issues:
 		if issue.severity == CatalogIssue.Severity.ERROR and not faulty.has(issue.event_id):
 			faulty.append(issue.event_id)
 	faulty.sort()
-	return "%s\n%s" % [editor.content_key(), ",".join(faulty)]
+	var skipped := PackedStringArray()
+	for skip in editor.catalog.skipped_start_modifiers(issues):
+		skipped.append("%d:%d" % [skip["level"], skip["index"]])
+	return "%s\n%s\n%s" % [editor.content_key(), ",".join(faulty), ",".join(skipped)]
 
 
-## Die Titel der Ereignisse, die im Katalog der Werkstatt stehen, aber nicht im Lauf: Sie haben
-## Fehler, und without_faulty() hat sie ausgenommen.
+## Was im Katalog der Werkstatt steht, aber nicht im Lauf, weil es Fehler hat: die Titel der
+## Ereignisse, die without_faulty() ausgenommen hat, dann die Orte der Start-Modifikatoren, die es
+## weglässt (FR-013; Analyse, G1). Das sind die mit eigenem Fehler und die, deren Ereignis
+## ausgenommen ist, aus allen Profilen, wie in der Prüfung; etwa „Profil „Schwer“,
+## Start-Modifikator „reklamationswelle““.
 func _excluded_titles() -> PackedStringArray:
 	var kept := {}
 	for event in run.catalog.events:
@@ -605,6 +726,8 @@ func _excluded_titles() -> PackedStringArray:
 	for event in editor.catalog.events:
 		if not kept.has(event.id):
 			titles.append("„%s“" % _title_of(event))
+	for skip in editor.catalog.skipped_start_modifiers(editor.issues()):
+		titles.append(skip["place"])
 	return titles
 
 
@@ -723,7 +846,7 @@ func _on_plan_menu(item: int) -> void:
 
 func _remove_selected_modifier() -> void:
 	var item := _modifier_list.get_selected()
-	if run == null or item == null:
+	if run == null or item == null or _is_start_modifier_row(item):
 		return
 	var id: String = item.get_metadata(ModifierColumn.EVENT)
 	_show_intervention_problem(_after_intervention(run.remove_modifier(id)))
@@ -736,19 +859,25 @@ func _show_intervention_problem(problem: String) -> void:
 
 ## Die Modifikatoren des Laufs mit Ereignis, Wert, Zeitraum und Grund (FR-025); darunter je
 ## Ereignis die Chance in der nächsten Würfelrunde.
+##
+## Zuerst stehen die Start-Modifikatoren des Grads, mit dem Grad vor dem Grund, etwa „Schwer:
+## Anspruchsvolle Kunden“ (FR-010). Eine eigene Farbe bekommen sie nicht: Gedämpfter Text hielte auf
+## Zebra und Auswahl den Kontrast nicht (Analyse, U10). Ihre Zeilen tragen in der Spalte „Wert“ die
+## Metadaten true; daran erkennt _is_start_modifier_row() sie.
 func _fill_modifiers() -> void:
 	_modifier_zebra.forget()
 	_modifier_list.clear()
 	var root := _modifier_list.create_item()
 	if run != null:
+		var level := Difficulty.label(run.difficulty)
+		for modifier in run.start_modifiers:
+			var item := _add_modifier_row(root, modifier, "%s: %s" % [level, modifier.reason])
+			item.set_metadata(ModifierColumn.VALUE, true)
+			for column in ModifierColumn.size():
+				item.set_tooltip_text(column, "Start-Modifikator von %s: %s · Kennung %s" % [level,
+					modifier.reason, modifier.id])
 		for modifier in run.modifiers:
-			var item := _modifier_list.create_item(root)
-			item.set_text(ModifierColumn.EVENT, _event_title(modifier.event_id))
-			item.set_text(ModifierColumn.VALUE, _points(modifier.value))
-			item.set_text(ModifierColumn.FROM, EventForm.format_date(modifier.from_day))
-			item.set_text(ModifierColumn.TO, EventForm.format_date(modifier.to_day))
-			item.set_text(ModifierColumn.REASON, modifier.reason)
-			item.set_metadata(ModifierColumn.EVENT, modifier.id)
+			var item := _add_modifier_row(root, modifier, modifier.reason)
 			for column in ModifierColumn.size():
 				item.set_tooltip_text(column, "%s · Kennung %s" % [modifier.reason, modifier.id])
 	_modifier_zebra.paint_all()
@@ -756,11 +885,33 @@ func _fill_modifiers() -> void:
 	_update_controls()
 
 
+## Eine Zeile der Liste der Modifikatoren; die Metadaten der ersten Spalte sind die Kennung.
+func _add_modifier_row(root: TreeItem, modifier: ChanceModifier, reason: String) -> TreeItem:
+	var item := _modifier_list.create_item(root)
+	item.set_text(ModifierColumn.EVENT, _event_title(modifier.event_id))
+	item.set_text(ModifierColumn.VALUE, _points(modifier.value))
+	item.set_text(ModifierColumn.FROM, EventForm.format_date(modifier.from_day))
+	item.set_text(ModifierColumn.TO, EventForm.format_date(modifier.to_day))
+	item.set_text(ModifierColumn.REASON, reason)
+	item.set_metadata(ModifierColumn.EVENT, modifier.id)
+	return item
+
+
+## Ob [param item] in der Liste der Modifikatoren ein Start-Modifikator ist.
+static func _is_start_modifier_row(item: TreeItem) -> bool:
+	return item.get_metadata(ModifierColumn.VALUE) == true
+
+
 ## Je Ereignis mit Modifikatoren eine Zeile mit Grundchance, Summe und wirksamer Chance in der
 ## nächsten Würfelrunde, etwa „Reklamationswelle: Grundchance 3 %, Summe −3 % → 0 % (begrenzt)“
 ## (US6, Szenario 3; FR-025: Chancen in Prozent, begrenzt auf 0 bis 100 %).
+##
+## Die Ereignisse kommen aus beiden Listen, erst die der Start-Modifikatoren. Gelten am Tag
+## Start-Modifikatoren, nennt die Zeile den Anteil des Grads als Summe ihrer Werte, etwa
+## „Reklamationswelle: Grundchance 3 %, Schwer +5, Summe 8 % → 8 %“ (Feature 003). Mit Mittel
+## bleibt alles wie bisher.
 func _chance_text() -> String:
-	if run == null or run.modifiers.is_empty():
+	if run == null or (run.modifiers.is_empty() and run.start_modifiers.is_empty()):
 		return ""
 	var day := _first_of_next_month(run.today)
 	var heading := "Nächste Würfelrunde am %s:" % EventForm.format_date(day)
@@ -769,13 +920,23 @@ func _chance_text() -> String:
 		heading = "Keine Würfelrunde mehr; am %s:" % EventForm.format_date(day)
 	var lines := PackedStringArray([heading])
 	var seen := {}
-	for modifier in run.modifiers:
+	var all: Array[ChanceModifier] = []
+	all.append_array(run.start_modifiers)
+	all.append_array(run.modifiers)
+	for modifier in all:
 		if seen.has(modifier.event_id):
 			continue
 		seen[modifier.event_id] = true
 		var info := run.chance_info(modifier.event_id, day)
-		var line := "%s: Grundchance %s, Summe %s → %s" % [_event_title(modifier.event_id),
-			_percent(info["base"]), _percent(info["sum"]), _percent(info["effective"])]
+		var share := ""
+		var from_profile: Array[ChanceModifier] = info["start_modifiers"]
+		if not from_profile.is_empty():
+			var points := 0.0
+			for start in from_profile:
+				points += start.value
+			share = " %s %s," % [Difficulty.label(run.difficulty), _points(points)]
+		var line := "%s: Grundchance %s,%s Summe %s → %s" % [_event_title(modifier.event_id),
+			_percent(info["base"]), share, _percent(info["sum"]), _percent(info["effective"])]
 		if not is_equal_approx(info["sum"], info["effective"]):
 			line += " (begrenzt)"
 		lines.append(line)
@@ -813,18 +974,65 @@ func _selected_any_entry() -> ScheduleEntry:
 
 # --- Unterschiede -----------------------------------------------------------------------------
 
-## Läuft der Lauf mit Eingriffen, rechnet das Panel denselben Seed ohne sie bis zum selben Tag mit
-## und vergleicht beide (FR-043, R24). Der Lauf ohne Eingriffe entsteht einmal aus dem Katalog des
-## Laufs und spielt bei jedem Schritt mit.
+## Rechnet den Vergleichslauf mit und vergleicht ihn mit dem Lauf (FR-043, R24; Feature 003,
+## FR-018): derselbe Seed ohne Eingriffe bis zum selben Tag, mit dem Grad aus _comparison_level().
+## Er entsteht einmal aus dem Katalog des Laufs, samt dessen Profilen, und spielt bei jedem Schritt
+## mit; ein anderer Vergleichsgrad legt ihn neu an.
+##
+## Gerechnet wird er nur, wenn er sich vom Lauf unterscheiden kann: Der Lauf hat Eingriffe, oder
+## das Häkchen vergleicht einen anderen Grad als Mittel mit Mittel. Sonst gibt es keinen, wie in
+## Feature 002 bei einem Lauf ohne Eingriffe; bei Mittel ändert das Häkchen deshalb nichts.
 func _update_diff() -> void:
-	if run == null or run.interventions.is_empty():
+	var needed := run != null and (not run.interventions.is_empty() or _compares_with_mittel())
+	if not needed:
 		_baseline = null
 		_diff = null
 		return
-	if _baseline == null:
-		_baseline = TimelineRun.new(run.catalog, run.seed)
+	var level := _comparison_level()
+	if _baseline == null or _baseline.difficulty != level:
+		_baseline = TimelineRun.new(run.catalog, run.seed, level)
 	_baseline.advance_to(run.today)
 	_diff = ScheduleDiff.compare(_baseline, run)
+
+
+## Der Grad des Vergleichslaufs: Mittel mit Häkchen, sonst der des Laufs.
+func _comparison_level() -> Difficulty.Level:
+	return Difficulty.Level.MITTEL if compare_with_mittel else run.difficulty
+
+
+## Ob gerade mit Mittel statt mit demselben Grad verglichen wird; dann gilt die zweite Reihe von
+## Texten. Bei Mittel mit Häkchen ist es derselbe Grad, und es gelten die Texte von Feature 002
+## (Analyse, A3).
+func _compares_with_mittel() -> bool:
+	return compare_with_mittel and run != null and run.difficulty != Difficulty.Level.MITTEL
+
+
+## Die Texte der Markierungen zum gerade gültigen Vergleich.
+func _diff_tips() -> Dictionary:
+	return DIFF_TIPS_MITTEL if _compares_with_mittel() else DIFF_TIPS
+
+
+## Das Häkchen hat gewechselt: Vergleich, Fahrplan und Begründung zeigen den neuen Stand. Der Lauf
+## selbst bleibt, wie er ist.
+func _on_comparison_changed() -> void:
+	_update_diff()
+	# Ohne Unterschiede gibt es keinen gewählten weggefallenen Termin mehr.
+	if _diff == null or not _diff.removed.has(_selected_removed):
+		_selected_removed = null
+	_fill_plan()
+	_show_detail()
+	_update_controls()
+
+
+## Der Text an %CompareLabel: wogegen der Fahrplan gerade vergleicht (FR-018), etwa „Vergleich:
+## Schwer ohne Eingriffe“; ohne Vergleichslauf „Kein Vergleich: Der Lauf hat keine Eingriffe.“
+## Ohne Lauf ist er leer.
+func _comparison_text() -> String:
+	if run == null:
+		return ""
+	if _diff == null:
+		return NO_COMPARISON
+	return "Vergleich: %s ohne Eingriffe" % Difficulty.label(_baseline.difficulty)
 
 
 ## Die Markierung eines Termins; REMOVED für einen weggefallenen.
@@ -948,7 +1156,7 @@ func _add_plan_row(root: TreeItem, entry: ScheduleEntry, removed: int) -> TreeIt
 		var mark := _mark_of(entry, removed >= 0)
 		item.set_text(PlanColumn.DIFF, _diff_text(mark))
 		if mark != ScheduleDiff.Mark.NONE:
-			tooltip += "\n%s" % _diff_tip(mark, entry)
+			tooltip += "\n%s" % _diff_tip(mark, entry, _diff_tips())
 	for column in _plan_table.columns:
 		item.set_tooltip_text(column, tooltip)
 	if removed >= 0:
@@ -960,8 +1168,9 @@ static func _diff_text(mark: ScheduleDiff.Mark) -> String:
 	return DIFF_TEXTS.get(mark, "")
 
 
-static func _diff_tip(mark: ScheduleDiff.Mark, entry: ScheduleEntry) -> String:
-	var tip: String = DIFF_TIPS.get(mark, "")
+## Der Text zur Markierung [param mark] aus [param tips], DIFF_TIPS oder DIFF_TIPS_MITTEL.
+static func _diff_tip(mark: ScheduleDiff.Mark, entry: ScheduleEntry, tips: Dictionary) -> String:
+	var tip: String = tips.get(mark, "")
 	if mark == ScheduleDiff.Mark.MOVED:
 		tip = tip % EventForm.format_date(entry.moved_from_day)
 	return tip
@@ -1019,7 +1228,7 @@ func _show_detail() -> void:
 	if _diff != null:
 		var mark := _mark_of(entry, entry == _selected_removed)
 		if mark != ScheduleDiff.Mark.NONE:
-			text = "Unterschied: %s\n%s" % [_diff_tip(mark, entry), text]
+			text = "Unterschied: %s\n%s" % [_diff_tip(mark, entry, _diff_tips()), text]
 	_detail_text.text = text
 
 
@@ -1155,7 +1364,7 @@ func _show_save_hint(text: String) -> void:
 		_save_dialog.reset_size()
 
 
-## „Probe laden …“: alle Proben im Ordner nach Name, mit Seed, Stand und Zahl der Eingriffe.
+## „Probe laden …“: alle Proben im Ordner nach Name, mit Seed, Grad, Stand und Zahl der Eingriffe.
 func _open_load_dialog() -> void:
 	_probe_zebra.forget()
 	_probe_list.clear()
@@ -1166,6 +1375,7 @@ func _open_load_dialog() -> void:
 		var item := _probe_list.create_item(root)
 		item.set_text(ProbeColumn.NAME, listed.name)
 		item.set_text(ProbeColumn.SEED, str(listed.seed))
+		item.set_text(ProbeColumn.DIFFICULTY, Difficulty.label(listed.difficulty))
 		item.set_text(ProbeColumn.UNTIL, EventForm.format_date(listed.until_day)
 			if listed.until_day >= TimelineRun.FIRST_DAY else "vor Spielbeginn")
 		item.set_text(ProbeColumn.COUNT, _grouped(listed.interventions.size()))
@@ -1175,7 +1385,7 @@ func _open_load_dialog() -> void:
 	_load_hint.text = "In %s liegt noch keine Probe." % probe_folder
 	_load_hint.visible = _listed.is_empty()
 	_load_dialog.get_ok_button().disabled = true
-	_load_dialog.popup_centered(Vector2i(560, 320))
+	_load_dialog.popup_centered(Vector2i(640, 320))
 
 
 func _on_load_confirmed() -> void:

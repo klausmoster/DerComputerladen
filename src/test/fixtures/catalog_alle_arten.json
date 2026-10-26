@@ -130,5 +130,27 @@
 			"title": "Zeitungsartikel über Reklamationen"
 		}
 	],
-	"format": 1
+	"format": 1,
+	"profiles": {
+		"leicht": [
+			{
+				"event_id": "reklamationswelle",
+				"from_day": "1985-01-01",
+				"id": "reklamationswelle",
+				"reason": "Nachsichtige Kunden",
+				"to_day": "1999-12-31",
+				"value": -0.02
+			}
+		],
+		"schwer": [
+			{
+				"event_id": "reklamationswelle",
+				"from_day": "1990-01-01",
+				"id": "reklamationswelle",
+				"reason": "Anspruchsvolle Kunden",
+				"to_day": "1994-12-31",
+				"value": 0.05
+			}
+		]
+	}
 }

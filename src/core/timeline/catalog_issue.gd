@@ -2,7 +2,7 @@ class_name CatalogIssue
 extends RefCounted
 
 ## Eine Prüfmeldung zum Ereigniskatalog: ein Fehler oder eine Warnung zu einer der Regeln
-## V01 bis V24 (data-model.md, „CatalogIssue“ und „Prüfregeln“).
+## V01 bis V31 (data-model.md, „CatalogIssue“ und „Prüfregeln“).
 ##
 ## Meldungen entstehen an zwei Stellen. V22, die Strukturfehler, entstehen schon beim Lesen der
 ## Datei: in den `from_dict()` der Datenklassen und in `EventCatalog`. Dafür hat diese Klasse
@@ -20,7 +20,7 @@ enum Severity { ERROR, WARNING }
 const STRUCTURE_RULE := "V22"
 
 var severity: Severity = Severity.ERROR
-## Kennung der Regel, "V01" bis "V24".
+## Kennung der Regel, "V01" bis "V31".
 var rule: String = ""
 ## Betroffenes Ereignis oder leer.
 var event_id: String = ""

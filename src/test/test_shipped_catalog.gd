@@ -7,6 +7,9 @@ extends GutTest
 ## Teil 2 (T045) prüft die Kalender-Ereignisse, die immer im Katalog stehen müssen: die sechs aus
 ## FR-023 mit ihren Tagen im Jahr und das Weihnachtsgeschäft in allen 15 Spieljahren (SC-009).
 ##
+## Teil 3 (Feature 003, T021) prüft, dass Leicht und Schwer je mindestens einen Start-Modifikator
+## haben (FR-014, CHK008). Welche Ereignisse, Werte und wie viele, bleibt frei.
+##
 ## Mehr prüft dieser Test am echten Katalog bewusst nicht. Klaus ändert ihn in der Werkstatt, und
 ## ein Test, der einzelne Werte festschreibt, bräche bei jeder Änderung. Titel, Texte, Wirkungen
 ## und die genauen Tage der CeBIT bleiben deshalb frei. Was die Übernahme enthielt, prüft
@@ -108,6 +111,23 @@ func test_weihnachtsgeschaeft_liegt_in_allen_15_jahren_vom_01_11_bis_31_12() -> 
 		if kandidat.begins_with("01.11.1999  bis 31.12.1999  weihnachtsgeschaeft "):
 			zeile = kandidat
 	assert_string_ends_with(zeile, "(Ende nach Spielende)")
+
+
+func test_leicht_und_schwer_haben_je_mindestens_einen_start_modifikator() -> void:
+	# Arrange
+	var issues: Array[CatalogIssue] = []
+	var catalog := _katalog(issues)
+
+	# Act und Assert: nur, dass jedes Profil nicht leer ist; Werte und Anzahl prüft der Test nicht,
+	# die legt Klaus in der Werkstatt fest (FR-014, CHK008). Dass die Profile fehlerfrei sind,
+	# prüft schon test_echter_katalog_hat_keine_fehler.
+	for level: int in Difficulty.WITH_PROFILE:
+		var profile := catalog.get_profile(level)
+		assert_not_null(profile, "Das Profil „%s“ fehlt." % Difficulty.label(level))
+		if profile == null:
+			continue
+		assert_false(profile.modifiers.is_empty(),
+			"Das Profil „%s“ hat keinen Start-Modifikator." % Difficulty.label(level))
 
 
 # --- Helfer ----------------------------------------------------------------------

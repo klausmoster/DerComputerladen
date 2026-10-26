@@ -29,8 +29,19 @@ extends VBoxContainer
 ## es, denn die Teile der Werkstatt kennen sich untereinander nicht. „mit N Eingriffen“ zählt nur,
 ## was die Spiele angenommen haben; was sie ablehnen, etwa einen Modifikator auf ein inzwischen
 ## gelöschtes Ereignis, nennt eine Warnung (TimelineStatistics.refused).
+##
+## Grade (Feature 003, FR-020; research.md, R15): %DifficultyOption wählt Leicht, Mittel, Schwer
+## oder „Alle drei vergleichen“, Vorgabe Mittel. TimelineStatistics bekommt die Grade als
+## Array[int] und spielt jeden Seed in jedem Grad. Bei einem Grad bleibt die Tabelle, wie sie ist;
+## beim Vergleich hat sie zehn Spalten, je Kennzahl die drei Grade nebeneinander, und die Werte
+## jedes Grads kommen aus TimelineStatistics.results_for(). Ob die Tabelle vergleicht, hängt an
+## der Rechnung, nicht an der Auswahl: Klaus kann die Auswahl nach der Rechnung umstellen, und
+## Tabelle und Ergebnistext gehören trotzdem zum Ergebnis, das dasteht.
 
 enum Column { EVENT, MEAN, MINIMUM, MAXIMUM, WITHOUT, AT_MAX }
+## Beim Vergleich die erste Spalte jeder Kennzahl; dahinter folgen die Grade in der Reihenfolge
+## von COMPARED, etwa „Ø Schwer“ in Spalte MEAN + 2.
+enum CompareGroup { MEAN = 1, SPAN = 4, WITHOUT = 7 }
 
 ## Vorgabe und Höchstwert für die Zahl der Spiele (FR-044). 100.000 Spiele dauern mit dem echten
 ## Katalog rund eine Viertelstunde; mehr braucht keine Statistik.
@@ -53,6 +64,27 @@ const TITLE_TIPS: Array[String] = [
 const WIDTHS: Array[int] = [0, 104, 84, 84, 84, 104]
 ## Was in der Spalte „Obergrenze“ steht, wenn es keine gibt.
 const NO_LIMIT := "–"
+## Die Kennung des Eintrags „Alle drei vergleichen“ in %DifficultyOption. Die übrigen Einträge
+## haben ihren Grad als Kennung, 0 bis 2 wie Difficulty.Level (Szene).
+const COMPARE_ALL := 3
+## Die Grade des Vergleichs, in der Reihenfolge der Spalten.
+const COMPARED: Array[int] = [Difficulty.Level.LEICHT, Difficulty.Level.MITTEL,
+	Difficulty.Level.SCHWER]
+## Die Tabelle beim Vergleich (R15): je Kennzahl die drei Grade nebeneinander, damit die Werte,
+## die Klaus vergleicht, direkt beieinanderstehen. „Spanne“ ist kleinste bis größte Anzahl in
+## einer Spalte; mit zwölf Spalten würde es neben Liste und Formular zu eng.
+const COMPARE_TITLES: Array[String] = ["Ereignis", "Ø Leicht", "Ø Mittel", "Ø Schwer",
+	"Spanne Leicht", "Spanne Mittel", "Spanne Schwer", "ohne Leicht", "ohne Mittel", "ohne Schwer"]
+## Die Hinweise der Kennzahlen beim Vergleich; %s ist der Grad.
+const COMPARE_TIPS := {
+	CompareGroup.MEAN: "Mittelwert bei %s: so oft beginnt das Ereignis im Schnitt je Spiel",
+	CompareGroup.SPAN: "Spanne bei %s: die kleinste bis größte Anzahl an Beginnen in einem Spiel",
+	CompareGroup.WITHOUT: "Ohne bei %s: Anteil der Spiele, in denen das Ereignis nie begann",
+}
+## Breite der Spalten beim Vergleich; das Ereignis nimmt den Rest.
+const COMPARE_WIDTHS: Array[int] = [0, 72, 72, 72, 96, 96, 96, 84, 84, 84]
+## Was die Verteilung auf die Jahre beim Vergleich sagt (R15; Analyse, U10).
+const COMPARE_YEARS := "Die Verteilung auf die Jahre zeigt die Statistik für einen einzelnen Grad."
 ## Die Balken der Verteilung nehmen so viel ihrer Spalte ein; der Rest bleibt Grund.
 const BAR_SHARE := 0.6
 ## Abstand zwischen Balken bzw. Grundlinie und ihrer Beschriftung.
@@ -72,8 +104,12 @@ var _aborted := false
 var _started_usec := 0
 ## Wie lange die letzte Rechnung vom Start bis zum Ende oder Abbruch dauerte.
 var _elapsed_msec := 0.0
-## Das Ergebnis, das die Tabelle zeigt; leer, solange gerechnet wird.
+## Das Ergebnis, das die Tabelle bei einem Grad zeigt; leer, solange gerechnet wird, und beim
+## Vergleich.
 var _results: Array[EventStatistic] = []
+## Beim Vergleich je Grad aus COMPARED, an seiner Stelle, das Ergebnis aus results_for() als
+## Array[EventStatistic]; alle nach Kennung in derselben Reihenfolge. Sonst leer.
+var _compared: Array[Array] = []
 ## Die gewählte Zeile als Kennung ihres Ereignisses; sie bleibt über neue Rechnungen gewählt.
 var _selected_id := ""
 ## Der Katalog, mit dem die Statistik rechnet, als Text (_catalog_key()); daran erkennt refresh(),
@@ -94,6 +130,7 @@ var _syncing := false
 var _zebra: Zebra
 
 @onready var _count_edit: LineEdit = %CountEdit
+@onready var _difficulty_option: OptionButton = %DifficultyOption
 @onready var _with_interventions: CheckBox = %WithInterventions
 @onready var _start_button: Button = %StartButton
 @onready var _cancel_button: Button = %CancelButton
@@ -157,10 +194,13 @@ func refresh() -> void:
 ## „Starten“ (FR-044): rechnet so viele Spiele, wie im Feld steht, mit den Seeds ab 1, auf einer
 ## Kopie des Katalogs, wie er jetzt dasteht; mit dem Häkchen samt den Eingriffen des Simulators
 ## (FR-045). Das erste Häppchen rechnet start() selbst, den Rest _calculate() Bild für Bild.
+## Gerechnet wird mit dem Grad aus %DifficultyOption oder, beim Vergleich, mit allen drei; das
+## Häkchen gilt dann für jeden Grad gleich (FR-020).
 func start() -> void:
 	if _running or not _can_start():
 		return
-	statistics = TimelineStatistics.new(_effective_catalog(), _game_count())
+	statistics = TimelineStatistics.new(_effective_catalog(), _game_count(), 1,
+		_chosen_difficulties())
 	var records: Array[Dictionary] = []
 	if _with_interventions.button_pressed:
 		records = _simulator_records()
@@ -174,6 +214,7 @@ func start() -> void:
 	_running = true
 	_aborted = false
 	_results.clear()
+	_compared.clear()
 	_started_usec = Time.get_ticks_usec()
 	_fill_results()
 	_update_all()
@@ -273,10 +314,16 @@ func _finish(aborted: bool) -> void:
 	_aborted = aborted
 	_elapsed_msec = (Time.get_ticks_usec() - _started_usec) / 1000.0
 	_results = []
+	_compared = []
 	_applied = 0
 	_refusals.clear()
 	if statistics.games_done > 0:
-		_results = statistics.results()
+		if _is_comparing():
+			# Jeder Grad aus seiner eigenen Zählung; results() allein kennte nur den ersten.
+			for level in COMPARED:
+				_compared.append(statistics.results_for(level))
+		else:
+			_results = statistics.results()
 		_applied = statistics.accepted
 		for refusal in statistics.refused:
 			var record: Dictionary = refusal["record"]
@@ -289,6 +336,24 @@ func _finish(aborted: bool) -> void:
 
 func _effective_catalog() -> EventCatalog:
 	return editor.catalog.without_faulty(editor.issues())
+
+
+## Die Grade für den nächsten Start, immer als Array[int] (Analyse, I2): der gewählte oder beim
+## Vergleich Leicht, Mittel und Schwer. TimelineStatistics.new() erwartet ein Array[int]; ein
+## untypisiertes Array dort wäre ein Fehler zur Laufzeit.
+func _chosen_difficulties() -> Array[int]:
+	var levels: Array[int] = []
+	var chosen := _difficulty_option.get_selected_id()
+	if chosen == COMPARE_ALL:
+		levels.assign(COMPARED)
+	else:
+		levels.append(chosen)
+	return levels
+
+
+## Ob die Rechnung, deren Ergebnis dasteht oder die gerade läuft, mehrere Grade vergleicht.
+func _is_comparing() -> bool:
+	return statistics != null and statistics.difficulties.size() > 1
 
 
 func _has_catalog() -> bool:
@@ -362,8 +427,8 @@ func _update_all() -> void:
 	_result_label.theme_type_variation = &"MutedLabel" if statistics == null else &""
 
 
-## Sperrt, was gerade nicht geht: Während gerechnet wird, gelten Anzahl und Häkchen erst für den
-## nächsten Start.
+## Sperrt, was gerade nicht geht: Während gerechnet wird, gelten Anzahl, Grad und Häkchen erst für
+## den nächsten Start.
 func _update_controls() -> void:
 	var count_ok := _game_count() > 0
 	_start_button.disabled = _running or not _can_start()
@@ -379,6 +444,7 @@ func _update_controls() -> void:
 	_cancel_button.disabled = not _running
 	_cancel_button.tooltip_text = "Anhalten; das Ergebnis zeigt die fertigen Spiele."
 	_count_edit.editable = not _running
+	_difficulty_option.disabled = _running
 	_with_interventions.disabled = _running
 	_count_hint.visible = not count_ok
 	_count_hint.text = "Gib eine Anzahl von 1 bis %s ein." % _grouped(MAX_GAMES)
@@ -448,28 +514,50 @@ func _update_intervention_info() -> void:
 	_intervention_info.text = text
 
 
-## „Ergebnis über 1.000 Spiele, Seeds 1 bis 1.000, ohne Eingriffe; gerechnet in 8,1 s.“
+## „Ergebnis über 1.000 Spiele, Seeds 1 bis 1.000, Mittel, ohne Eingriffe; gerechnet in 8,1 s.“
+## Der Grad steht immer da, auch Mittel (R15): Die Auswahl kann nach der Rechnung schon auf einem
+## anderen stehen, und der Text sagt, wozu das Ergebnis gehört. Beim Vergleich steht dort „Leicht,
+## Mittel und Schwer“ und hinter „Spiele“ „je Grad“.
 func _result_text() -> String:
 	if statistics == null:
 		return "Noch keine Statistik. „Starten“ rechnet die Spiele mit den Seeds ab 1 durch."
 	var count := statistics.game_count
+	var per_level := _per_level_text()
+	var levels := _levels_text()
 	if _running:
-		return "Rechnet %s Spiele mit den Seeds 1 bis %s …" % [_grouped(count), _grouped(count)]
+		return "Rechnet %s Spiele%s mit den Seeds 1 bis %s, %s …" % [_grouped(count), per_level,
+			_grouped(count), levels]
 	var done := statistics.games_done
 	var with_text := "ohne Eingriffe" if _applied == 0 else "mit %s aus dem Simulator" \
 		% _counted(_applied, "Eingriff", "Eingriffen")
 	if _aborted:
 		if done == 0:
 			return "Abgebrochen, bevor ein Spiel fertig war; es gibt noch kein Ergebnis."
-		return ("Abgebrochen nach %s von %s Spielen. Das Ergebnis zeigt die %s fertigen, Seeds 1 "
-			+ "bis %s, %s.") % [_grouped(done), _grouped(count), _grouped(done), _grouped(done),
-			with_text]
-	return "Ergebnis über %s Spiele, Seeds 1 bis %s, %s; gerechnet in %s s." % [_grouped(done),
-		_grouped(done), with_text, _decimal(_elapsed_msec / 1000.0, 1)]
+		return ("Abgebrochen nach %s von %s Spielen%s. Das Ergebnis zeigt die %s fertigen, Seeds 1 "
+			+ "bis %s, %s, %s.") % [_grouped(done), _grouped(count), per_level, _grouped(done),
+			_grouped(done), levels, with_text]
+	return "Ergebnis über %s Spiele%s, Seeds 1 bis %s, %s, %s; gerechnet in %s s." % [
+		_grouped(done), per_level, _grouped(done), levels, with_text,
+		_decimal(_elapsed_msec / 1000.0, 1)]
 
 
-## Fortschrittsbalken und daneben „37 % · 370 von 1.000 Spielen · 3,0 s“. Der Text steht neben
-## dem Balken, nicht auf seiner Farbfläche.
+## Die Grade der Rechnung als Text: „Mittel“ oder „Leicht, Mittel und Schwer“.
+func _levels_text() -> String:
+	var names := PackedStringArray()
+	for level in statistics.difficulties:
+		names.append(Difficulty.label(level))
+	if names.size() <= 1:
+		return "".join(names)
+	return "%s und %s" % [", ".join(names.slice(0, names.size() - 1)), names[names.size() - 1]]
+
+
+## „ je Grad“ hinter „Spiele“ beim Vergleich, sonst nichts.
+func _per_level_text() -> String:
+	return " je Grad" if statistics != null and statistics.difficulties.size() > 1 else ""
+
+
+## Fortschrittsbalken und daneben „37 % · 370 von 1.000 Spielen · 3,0 s“, beim Vergleich
+## „… von 1.000 Spielen je Grad · …“. Der Text steht neben dem Balken, nicht auf seiner Farbfläche.
 func _show_progress() -> void:
 	if statistics == null:
 		_progress.max_value = 1
@@ -484,53 +572,84 @@ func _show_progress() -> void:
 	var elapsed := _elapsed_msec
 	if _running:
 		elapsed = (Time.get_ticks_usec() - _started_usec) / 1000.0
-	_progress_label.text = "%d %% · %s von %s Spielen · %s s" % [percent, _grouped(done),
-		_grouped(count), _decimal(elapsed / 1000.0, 1)]
+	_progress_label.text = "%d %% · %s von %s Spielen%s · %s s" % [percent, _grouped(done),
+		_grouped(count), _per_level_text(), _decimal(elapsed / 1000.0, 1)]
 
 
 # --- Tabelle ----------------------------------------------------------------------------------
 
 func _set_up_table() -> void:
-	_table.columns = TITLES.size()
 	_table.column_titles_visible = true
 	_table.hide_root = true
 	_table.hide_folding = true
 	_table.select_mode = Tree.SELECT_ROW
+	_set_up_columns()
+	_table.create_item()
+
+
+## Setzt Spalten, Titel, Hinweise und Breiten: sechs Spalten bei einem Grad, zehn beim Vergleich.
+## Ein Tree kann seine Spaltenzahl jederzeit ändern; die Eigenschaften jeder Spalte setzt das Panel
+## danach neu, denn eine Spalte, die beim Vergleich „Ø Leicht“ heißt, ist bei einem Grad
+## „Mittelwert“.
+func _set_up_columns() -> void:
+	var comparing := _is_comparing()
+	var titles := COMPARE_TITLES if comparing else TITLES
+	var widths := COMPARE_WIDTHS if comparing else WIDTHS
+	_table.columns = titles.size()
 	for column in _table.columns:
-		_table.set_column_title(column, TITLES[column])
-		_table.set_column_title_tooltip_text(column, TITLE_TIPS[column])
+		_table.set_column_title(column, titles[column])
+		_table.set_column_title_tooltip_text(column, _compare_title_tip(column) if comparing
+			else TITLE_TIPS[column])
 		# Zahlen stehen rechtsbündig, damit die Stellen untereinanderstehen (Style-Guide).
 		var title_alignment := HORIZONTAL_ALIGNMENT_LEFT if column == Column.EVENT \
 			else HORIZONTAL_ALIGNMENT_RIGHT
 		_table.set_column_title_alignment(column, title_alignment)
 		_table.set_column_clip_content(column, true)
-		_table.set_column_expand(column, WIDTHS[column] == 0)
-		if WIDTHS[column] > 0:
-			_table.set_column_custom_minimum_width(column, WIDTHS[column])
-	_table.create_item()
+		_table.set_column_expand(column, widths[column] == 0)
+		_table.set_column_custom_minimum_width(column, widths[column])
 
 
-## Baut die Tabelle aus dem Ergebnis, eine Zeile je Ereignis nach Kennung: Mittelwert, kleinste
-## und größte Anzahl, „ohne“ und „Obergrenze“ in Prozent, „–“ ohne Obergrenze (FR-044). Die
-## gewählte Zeile bleibt gewählt, wenn es ihr Ereignis noch gibt.
+## Der Hinweis zum Titel einer Spalte beim Vergleich, etwa „Mittelwert bei Schwer: so oft beginnt
+## das Ereignis im Schnitt je Spiel“.
+static func _compare_title_tip(column: int) -> String:
+	if column == Column.EVENT:
+		return TITLE_TIPS[Column.EVENT]
+	var group := _compare_group(column)
+	return COMPARE_TIPS[group] % Difficulty.label(COMPARED[column - group])
+
+
+## Die Kennzahl einer Spalte beim Vergleich: CompareGroup.MEAN, SPAN oder WITHOUT.
+static func _compare_group(column: int) -> int:
+	if column >= CompareGroup.WITHOUT:
+		return CompareGroup.WITHOUT
+	if column >= CompareGroup.SPAN:
+		return CompareGroup.SPAN
+	return CompareGroup.MEAN
+
+
+## Baut die Tabelle aus dem Ergebnis, eine Zeile je Ereignis nach Kennung. Bei einem Grad:
+## Mittelwert, kleinste und größte Anzahl, „ohne“ und „Obergrenze“ in Prozent, „–“ ohne Obergrenze
+## (FR-044). Beim Vergleich je Grad Mittelwert, Spanne und „ohne“ (FR-020). Die gewählte Zeile
+## bleibt gewählt, wenn es ihr Ereignis noch gibt.
 func _fill_results() -> void:
 	_syncing = true
 	_zebra.forget()
 	_table.clear()
+	_set_up_columns()
 	var root := _table.create_item()
 	var selected: TreeItem = null
-	for statistic in _results:
+	# Beim Vergleich stehen die Ereignisse in jedem Grad in derselben Reihenfolge; die Zeilen
+	# folgen dem ersten.
+	var rows: Array[EventStatistic] = _results
+	if not _compared.is_empty():
+		rows = _compared[0]
+	for row in rows.size():
+		var statistic := rows[row]
 		var item := _table.create_item(root)
-		item.set_text(Column.EVENT, _title_of(statistic))
-		item.set_text(Column.MEAN, _decimal(statistic.mean(), 2))
-		item.set_text(Column.MINIMUM, _grouped(statistic.minimum))
-		item.set_text(Column.MAXIMUM, _grouped(statistic.maximum))
-		item.set_text(Column.WITHOUT, _percent(statistic.share_without()))
-		item.set_text(Column.AT_MAX, _percent(statistic.share_at_max())
-			if statistic.games_at_max >= 0 else NO_LIMIT)
-		for column in range(Column.MEAN, Column.AT_MAX + 1):
-			item.set_text_alignment(column, HORIZONTAL_ALIGNMENT_RIGHT)
-		_set_tooltips(item, statistic)
+		if _compared.is_empty():
+			_fill_row(item, statistic)
+		else:
+			_fill_compared_row(item, row)
 		item.set_metadata(Column.EVENT, statistic.event_id)
 		if statistic.event_id == _selected_id:
 			item.select(Column.EVENT)
@@ -539,9 +658,54 @@ func _fill_results() -> void:
 	_syncing = false
 	if selected != null:
 		_table.scroll_to_item(selected)
-	elif not _results.is_empty():
+	elif not rows.is_empty():
 		_selected_id = ""
 	_show_years()
+
+
+## Eine Zeile bei einem Grad, wie in Feature 002.
+func _fill_row(item: TreeItem, statistic: EventStatistic) -> void:
+	item.set_text(Column.EVENT, _title_of(statistic))
+	item.set_text(Column.MEAN, _decimal(statistic.mean(), 2))
+	item.set_text(Column.MINIMUM, _grouped(statistic.minimum))
+	item.set_text(Column.MAXIMUM, _grouped(statistic.maximum))
+	item.set_text(Column.WITHOUT, _percent(statistic.share_without()))
+	item.set_text(Column.AT_MAX, _percent(statistic.share_at_max())
+		if statistic.games_at_max >= 0 else NO_LIMIT)
+	for column in range(Column.MEAN, Column.AT_MAX + 1):
+		item.set_text_alignment(column, HORIZONTAL_ALIGNMENT_RIGHT)
+	_set_tooltips(item, statistic)
+
+
+## Eine Zeile beim Vergleich: das Ereignis an der Stelle [param row], je Grad aus COMPARED sein
+## Mittelwert, seine Spanne wie „0–14“ und „ohne“ in Prozent, jeder Wert aus der Zählung seines
+## Grads.
+func _fill_compared_row(item: TreeItem, row: int) -> void:
+	var first: EventStatistic = _compared[0][row]
+	var limit := _limit_of(first.event_id)
+	item.set_text(Column.EVENT, _title_of(first))
+	item.set_tooltip_text(Column.EVENT, "%s (%s) · %s" % [_title_of(first), first.event_id,
+		_kind_text(first.event_id, limit)])
+	for position in COMPARED.size():
+		var statistic: EventStatistic = _compared[position][row]
+		var level := Difficulty.label(COMPARED[position])
+		var games := _grouped(statistic.games)
+		var mean := CompareGroup.MEAN + position
+		var span := CompareGroup.SPAN + position
+		var without := CompareGroup.WITHOUT + position
+		item.set_text(mean, _decimal(statistic.mean(), 2))
+		item.set_text(span, "%s–%s" % [_grouped(statistic.minimum), _grouped(statistic.maximum)])
+		item.set_text(without, _percent(statistic.share_without()))
+		item.set_tooltip_text(mean, "Bei %s im Schnitt %s Beginne je Spiel, zusammen %s in %s "
+			% [level, _decimal(statistic.mean(), 2), _grouped(statistic.total), games]
+			+ "Spielen")
+		item.set_tooltip_text(span, "Bei %s die kleinste Anzahl %s und die größte %s in einem der "
+			% [level, _grouped(statistic.minimum), _grouped(statistic.maximum)]
+			+ "%s Spiele" % games)
+		item.set_tooltip_text(without, "Bei %s in %s von %s Spielen nie begonnen" % [level,
+			_grouped(statistic.games_without), games])
+		for column: int in [mean, span, without]:
+			item.set_text_alignment(column, HORIZONTAL_ALIGNMENT_RIGHT)
 
 
 func _set_tooltips(item: TreeItem, statistic: EventStatistic) -> void:
@@ -576,10 +740,15 @@ func _on_result_selected() -> void:
 # --- Verteilung auf die Jahre -----------------------------------------------------------------
 
 ## Überschrift und Hinweis der Verteilung für die gewählte Zeile; die Balken zeichnet
-## _draw_years().
+## _draw_years(). Beim Vergleich bleibt der Bereich mit seiner Mindesthöhe stehen und sagt nur,
+## wo es die Verteilung gibt (R15; Analyse, U10); year_bars() ist dann leer, denn _results ist es.
 func _show_years() -> void:
 	var statistic := _selected_statistic()
-	if statistic == null:
+	if _is_comparing():
+		_year_title.text = COMPARE_YEARS
+		_year_title.theme_type_variation = &"MutedLabel"
+		_chart.tooltip_text = ""
+	elif statistic == null:
 		_year_title.text = "Verteilung auf die Jahre: Wähle eine Zeile der Tabelle."
 		_year_title.theme_type_variation = &"MutedLabel"
 		_chart.tooltip_text = ""
@@ -671,21 +840,30 @@ func _selected_statistic() -> EventStatistic:
 # --- Katalog ----------------------------------------------------------------------------------
 
 ## Der Katalog, mit dem ein neuer Start jetzt rechnen würde, als Text: sein Inhalt
-## (CatalogEditor.content_key()), dazu die Kennungen, die without_faulty() wegen Fehlern auslässt.
-## Wie im Simulator: Macht Klaus eine Änderung rückgängig, ist der Text wieder derselbe, und der
-## Hinweis verschwindet.
+## (CatalogEditor.content_key(), mit den Profilen), die Kennungen, die without_faulty() wegen
+## Fehlern auslässt, und die Stellen der Start-Modifikatoren, die es weglässt. Dieselbe Regel wie
+## im Simulator: Verschwindet nur eine Meldung beim Lesen zu einem Profil, etwa beim Speichern,
+## rechnet ein neuer Start mit einem Start-Modifikator mehr, auch wenn der Inhalt gleich bleibt.
+## Macht Klaus eine Änderung rückgängig, ist der Text wieder derselbe, und der Hinweis verschwindet.
 func _catalog_key() -> String:
 	if not _has_catalog():
 		return ""
+	var issues := editor.issues()
 	var faulty := PackedStringArray()
-	for issue in editor.issues():
+	for issue in issues:
 		if issue.severity == CatalogIssue.Severity.ERROR and not faulty.has(issue.event_id):
 			faulty.append(issue.event_id)
 	faulty.sort()
-	return "%s\n%s" % [editor.content_key(), ",".join(faulty)]
+	var skipped := PackedStringArray()
+	for skip in editor.catalog.skipped_start_modifiers(issues):
+		skipped.append("%d:%d" % [skip["level"], skip["index"]])
+	return "%s\n%s\n%s" % [editor.content_key(), ",".join(faulty), ",".join(skipped)]
 
 
-## Die Titel der Ereignisse, die im Katalog der Werkstatt stehen, aber nicht in der Statistik.
+## Was im Katalog der Werkstatt steht, aber nicht in der Statistik, weil es Fehler hat: die Titel
+## der Ereignisse, dann wie im Simulator die Orte der Start-Modifikatoren, die without_faulty()
+## weglässt, etwa „Profil „Schwer“, Start-Modifikator „reklamationswelle““ (FR-013; Analyse, G1).
+## Das sind die mit eigenem Fehler und die, deren Ereignis ausgenommen ist, aus allen Profilen.
 func _excluded_titles() -> PackedStringArray:
 	var kept := {}
 	for event in statistics.catalog.events:
@@ -694,6 +872,8 @@ func _excluded_titles() -> PackedStringArray:
 	for event in editor.catalog.events:
 		if not kept.has(event.id):
 			titles.append("„%s“" % _event_title(event))
+	for skip in editor.catalog.skipped_start_modifiers(editor.issues()):
+		titles.append(skip["place"])
 	return titles
 
 

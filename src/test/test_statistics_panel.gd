@@ -7,6 +7,11 @@ extends GutTest
 ## ausgenommene Ereignisse und auf einen geänderten Katalog. Die Zählung selbst prüft
 ## test_timeline_statistics.gd.
 ##
+## Feature 003 (T030; FR-020, R15): die Auswahl des Grads, der Vergleich aller drei mit zehn
+## Spalten aus results_for(), der Bereich der Verteilung beim Vergleich, das Abbrechen mit gleich
+## vielen Spielen je Grad, der Grad im Ergebnistext, „Katalog geändert“ nach einer Änderung an
+## einem Profil und die weggelassenen Start-Modifikatoren im Hinweis.
+##
 ## Wie in test_simulator.gd baut jeder Test die ganze Werkstatt mit einer Kopie eines
 ## Test-Katalogs in einem eigenen Ordner unter user:// auf; after_each() räumt ab. Gerechnet werden
 ## wenige Spiele, damit die Suite schnell bleibt; ein Spiel mit catalog_minimal dauert rund 2 ms.
@@ -18,6 +23,14 @@ const MINIMAL := "res://test/fixtures/catalog_minimal.json"
 ## Wie MINIMAL, aber intel_pentium am 12.05.2001 (V06).
 const DATUM_AUSSERHALB := "res://test/fixtures/catalog_v06_datum_ausserhalb.json"
 const PENTIUM := "Intel Pentium erscheint"
+## Feature 003: Profile „Leicht −2“ und „Schwer +5“ auf die Reklamationswelle, dazu fixe,
+## jährliche und gesetzte Ereignisse, die kein Profil verändert.
+const GRADE := "res://test/fixtures/catalog_us1_grade.json"
+## Feature 003: drei Start-Modifikatoren in Schwer; einer zeigt auf ein Ereignis, das es nicht gibt,
+## einer auf den Lieferengpass, der wegen einer Grundchance von 150 % ausgenommen ist, einer gilt.
+const KAPUTT := "res://test/fixtures/catalog_us1_profil_kaputt.json"
+## Feature 003: In Schwer steht an Stelle 1 der Wert „fünf“ als Text (V22 beim Lesen).
+const WERT_TEXT := "res://test/fixtures/catalog_v22_profil_wert_text.json"
 
 
 func before_each() -> void:
@@ -124,8 +137,9 @@ func test_starten_rechnet_in_haeppchen_und_zeigt_das_ergebnis() -> void:
 	assert_eq(panel.statistics.games_done, 200)
 	assert_eq(fortschritt.value, 200.0)
 	assert_string_starts_with(panel.get_node("%ProgressLabel").text, "100 % · 200 von 200 Spielen")
+	# Feature 003 (R15): Der Text nennt den Grad, auch Mittel.
 	assert_string_starts_with(panel.get_node("%ResultLabel").text,
-		"Ergebnis über 200 Spiele, Seeds 1 bis 200, ohne Eingriffe")
+		"Ergebnis über 200 Spiele, Seeds 1 bis 200, Mittel, ohne Eingriffe")
 	var zeilen := _zeilen(panel)
 	assert_eq(zeilen.size(), 5)
 	assert_eq(zeilen[0], [PENTIUM, "1,00", "1", "1", "0,0 %", "–"], "fix: keine Obergrenze")
@@ -432,6 +446,340 @@ func test_katalog_geaendert_waehrend_der_rechnung() -> void:
 	await wait_process_frames(1)
 
 
+# --- Schwierigkeitsgrade (Feature 003, US4; FR-020, R15) --------------------------------------
+
+func test_auswahl_mit_vier_eintraegen_vorgabe_mittel() -> void:
+	# Arrange und Act
+	var werkstatt := await _werkstatt()
+	var panel := _statistik(werkstatt)
+
+	# Assert: hinter der Anzahl „Grad“ und die Auswahl (contracts/werkstatt.md, „Statistik“)
+	var auswahl: OptionButton = panel.get_node("%DifficultyOption")
+	var texte := []
+	var kennungen := []
+	for i in auswahl.item_count:
+		texte.append(auswahl.get_item_text(i))
+		kennungen.append(auswahl.get_item_id(i))
+	assert_eq(texte, ["Leicht", "Mittel", "Schwer", "Alle drei vergleichen"])
+	assert_eq(kennungen, [Difficulty.Level.LEICHT, Difficulty.Level.MITTEL,
+		Difficulty.Level.SCHWER, StatisticsPanel.COMPARE_ALL])
+	assert_eq(auswahl.get_selected_id(), Difficulty.Level.MITTEL, "Vorgabe Mittel")
+	var leiste: Control = panel.get_node("%InputBar")
+	assert_eq(auswahl.get_index(), panel.get_node("%CountEdit").get_index() + 2,
+		"Hinter der Anzahl, nach dem Text „Grad“.")
+	assert_eq((leiste.get_child(auswahl.get_index() - 1) as Label).text, "Grad")
+
+
+func test_mittel_rechnet_wie_feature_002_mit_typisierter_liste() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt(GRADE)
+	var panel := _statistik(werkstatt)
+	_anzahl(panel, "5")
+
+	# Act
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+
+	# Assert: immer ein Array[int] (Analyse, I2), hier nur Mittel; die Tabelle wie bisher.
+	var grade := panel.statistics.difficulties
+	assert_true(grade.is_typed(), "difficulties ist typisiert.")
+	assert_eq(grade.get_typed_builtin(), TYPE_INT)
+	assert_eq(grade, [Difficulty.Level.MITTEL] as Array[int])
+	var tabelle: Tree = panel.get_node("%ResultTable")
+	assert_eq(tabelle.columns, StatisticsPanel.TITLES.size())
+	assert_eq(tabelle.get_column_title(StatisticsPanel.Column.MEAN), "Mittelwert")
+	assert_string_starts_with(panel.get_node("%ProgressLabel").text, "100 % · 5 von 5 Spielen · ")
+
+
+func test_ein_grad_allein_mit_tabelle_wie_bisher_und_grad_im_text() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt(GRADE)
+	var panel := _statistik(werkstatt)
+	_anzahl(panel, "10")
+	_grad(panel, Difficulty.Level.SCHWER)
+
+	# Act
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+
+	# Assert: sechs Spalten, die Werte von Schwer, der Text nennt Schwer.
+	assert_eq(panel.statistics.difficulties, [Difficulty.Level.SCHWER] as Array[int])
+	assert_eq(panel.get_node("%ResultTable").columns, StatisticsPanel.TITLES.size())
+	var schwer := _ergebnis_fuer(panel, Difficulty.Level.SCHWER, "reklamationswelle")
+	var zeile := _zeile(panel, "Reklamationswelle")
+	assert_eq(zeile[StatisticsPanel.Column.MEAN], _komma(schwer.mean(), 2))
+	var text: String = panel.get_node("%ResultLabel").text
+	assert_string_starts_with(text, "Ergebnis über 10 Spiele, Seeds 1 bis 10, Schwer, ohne Eingriffe")
+
+	# Act und Assert: Die Auswahl umstellen ändert nichts an Text und Tabelle; sie sagen, wozu das
+	# Ergebnis gehört (R15).
+	_grad(panel, StatisticsPanel.COMPARE_ALL)
+	await wait_process_frames(1)
+	assert_eq(panel.get_node("%ResultLabel").text, text)
+	assert_eq(panel.get_node("%ResultTable").columns, StatisticsPanel.TITLES.size())
+
+	# Act und Assert: Die Verteilung gibt es bei einem Grad wie bisher.
+	_zeile_waehlen(panel, "Reklamationswelle")
+	assert_eq(panel.year_bars().size(), EventStatistic.YEARS)
+	assert_string_contains(panel.get_node("%YearTitle").text, "Reklamationswelle")
+
+
+func test_vergleich_hat_zehn_spalten_mit_den_werten_aus_results_for() -> void:
+	# Arrange (US4, Szenarien 1 und 3)
+	var werkstatt := await _werkstatt(GRADE)
+	var panel := _statistik(werkstatt)
+	_anzahl(panel, "20")
+	_grad(panel, StatisticsPanel.COMPARE_ALL)
+
+	# Act
+	_druecken(panel, "%StartButton")
+
+	# Assert: Während gerechnet wird, gilt der Grad erst für den nächsten Start, und die Tabelle hat
+	# schon ihre zehn Spalten.
+	var tabelle: Tree = panel.get_node("%ResultTable")
+	assert_true(panel.get_node("%DifficultyOption").disabled, "Gesperrt, solange es rechnet.")
+	assert_eq(tabelle.columns, 10)
+	assert_string_contains(panel.get_node("%ProgressLabel").text, "von 20 Spielen je Grad")
+	await _bis_fertig(panel)
+
+	# Assert: alle drei Grade, typisiert, und Titel samt Hinweis je Spalte
+	assert_false(panel.get_node("%DifficultyOption").disabled)
+	assert_eq(panel.statistics.difficulties, [Difficulty.Level.LEICHT, Difficulty.Level.MITTEL,
+		Difficulty.Level.SCHWER] as Array[int])
+	var titel := []
+	for spalte in tabelle.columns:
+		titel.append(tabelle.get_column_title(spalte))
+		assert_false(tabelle.get_column_title_tooltip_text(spalte).is_empty(), "Hinweis %d" % spalte)
+	assert_eq(titel, ["Ereignis", "Ø Leicht", "Ø Mittel", "Ø Schwer", "Spanne Leicht",
+		"Spanne Mittel", "Spanne Schwer", "ohne Leicht", "ohne Mittel", "ohne Schwer"])
+	assert_eq(tabelle.get_column_title_tooltip_text(3),
+		"Mittelwert bei Schwer: so oft beginnt das Ereignis im Schnitt je Spiel")
+	assert_string_starts_with(panel.get_node("%ProgressLabel").text,
+		"100 % · 20 von 20 Spielen je Grad · ")
+	assert_string_starts_with(panel.get_node("%ResultLabel").text, "Ergebnis über 20 Spiele je "
+		+ "Grad, Seeds 1 bis 20, Leicht, Mittel und Schwer, ohne Eingriffe; gerechnet in ")
+
+	# Assert: Jede Zelle kommt aus der Zählung ihres Grads.
+	var zeilen := _zeilen(panel)
+	var ergebnisse := []
+	for grad in StatisticsPanel.COMPARED:
+		ergebnisse.append(panel.statistics.results_for(grad))
+	assert_eq(zeilen.size(), ergebnisse[0].size())
+	for zeile_nr in zeilen.size():
+		var zeile: Array = zeilen[zeile_nr]
+		for stelle in 3:
+			var wert: EventStatistic = ergebnisse[stelle][zeile_nr]
+			assert_eq(zeile[0], wert.title)
+			assert_eq([zeile[1 + stelle], zeile[4 + stelle], zeile[7 + stelle]],
+				[_komma(wert.mean(), 2), "%d–%d" % [wert.minimum, wert.maximum],
+				"%s %%" % _komma(wert.share_without() * 100.0, 1)],
+				"%s, %s" % [wert.event_id, Difficulty.label(StatisticsPanel.COMPARED[stelle])])
+
+	# Assert: Die Reklamationswelle unterscheidet die Grade; was kein Profil verändert, hat in allen
+	# dreien dieselben Werte (US4, Szenario 3).
+	var welle := _zeile(panel, "Reklamationswelle")
+	assert_lt(_zahl(welle[1]), _zahl(welle[2]), "Leicht seltener als Mittel")
+	assert_lt(_zahl(welle[2]), _zahl(welle[3]), "Mittel seltener als Schwer")
+	for titel_fix: String in ["Windows 95 erscheint", "Weihnachtsgeschäft"]:
+		var fix := _zeile(panel, titel_fix)
+		for gruppe: int in [1, 4, 7]:
+			assert_eq([fix[gruppe + 1], fix[gruppe + 2]], [fix[gruppe], fix[gruppe]],
+				"%s, Spalte %d" % [titel_fix, gruppe])
+
+
+func test_vergleich_laesst_den_bereich_der_verteilung_mit_text_stehen() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt(GRADE)
+	var panel := _statistik(werkstatt)
+	_anzahl(panel, "3")
+	_grad(panel, Difficulty.Level.MITTEL)
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+	_zeile_waehlen(panel, "Reklamationswelle")
+	assert_eq(panel.year_bars().size(), EventStatistic.YEARS, "Bei einem Grad mit Verteilung.")
+
+	# Act
+	_grad(panel, StatisticsPanel.COMPARE_ALL)
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+
+	# Assert: Der Bereich bleibt mit seiner Mindesthöhe und sagt, wo es die Verteilung gibt (R15).
+	var titel: Label = panel.get_node("%YearTitle")
+	var flaeche: Control = panel.get_node("%YearChart")
+	assert_eq(titel.text, "Die Verteilung auf die Jahre zeigt die Statistik für einen einzelnen "
+		+ "Grad.")
+	assert_eq(titel.theme_type_variation, &"MutedLabel")
+	assert_true(flaeche.is_visible_in_tree(), "Der Bereich bleibt stehen.")
+	assert_eq(flaeche.custom_minimum_size.y, 64.0)
+	assert_eq(panel.year_bars().size(), 0, "Keine Balken, auch mit gewählter Zeile.")
+	assert_eq(panel.get_node("%ResultTable").get_selected().get_text(0), "Reklamationswelle",
+		"Die Zeile bleibt gewählt.")
+
+	# Act und Assert: wieder ein Grad, wieder die Verteilung
+	_grad(panel, Difficulty.Level.SCHWER)
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+	assert_eq(panel.get_node("%ResultTable").columns, StatisticsPanel.TITLES.size())
+	assert_eq(panel.year_bars().size(), EventStatistic.YEARS)
+	assert_string_contains(titel.text, "Reklamationswelle")
+
+
+func test_abbrechen_beim_vergleich_laesst_jedem_grad_gleich_viele_spiele() -> void:
+	# Arrange: 1.000 Spiele je Grad; abgebrochen wird, sobald ein Seed in allen dreien fertig ist.
+	var werkstatt := await _werkstatt(GRADE)
+	var panel := _statistik(werkstatt)
+	_grad(panel, StatisticsPanel.COMPARE_ALL)
+	_druecken(panel, "%StartButton")
+	var eines: bool = await wait_until(func() -> bool: return panel.statistics.games_done > 0, 10.0)
+	assert_true(eines, "Ein Seed ist fertig.")
+
+	# Act
+	_druecken(panel, "%CancelButton")
+
+	# Assert (FR-020)
+	var fertig := panel.statistics.games_done
+	assert_between(fertig, 1, 999)
+	for grad in StatisticsPanel.COMPARED:
+		for ergebnis in panel.statistics.results_for(grad):
+			assert_eq(ergebnis.games, fertig, "%s, %s" % [ergebnis.event_id,
+				Difficulty.label(grad)])
+	assert_eq(panel.get_node("%ResultLabel").text, ("Abgebrochen nach %d von 1.000 Spielen je "
+		+ "Grad. Das Ergebnis zeigt die %d fertigen, Seeds 1 bis %d, Leicht, Mittel und Schwer, "
+		+ "ohne Eingriffe.") % [fertig, fertig, fertig])
+	assert_string_contains(panel.get_node("%ProgressLabel").text,
+		"%d von 1.000 Spielen je Grad" % fertig)
+	assert_eq(_zeile(panel, "Windows 95 erscheint").slice(1, 4), ["1,00", "1,00", "1,00"])
+	await wait_process_frames(3)
+	assert_eq(panel.statistics.games_done, fertig, "Danach rechnet nichts mehr.")
+
+
+func test_abbrechen_mit_einem_grad_nennt_ihn() -> void:
+	# Arrange
+	var werkstatt := await _werkstatt(GRADE)
+	var panel := _statistik(werkstatt)
+	_grad(panel, Difficulty.Level.SCHWER)
+	_druecken(panel, "%StartButton")
+	var eines: bool = await wait_until(func() -> bool: return panel.statistics.games_done > 0, 10.0)
+	assert_true(eines, "Ein Spiel ist fertig.")
+
+	# Act
+	_druecken(panel, "%CancelButton")
+
+	# Assert
+	var fertig := panel.statistics.games_done
+	assert_eq(panel.get_node("%ResultLabel").text, ("Abgebrochen nach %d von 1.000 Spielen. Das "
+		+ "Ergebnis zeigt die %d fertigen, Seeds 1 bis %d, Schwer, ohne Eingriffe.") % [fertig,
+		fertig, fertig])
+	await wait_process_frames(1)
+
+
+func test_vergleich_mit_haekchen_rechnet_alle_grade_mit_dem_eingriff() -> void:
+	# Arrange (US4, Szenario 4): −4 Prozentpunkte auf den Lieferengpass, den kein Profil verändert
+	var werkstatt := await _werkstatt(GRADE)
+	var panel := _statistik(werkstatt)
+	var protokoll: Array[Dictionary] = [
+		{"at_day": -1, "kind": TimelineRun.INTERVENTION_ADD_MODIFIER, "modifier": {
+			"event_id": "lieferengpass", "from_day": _tag(1990, 1, 1), "id": "engpass",
+			"reason": "Engpass beim Großhändler", "to_day": TimelineRun.LAST_DAY, "value": -0.04}},
+	]
+	panel.interventions_source = func() -> Array[Dictionary]: return protokoll
+	_anzahl(panel, "10")
+	_grad(panel, StatisticsPanel.COMPARE_ALL)
+	panel.get_node("%WithInterventions").button_pressed = true
+
+	# Act
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+
+	# Assert: in jedem Grad mit dem Eingriff, der Lieferengpass überall gleich
+	assert_string_contains(panel.get_node("%ResultLabel").text,
+		"Leicht, Mittel und Schwer, mit 1 Eingriff aus dem Simulator")
+	var engpass: Array = []
+	for grad in StatisticsPanel.COMPARED:
+		engpass.append(_ergebnis_fuer(panel, grad, "lieferengpass").total)
+	assert_eq(engpass, [engpass[0], engpass[0], engpass[0]])
+
+
+func test_katalog_geaendert_nach_einer_aenderung_an_einem_profil() -> void:
+	# Arrange (FR-020; Analyse, G4): Der Vergleich über 1.000 Spiele läuft.
+	var werkstatt := await _werkstatt(GRADE)
+	var panel := _statistik(werkstatt)
+	var hinweis: Label = panel.get_node("%CatalogNotice")
+	_grad(panel, StatisticsPanel.COMPARE_ALL)
+	_druecken(panel, "%StartButton")
+	var rechnung := panel.statistics
+
+	# Act: Schwer +8 statt +5, ungespeichert
+	werkstatt.editor.set_start_modifier_field(Difficulty.Level.SCHWER, 0, &"value", 0.08)
+	await wait_process_frames(1)
+
+	# Assert: Der Hinweis erscheint, die Rechnung bleibt beim alten Stand.
+	assert_true(hinweis.visible)
+	assert_eq(hinweis.text, "? Katalog geändert, neu starten")
+	assert_true(panel.is_running())
+	assert_same(panel.statistics, rechnung)
+	assert_almost_eq(rechnung.catalog.get_profile(Difficulty.Level.SCHWER).modifiers[0].value,
+		0.05, 0.0001)
+
+	# Act und Assert: Rückgängig nimmt den Hinweis.
+	werkstatt.editor.undo()
+	await wait_process_frames(1)
+	assert_false(hinweis.visible)
+	_druecken(panel, "%CancelButton")
+	await wait_process_frames(1)
+
+
+func test_katalog_geaendert_wenn_nur_eine_lesemeldung_zu_einem_profil_verschwindet() -> void:
+	# Arrange: In Schwer steht an Stelle 1 ein Wert als Text (V22 beim Lesen). In Leicht kommt ein
+	# Start-Modifikator ohne Grund dazu (V29); dieser Profilfehler bleibt auch nach dem Speichern
+	# stehen, damit sich nicht schon die Liste der fehlerhaften Kennungen ändert.
+	var werkstatt := await _werkstatt(WERT_TEXT)
+	var panel := _statistik(werkstatt)
+	var hinweis: Label = panel.get_node("%CatalogNotice")
+	werkstatt.editor.add_start_modifier(Difficulty.Level.LEICHT, "reklamationswelle")
+	await wait_process_frames(1)
+	var vorher := _weggelassen(werkstatt)
+	assert_true(vorher.has("%d:1" % Difficulty.Level.SCHWER), "Schwer, Stelle 1 fehlt (V22).")
+	_druecken(panel, "%StartButton")
+	var inhalt := werkstatt.editor.content_key()
+
+	# Act: Speichern verwirft die Meldungen beim Lesen; der Inhalt bleibt.
+	assert_eq(werkstatt.editor.save(), OK)
+	await wait_process_frames(1)
+
+	# Assert: Ein neuer Start nähme Schwer, Stelle 1 mit; deshalb „Katalog geändert“.
+	assert_eq(werkstatt.editor.content_key(), inhalt, "Der Inhalt ist derselbe.")
+	assert_false(_weggelassen(werkstatt).has("%d:1" % Difficulty.Level.SCHWER))
+	assert_true(_weggelassen(werkstatt).has("%d:0" % Difficulty.Level.LEICHT),
+		"Der Fehler in Leicht steht noch.")
+	assert_true(hinweis.visible)
+	assert_true(panel.is_running(), "Die Rechnung bleibt beim alten Stand.")
+	_druecken(panel, "%CancelButton")
+	await wait_process_frames(1)
+
+
+func test_ausgenommen_nennt_beide_arten_weggelassener_start_modifikatoren() -> void:
+	# Arrange (FR-013; Analyse, G1): wie im Simulator
+	var werkstatt := await _werkstatt(KAPUTT)
+	var panel := _statistik(werkstatt)
+	_anzahl(panel, "3")
+	_grad(panel, Difficulty.Level.SCHWER)
+
+	# Act
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+
+	# Assert: das ausgenommene Ereignis, der Start-Modifikator mit eigenem Fehler und der, dessen
+	# Ereignis ausgenommen ist
+	var hinweis: Label = panel.get_node("%ExcludedNotice")
+	assert_true(hinweis.visible)
+	assert_eq(hinweis.text, "! Ausgenommen, weil fehlerhaft: „Lieferengpass“, Profil „Schwer“, "
+		+ "Start-Modifikator „geisterereignis“, Profil „Schwer“, Start-Modifikator "
+		+ "„lieferengpass“. Die Gründe stehen in der Prüfung.")
+	var profil := panel.statistics.catalog.get_profile(Difficulty.Level.SCHWER)
+	assert_eq(profil.modifiers.size(), 1, "Gerechnet wird nur mit dem dritten.")
+
+
 # --- Helfer -----------------------------------------------------------------------------------
 
 func _tag(jahr: int, monat: int, tag: int) -> int:
@@ -506,6 +854,45 @@ func _ergebnis(panel: StatisticsPanel, kennung: String) -> EventStatistic:
 			return ergebnis
 	fail_test("Keine Statistik für %s." % kennung)
 	return EventStatistic.new()
+
+
+## Wählt in %DifficultyOption den Eintrag mit der Kennung [param kennung], wie mit der Maus; der
+## Grad gilt beim nächsten „Starten“.
+func _grad(panel: StatisticsPanel, kennung: int) -> void:
+	var auswahl: OptionButton = panel.get_node("%DifficultyOption")
+	var stelle := auswahl.get_item_index(kennung)
+	auswahl.select(stelle)
+	auswahl.item_selected.emit(stelle)
+
+
+## Die Texte der Zeile mit dem Titel [param titel].
+func _zeile(panel: StatisticsPanel, titel: String) -> Array:
+	for zeile: Array in _zeilen(panel):
+		if zeile[0] == titel:
+			return zeile
+	fail_test("„%s“ fehlt in der Tabelle." % titel)
+	return []
+
+
+func _ergebnis_fuer(panel: StatisticsPanel, grad: int, kennung: String) -> EventStatistic:
+	for ergebnis in panel.statistics.results_for(grad):
+		if ergebnis.event_id == kennung:
+			return ergebnis
+	fail_test("Keine Statistik für %s bei %s." % [kennung, Difficulty.label(grad)])
+	return EventStatistic.new()
+
+
+## Eine Zahl mit [param stellen] Nachkommastellen und Komma, wie die Tabelle sie zeigt (unter 1.000).
+func _komma(wert: float, stellen: int) -> String:
+	return (("%." + str(stellen) + "f") % wert).replace(".", ",")
+
+
+## Die Start-Modifikatoren, die ein neuer Start weglassen würde, als „Grad:Stelle“.
+func _weggelassen(werkstatt: Werkstatt) -> PackedStringArray:
+	var stellen := PackedStringArray()
+	for skip in werkstatt.editor.catalog.skipped_start_modifiers(werkstatt.editor.issues()):
+		stellen.append("%d:%d" % [skip["level"], skip["index"]])
+	return stellen
 
 
 ## „30,0 %“ als Zahl 30.0.

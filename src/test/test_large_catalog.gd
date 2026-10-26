@@ -6,7 +6,10 @@ extends GutTest
 ## Spiel unter 2 s.
 ##
 ## Erzeugt hat die Datei einmal ein Skript außerhalb des Repos, deterministisch aus festen Formeln,
-## geschrieben mit EventCatalog.write_file(). Sie ändert sich danach nicht mehr.
+## geschrieben mit EventCatalog.write_file(). Sie ändert sich danach nicht mehr; nur den leeren
+## Abschnitt „profiles“ hat sie mit Feature 003 bekommen. Start-Modifikatoren kommen für die Messung
+## im Speicher dazu, 20 je Profil, für die Prüfung (T007) und eine Änderung im Editor (T014;
+## Analyse, G9).
 ##
 ## Zeiten schwanken, weil der Rechner nebenher anderes tut. Jede Messung läuft deshalb mehrmals,
 ## und es zählt der Median: Ein einzelner Ausreißer nach oben, etwa wenn das Betriebssystem den
@@ -22,6 +25,8 @@ const SPIEL_MSEC := 2000.0
 ## So oft läuft jede Messung; der Median ist der mittlere Wert.
 const LAEUFE := 5
 const SPIELE := 3
+## Start-Modifikatoren je Profil, die die Messung der Prüfung im Speicher dazunimmt.
+const START_MODIFIKATOREN := 20
 
 var _editor: CatalogEditor
 
@@ -81,6 +86,32 @@ func test_pruefung_unter_100_ms() -> void:
 	assert_lt(median, PRUEFUNG_MSEC, "SC-011: Die Prüfung braucht unter 100 ms.")
 
 
+func test_pruefung_mit_20_start_modifikatoren_je_profil_unter_100_ms() -> void:
+	# Arrange (Feature 003, T007; Analyse, G9): Die Fixture behält ihre leeren Profile; die
+	# Start-Modifikatoren kommen nur im Speicher dazu.
+	var meldungen: Array[CatalogIssue] = []
+	var katalog := EventCatalog.read_file(KATALOG, meldungen)
+	_start_modifikatoren_dazu(katalog)
+	var zeiten: Array[float] = []
+	var gefunden: Array[CatalogIssue] = []
+
+	# Act
+	for lauf in LAEUFE:
+		var beginn := Time.get_ticks_usec()
+		gefunden = CatalogValidator.validate(katalog)
+		zeiten.append((Time.get_ticks_usec() - beginn) / 1000.0)
+
+	# Assert: Geprüft werden alle; nur der letzte je Profil warnt, er beginnt mitten im Monat.
+	var median := _median(zeiten)
+	gut.p("Feature 003, Prüfung von 500 Ereignissen und 20 Start-Modifikatoren je Profil: Median "
+		+ "%.1f ms aus %s" % [median, _liste(zeiten)])
+	var stellen := gefunden.map(
+		func(meldung: CatalogIssue) -> String: return "%s %s" % [meldung.rule, meldung.field])
+	assert_eq(stellen, ["V31 profiles.leicht[19].from_day", "V31 profiles.schwer[19].from_day"])
+	assert_eq(katalog.get_profile(Difficulty.Level.SCHWER).modifiers.size(), START_MODIFIKATOREN)
+	assert_lt(median, PRUEFUNG_MSEC, "Die Prüfung samt Profilen braucht unter 100 ms.")
+
+
 func test_aenderung_samt_pruefung_unter_100_ms() -> void:
 	# Arrange: jede Art Änderung fünfmal, an verschiedenen Ereignissen. Jedes vierte Ereignis über
 	# Wahrscheinlichkeit hat ein Folgeereignis auf das nächste; Umbenennen und Löschen finden so
@@ -120,6 +151,38 @@ func test_aenderung_samt_pruefung_unter_100_ms() -> void:
 		"… samt dem Verweis darauf.")
 
 
+func test_aenderung_an_start_modifikator_samt_pruefung_unter_100_ms() -> void:
+	# Arrange (Feature 003, T014; Analyse, G9): der große Katalog mit 20 Start-Modifikatoren je
+	# Profil, als Kopie geschrieben und im Editor geöffnet. Die Fixture behält ihre leeren Profile.
+	var meldungen: Array[CatalogIssue] = []
+	var katalog := EventCatalog.read_file(KATALOG, meldungen)
+	_start_modifikatoren_dazu(katalog)
+	var ziel := ORDNER + "katalog.json"
+	assert_eq(katalog.write_file(ziel), OK)
+	assert_eq(_editor.open(ziel), OK)
+	var zeiten: Array[float] = []
+
+	# Act: je Lauf ein anderer Wert an einer anderen Stelle in Schwer, also jedes Mal eine Aktion
+	# mit neuem Profil und neuer Prüfung.
+	for lauf in LAEUFE:
+		var beginn := Time.get_ticks_usec()
+		var wert := 0.02 + lauf / 100.0
+		_editor.set_start_modifier_field(Difficulty.Level.SCHWER, lauf, &"value", wert)
+		zeiten.append((Time.get_ticks_usec() - beginn) / 1000.0)
+
+	# Assert
+	var median := _median(zeiten)
+	gut.p("Feature 003, Wert eines Start-Modifikators samt Prüfung, 500 Ereignisse und 20 "
+		+ "Start-Modifikatoren je Profil: Median %.1f ms aus %s" % [median, _liste(zeiten)])
+	var schwer := _editor.catalog.get_profile(Difficulty.Level.SCHWER)
+	assert_almost_eq(schwer.modifiers[LAEUFE - 1].value, 0.02 + (LAEUFE - 1) / 100.0, 0.00001,
+		"Die letzte Änderung ist angekommen.")
+	var letzte := START_MODIFIKATOREN + LAEUFE - 1
+	assert_eq(_editor.undo_name(), "Wert von Schwer: start_%03d" % letzte,
+		"Der Name nennt Grad und Kennung.")
+	assert_lt(median, AENDERUNG_MSEC, "Eine Änderung samt Prüfung braucht unter 100 ms (G9).")
+
+
 func test_ein_spiel_unter_2_sekunden() -> void:
 	# Arrange
 	var meldungen: Array[CatalogIssue] = []
@@ -144,6 +207,26 @@ func test_ein_spiel_unter_2_sekunden() -> void:
 
 
 # --- Helfer -----------------------------------------------------------------------------------
+
+## Hängt an beide Profile je 20 Start-Modifikatoren an, jeden auf ein anderes Ereignis über
+## Wahrscheinlichkeit: Leicht auf zufall_000 bis zufall_019, Schwer auf zufall_020 bis zufall_039.
+## Sie gelten je ein ganzes Jahr; nur der letzte je Profil beginnt am 15. und warnt deshalb (V31).
+func _start_modifikatoren_dazu(katalog: EventCatalog) -> void:
+	for p in katalog.profiles.size():
+		var profil := katalog.profiles[p]
+		for i in START_MODIFIKATOREN:
+			var nummer := p * START_MODIFIKATOREN + i
+			var jahr := 1985 + i % 15
+			var erster_tag := 15 if i == START_MODIFIKATOREN - 1 else 1
+			var modifikator := ChanceModifier.new()
+			modifikator.id = "start_%03d" % nummer
+			modifikator.event_id = "zufall_%03d" % nummer
+			modifikator.reason = "Messung %d" % nummer
+			modifikator.value = 0.01 if p == 0 else -0.01
+			modifikator.from_day = GameDate.new(jahr, 1, erster_tag).to_day_index()
+			modifikator.to_day = GameDate.new(jahr, 12, 31).to_day_index()
+			profil.modifiers.append(modifikator)
+
 
 ## Kopie des großen Katalogs im Testordner; der CatalogEditor soll die Fixture nie anfassen.
 func _kopie() -> String:

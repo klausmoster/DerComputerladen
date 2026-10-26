@@ -6,6 +6,10 @@ extends GutTest
 ## Reihe gesammelte (T075) und solche ohne lesbaren Tag (R1), abgelehnte Eingriffe, die nicht
 ## zählen (T082), die Obergrenze und das Zeitbudget von run_for().
 ##
+## Dazu die Grade (Feature 003, T028; FR-020, SC-003; US4, Szenarien 2 bis 4): die Liste der Grade,
+## leer oder nur Mittel wie in Feature 002; ein Seed in allen Graden; ein Abbruch mitten im Seed;
+## results_for(); Eingriffe in jedem Grad und angenommen oder abgelehnt nach dem ersten Grad.
+##
 ## Die Tests arbeiten mit Test-Katalogen unter fixtures/catalog_us7_*.json und
 ## catalog_us6_reklamation.json, nie mit dem echten Katalog (R20). Die Eingriffe kommen aus dem
 ## Eingriffsprotokoll eines echten Laufs, so wie der Simulator sie sammelt.
@@ -24,6 +28,16 @@ const US6 := "res://test/fixtures/catalog_us6_reklamation.json"
 const LAEUFT_NOCH := "res://test/fixtures/catalog_us3_laeuft_noch.json"
 ## Ein Folgetermin, der erst am 04.01.2000 käme und deshalb geplant bleibt.
 const SPIELENDE := "res://test/fixtures/catalog_us1_spielende.json"
+## Reklamationswelle zu 3 % pro Monat mit „Leicht −2“ und „Schwer +5“, dazu Abhängige und
+## Unabhängige, darunter der Lieferengpass zu 4 %, auf den kein Profil zeigt (Feature 003).
+const GRADE := "res://test/fixtures/catalog_us1_grade.json"
+## Alle drei Grade in der Reihenfolge der Auswahl.
+const ALLE_GRADE: Array[int] = [Difficulty.Level.LEICHT, Difficulty.Level.MITTEL,
+	Difficulty.Level.SCHWER]
+## Die Ereignisse in catalog_us1_grade.json, die kein Profil verändert und die von keinem
+## veränderten abhängen (US4, Szenario 3).
+const UNABHAENGIGE: Array[String] = ["konkurrent_eroeffnet", "lieferengpass", "weihnachtsgeschaeft",
+	"windows_95"]
 ## So viel darf ein Aufruf von run_for() über Budget und längstem Schritt liegen: Der Rechner
 ## arbeitet nebenher auch anderes.
 const TOLERANZ_MS := 10.0
@@ -407,6 +421,222 @@ func test_run_for_haelt_sein_budget_ungefaehr_ein() -> void:
 	assert_gt(statistik.games_done, 0, "Spiele werden über mehrere Aufrufe fertig.")
 
 
+# --- Grade (Feature 003, T028; FR-020) --------------------------------------------------------
+
+func test_leere_liste_und_nur_mittel_rechnen_wie_feature_002() -> void:
+	# Arrange: ohne Liste, mit leerer Liste und mit nur Mittel, je 12 Spiele
+	var katalog := _katalog(GRADE)
+	var ohne := TimelineStatistics.new(katalog, 12)
+	var leer := TimelineStatistics.new(katalog, 12, 1, [] as Array[int])
+	var mittel := TimelineStatistics.new(katalog, 12, 1, [Difficulty.Level.MITTEL] as Array[int])
+
+	# Act: Häppchen von einem Monat; gezählt wird, wann jedes Spiel fertig ist
+	var verlaeufe := []
+	for statistik in [ohne, leer, mittel]:
+		var fertig_nach := []
+		var schritte := 0
+		while not statistik.run_for(0):
+			schritte += 1
+			if fertig_nach.size() < statistik.games_done:
+				fertig_nach.append(schritte)
+		verlaeufe.append(fertig_nach)
+
+	# Assert
+	assert_eq([ohne.difficulties, leer.difficulties], [[Difficulty.DEFAULT], [Difficulty.DEFAULT]],
+		"Leer heißt nur Mittel.")
+	assert_eq(verlaeufe[1], verlaeufe[0], "Leere Liste: jedes Spiel nach 180 Monaten fertig.")
+	assert_eq(verlaeufe[2], verlaeufe[0], "Nur Mittel: ebenso.")
+	assert_eq(verlaeufe[0].slice(0, 2), [180, 360])
+	assert_eq(_als_daten(leer.results()), _als_daten(ohne.results()))
+	assert_eq(_als_daten(mittel.results()), _als_daten(ohne.results()))
+	assert_eq(_als_daten(mittel.results_for(Difficulty.Level.MITTEL)), _als_daten(ohne.results()))
+
+
+func test_jeder_grad_rechnet_dieselben_seeds_wie_eine_statistik_nur_fuer_ihn() -> void:
+	# Arrange: der Vergleich und je Grad eine eigene Statistik, alle mit den Seeds 5 bis 24
+	var katalog := _katalog(GRADE)
+	var vergleich := TimelineStatistics.new(katalog, 20, 5, ALLE_GRADE)
+
+	# Act
+	_bis_fertig(vergleich)
+
+	# Assert
+	assert_eq(vergleich.games_done, 20)
+	for grad in ALLE_GRADE:
+		var einzeln := TimelineStatistics.new(katalog, 20, 5, [grad] as Array[int])
+		_bis_fertig(einzeln)
+		assert_eq(_als_daten(vergleich.results_for(grad)), _als_daten(einzeln.results()),
+			Difficulty.label(grad))
+	assert_ne(_als_daten(vergleich.results_for(Difficulty.Level.LEICHT)),
+		_als_daten(vergleich.results_for(Difficulty.Level.SCHWER)),
+		"Die Grade unterscheiden sich; der Vergleich oben sagt also etwas.")
+
+
+func test_abbruch_mitten_im_seed_laesst_alle_grade_gleich() -> void:
+	# Arrange: drei Grade, zwei Spiele
+	var statistik := TimelineStatistics.new(_katalog(GRADE), 2, 1, ALLE_GRADE)
+
+	# Act: der erste Seed in allen drei Graden, dann 180 Monate des zweiten, also Leicht fertig
+	# und Mittel noch nicht begonnen; danach noch 179 Monate, also Mittel fast fertig
+	for monat in 180 * 3 - 1:
+		statistik.run_for(0)
+	var vor_dem_ersten := statistik.games_done
+	statistik.run_for(0)
+	var nach_dem_ersten := statistik.games_done
+	var spiele := []
+	for monate: int in [180, 179]:
+		for monat in monate:
+			assert_false(statistik.run_for(0))
+		spiele.append(_spiele_je_grad(statistik))
+
+	# Assert: Gezählt wird der Seed erst nach dem letzten Grad, dann in allen.
+	assert_eq([vor_dem_ersten, nach_dem_ersten], [0, 1])
+	assert_eq(spiele, [[1, 1, 1], [1, 1, 1]], "Der angefangene Seed zählt in keinem Grad.")
+	assert_eq(statistik.games_done, 1)
+
+
+func test_results_for_liefert_den_grad_und_results_den_ersten() -> void:
+	# Arrange: Schwer vor Leicht, ohne Mittel
+	var katalog := _katalog(GRADE)
+	var reihenfolge: Array[int] = [Difficulty.Level.SCHWER, Difficulty.Level.LEICHT]
+	var statistik := TimelineStatistics.new(katalog, 30, 1, reihenfolge)
+	var schwer := TimelineStatistics.new(katalog, 30, 1, [Difficulty.Level.SCHWER] as Array[int])
+	var leicht := TimelineStatistics.new(katalog, 30, 1, [Difficulty.Level.LEICHT] as Array[int])
+
+	# Act
+	for einzeln in [statistik, schwer, leicht]:
+		_bis_fertig(einzeln)
+
+	# Assert
+	assert_eq(statistik.difficulties, reihenfolge)
+	assert_eq(_als_daten(statistik.results()), _als_daten(schwer.results()), "Der erste Grad.")
+	assert_eq(_als_daten(statistik.results_for(Difficulty.Level.SCHWER)),
+		_als_daten(schwer.results()))
+	assert_eq(_als_daten(statistik.results_for(Difficulty.Level.LEICHT)),
+		_als_daten(leicht.results()))
+	assert_eq(statistik.results_for(Difficulty.Level.MITTEL).size(), 0, "Nicht in der Liste.")
+	assert_eq(statistik.results_for(7).size(), 0, "Kein Grad.")
+	var kopie := statistik.results_for(Difficulty.Level.LEICHT)
+	kopie[0].games = -5
+	assert_eq(statistik.results_for(Difficulty.Level.LEICHT)[0].games, 30,
+		"Jeder Aufruf liefert neue Objekte.")
+
+
+func test_sc_003_reklamationswelle_bei_mittel_und_schwer() -> void:
+	# Arrange: 3 % pro Monat, „Leicht −2“ und „Schwer +5“; 1.000 Spiele in allen drei Graden
+	var statistik := TimelineStatistics.new(_katalog(GRADE), 1000, 1, ALLE_GRADE)
+
+	# Act
+	_bis_fertig(statistik)
+
+	# Assert: 180 Monate, Erwartung 1,8, 5,4 und 14,4
+	var mittelwerte := {}
+	for grad in ALLE_GRADE:
+		var ergebnis := _ergebnis_fuer(statistik, grad, "reklamationswelle")
+		assert_eq(ergebnis.games, 1000, Difficulty.label(grad))
+		mittelwerte[Difficulty.label(grad)] = ergebnis.mean()
+	gut.p("Reklamationswelle über 1.000 Spiele: Leicht %.3f, Mittel %.3f, Schwer %.3f"
+		% [mittelwerte["Leicht"], mittelwerte["Mittel"], mittelwerte["Schwer"]])
+	assert_between(mittelwerte["Mittel"], 4.9, 5.9, "SC-003, Mittel")
+	assert_between(mittelwerte["Schwer"], 13.4, 15.4, "SC-003, Schwer")
+	assert_lt(mittelwerte["Leicht"], mittelwerte["Mittel"], "Leicht −2 kommt seltener.")
+
+
+func test_us4_szenario_2_zweimal_gerechnet_ist_der_vergleich_gleich() -> void:
+	# Arrange: derselbe Vergleich zweimal, einmal in Häppchen von einem Monat
+	var katalog := _katalog(GRADE)
+	var haeppchen := TimelineStatistics.new(katalog, 10, 1, ALLE_GRADE)
+	var am_stueck := TimelineStatistics.new(katalog, 10, 1, ALLE_GRADE)
+
+	# Act
+	while not haeppchen.run_for(0):
+		pass
+	_bis_fertig(am_stueck)
+
+	# Assert
+	for grad in ALLE_GRADE:
+		assert_eq(_als_daten(haeppchen.results_for(grad)), _als_daten(am_stueck.results_for(grad)),
+			Difficulty.label(grad))
+
+
+func test_us4_szenario_3_unveraenderte_ereignisse_sind_in_allen_graden_gleich() -> void:
+	# Arrange
+	var statistik := TimelineStatistics.new(_katalog(GRADE), 200, 1, ALLE_GRADE)
+
+	# Act
+	_bis_fertig(statistik)
+
+	# Assert: die Unabhängigen gleich, die Reklamationswelle nicht
+	for kennung in UNABHAENGIGE:
+		var mittel := _als_daten([_ergebnis_fuer(statistik, Difficulty.Level.MITTEL, kennung)])
+		for grad: int in [Difficulty.Level.LEICHT, Difficulty.Level.SCHWER]:
+			assert_eq(_als_daten([_ergebnis_fuer(statistik, grad, kennung)]), mittel,
+				"%s bei %s" % [kennung, Difficulty.label(grad)])
+	var welle := []
+	for grad in ALLE_GRADE:
+		welle.append(_ergebnis_fuer(statistik, grad, "reklamationswelle").total)
+	assert_true(welle[0] < welle[1] and welle[1] < welle[2], "Reklamationswelle: %s" % str(welle))
+
+
+func test_us4_szenario_4_eingriff_gilt_in_allen_graden() -> void:
+	# Arrange: im Simulator „Lieferengpass −4 Prozentpunkte ab 01.01.1990“, also 0 % ab 1990
+	var katalog := _katalog(GRADE)
+	var simulator := TimelineRun.new(katalog, 4711)
+	assert_eq(simulator.add_modifier(_engpass(-0.04)), OK)
+	var statistik := TimelineStatistics.new(katalog, 100, 1, ALLE_GRADE)
+	statistik.interventions = simulator.interventions
+	var ohne := TimelineStatistics.new(katalog, 100, 1, ALLE_GRADE)
+
+	# Act
+	_bis_fertig(statistik)
+	_bis_fertig(ohne)
+
+	# Assert: in jedem Grad ab 1990 kein Lieferengpass mehr, und überall dieselben Werte
+	var mittel := _ergebnis_fuer(statistik, Difficulty.Level.MITTEL, "lieferengpass")
+	for grad in ALLE_GRADE:
+		var engpass := _ergebnis_fuer(statistik, grad, "lieferengpass")
+		assert_eq(_als_daten([engpass]), _als_daten([mittel]), Difficulty.label(grad))
+		assert_eq(_summe(Array(engpass.per_year).slice(1990 - EventStatistic.FIRST_YEAR)), 0,
+			"%s: ab 1990 kein Lieferengpass" % Difficulty.label(grad))
+		assert_lt(engpass.total, _ergebnis_fuer(ohne, grad, "lieferengpass").total,
+			"%s: Ohne Eingriff kommt er öfter." % Difficulty.label(grad))
+	assert_eq([statistik.accepted, statistik.refused.size()], [1, 0], "Einmal, nicht je Grad.")
+
+
+func test_angenommen_und_abgelehnt_nach_dem_ersten_grad() -> void:
+	# Arrange: „reklamationswelle“ entfernen. Bei Schwer ist das ein Start-Modifikator, bei Mittel
+	# gibt es den Modifikator nicht; beide lehnen ab, mit verschiedenem Grund. Dazu eine gültige
+	# Einplanung.
+	var katalog := _katalog(GRADE)
+	var protokoll: Array[Dictionary] = [
+		{"at_day": 100, "kind": TimelineRun.INTERVENTION_SCHEDULE, "event_id": "lieferengpass",
+			"day": 200, "reason": "Spediteur streikt"},
+		{"at_day": 300, "kind": TimelineRun.INTERVENTION_REMOVE_MODIFIER,
+			"modifier": {"event_id": "reklamationswelle", "from_day": TimelineRun.FIRST_DAY,
+				"id": "reklamationswelle", "reason": "Anspruchsvolle Kunden",
+				"to_day": TimelineRun.LAST_DAY, "value": 0.05}},
+	]
+	var gruende := {}
+
+	# Act
+	for reihenfolge: Array[int] in [
+			[Difficulty.Level.MITTEL, Difficulty.Level.SCHWER] as Array[int],
+			[Difficulty.Level.SCHWER, Difficulty.Level.MITTEL] as Array[int]]:
+		var statistik := TimelineStatistics.new(katalog, 3, 1, reihenfolge)
+		statistik.interventions = protokoll
+		_bis_fertig(statistik)
+		assert_eq([statistik.accepted, statistik.refused.size()], [1, 1],
+			"Einmal gezählt, nicht je Grad oder Spiel.")
+		gruende[Difficulty.label(reihenfolge[0])] = statistik.refused[0]["reason"]
+
+	# Assert: Der Grund kommt aus dem ersten Grad der Liste.
+	assert_eq(gruende, {
+		"Mittel": "Einen Modifikator mit der Kennung „reklamationswelle“ gibt es nicht.",
+		"Schwer": "„reklamationswelle“ ist ein Start-Modifikator von Schwer und lässt sich im "
+			+ "laufenden Spiel nicht entfernen.",
+	})
+
+
 # --- Helfer -----------------------------------------------------------------------------------
 
 func _tag(jahr: int, monat: int, tag: int) -> int:
@@ -483,6 +713,34 @@ func _ergebnis(statistik: TimelineStatistics, kennung: String) -> EventStatistic
 			return ergebnis
 	fail_test("Keine Statistik für %s." % kennung)
 	return EventStatistic.new()
+
+
+func _ergebnis_fuer(statistik: TimelineStatistics, grad: int, kennung: String) -> EventStatistic:
+	for ergebnis in statistik.results_for(grad):
+		if ergebnis.event_id == kennung:
+			return ergebnis
+	fail_test("Keine Statistik für %s bei %s." % [kennung, Difficulty.label(grad)])
+	return EventStatistic.new()
+
+
+## Wie viele Spiele je Grad der Liste gezählt sind, am ersten Ereignis abgelesen.
+func _spiele_je_grad(statistik: TimelineStatistics) -> Array:
+	var spiele := []
+	for grad in statistik.difficulties:
+		spiele.append(statistik.results_for(grad)[0].games)
+	return spiele
+
+
+## [param wert] als Anteil auf den Lieferengpass, vom 01.01.1990 bis 31.12.1999.
+func _engpass(wert: float) -> ChanceModifier:
+	var modifikator := ChanceModifier.new()
+	modifikator.id = "engpass"
+	modifikator.event_id = "lieferengpass"
+	modifikator.value = wert
+	modifikator.reason = "Zweiter Großhändler"
+	modifikator.from_day = _tag(1990, 1, 1)
+	modifikator.to_day = TimelineRun.LAST_DAY
+	return modifikator
 
 
 ## +[param wert] als Anteil auf „Nur mit Aktion“, vom 01.01.1985 bis 31.12.1999.

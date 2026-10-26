@@ -12,35 +12,57 @@ extends GutTest
 ## res://test/fixtures/ oder bauen sich kleine Kataloge im Code; so bleiben sie grün, wenn
 ## Klaus den echten Katalog in der Werkstatt ändert.
 
-## Die eingefrorene Übernahme aus T012; sie ändert sich nie mehr.
+## Die eingefrorene Übernahme aus T012; sie ändert sich nie mehr. Sie ist eine Datei aus
+## Feature 002, ohne den Abschnitt „profiles“.
 const UEBERNAHME := "res://test/fixtures/event_catalog_uebernahme.json"
-## Das Beispiel aus contracts/ereigniskatalog.md: jede Art einmal.
+## Das Beispiel aus contracts/ereigniskatalog.md: jede Art einmal, dazu je ein Start-Modifikator in
+## Leicht und Schwer (Feature 003).
 const ALLE_ARTEN := "res://test/fixtures/catalog_alle_arten.json"
 ## Kein gültiges JSON: In Zeile 12 fehlt am Ende das Komma, der Parser merkt es in Zeile 13.
 const KAPUTT := "res://test/fixtures/catalog_v22_kaputt.json"
 const FEHLT := "res://test/fixtures/gibt_es_nicht.json"
+## Strukturfehler im Abschnitt „profiles“ (Feature 003, T005): ein Profil für Mittel, eines für
+## einen Grad, den es nicht gibt, und ein Wert als Text an der Stelle 1 von Schwer.
+const PROFIL_MITTEL := "res://test/fixtures/catalog_v22_profil_mittel.json"
+const PROFIL_UNBEKANNT := "res://test/fixtures/catalog_v22_profil_unbekannt.json"
+const PROFIL_WERT_TEXT := "res://test/fixtures/catalog_v22_profil_wert_text.json"
+## So endet eine Datei aus Feature 002, und so nach dem ersten Speichern: Komma hinter
+## "format": 1, dazu vier Zeilen (research.md, R3).
+const ENDE_OHNE_PROFILE := "\t\"format\": 1\n}\n"
+const ENDE_MIT_LEEREN_PROFILEN := "\t\"format\": 1,\n\t\"profiles\": {\n\t\t\"leicht\": [],\n" \
+	+ "\t\t\"schwer\": []\n\t}\n}\n"
 
 
 # --- Rundreise ------------------------------------------------------------
 
-func test_uebernahme_lesen_und_schreiben_ergibt_denselben_text() -> void:
-	# Arrange
+func test_uebernahme_bekommt_beim_schreiben_nur_den_leeren_abschnitt() -> void:
+	# Arrange (Feature 003, R3 und R17): Die Übernahme bleibt Byte für Byte, wie sie ist, eine Datei
+	# aus Feature 002 ohne Profile.
 	var issues: Array[CatalogIssue] = []
 	var datei := FileAccess.get_file_as_string(UEBERNAHME)
+	assert_false(datei.contains("\"profiles\""), "Die eingefrorene Übernahme hat keine Profile.")
+	assert_string_ends_with(datei, ENDE_OHNE_PROFILE)
 
 	# Act
 	var catalog := EventCatalog.read_file(UEBERNAHME, issues)
+	if catalog == null:
+		fail_test("Die Übernahme muss sich lesen lassen: %s" % [issues])
+		return
+	var erste := catalog.to_json()
+	var zweite := EventCatalog.from_json(erste, issues).to_json()
 
 	# Assert
 	assert_eq(issues.size(), 0, "Die Übernahme muss sich ohne Meldung lesen lassen: %s" % [issues])
-	assert_not_null(catalog, "Die Übernahme muss sich lesen lassen.")
-	if catalog != null:
-		assert_eq(catalog.to_json(), datei, "Lesen und Schreiben muss bytegleich sein.")
+	assert_eq(erste, datei.trim_suffix(ENDE_OHNE_PROFILE) + ENDE_MIT_LEEREN_PROFILEN,
+		"Bis auf das Komma hinter \"format\": 1 und die vier Zeilen des Abschnitts bytegleich.")
+	assert_eq(erste.split("\n").size(), datei.split("\n").size() + 4, "Genau vier Zeilen mehr.")
+	assert_eq(zweite, erste, "Eine zweite Rundreise ändert nichts mehr.")
 
 
 func test_jede_art_lesen_und_schreiben_ergibt_denselben_text() -> void:
 	# Die Übernahme hat nur fixe Ereignisse und solche über Wahrscheinlichkeit. Das Beispiel
-	# aus dem Vertrag hat jede Art einmal, dazu ein Folgeereignis und eine Wirkung „during“.
+	# aus dem Vertrag hat jede Art einmal, dazu ein Folgeereignis, eine Wirkung „during“ und den
+	# Abschnitt „profiles“ mit je einem Start-Modifikator.
 	var issues: Array[CatalogIssue] = []
 	var datei := FileAccess.get_file_as_string(ALLE_ARTEN)
 
@@ -100,6 +122,19 @@ func test_felder_jeder_art_kommen_richtig_an() -> void:
 	var artikel := catalog.get_event("zeitungsartikel_reklamation")
 	assert_eq(artikel.kind, TimelineEvent.Kind.FOLLOW_ONLY)
 	assert_eq(artikel.kind_label(), "nur als Folge")
+
+	# Assert: die Profile, Leicht −2 das ganze Spiel und Schwer +5 von 1990 bis 1994
+	var leicht := catalog.get_profile(Difficulty.Level.LEICHT)
+	var schwer := catalog.get_profile(Difficulty.Level.SCHWER)
+	assert_eq([leicht.level, schwer.level], [Difficulty.Level.LEICHT, Difficulty.Level.SCHWER])
+	assert_eq([leicht.modifiers.size(), schwer.modifiers.size()], [1, 1])
+	var nachsichtig := leicht.modifiers[0]
+	assert_eq([nachsichtig.id, nachsichtig.event_id, nachsichtig.reason],
+		["reklamationswelle", "reklamationswelle", "Nachsichtige Kunden"])
+	assert_eq([nachsichtig.value, nachsichtig.from_day, nachsichtig.to_day], [-0.02, 0, 5477])
+	assert_eq([schwer.modifiers[0].from_day, schwer.modifiers[0].to_day],
+		[GameDate.new(1990, 1, 1).to_day_index(), GameDate.new(1994, 12, 31).to_day_index()])
+	assert_eq(schwer.modifiers[0].value, 0.05)
 
 
 func test_jede_art_schreibt_genau_ihre_schluessel() -> void:
@@ -465,6 +500,201 @@ func test_ereignisse_stehen_nach_kennung_sortiert() -> void:
 	assert_lt(text.find("\"intel_pentium\""), text.find("\"intel_pentium2\""))
 
 
+# --- Profile (Feature 003) ------------------------------------------------
+
+func test_profile_lesen_und_schreiben() -> void:
+	# Arrange: Leicht mit einem Start-Modifikator, Schwer mit zweien in absichtlich unsortierter
+	# Reihenfolge
+	var profile := {
+		"leicht": [_start_modifikator({"value": -0.02})],
+		"schwer": [_start_modifikator({"id": "zweiter"}), _start_modifikator({"id": "erster"})],
+	}
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_json(_mit_profilen(profile), issues)
+
+	# Assert
+	assert_eq(issues.size(), 0, "%s" % [issues])
+	assert_eq(catalog.profiles.size(), 2, "Immer zwei Profile.")
+	assert_eq([catalog.profiles[0].level, catalog.profiles[1].level],
+		[Difficulty.Level.LEICHT, Difficulty.Level.SCHWER], "[0] Leicht, [1] Schwer.")
+	assert_same(catalog.get_profile(Difficulty.Level.SCHWER), catalog.profiles[1])
+	assert_null(catalog.get_profile(Difficulty.Level.MITTEL), "Mittel hat kein Profil.")
+	assert_null(catalog.get_profile(7), "Einen Grad 7 gibt es nicht.")
+	var kennungen := catalog.profiles[1].modifiers.map(
+		func(modifikator: ChanceModifier) -> String: return modifikator.id)
+	assert_eq(kennungen, ["zweiter", "erster"], "Die Reihenfolge der Datei bleibt (R2).")
+	var text := catalog.to_json()
+	assert_eq(EventCatalog.from_json(text, issues).to_json(), text, "Kanonisch geschrieben.")
+	assert_lt(text.find("\"format\": 1,"), text.find("\"profiles\": {"),
+		"Der Abschnitt steht am Ende, hinter format.")
+
+
+func test_fehlender_abschnitt_und_fehlender_grad_ohne_meldung() -> void:
+	# Arrange: eine Datei aus Feature 002 und eine, in der Leicht fehlt (FR-005)
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var ohne_abschnitt := EventCatalog.from_json(_text([_zufall("reklamationswelle")]), issues)
+	var nur_schwer := EventCatalog.from_json(
+		_mit_profilen({"schwer": [_start_modifikator()]}), issues)
+
+	# Assert
+	assert_eq(issues.size(), 0, "Kein Abschnitt und kein Grad sind kein Fehler: %s" % [issues])
+	for profil in ohne_abschnitt.profiles:
+		assert_eq(profil.modifiers.size(), 0, "Ohne Abschnitt sind beide Profile leer.")
+	assert_eq(nur_schwer.get_profile(Difficulty.Level.LEICHT).modifiers.size(), 0)
+	assert_eq(nur_schwer.get_profile(Difficulty.Level.SCHWER).modifiers.size(), 1)
+	assert_string_ends_with(ohne_abschnitt.to_json(), ENDE_MIT_LEEREN_PROFILEN,
+		"Geschrieben wird der Abschnitt immer, mit beiden Graden (Schreibregel 4).")
+
+
+func test_profil_fuer_mittel_ist_v22() -> void:
+	# Arrange (R4): neben Leicht und Schwer ein Profil „mittel“ mit einem Start-Modifikator
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.read_file(PROFIL_MITTEL, issues)
+
+	# Assert
+	assert_eq(_stellen(issues), ["V22 ERROR - profiles.mittel"], "%s" % [issues])
+	assert_eq(_texte(issues), ["Katalog, Feld „profiles.mittel“: Für „Mittel“ gibt es kein Profil: "
+		+ "Mittel ist der Katalog ohne Start-Modifikatoren."])
+	assert_not_null(catalog, "Der Katalog entsteht trotzdem.")
+	if catalog != null:
+		assert_false(catalog.to_json().contains("\"mittel\""), "Der Katalog behält es nicht.")
+
+
+func test_unbekannter_grad_ist_v22() -> void:
+	# Arrange (R4): ein Profil „extrem“ in der Datei, eines „Schwer“ mit großem S im Code
+	var issues: Array[CatalogIssue] = []
+	var gross: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.read_file(PROFIL_UNBEKANNT, issues)
+	EventCatalog.from_json(_mit_profilen({"Schwer": []}), gross)
+
+	# Assert
+	assert_eq(_stellen(issues), ["V22 ERROR - profiles.extrem"], "%s" % [issues])
+	assert_eq(_texte(issues), ["Katalog, Feld „profiles.extrem“: Den Schwierigkeitsgrad „extrem“ "
+		+ "gibt es nicht; Profile gibt es nur für „leicht“ und „schwer“."])
+	assert_eq(_stellen(gross), ["V22 ERROR - profiles.Schwer"], "Groß- und Kleinschreibung zählt.")
+	if catalog != null:
+		assert_false(catalog.to_json().contains("extrem"), "Der Katalog behält es nicht.")
+
+
+func test_wert_als_text_ist_v22_an_seiner_stelle() -> void:
+	# Arrange: Schwer hat zwei Start-Modifikatoren, der zweite mit dem Wert „fünf“
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.read_file(PROFIL_WERT_TEXT, issues)
+
+	# Assert
+	assert_eq(_stellen(issues), ["V22 ERROR - profiles.schwer[1].value"], "%s" % [issues])
+	assert_eq(_texte(issues), ["Profil „Schwer“, Start-Modifikator „reklamationswelle_2“, Feld "
+		+ "„profiles.schwer[1].value“: Erwartet wird eine Zahl, in der Datei steht der Text "
+		+ "„fünf“."])
+	var schwer := catalog.get_profile(Difficulty.Level.SCHWER)
+	assert_eq(schwer.modifiers.size(), 2,
+		"Er bleibt mit der Vorgabe, damit die Werkstatt ihn zeigt.")
+	assert_eq([schwer.modifiers[0].value, schwer.modifiers[1].value], [0.05, 0.0])
+
+
+func test_falscher_typ_fuer_abschnitt_profil_und_eintrag_ist_v22() -> void:
+	# Arrange: der Abschnitt als Liste; Leicht als Objekt und in Schwer eine Zahl statt eines
+	# Objekts
+	var abschnitt: Array[CatalogIssue] = []
+	var innen: Array[CatalogIssue] = []
+
+	# Act
+	var als_liste := EventCatalog.from_json(_mit_profilen([]), abschnitt)
+	var catalog := EventCatalog.from_json(_mit_profilen({"leicht": {}, "schwer": [5]}), innen)
+
+	# Assert
+	assert_eq(_texte(abschnitt), ["Katalog, Feld „profiles“: Erwartet wird ein Objekt, in der "
+		+ "Datei steht eine Liste."])
+	assert_eq(_stellen(abschnitt), ["V22 ERROR - profiles"])
+	assert_eq(als_liste.profiles.size(), 2, "Beide Profile bleiben, leer.")
+	assert_eq(_stellen(innen), ["V22 ERROR - profiles.leicht", "V22 ERROR - profiles.schwer[0]"])
+	assert_eq(_texte(innen), [
+		"Profil „Leicht“, Feld „profiles.leicht“: Erwartet wird eine Liste, in der Datei steht ein "
+			+ "Objekt.",
+		"Profil „Schwer“, Start-Modifikator Nr. 1 ohne Kennung, Feld „profiles.schwer[0]“: "
+			+ "Erwartet wird ein Objekt, in der Datei steht die Zahl 5.",
+	])
+	assert_eq(catalog.get_profile(Difficulty.Level.LEICHT).modifiers.size(), 0)
+	assert_eq(catalog.get_profile(Difficulty.Level.SCHWER).modifiers.size(), 1,
+		"An der Stelle steht ein Start-Modifikator mit den Vorgaben.")
+
+
+func test_datum_unbekannter_und_fehlender_schluessel_im_profil_sind_v22() -> void:
+	# Arrange
+	var ohne_grund := _start_modifikator({"id": "ohne_grund"})
+	ohne_grund.erase("reason")
+	var schwer := [
+		_start_modifikator({"from_day": "1990-02-30"}),
+		_start_modifikator({"id": "farbig", "farbe": "rot"}),
+		ohne_grund,
+	]
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_json(_mit_profilen({"schwer": schwer}), issues)
+
+	# Assert
+	assert_eq(_stellen(issues), ["V22 ERROR - profiles.schwer[0].from_day",
+		"V22 ERROR - profiles.schwer[1].farbe", "V22 ERROR - profiles.schwer[2].reason"])
+	assert_eq(_texte(issues), [
+		"Profil „Schwer“, Start-Modifikator „reklamationswelle“, Feld "
+			+ "„profiles.schwer[0].from_day“: „1990-02-30“ ist kein Kalendertag in der Form "
+			+ "JJJJ-MM-TT.",
+		"Profil „Schwer“, Start-Modifikator „farbig“, Feld „profiles.schwer[1].farbe“: Diesen "
+			+ "Schlüssel kennt der Katalog nicht.",
+		"Profil „Schwer“, Start-Modifikator „ohne_grund“, Feld „profiles.schwer[2].reason“: Der "
+			+ "Schlüssel fehlt.",
+	])
+	assert_false(catalog.to_json().contains("farbe"), "Der Katalog behält den Schlüssel nicht.")
+
+
+func test_to_dict_stellt_die_oberste_ebene_zusammen() -> void:
+	# Arrange
+	var issues: Array[CatalogIssue] = []
+	var catalog := EventCatalog.read_file(ALLE_ARTEN, issues)
+	var leer := EventCatalog.new()
+
+	# Act
+	var daten := catalog.to_dict()
+
+	# Assert
+	var schluessel := daten.keys()
+	schluessel.sort()
+	assert_eq(schluessel, EventCatalog.KEYS, "categories, events, format und profiles.")
+	assert_eq(EventCatalog.KEYS, ["categories", "events", "format", "profiles"])
+	assert_eq(daten["profiles"]["leicht"], catalog.profiles[0].to_list())
+	assert_eq(JSON.stringify(daten, "\t", true) + "\n", catalog.to_json(), "to_json() nutzt es.")
+	assert_eq(leer.to_dict()["profiles"], {"leicht": [], "schwer": []},
+		"Ein neuer Katalog hat zwei leere Profile.")
+	assert_eq(leer.profiles.size(), 2)
+
+
+func test_kopie_kopiert_die_profile() -> void:
+	# Arrange
+	var issues: Array[CatalogIssue] = []
+	var catalog := EventCatalog.read_file(ALLE_ARTEN, issues)
+
+	# Act
+	var kopie := catalog.duplicate_catalog()
+	kopie.profiles[1].modifiers[0].value = 0.5
+
+	# Assert
+	assert_eq(kopie.profiles.size(), 2)
+	assert_eq(kopie.profiles[0].to_list(), catalog.profiles[0].to_list(), "Gleicher Inhalt.")
+	assert_ne(kopie.profiles[1], catalog.profiles[1], "Neue Objekte.")
+	assert_eq(catalog.profiles[1].modifiers[0].value, 0.05, "Das Original bleibt unberührt.")
+
+
 # --- Fehlerhafte Ereignisse ausnehmen -------------------------------------
 
 func test_ohne_fehlerhafte_ereignisse_fehlt_auch_das_folgeereignis_darauf() -> void:
@@ -498,7 +728,134 @@ func test_ohne_fehlerhafte_ereignisse_fehlt_auch_das_folgeereignis_darauf() -> v
 	assert_eq(catalog.get_event("ausloeser").follow_ups.size(), 2)
 
 
+func test_ohne_fehlerhafte_start_modifikatoren() -> void:
+	# Arrange (data-model.md, „Fehlerhafte Start-Modifikatoren ausnehmen“): Die Meldungen stehen
+	# hier von Hand da, so wie Lesen und Prüfung sie bringen. In Schwer:
+	# [0] gilt, mit einer Warnung; [1] hat einen eigenen Fehler; [2] zeigt auf „kaputt“, das selbst
+	# einen Fehler hat und ausgenommen wird; [3] zeigt auf das fixe „intel_pentium“; [4] auf ein
+	# Ereignis, das es nicht gibt. In Leicht hat [1] einen Fehler am ganzen Eintrag.
+	var catalog := _katalog_mit_kaputten_start_modifikatoren()
+	var issues := _meldungen_zu_kaputten_start_modifikatoren()
+
+	# Act
+	var sauber := catalog.without_faulty(issues)
+
+	# Assert
+	var schwer := sauber.get_profile(Difficulty.Level.SCHWER).modifiers.map(
+		func(modifikator: ChanceModifier) -> String: return modifikator.id)
+	var leicht := sauber.get_profile(Difficulty.Level.LEICHT).modifiers.map(
+		func(modifikator: ChanceModifier) -> String: return modifikator.id)
+	assert_eq(schwer, ["gilt"], "Nur der fehlerfreie auf ein Ereignis über Wahrscheinlichkeit.")
+	assert_eq(leicht, ["gilt"])
+	assert_not_null(sauber.get_event("reklamationswelle"),
+		"Fehler in Profilen nehmen kein Ereignis aus (R8).")
+	assert_null(sauber.get_event("kaputt"))
+	assert_eq(catalog.get_profile(Difficulty.Level.SCHWER).modifiers.size(), 5,
+		"Der Katalog selbst bleibt unverändert.")
+	assert_eq(catalog.get_profile(Difficulty.Level.LEICHT).modifiers.size(), 2)
+
+
+func test_weggelassene_start_modifikatoren_mit_ort_und_grund() -> void:
+	# Arrange: dieselben wie oben
+	var catalog := _katalog_mit_kaputten_start_modifikatoren()
+	var issues := _meldungen_zu_kaputten_start_modifikatoren()
+
+	# Act
+	var weg := catalog.skipped_start_modifiers(issues)
+
+	# Assert: Leicht vor Schwer, je Profil nach Stelle; genau die, die without_faulty() weglässt.
+	var kurz := weg.map(
+		func(eintrag: Dictionary) -> String:
+			return "%s %d %s" % [Difficulty.key(eintrag["level"]), eintrag["index"],
+				"Ereignis" if eintrag["by_event"] else "eigener Fehler"])
+	assert_eq(kurz, ["leicht 1 eigener Fehler", "schwer 1 eigener Fehler", "schwer 2 Ereignis",
+		"schwer 3 Ereignis", "schwer 4 Ereignis"])
+	if weg.size() != 5:
+		return
+	assert_same(weg[1]["modifier"], catalog.get_profile(Difficulty.Level.SCHWER).modifiers[1],
+		"Der Start-Modifikator des Katalogs selbst.")
+	assert_eq(weg[1]["place"], "Profil „Schwer“, Start-Modifikator „ohne_grund“")
+	assert_eq(weg[1]["reason"], "Profil „Schwer“, Start-Modifikator „ohne_grund“, Feld "
+		+ "„profiles.schwer[1].reason“: Der Grund ist leer.", "Der Text der ersten Meldung.")
+	assert_eq(weg[0]["reason"], "Leicht kaputt.")
+	assert_eq(weg[2]["place"], "Profil „Schwer“, Start-Modifikator „auf_kaputt“")
+	assert_eq(weg[2]["reason"],
+		"Das Ereignis „kaputt“ wird übersprungen, deshalb auch dieser Start-Modifikator.")
+	var leer: Array[CatalogIssue] = []
+	assert_eq(EventCatalog.read_file(ALLE_ARTEN, leer).skipped_start_modifiers(leer).size(), 0,
+		"Ohne Meldungen fällt bei einem gültigen Katalog nichts weg.")
+
+
 # --- Helfer ---------------------------------------------------------------
+
+## Ein Katalog als Text wie _text(), dazu der Abschnitt profiles mit [param profile]; ohne
+## [param events] mit der Reklamationswelle über Wahrscheinlichkeit.
+func _mit_profilen(profile: Variant, events: Array = []) -> String:
+	var data := {
+		"categories": [{"color": "nacht-hell", "id": "hardware", "name": "Hardware"}],
+		"events": events if not events.is_empty() else [_zufall("reklamationswelle")],
+		"format": EventCatalog.FORMAT,
+		"profiles": profile,
+	}
+	return JSON.stringify(data, "\t", true) + "\n"
+
+
+## Ein Start-Modifikator, wie er in der Datei steht: +5 auf die Reklamationswelle, das ganze Spiel.
+func _start_modifikator(overrides: Dictionary = {}) -> Dictionary:
+	var data := {
+		"event_id": "reklamationswelle", "from_day": "1985-01-01", "id": "reklamationswelle",
+		"reason": "Anspruchsvolle Kunden", "to_day": "1999-12-31", "value": 0.05,
+	}
+	data.merge(overrides, true)
+	return data
+
+
+## Reklamationswelle und „kaputt“ über Wahrscheinlichkeit, intel_pentium fix; dazu die
+## Start-Modifikatoren aus test_ohne_fehlerhafte_start_modifikatoren().
+func _katalog_mit_kaputten_start_modifikatoren() -> EventCatalog:
+	var schwer := [
+		_start_modifikator({"id": "gilt"}),
+		_start_modifikator({"id": "ohne_grund", "reason": ""}),
+		_start_modifikator({"id": "auf_kaputt", "event_id": "kaputt"}),
+		_start_modifikator({"id": "auf_fix", "event_id": "intel_pentium"}),
+		_start_modifikator({"id": "ins_leere", "event_id": "gibt_es_nicht"}),
+	]
+	var leicht := [_start_modifikator({"id": "gilt"}), _start_modifikator({"id": "kaputt_leicht"})]
+	var events := [_zufall("reklamationswelle"), _zufall("kaputt"), _fixes("intel_pentium")]
+	var issues: Array[CatalogIssue] = []
+	var catalog := EventCatalog.from_json(_mit_profilen({"leicht": leicht, "schwer": schwer},
+		events), issues)
+	assert_eq(issues.size(), 0, "Der Test-Katalog liest sich ohne Meldung: %s" % [issues])
+	return catalog
+
+
+## Die Meldungen dazu: ein Fehler an Schwer [1] mit Feld, einer an Leicht [1] am ganzen Eintrag,
+## einer am Ereignis „kaputt“ und eine Warnung an Schwer [0].
+func _meldungen_zu_kaputten_start_modifikatoren() -> Array[CatalogIssue]:
+	var fehler := CatalogIssue.Severity.ERROR
+	return [
+		CatalogIssue.new(CatalogIssue.Severity.WARNING, "V31", "", "profiles.schwer[0].from_day",
+			"Eine Warnung nimmt nichts aus."),
+		CatalogIssue.new(fehler, "V12", "kaputt", "monthly_chance", "Ereignis „kaputt“: zu hoch."),
+		CatalogIssue.new(fehler, "V29", "", "profiles.schwer[1].reason", "Profil „Schwer“, "
+			+ "Start-Modifikator „ohne_grund“, Feld „profiles.schwer[1].reason“: Der Grund ist "
+			+ "leer."),
+		CatalogIssue.new(fehler, "V22", "", "profiles.leicht[1]", "Leicht kaputt."),
+		CatalogIssue.new(fehler, "V30", "", "profiles.schwer[1].id",
+			"Die zweite Meldung zählt nicht."),
+	]
+
+
+## Die Meldungen als „<Regel> <Stufe> <Kennung> <Feld>“ in ihrer Reihenfolge; eine leere Kennung
+## steht als „-“.
+func _stellen(issues: Array[CatalogIssue]) -> Array:
+	var stellen := []
+	for issue in issues:
+		var kennung := issue.event_id if not issue.event_id.is_empty() else "-"
+		stellen.append("%s %s %s %s"
+			% [issue.rule, CatalogIssue.Severity.keys()[issue.severity], kennung, issue.field])
+	return stellen
+
 
 ## Ein Katalog als Text mit einer Kategorie und den Ereignissen [param events].
 func _text(events: Array, format: int = EventCatalog.FORMAT) -> String:

@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://tools/werkstatt/timeline_view.gd" id="6_timeline"]
 [ext_resource type="PackedScene" path="res://tools/werkstatt/simulator_panel.tscn" id="7_simulator"]
 [ext_resource type="PackedScene" path="res://tools/werkstatt/statistics_panel.tscn" id="8_statistics"]
+[ext_resource type="PackedScene" path="res://tools/werkstatt/difficulty_panel.tscn" id="9_difficulty"]
 
 [node name="Werkstatt" type="Control"]
 layout_mode = 3
@@ -129,6 +130,11 @@ visible = false
 layout_mode = 2
 
 [node name="StatisticsPanel" parent="Layout/Main/Center/Tabs" instance=ExtResource("8_statistics")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="DifficultyPanel" parent="Layout/Main/Center/Tabs" instance=ExtResource("9_difficulty")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

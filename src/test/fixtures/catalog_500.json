@@ -12782,5 +12782,9 @@
 			}
 		}
 	],
-	"format": 1
+	"format": 1,
+	"profiles": {
+		"leicht": [],
+		"schwer": []
+	}
 }

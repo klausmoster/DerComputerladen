@@ -57,3 +57,16 @@ Leicht, Mittel und Schwer werden in der Werkstatt eingestellt und dort ausprobie
 - Bezug: 11-05 Spielziel und Schwierigkeitsgrade, offene Frage im GDD. Für die Zeitleiste ließe sich
   je Grad ein Satz Modifikatoren aus Phase 8 nutzen, die Statistik aus Phase 9 zeigt die Folgen.
 - Offen: Was ändert ein Grad außer Chancen, etwa Preise, Startkapital, Kundenstrom?
+
+## 2026-10-22 · Spezialisierte Prüf-Agents fürs eigentliche Spiel
+
+Neben dem Godot-Agent eigene Prüfer, die am Ende einer Phase unabhängig und nur lesend prüfen: Stil
+gegen den Style-Guide, Sprache (du, Ton, Wortschatz 1985–1999) und später Fakten wie Daten und
+Preise gegen die game_bible. Was sich messen lässt, prüfen Tests.
+
+- Bezug: `.claude/agents/godot-entwickler.md`; `docs/ki_dev.md`, „Prüfen, bevor Klaus es sieht“
+  und „Pflege“; Verfassung, Grundsatz IV (Style-Guide als einzige Quelle).
+- Konzept: [konzept-pruef-agents.md](konzept-pruef-agents.md) mit Grundsätzen, Anbindung an
+  Spec Kit, Beispielen und Stufen zur Einführung (2026-10-22).
+- Offen: Für den Sprach-Prüfer fehlt ein Text-Leitfaden als Maßstab. Ab wann, etwa mit dem ersten
+  echten Spielbildschirm?

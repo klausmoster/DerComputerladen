@@ -6,15 +6,19 @@ extends GutTest
 ## Katalog (T078), die Kürzel und die Liste (T034, T035, T038), Klicks mit offener Eingabe in
 ## Liste, Prüfung, Zeitstrahl und Formular (T076, T077, T080), der Zeitstrahl in der Werkstatt
 ## (T049) und der Simulator (T054): Er rechnet, ohne Spieluhr und Katalog anzufassen, und sein
-## Protokoll ist das der Textausgabe.
+## Protokoll ist das der Textausgabe. Aus Feature 003 (T017) kommt der Reiter
+## „Schwierigkeitsgrade“ dazu: sein Platz, der Sprung aus der Prüfung, der Löschdialog, auch bei
+## doppelter Kennung (T037), und der Grad in der Spalte „Ereignis“ der Prüfung.
 ##
 ## Jeder Test öffnet eine Kopie eines Test-Katalogs in einem eigenen Ordner unter user:// und setzt
 ## diesen Ordner auch für die Sicherungskopien, dazu eine eigene Einstellungsdatei, bevor die Szene
 ## in den Baum kommt; after_each() räumt auf. Der echte Katalog, die echten Sicherungskopien und
 ## die echten Einstellungen bleiben unberührt.
 ##
-## Kein Test bestätigt das Schließen: get_tree().quit() beendete den ganzen Testlauf. Was davor
-## geschieht, prüfen die Tests über Werkstatt.prepare_quit().
+## Kein Test lässt get_tree().quit() laufen, es beendete den ganzen Testlauf. Was davor geschieht,
+## prüfen die Tests über Werkstatt.prepare_quit(); wer die Werkstatt schließen lässt, setzt vorher
+## Werkstatt.quit_callback (T042). Cmd+Q bei offenem Dialog kommt aus Phase 8 dazu (T042), Tab durch
+## das Formular auch (T041).
 
 const SZENE := preload("res://tools/werkstatt/werkstatt.tscn")
 const ORDNER := "user://test_werkstatt_scene/"
@@ -26,6 +30,12 @@ const KATEGORIE_FARBE := "res://test/fixtures/catalog_v21_kategorie_farbe.json"
 ## Kein gültiges JSON: Der Parser stolpert in Zeile 13.
 const KAPUTT := "res://test/fixtures/catalog_v22_kaputt.json"
 const UEBERNAHME := "res://test/fixtures/event_catalog_uebernahme.json"
+## Leicht −2 und Schwer +5 auf die Reklamationswelle; Kundenflucht hat sie als Bedingung.
+const GRADE := "res://test/fixtures/catalog_us1_grade.json"
+## Leicht: ein Start-Modifikator ohne Grund (V29).
+const GRUND_LEER := "res://test/fixtures/catalog_v29_profil_grund_leer.json"
+## Schwer: ein Start-Modifikator auf das jährliche Weihnachtsgeschäft (V26).
+const JAEHRLICH := "res://test/fixtures/catalog_v26_profil_ereignis_jaehrlich.json"
 
 
 func before_each() -> void:
@@ -276,35 +286,136 @@ func test_spaeter_behaelt_die_kopie_auch_ueber_das_schliessen_hinaus() -> void:
 	assert_eq(FileAccess.get_file_as_string(frueher.backup_path()), kopie)
 
 
-func test_schliessen_bei_offenem_dialog_zur_sicherungskopie_gilt_wie_spaeter() -> void:
-	# Arrange (T096): Eine frühere Sitzung hat gesichert und ist abgestürzt. Beim Start ist der
-	# Dialog offen, und Klaus schließt das Fenster, ohne zu antworten.
+func test_cmd_q_bei_offenem_dialog_zur_sicherungskopie_gilt_wie_spaeter() -> void:
+	# Arrange (T096, T042): Eine frühere Sitzung hat gesichert und ist abgestürzt. Beim Start ist
+	# der Dialog offen, und Klaus drückt Cmd+Q, ohne zu antworten.
 	var frueher := _editor()
 	assert_eq(frueher.open(_kopieren(MINIMAL, ORDNER + "katalog.json")), OK)
 	frueher.set_event_field("intel_pentium", &"title", "Pentium kommt")
 	frueher.write_backup()
 	var kopie := FileAccess.get_file_as_string(frueher.backup_path())
 	var erste := await _werkstatt("")
+	var beendet := []
+	erste.quit_callback = func() -> void: beendet.append(true)
 	var dialog: ConfirmationDialog = _node(erste, "%BackupDialog")
 	assert_true(dialog.visible)
-
-	# Act: Fensterknopf und Cmd+Q kommen beide als NOTIFICATION_WM_CLOSE_REQUEST. Ohne Änderung
-	# ruft request_close() _quit(), also prepare_quit() und dann get_tree().quit(). Dieses Beenden
-	# lässt der Test aus, denn es beendete seinen ganzen Lauf.
 	assert_false(erste.editor.is_dirty(), "Ohne Änderung fragt das Schließen nicht nach.")
-	erste.prepare_quit()
 
-	# Assert: Die Kopie bleibt liegen, wie nach „Später“ …
+	# Act: Cmd+Q auf dem Weg, den Godot die Anfrage schickt
+	var angekommen := _cmd_q(erste)
+	await wait_process_frames(1)
+
+	# Assert: Die Anfrage kommt an, der Dialog geht zu wie mit „Später“, und die Werkstatt endet …
+	assert_true(angekommen, "Der offene Dialog hält die Schließanfrage nicht auf.")
+	assert_false(dialog.visible, "Der Dialog geht zu.")
+	assert_eq(beendet.size(), 1, "Die Werkstatt endet.")
 	assert_eq(FileAccess.get_file_as_string(frueher.backup_path()), kopie,
-		"Schließen bei offenem Dialog löscht die Kopie nicht.")
+		"Die Kopie bleibt liegen, wie nach „Später“ …")
 
 	# … und beim nächsten Start ist sie wieder da.
-	dialog.hide()
 	remove_child(erste)
 	var zweite := await _werkstatt("")
-	assert_true(_node(zweite, "%BackupDialog").visible, "Der nächste Start bietet sie wieder an.")
+	assert_true(_node(zweite, "%BackupDialog").visible, "… und der nächste Start bietet sie wieder an.")
 	assert_string_contains(_node(zweite, "%BackupDialog").dialog_text,
 		"Sicherungskopie dieses Katalogs vom")
+
+
+func test_cmd_q_kommt_bei_jedem_offenen_dialog_an_und_beendet_ohne_aenderungen() -> void:
+	# Arrange (T042): Bei offenem Dialog tat Cmd+Q bisher nichts. Jetzt geht der Dialog zu wie mit
+	# „Abbrechen“, und ohne Änderungen endet die Werkstatt. Gilt für jeden Dialog der Werkstatt,
+	# auch für die von Liste und Simulator; die Rückfrage zum Schließen kommt im nächsten Test.
+	var werkstatt := await _werkstatt()
+	var beendet := []
+	werkstatt.quit_callback = func() -> void: beendet.append(true)
+	var close: ConfirmationDialog = _node(werkstatt, "%CloseDialog")
+	var dialoge: Array[AcceptDialog] = []
+	dialoge.assign(werkstatt.find_children("*", "AcceptDialog", true, false))
+	assert_eq(dialoge.size(), 15, "Neun Dialoge der Werkstatt, „Neu …“ und fünf im Simulator.")
+
+	for dialog in dialoge:
+		if dialog == close:
+			continue
+		# Act
+		dialog.popup_centered()
+		var vorher := beendet.size()
+		var angekommen := _cmd_q(werkstatt)
+		await wait_process_frames(1)
+
+		# Assert
+		assert_false(dialog.exclusive, "%s sperrt die Schließanfrage nicht." % dialog.name)
+		assert_true(angekommen, "%s: Cmd+Q kommt an." % dialog.name)
+		assert_false(dialog.visible, "%s geht zu." % dialog.name)
+		assert_eq(beendet.size(), vorher + 1, "%s: Die Werkstatt endet." % dialog.name)
+		assert_false(close.visible, "%s: Ohne Änderungen fragt niemand nach." % dialog.name)
+
+
+func test_cmd_q_bei_offenem_dialog_neu_fragt_bei_aenderungen_nach() -> void:
+	# Arrange (T042; Gegenprobe zu T096): eine ungespeicherte Änderung, dazu der Dialog „Neu …“
+	var werkstatt := await _werkstatt()
+	var beendet := []
+	werkstatt.quit_callback = func() -> void: beendet.append(true)
+	werkstatt.editor.set_event_field("intel_pentium", &"title", "Ungespeichert")
+	var liste: EventList = _node(werkstatt, "%EventList")
+	(liste.get_node("%NewButton") as Button).pressed.emit()
+	var neu: ConfirmationDialog = liste.get_node("%NewDialog")
+	var close: ConfirmationDialog = _node(werkstatt, "%CloseDialog")
+	assert_true(neu.visible)
+
+	# Act
+	assert_true(_cmd_q(werkstatt), "Cmd+Q kommt an.")
+	await wait_process_frames(1)
+
+	# Assert: „Neu …“ geht zu wie mit „Abbrechen“, dann die Rückfrage wie ohne Dialog
+	assert_false(neu.visible, "„Neu …“ geht zu …")
+	assert_eq(werkstatt.editor.catalog.events.size(), 5, "… ohne etwas anzulegen.")
+	assert_true(close.visible, "Die Rückfrage zum Schließen kommt.")
+	assert_eq(beendet.size(), 0, "Beendet wird erst nach der Antwort.")
+
+	# Act und Assert: Cmd+Q noch einmal, während die Rückfrage offen ist
+	assert_true(_cmd_q(werkstatt))
+	await wait_process_frames(1)
+	assert_true(close.visible, "Die Rückfrage bleibt stehen.")
+	assert_eq(beendet.size(), 0)
+
+	# Act und Assert: „Verwerfen“ beendet.
+	_knopf(close, "Verwerfen").pressed.emit()
+	assert_eq(beendet.size(), 1)
+
+
+func test_offener_dialog_sperrt_die_werkstatt_auch_ohne_exklusiv() -> void:
+	# Arrange (T042): Die Dialoge sind nicht mehr exklusiv; die Werkstatt sperrt selbst. Klaus hat
+	# etwas geändert und will ein Ereignis löschen; der Dialog ist offen. Geklickt wird echt.
+	var werkstatt := await _werkstatt_im_viewport()
+	var viewport := werkstatt.get_viewport()
+	werkstatt.editor.set_event_field("intel_pentium", &"title", "Ungespeichert")
+	await wait_process_frames(1)
+	werkstatt._on_delete_requested("zeitungsartikel")
+	var dialog: ConfirmationDialog = _node(werkstatt, "%DeleteDialog")
+	await wait_process_frames(1)
+	assert_true(dialog.visible)
+	var speichern: Button = _node(werkstatt, "%SaveButton")
+	var liste := _liste(werkstatt)
+	var datei_vorher := _datei()
+
+	# Act: neben dem Dialog auf „Speichern“ und auf eine Zeile der Liste klicken, dann Cmd+S
+	_klicken(speichern, speichern.get_global_rect().get_center())
+	await wait_process_frames(1)
+	_klicken(liste, _mitte_der_zeile(liste, liste.get_root().get_child(0)))
+	await wait_process_frames(1)
+	viewport.push_input(_taste(KEY_S))
+	await wait_process_frames(1)
+
+	# Assert: Nichts davon kommt an, und der Dialog hat den Fokus wieder.
+	assert_eq(_datei(), datei_vorher, "Weder der Klick noch Cmd+S haben gespeichert.")
+	assert_eq(werkstatt.selected_id, "", "Der Klick in die Liste wählt nichts.")
+	assert_true(dialog.visible, "Der Dialog bleibt offen …")
+	assert_true(dialog.has_focus(), "… und hat den Fokus.")
+
+	# Act und Assert: Esc geht deshalb an den Dialog, wie vorher.
+	viewport.push_input(_esc())
+	await wait_process_frames(1)
+	assert_false(dialog.visible, "Esc schließt den Dialog wie „Abbrechen“.")
+	assert_not_null(werkstatt.editor.catalog.get_event("zeitungsartikel"), "Gelöscht ist nichts.")
 
 
 func test_sicherung_die_nicht_geht_meldet_die_werkstatt_einmal() -> void:
@@ -1341,6 +1452,62 @@ func test_fokuslinie_im_formular_bleibt_rundum_zu_sehen() -> void:
 				% [id, element.get_class(), element.name, linie, _sichtbar(bereich)])
 
 
+func test_tab_und_shift_tab_laufen_durch_das_ganze_formular_bis_anlegen() -> void:
+	# Arrange (T041; Quickstart 002, 4.1, T094): Klaus geht beim Pentium mit der Tab-Taste vom Titel
+	# durch das ganze Formular bis „Anlegen“ der Kategorien und mit Shift+Tab zurück. Die Tasten
+	# gehen wie echte über push_input in den Viewport; nur den Anfang im Titel setzt der Test selbst.
+	var werkstatt := await _werkstatt_im_viewport()
+	var viewport := werkstatt.get_viewport()
+	var bereich: ScrollContainer = _node(werkstatt, "%FormScroll")
+	var formular: EventForm = _node(werkstatt, "%EventForm")
+	werkstatt.select_event("intel_pentium")
+	await wait_process_frames(2)
+	var titel: Control = formular.get_input("title")
+	var beschreibung: TextEdit = formular.get_input("description")
+	var anlegen: Button = formular.get_node("%NewCategoryButton")
+	var text_vorher := beschreibung.text
+	titel.grab_focus()
+	await wait_process_frames(2)
+
+	# Act: Tab, bis „Anlegen“ den Fokus hat
+	var vorwaerts: Array[Control] = [titel]
+	while vorwaerts[-1] != anlegen and vorwaerts.size() < 200:
+		await _tab_druecken(viewport)
+		var fokus := viewport.gui_get_focus_owner()
+		if fokus == null or fokus == vorwaerts[-1] or not bereich.is_ancestor_of(fokus):
+			break
+		vorwaerts.append(fokus)
+
+		# Assert: Die Fokuslinie liegt nach jedem Schritt ganz im Bereich, der rollt mit.
+		assert_true(_sichtbar(bereich).encloses(_fokuslinie(fokus)), "%s %s: Fokuslinie %s, sichtbar %s"
+			% [fokus.get_class(), fokus.name, _fokuslinie(fokus), _sichtbar(bereich)])
+
+	# Assert
+	assert_has(vorwaerts, beschreibung, "Tab kommt in die Beschreibung …")
+	assert_eq(vorwaerts[-1], anlegen, "… und wieder heraus, bis „Anlegen“ der Kategorien.")
+	var farbwahl := vorwaerts.filter(func(element: Control) -> bool:
+		return element is OptionButton and formular.get_node("%Categories").is_ancestor_of(element))
+	assert_gt(farbwahl.size(), 0, "Unterwegs kommt die Farbwahl der Kategorien.")
+	assert_gt(bereich.scroll_vertical, 0, "Der Bereich ist mitgerollt.")
+	assert_eq(beschreibung.text, text_vorher, "Tab schreibt kein Tabzeichen in die Beschreibung.")
+	assert_eq(werkstatt.editor.catalog.get_event("intel_pentium").description, text_vorher)
+
+	# Act: Shift+Tab, bis der Titel den Fokus hat
+	var rueckwaerts: Array[Control] = [anlegen]
+	while rueckwaerts[-1] != titel and rueckwaerts.size() < 200:
+		await _tab_druecken(viewport, true)
+		var fokus := viewport.gui_get_focus_owner()
+		if fokus == null or fokus == rueckwaerts[-1] or not bereich.is_ancestor_of(fokus):
+			break
+		rueckwaerts.append(fokus)
+
+	# Assert: derselbe Weg zurück, auch durch die Beschreibung
+	rueckwaerts.reverse()
+	assert_eq(rueckwaerts, vorwaerts, "Shift+Tab geht denselben Weg zurück bis zum Titel.")
+	assert_eq(beschreibung.text, text_vorher, "Shift+Tab rückt in der Beschreibung nichts aus.")
+	assert_false(werkstatt.editor.is_dirty(), "Durchs Formular gehen ändert nichts.")
+
+
 func test_tabellen_haben_in_der_vorgabe_teilung_vorrang() -> void:
 	# Arrange (T101; Klaus, 2026-10-21): Ohne gespeicherte Teiler bekommen die Tabellen den Platz,
 	# Verteilung und Begründung darunter nur ihre Mindesthöhe. Die Statistik rechnet erst ohne
@@ -1356,7 +1523,7 @@ func test_tabellen_haben_in_der_vorgabe_teilung_vorrang() -> void:
 
 	# Assert: Fahrplan
 	var fahrplan: Tree = simulator.get_node("%PlanTable")
-	var begruendung: Control = simulator.get_node("Split/PlanSplit/DetailScroll")
+	var begruendung: Control = simulator.get_node("Scroll/Content/Split/PlanSplit/DetailScroll")
 	assert_eq(begruendung.size.y, begruendung.get_combined_minimum_size().y,
 		"Die Begründung hat nur ihre Mindesthöhe …")
 	assert_gte(_ganze_zeilen(fahrplan), 2, "… und der Fahrplan zeigt mindestens 2 ganze Zeilen.")
@@ -1372,7 +1539,7 @@ func test_tabellen_haben_in_der_vorgabe_teilung_vorrang() -> void:
 
 	# Assert: Platz für alle fünf Ereignisse, die Verteilung hat ihre Mindesthöhe.
 	var tabelle: Tree = statistik.get_node("%ResultTable")
-	var verteilung: Control = statistik.get_node("Split/YearBox")
+	var verteilung: Control = statistik.get_node("Scroll/Content/Split/YearBox")
 	assert_gte(_ganze_zeilen(tabelle), 5, "Ohne Warnung zeigt die Tabelle alle fünf Zeilen.")
 	assert_eq(verteilung.size.y, verteilung.get_combined_minimum_size().y,
 		"Die Verteilung hat nur ihre Mindesthöhe, …")
@@ -1712,6 +1879,176 @@ func test_bis_zum_ende_dauert_unter_einer_sekunde() -> void:
 	assert_lt(dauer, 1000.0, "SC-004: unter 1 Sekunde.")
 
 
+# --- Schwierigkeitsgrade (Feature 003, T017) --------------------------------------------------
+
+func test_vierter_reiter_schwierigkeitsgrade() -> void:
+	# Arrange und Act
+	var werkstatt := await _werkstatt(GRADE)
+
+	# Assert: Die drei bisherigen Reiter behalten ihren Platz.
+	var tabs: TabContainer = _node(werkstatt, "%Tabs")
+	var titel := []
+	for i in tabs.get_tab_count():
+		titel.append(tabs.get_tab_title(i))
+	assert_eq(titel, ["Prüfung", "Simulator", "Statistik", "Schwierigkeitsgrade"])
+	var panel: DifficultyPanel = _node(werkstatt, "%DifficultyPanel")
+	assert_eq(tabs.get_tab_idx_from_control(panel), 3)
+	assert_same(panel.editor, werkstatt.editor)
+	assert_eq(_zeilen(panel.get_node("%Table")).size(), 1, "Leicht steht schon da.")
+
+	# Act und Assert: Die Auswahl der Werkstatt kommt im Panel an, eine Änderung auch.
+	werkstatt.select_event("lieferengpass")
+	assert_eq(panel.selected_event_id, "lieferengpass")
+	werkstatt.editor.add_start_modifier(Difficulty.Level.LEICHT, "lieferengpass")
+	await wait_process_frames(1)
+	assert_eq(_zeilen(panel.get_node("%Table")).size(), 2)
+	assert_eq(panel.get_node("%CountLabel").text, "2 Start-Modifikatoren")
+
+
+func test_meldung_zu_einem_profil_fuehrt_in_den_reiter_und_ins_feld() -> void:
+	# Arrange: Leicht hat einen Start-Modifikator ohne Grund (V29); gewählt ist ein Ereignis.
+	var werkstatt := await _werkstatt(GRUND_LEER)
+	werkstatt.select_event("intel_pentium")
+	var pruefung: IssuesPanel = _node(werkstatt, "%IssuesPanel")
+	await wait_process_frames(1)
+	var zeile := pruefung.get_root().get_child(0)
+	assert_eq([zeile.get_text(IssuesPanel.Column.EVENT), zeile.get_text(IssuesPanel.Column.FIELD)],
+		["Profil Leicht", "profiles.leicht[0].reason"])
+
+	# Act: die Zeile wählen und aktivieren, wie mit Enter oder einem Doppelklick
+	zeile.select(0)
+	pruefung.item_activated.emit()
+
+	# Assert: FR-016
+	var tabs: TabContainer = _node(werkstatt, "%Tabs")
+	var panel: DifficultyPanel = _node(werkstatt, "%DifficultyPanel")
+	assert_eq(tabs.current_tab, tabs.get_tab_idx_from_control(panel), "Der Reiter ist vorn.")
+	assert_eq(panel.shown_difficulty(), Difficulty.Level.LEICHT)
+	assert_same(get_viewport().gui_get_focus_owner(), panel.get_node("%ReasonEdit"),
+		"Der Fokus steht im Grund.")
+	assert_eq((panel.get_node("%ReasonEdit") as LineEdit).theme_type_variation, &"ErrorLineEdit")
+	assert_eq(werkstatt.selected_id, "intel_pentium", "Die Auswahl des Ereignisses bleibt.")
+
+	# Act und Assert: Eine Meldung zu einem Ereignis geht weiter ans Formular.
+	pruefung.issue_activated.emit("intel_pentium", "title")
+	assert_same(get_viewport().gui_get_focus_owner(),
+		(_node(werkstatt, "%EventForm") as EventForm).get_input("title"))
+
+
+func test_pruefung_nennt_den_grad_in_der_spalte_ereignis() -> void:
+	# Arrange: Schwer hat einen Start-Modifikator auf das Weihnachtsgeschäft (V26).
+	var werkstatt := await _werkstatt(JAEHRLICH)
+	var pruefung: IssuesPanel = _node(werkstatt, "%IssuesPanel")
+	await wait_process_frames(1)
+
+	# Assert: FR-016, CHK009
+	var zeile := pruefung.get_root().get_child(0)
+	assert_eq([zeile.get_text(IssuesPanel.Column.EVENT), zeile.get_text(IssuesPanel.Column.FIELD)],
+		["Profil Schwer", "profiles.schwer[0].event_id"])
+
+	# Act: nach dem zweiten Pfadteil des Felds (Analyse, U4)
+	var felder := ["profiles.leicht[2].reason", "profiles.schwer", "profiles", "profiles.mittel",
+		"profiles.extrem", "profiles.schwerr[0].reason", "categories[0].color"]
+	var meldungen: Array[CatalogIssue] = []
+	for feld: String in felder:
+		meldungen.append(CatalogIssue.new(CatalogIssue.Severity.ERROR, "V22", "", feld, "Text"))
+	meldungen.append(CatalogIssue.new(CatalogIssue.Severity.ERROR, "V06", "intel_pentium", "date",
+		"Text"))
+	pruefung.show_issues(meldungen)
+	await wait_process_frames(1)
+
+	# Assert
+	var spalte := []
+	for eintrag in pruefung.get_root().get_children():
+		spalte.append(eintrag.get_text(IssuesPanel.Column.EVENT))
+	assert_eq(spalte, ["Profil Leicht", "Profil Schwer", "Profile", "Profile", "Profile",
+		"Profile", "–", "intel_pentium"])
+
+
+func test_loeschdialog_nennt_ereignisse_und_start_modifikatoren() -> void:
+	# Arrange: FR-017. Kundenflucht hat die Reklamationswelle als Bedingung, beide Profile zeigen
+	# darauf.
+	var werkstatt := await _werkstatt(GRADE)
+	var vorher := werkstatt.editor.catalog.to_json()
+
+	# Act
+	werkstatt._on_delete_requested("reklamationswelle")
+
+	# Assert
+	var dialog: ConfirmationDialog = _node(werkstatt, "%DeleteDialog")
+	assert_true(dialog.visible)
+	assert_eq(dialog.dialog_text, "„Reklamationswelle“ löschen?\n\nDarauf verweisen: "
+		+ "„Kundenflucht“. In den Profilen: Leicht: Nachsichtige Kunden, Schwer: Anspruchsvolle "
+		+ "Kunden. Diese Verweise werden mit entfernt.\n\nRückgängig holt alles zurück.")
+
+	# Act und Assert: Löschen entfernt die Start-Modifikatoren mit, Cmd+Z holt alles zurück.
+	dialog.get_ok_button().pressed.emit()
+	assert_eq(werkstatt.editor.catalog.get_profile(Difficulty.Level.LEICHT).modifiers.size(), 0)
+	assert_eq(werkstatt.editor.catalog.get_profile(Difficulty.Level.SCHWER).modifiers.size(), 0)
+	await wait_process_frames(1)
+	assert_eq(_zeilen(_node(werkstatt, "%DifficultyPanel").get_node("%Table")).size(), 0)
+	werkstatt.editor.undo()
+	assert_eq(werkstatt.editor.catalog.to_json(), vorher)
+
+
+func test_loeschdialog_nur_mit_start_modifikatoren() -> void:
+	# Arrange: Auf den Lieferengpass verweist kein Ereignis, nur ein Start-Modifikator (Analyse, I3).
+	var werkstatt := await _werkstatt(GRADE)
+	werkstatt.editor.add_start_modifier(Difficulty.Level.SCHWER, "lieferengpass")
+	werkstatt.editor.set_start_modifier_field(Difficulty.Level.SCHWER, 1, &"reason",
+		"Engpass bei Speicher")
+
+	# Act
+	werkstatt._on_delete_requested("lieferengpass")
+
+	# Assert
+	var dialog: ConfirmationDialog = _node(werkstatt, "%DeleteDialog")
+	assert_eq(dialog.dialog_text, "„Lieferengpass“ löschen?\n\nIn den Profilen verweisen darauf: "
+		+ "Schwer: Engpass bei Speicher. Diese Verweise werden mit entfernt.\n\nRückgängig holt "
+		+ "alles zurück.")
+	dialog.hide()
+
+	# Act und Assert: ohne jeden Verweis wie bisher
+	werkstatt._on_delete_requested("windows_95")
+	assert_eq(dialog.dialog_text, "„Windows 95 erscheint“ löschen?\n\nRückgängig holt alles "
+		+ "zurück.")
+	dialog.hide()
+
+
+func test_loeschdialog_bei_doppelter_kennung_sagt_dass_die_verweise_bleiben() -> void:
+	# Arrange: T037. Vor der Reklamationswelle steht von Hand ein zweites Ereignis mit ihrer Kennung
+	# (V02). Es steht in der Liste vorn und wird gelöscht; die Verweise gelten dann der echten.
+	var zweites := ("{\"category\": \"reklamation\", \"date\": \"1994-03-07\", \"description\": "
+		+ "\"\", \"duration_days\": 0, \"effects\": [], \"follow_ups\": [], \"id\": "
+		+ "\"reklamationswelle\", \"kind\": \"fixed\", \"title\": \"Zweite Reklamationswelle\"},")
+	_schreiben(ORDNER + "katalog.json", FileAccess.get_file_as_string(GRADE).replace(
+		"\"events\": [", "\"events\": [\n\t\t" + zweites))
+	var werkstatt := await _werkstatt("")
+	assert_not_null(_erste_meldung(werkstatt, "V02"), "Die Kennung gibt es zweimal.")
+	var vorher := werkstatt.editor.catalog.to_json()
+
+	# Act
+	werkstatt._on_delete_requested("reklamationswelle")
+
+	# Assert
+	var dialog: ConfirmationDialog = _node(werkstatt, "%DeleteDialog")
+	assert_eq(dialog.dialog_text, "„Zweite Reklamationswelle“ löschen?\n\nDarauf verweisen: "
+		+ "„Kundenflucht“. In den Profilen: Leicht: Nachsichtige Kunden, Schwer: Anspruchsvolle "
+		+ "Kunden. Diese Verweise bleiben stehen, denn die Kennung „reklamationswelle“ gehört noch "
+		+ "zu einem zweiten Ereignis.\n\nRückgängig holt alles zurück.")
+
+	# Act und Assert: Der Dialog sagt, was delete_event() tut.
+	dialog.get_ok_button().pressed.emit()
+	var katalog := werkstatt.editor.catalog
+	assert_eq(katalog.get_event("reklamationswelle").title, "Reklamationswelle",
+		"Gelöscht ist das vordere der beiden.")
+	assert_eq(katalog.get_event("kundenflucht").conditions.size(), 1, "Die Bedingung bleibt.")
+	assert_eq(katalog.get_profile(Difficulty.Level.LEICHT).modifiers.size(), 1)
+	assert_eq(katalog.get_profile(Difficulty.Level.SCHWER).modifiers.size(), 1)
+	werkstatt.editor.undo()
+	assert_eq(werkstatt.editor.catalog.to_json(), vorher)
+
+
 # --- Helfer -----------------------------------------------------------------------------------
 
 ## Tagesindex eines Datums.
@@ -1947,6 +2284,43 @@ func _esc() -> InputEventKey:
 	ereignis.physical_keycode = KEY_ESCAPE
 	ereignis.pressed = true
 	return ereignis
+
+
+## Cmd+Q oder der Fensterknopf, so nah am Weg, den Godot die Anfrage schickt: macOS meldet
+## „Beenden“ an applicationShouldTerminate, und Godot gibt das als WINDOW_EVENT_CLOSE_REQUEST an das
+## Hauptfenster (Window::_event_callback). Hat das Fenster ein exklusives Kind, also einen offenen
+## Dialog mit exclusive und transient, verwirft Godot die Anfrage, und niemand erfährt davon. Sonst
+## geht NOTIFICATION_WM_CLOSE_REQUEST an alle Knoten des Fensters, aber nicht in Kind-Fenster wie
+## Dialoge hinein (Window::_propagate_window_notification). Hier nur an die Werkstatt und ihre
+## Knoten; der Rest des Fensters gehört GUT. Gibt zurück, ob die Anfrage ankam. Im echten Fenster
+## prüft das Quickstart 002, 4.1, mit Cmd+Q selbst.
+func _cmd_q(werkstatt: Werkstatt) -> bool:
+	for fenster: Window in werkstatt.find_children("*", "Window", true, false):
+		if fenster.visible and fenster.exclusive and fenster.transient:
+			return false
+	_an_alle_knoten_des_fensters(werkstatt, NOTIFICATION_WM_CLOSE_REQUEST)
+	return true
+
+
+func _an_alle_knoten_des_fensters(knoten: Node, nachricht: int) -> void:
+	knoten.notification(nachricht)
+	for kind in knoten.get_children(true):
+		if not kind is Window:
+			_an_alle_knoten_des_fensters(kind, nachricht)
+
+
+## Drückt Tab, mit [param shift] Shift+Tab, und lässt die Taste los, wie von der Tastatur, in
+## [param viewport]. Godot macht daraus ui_focus_next bzw. ui_focus_prev. Danach zwei Bilder: Im
+## ersten rollt die Werkstatt das Formular zum neuen Fokus.
+func _tab_druecken(viewport: Viewport, shift: bool = false) -> void:
+	for gedrueckt: bool in [true, false]:
+		var ereignis := InputEventKey.new()
+		ereignis.keycode = KEY_TAB
+		ereignis.physical_keycode = KEY_TAB
+		ereignis.shift_pressed = shift
+		ereignis.pressed = gedrueckt
+		viewport.push_input(ereignis)
+	await wait_process_frames(2)
 
 
 ## Cmd bzw. Ctrl plus [param taste], gedrückt.

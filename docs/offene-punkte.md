@@ -19,6 +19,24 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   Zeitstrahl in der Vorgabe 48 px abgeben (378 statt 426 px). Empfehlung: die Vorgabe lassen. Den
   Teiler ziehst du einmal dorthin, wo er dir passt, und die Werkstatt merkt ihn sich (T091).
 
+### Feature 003, Plan (2026-10-21)
+
+- **Startwerte der Profile (R18):** Claudes Vorschlag für die sechs Ereignisse über
+  Wahrscheinlichkeit steht in `specs/003-schwierigkeitsgrade/research.md`, R18. Klaus legt die
+  Profile zur Abnahme von Phase 3 in der Werkstatt an und stellt sie mit der Statistik nach. Seit
+  2026-10-22 steht fest, dass beide Profile zur Gesamtabnahme gefüllt sein müssen
+  (Checkliste, CHK008). Offen sind nur noch die Werte. Stand 2026-10-23 (T020): Klaus hat je drei
+  Start-Modifikatoren angelegt, alle auf „Großkunde meldet sich“, als vorläufige Werte (Leicht
+  zusammen −2, Schwer +3). Er stellt sie später mit der Statistik ein, die mit Phase 5 die Grade
+  vergleicht.
+
+### Feature 003, Lückensuche (2026-10-26)
+
+- **Mögliche Schieflage der Würfel (Feature 002, `EventDice`):** Über die Seeds 1 bis 4.000 liegt
+  die Reklamationswelle mit 3 % pro Monat im Mittel bei 5,508 statt 5,4 und mit Schwer bei 14,579
+  statt 14,4, beides etwa drei Standardabweichungen darüber. SC-003 ist trotzdem klar erfüllt.
+  Empfehlung: später einmal die Würfel je Kennung prüfen; für Feature 003 nichts zu tun.
+
 ### Ältere Punkte aus Claudes bisherigem lokalem Gedächtnis
 
 - **Spielfenster ragt 6 Pixel in den Bereich des Docks** (Feature 002, Abnahme von Phase 4,
@@ -89,8 +107,255 @@ Lernnotizen.
     und Grund geprüft. Auch ein negativer Seed ist ein Lesefehler.
   - **Mindesthöhe (T101):** Die 80 px, die T091 jedem Bereich zusichert, bleiben.
 
+### Feature 003, Klärung der Spec (2026-10-21)
+
+- **Chance je Zeitabschnitt (FR-015):** Gilt ein Start-Modifikator nur für einen Teil des Spiels,
+  nennt die Anzeige im Ereignisformular die Chance je Abschnitt, etwa „Schwer 3 % bis 31.12.1994,
+  6 % ab 01.01.1995“. Das folgt aus zwei Antworten von Klaus, Zeitraum und Anzeige nur zum Lesen;
+  die Form hat Claude gewählt.
+
+### Feature 003, Plan (2026-10-21)
+
+Festlegungen, die nicht aus den Dokumenten folgten. Einzelheiten und verworfene Alternativen
+stehen in `specs/003-schwierigkeitsgrade/research.md`.
+- **Aufbau des Abschnitts (R2):** Die Katalogdatei hat den Abschnitt `"profiles"` mit `"leicht"`
+  und `"schwer"`. Ein Start-Modifikator hat dieselben Schlüssel wie ein Modifikator in einer
+  Probe. Die Listen behalten ihre Reihenfolge und werden nicht sortiert.
+- **Formatnummer (R3):** Sie bleibt 1, Dateien aus Feature 002 laden weiter.
+- **Profil für Mittel oder einen unbekannten Grad (R4):** ein Strukturfehler V22, wie jeder
+  unbekannte Schlüssel.
+- **Kennungen (R5):** Start-Modifikatoren und Eingriffe stehen im Lauf in zwei Listen, die
+  Kennungen sind je Liste eindeutig. Eine Vorsilbe in der Kennung braucht es nicht.
+- **V30 (R8):** Die Regel prüft auch eine leere Kennung und falsche Zeichen, über FR-012 hinaus.
+- **Ganze Profile im Verlauf (R10):** Jede Änderung an einem Start-Modifikator ersetzt in der
+  Werkstatt das ganze Profil durch eine Kopie. So stimmt Rückgängig auch, wenn ein Löschen zwei
+  Start-Modifikatoren eines Profils mitnimmt.
+
+### Feature 003, Analyse (2026-10-22)
+
+Klaus hat alle 41 Befunde nach Empfehlung freigegeben. Zwei hat Claude beim Einarbeiten anders
+gelöst als im Bericht vorgeschlagen, mit demselben Ziel; bei sechs weiteren ließ der Bericht
+Einzelheiten offen, die Claude festgelegt hat. Alles steht in
+`specs/003-schwierigkeitsgrade/plan.md`, „Änderungen nach der Analyse“, und an den genannten
+Stellen.
+- **Anders gelöst:**
+  - **Text eines Profils (U1, R10):** `DifficultyProfile.to_dict()` statt
+    `JSON.stringify(to_list())` als Sonderfall. `_text_of()` ruft es wie bei Ereignissen und
+    Kategorien.
+  - **FilterBar im Simulator (G10, R13):** Sie bricht nicht um und wird nicht breiter als bisher;
+    `%CompareLabel` kürzt mit „…“ und zeigt den Text beim Überfahren ganz. Gilt bis Phase 4;
+    seither bricht sie in der kleinen Größe um (siehe „Feature 003, Phase 4, Oberfläche“).
+- **Festgelegt, wo der Bericht offen ließ:**
+  - **Kein Vergleichslauf (A3, R13):** „Kein Vergleich: Der Lauf hat keine Eingriffe.“ Bei
+    Mittel mit Häkchen gelten die Texte von Feature 002.
+  - **„Neu“ ohne gewähltes Ereignis (A4, FR-015):** das erste Ereignis über Wahrscheinlichkeit
+    nach Kennung.
+  - **V31 (U7, R8):** Beginn und Ende werden einzeln geprüft. Liegt im Zeitraum kein
+    Monatserster, gibt es nur eine Warnung an `from_day`, „wirkt nie“; gilt V27 oder V28, prüft
+    V31 nicht.
+  - **Felder (U4, R8):** Ein unbekannter Grad hat das Feld `profiles.<schlüssel>`. Die Prüfung
+    zeigt „Profil Leicht“ und „Profil Schwer“ nur bei genau diesen Pfadteilen, sonst „Profile“.
+  - **Start-Modifikatoren im Simulator (U10, R13):** ohne eigene Farbe, denn gedämpfter Text hält
+    auf Zebra und Auswahl den Kontrast nicht.
+  - **Weggelassene Start-Modifikatoren nennen (G1, R8):** `by_event` kennzeichnet die, die ohne
+    eigene Meldung nur wegen ihres Ereignisses wegfallen. Zeitleiste und Textausgabe nennen aus
+    der Hilfe nur diese, so steht keiner doppelt da. Die Textausgabe hängt an Meldungen zu
+    Start-Modifikatoren „Der Start-Modifikator fehlt in der Ausgabe.“
+
+### Feature 003, Phase 1 (2026-10-22)
+
+Auslegungen des Agents, die Claude angenommen hat. Sie stehen auch im Datenmodell, „Prüfregeln“.
+- **Texte von V25 bis V30:** vom Agent formuliert, etwa „Das Ereignis „x“ gibt es im Katalog
+  nicht.“ (V25); vorgegeben waren nur V29 und V31.
+- **Ort der Meldungen zum Abschnitt:** „Katalog“, wie bei den übrigen Schlüsseln der obersten
+  Ebene; ist ein Profil keine Liste, das Profil selbst.
+- **V26 bei doppelter Kennung:** Es meldet, sobald eines der Ereignisse mit dieser Kennung nicht
+  über Wahrscheinlichkeit kommt, wie V16.
+- **`catalog_alle_arten.json`:** Leicht −2 gilt das ganze Spiel, Schwer +5 nur 1990 bis 1994, damit
+  die Rundreise auch andere Daten abdeckt.
+- **Datum lesen:** `ChanceModifier._read_day()` wiederholt die zehn Zeilen von
+  `TimelineEvent._read_day()`, damit Phase 1 `TimelineEvent` nicht anfasst.
+- **Fund für Phase 2:** `catalog_issue.gd` nennt in Kommentaren noch „V01 bis V24“; der Agent zieht
+  das in Phase 2 mit nach. Erledigt in Phase 2.
+
+### Feature 003, Phase 2 (2026-10-23)
+
+Auslegungen des Agents, die Claude angenommen hat:
+- **Doppelte Kennung im Profil beim Spielstart:** Alle Start-Modifikatoren mit dieser Kennung
+  fallen durch, nicht nur der zweite, wie V30 jeden meldet. Sonst hinge es an der Reihenfolge,
+  welcher gilt.
+- **Texte, die der Vertrag offenließ,** etwa in der Textausgabe „Den Schwierigkeitsgrad „extrem“
+  gibt es nicht; erlaubt sind leicht, mittel und schwer.“ und im Lauf „Der Start-Modifikator
+  braucht einen Grund.“
+- **Zusatz „Das Ereignis fehlt in der Ausgabe.“** nur an Meldungen mit einer Ereigniskennung, auch
+  in der Textausgabe, wie U5 es für die Zeitleiste verlangt. Eine Meldung V01 zu einer leeren
+  Kennung steht damit ohne Zusatz da.
+- **Neuer Test `test_fahrplan_ausgabe.gd`:** Die Fehlerprobe zeigte, dass kein Test die
+  Textausgabe selbst prüfte. Er startet Godot als eigenen Prozess und kostet rund 6 Sekunden.
+- **Textausgabe und `start_refusals`:** Sie gibt die Liste nicht aus; nach `without_faulty()` und
+  der Prüfung des Grads ist sie dort immer leer.
+
+### Feature 003, Phase 3, Teil 1 (2026-10-23)
+
+Auslegungen des Agents, die Claude angenommen hat:
+- **Ungültige Aufrufe:** Duplizieren, Löschen und Felder setzen mit Mittel oder einer Stelle, die es
+  nicht gibt, melden es mit `push_error()` und tun nichts, wie bei einer unbekannten
+  Ereigniskennung. `add_start_modifier()` gibt dann still null, wie der Vertrag sagt.
+- **Namen im Verlauf:** etwa „Wert von Schwer: reklamationswelle“, „Start-Modifikator Schwer:
+  reklamationswelle duplizieren“; ohne Kennung „Schwer: Nr. 3“.
+- **Kennung beim Duplizieren:** wie bei Ereignissen mit Anhang, also `reklamationswelle_2` und
+  davon `reklamationswelle_2_2`.
+- **Löschdialog ohne Grund:** Fehlt der Grund, nennt er die Kennung, sonst „Schwer: Nr. 3“.
+- **Werte mit mehr als vier Nachkommastellen** werden bei der nächsten Änderung im selben Profil
+  gerundet; geschrieben wird ohnehin gerundet.
+- **Regelverstoß, behoben:** Für eine kurze Probe lag einige Sekunden eine Datei
+  `src/zz_probe_kanon.gd` im Repo; sie ist gelöscht, `git status` zeigt nur die drei Dateien von
+  T014.
+
+### Feature 003, Phase 3, Teil 2 (2026-10-23)
+
+- **Höhe bei 1280 × 720 (Claudes Entscheidung):** Mit einem langen Hinweis V31 bricht er in der
+  schmalen Feldspalte auf sechs Zeilen um, und die Werkstatt wird 23 px höher als ihr Fenster. Ohne
+  Hinweis passt alles, bei 1920 × 925 sowieso, und der Simulator ist in dieser Größe schon vorher
+  98 px zu hoch. Claude lässt es so; ein ScrollContainer um `%Fields` wiche vom Vertrag ab.
+- Auslegungen des Agents, die Claude angenommen hat:
+  - Bei 1280 × 720 rollt die Tabelle waagerecht, statt Spalten zu quetschen, wie im Simulator.
+  - Nach „Löschen“ ist keine Zeile gewählt.
+  - Ein Start-Modifikator ohne Ereignis heißt in Tabelle und Auswahl „– kein Ereignis –“.
+  - Die Auswahl „Ereignis“ zeigt nur Titel; die Kennung steht im Hinweis des Eintrags.
+  - Nach „Neu“ ist der Wert „+0“ markiert, damit Klaus gleich die Zahl tippt.
+  - Zusätzliche Hinweise beim Überfahren an „Duplizieren“, „Löschen“, Wert und Kennung.
+  - Die linke Seite des Teilers heißt `TableBox`; der Pfad `…/Tabs/DifficultyPanel/Split` stimmt.
+
+### Feature 003, Phase 4, Kern (2026-10-23)
+
+Auslegungen des Agents, die Claude angenommen hat:
+- **`write_file()` lehnt einen unbekannten Grad ab,** etwa 7, mit `ERR_INVALID_PARAMETER`, wie eine
+  ungültige Kennung. Sonst entstünde `"difficulty": ""`, eine Datei, die `read_file()` nicht liest.
+- **Meldung bei einem Wert, der kein Text ist:** `"difficulty": 1` ergibt „… nennt den
+  Schwierigkeitsgrad 1, den es nicht gibt.“; ein Text steht in „…“.
+- **Erst das Format, dann der Grad:** Eine Datei mit `"format": 2` meldet das Format.
+- **Übergang bis T025:** Bis der Simulator den Grad kennt, speichert er Proben immer als Mittel.
+
+### Feature 003, Phase 4, Oberfläche (2026-10-23)
+
+- **FilterBar als `HFlowContainer` (Claudes Entscheidung, angenommen vom Agent):** Kürzen des
+  Texts allein reichte nicht, das Häkchen braucht 176 px. In 1280 × 720 bricht die Leiste jetzt in
+  zwei Zeilen um, statt aus dem Fenster zu ragen; bei 1920 × 925 bleibt sie einzeilig. Steht im
+  Vertrag.
+- **Entschieden von Klaus (T027, 2026-10-23): stört nicht.** Mit Schwer wird die Zeile zur Chance
+  bei 1920 × 925 vier statt zwei Zeilen hoch; der Simulator wächst um 46 px, die dem Zeitstrahl
+  fehlen. Mit Mittel bleibt alles.
+- Auslegungen des Agents, die Claude angenommen hat:
+  - `%ExcludedNotice` nennt weggelassene Start-Modifikatoren aller Profile, mit dem Grad im Ort.
+  - „Katalog geändert“ merkt auch, wenn nur eine Lesemeldung zu einem Profil verschwindet.
+  - Spalten der Proben: Name, Seed, Grad, Stand, Eingriffe.
+  - Derselbe Grad noch einmal gewählt baut nicht neu.
+
+### Feature 003, Phase 5, Kern (2026-10-23)
+
+Auslegungen des Agents, die Claude angenommen hat:
+- **Grade nacheinander:** Ein Seed läuft erst ganz in Leicht, dann in Mittel, dann in Schwer. Weil
+  die Würfel nur an Seed, Zweck und Kennung hängen, ändert das kein Ergebnis.
+- **Doppelte oder unbekannte Grade in der Liste** filtert die Statistik nicht; das Panel gibt nur
+  gültige weiter (FR-011).
+- **Grund einer Ablehnung:** Er kommt aus dem ersten Grad. R15 ist dazu präzisiert.
+- **Laufzeit der Tests:** Die Suite braucht jetzt rund 46 statt 31 Sekunden, weil SC-003 drei Grade
+  mit je 1.000 Spielen rechnet.
+
+### Feature 003, Phase 5, Oberfläche (2026-10-25)
+
+- **„Katalog geändert“ in der Statistik (Claudes Entscheidung):** Sie nimmt wie der Simulator die
+  Stellen weggelassener Start-Modifikatoren in den Schlüssel auf, damit beide Werkzeuge im selben
+  Moment „Katalog geändert“ zeigen. Der Vertrag sagte „wie bisher“.
+- Auslegungen des Agents, die Claude angenommen hat:
+  - Der Text während der Rechnung nennt den Grad, etwa „Rechnet 1.000 Spiele je Grad …“.
+  - Während einer Rechnung ist die Auswahl des Grads gesperrt, wie Anzahl und Häkchen.
+  - Beim Vergleich hat jede Zelle einen eigenen Hinweis, nicht nur jede Spalte.
+  - Ob die Tabelle vergleicht, entscheidet die Rechnung, die dasteht, nicht die Auswahl.
+  - In 1280 × 720 rollt die Vergleichstabelle waagerecht.
+- **Bilder:** Am Rechner hing beim Fotografieren nur der eingebaute Bildschirm; die Bilder
+  entstanden bei Faktor 1 in 1920 × 924. Die Breiten sind dieselben wie bei Faktor 2; die Schrift
+  prüft Klaus in T031 am großen Monitor.
+
+### Feature 003, Lückensuche (2026-10-26)
+
+15 Befunde aus T033, alle von Claude am Code bestätigt. Vier gehen als T036 bis T039 an den Agent
+(tasks.md, Phase 7). Den Rest hat Claude in der Doku nachgezogen oder hier eingetragen:
+- **Weggelassene Start-Modifikatoren nennen (K1):** Jede Meldung steht einmal da; ein
+  Start-Modifikator mit zwei Fehlern also zweimal, wie ein Ereignis. Datenmodell und R8 sind
+  präzisiert.
+- **`start_modifiers` im Lauf (K2, Claudes Entscheidung):** unveränderlich per Vereinbarung, wie
+  `modifiers` aus Feature 002; kein Schreibschutz im Code.
+- **Doppelte V31-Hinweise im Reiter (W2):** Klaus, 2026-10-26: so lassen, wie beim Simulator. Mit
+  Beginn und Ende mitten im Monat wird der Reiter bei 1920 × 925 um 47 px höher, der Zeitstrahl
+  entsprechend kleiner.
+- Zusätze der Agents, die Claude angenommen hat:
+  - `select_difficulty()` im Simulator übergeht einen unbekannten Grad still (S4).
+  - Zeilen mit Start-Modifikatoren im Simulator haben einen Hinweis „Start-Modifikator von
+    Schwer: … · Kennung …“ (S4).
+  - „Je Grad“ setzt vor „%“ ein geschütztes Leerzeichen, damit Zahl und Zeichen nicht getrennt
+    umbrechen (W4).
+  - Im Reiter: Hinweise an der Gradauswahl, an „Neu“ und an den Zellen Ereignis, Grund und
+    Kennung; Platzhalter „TT.MM.JJJJ“ auch an „Beginn“ (W5).
+  - Ein Start-Modifikator ohne Kennung bekommt beim Duplizieren eine Kennung aus seinem Ereignis,
+    ersatzweise `start_modifikator` (W5).
+  - Ein Feld, das mit `profiles[` beginnt, gilt als Profilfeld (W5).
+  - Der Test `test_im_kleinen_fenster_passt_jeder_reiter_in_die_breite` (W5).
+- Auslegungen des Agents in Phase 7, die Claude angenommen hat:
+  - **T036:** Nach dem Übernehmen einer Sicherungskopie gelten die Lesemeldungen beider Profile
+    nicht mehr, ohne Vergleich des Inhalts; das Profil kommt dann aus der Kopie.
+  - **T037:** Der Löschdialog zählt die Kennung selbst (`_has_twin()`), dieselbe Regel wie
+    `delete_event()`; ein Test hält beide zusammen. „zweiten Ereignis“ gilt auch bei dreien.
+
+### Feature 003, Quickstart automatisiert (2026-10-26)
+
+- **Automatischer Durchlauf statt Prüfung von Hand (Klaus, 2026-10-26):** Klaus bat, T034
+  automatisiert durchzutesten, weil die Tabellen für ihn schwer nachzuvollziehen sind. Zwei Agents
+  haben beide Quickstarts Zeile für Zeile Tests zugeordnet oder im echten Fenster nachgespielt.
+  Feature 003: 61 von 64 Zeilen bestanden, Rest von Hand oder entfällt. Feature 002: 92 von 98
+  bestanden, drei nicht.
+- **Drei Funde, Klaus, 2026-10-26: alle vor der Abnahme beheben** (tasks.md, Phase 8): Tab bleibt
+  in der Beschreibung hängen (T094); Cmd+Q wirkt nicht bei offenem Dialog zur Sicherungskopie
+  (T096); unter 1440 × 900 ist der Simulator höher als das Fenster. Im kleinen Fenster darf der
+  Reiter rollen, bei 1920 × 925 bleibt alles, wie es ist.
+- **Umsetzung in Phase 8, Auslegungen des Agents, die Claude angenommen hat:**
+  - Für Cmd+Q bei offenem Dialog sind die Dialoge nicht mehr `exclusive`, und die Werkstatt sperrt
+    selbst. Das gilt für alle 15 Dialoge: Der offene Dialog geht zu wie mit „Abbrechen“, dann läuft
+    das Schließen weiter. Bei „Trotzdem speichern“ und der fremden Änderung entfällt das Speichern.
+  - Neu ist: Nach einem Klick neben einen Dialog hat der Dialog sofort wieder den Fokus.
+  - Im rollenden Reiter folgt die Ansicht der Tab-Taste nicht; `follow_focus` ließe beim Klick in
+    eine hohe Tabelle die Ansicht springen.
+  - Bei 1024 × 600 ist die Werkstatt zu breit; gemessen nur zur Information, nicht Teil von T043.
+
 ## Erledigt
 
+- **Feature 003 abgenommen:** Klaus, 2026-10-26 (T035). Alle Phasen 1 bis 8 sind abgenommen
+  oder geprüft und committet; T034 lief automatisiert mit wenigen Handgriffen von Klaus. Über den
+  Merge nach `main` entscheidet Klaus; diese Sitzung wechselt den Branch nicht.
+- **Analyse von Feature 003:** Klaus, 2026-10-22: alle 41 Befunde nach Empfehlung einarbeiten.
+  Eingearbeitet in Spec, Plan, research.md, Datenmodell, Verträge, Quickstart, Checkliste und
+  tasks.md, jetzt mit T001 bis T035. Zusammengefasst im Plan unter „Änderungen nach der Analyse“;
+  Claudes eigene Festlegungen dabei stehen oben unter „Feature 003, Analyse“.
+- **Eigene Festlegungen des Plans von Feature 003, bestätigt im Review:** Klaus hat am
+  2026-10-22 die Vorschläge der Checkliste freigegeben und damit diese Festlegungen bestätigt:
+  - der Reiter mit „Neu“ ohne Dialog und „Löschen“ ohne Rückfrage (R11, CHK016);
+  - der Wechsel des Grads im Simulator, „so, wie er war“ (R13, CHK011, CHK029, CHK033);
+  - der Stand im Simulator ohne Grad und die Texte der Markierungen (R13, CHK017);
+  - die unlesbare Probe bei einem unbekannten Grad (R14, CHK031);
+  - „Spanne“ und keine Verteilung beim Vergleich, der Grad im Ergebnistext (R15, CHK015,
+    CHK017);
+  - die Kopfzeile der Textausgabe mit Grad (R16, CHK017);
+  - das einmalige Speichern des echten Katalogs in Phase 1 (R3, CHK037).
+
+  Steht in `specs/003-schwierigkeitsgrade/checklists/review.md`.
+- **Verfassung, Grundsatz V und die Profile (Feature 003):** Klaus, 2026-10-22, nach Empfehlung:
+  so lassen. Die Ausnahme Ereigniskatalog gilt der Datei und ihrer Pflege in der Werkstatt, also
+  auch den Profilen darin; die Verfassung bleibt bei 2.1.1. Steht in
+  `specs/003-schwierigkeitsgrade/checklists/review.md`, CHK022.
+- **Verweise beim Umbenennen (Feature 003, FR-017):** Klaus, 2026-10-21, im Plan:
+  Start-Modifikatoren ziehen still mit wie Folgen und Bedingungen; genannt wird nur beim Löschen.
+  Steht in der Spec und in `specs/003-schwierigkeitsgrade/research.md`, R9.
 - **`CLAUDE.md` verweist auf `docs/ki_dev.md`** (Claudes Ergänzung nach Klaus' Satz „ki_dev ist in
   claude.md“): Klaus hat den Absatz „Arbeitsweise“ mit dem Merge von Feature 002 nach `main`
   freigegeben (2026-10-21).

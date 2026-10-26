@@ -1,0 +1,78 @@
+17.10.1985                  intel_386                     fix           eingetreten   Intel 80386 erscheint
+24.09.1986                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+01.10.1986    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+02.04.1987                  ibm_ps2                       fix           eingetreten   IBM PS/2 mit VGA und PS/2-Maus
+24.10.1987                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+31.10.1987    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+10.04.1989                  intel_486                     fix           eingetreten   Intel 80486 erscheint
+17.07.1989                  reklamationswelle             gewürfelt     eingetreten   Reklamationswelle
+31.07.1989    └ Presse · negativ — Negativer Zeitungsartikel droht.
+07.12.1989                  konkurrent_eroeffnet          gewürfelt     eingetreten   Konkurrent eröffnet
+12.01.1990                  neubaugebiet                  gewürfelt     eingetreten   Neubaugebiet in der Nähe
+11.02.1990    └ Kundenstrom · * · +20% — Neue Anwohner ziehen zu.
+18.01.1990                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+25.01.1990    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+22.05.1990                  win_30                        fix           eingetreten   Windows 3.0
+07.08.1990                  reklamationswelle             gewürfelt     eingetreten   Reklamationswelle
+21.08.1990    └ Presse · negativ — Negativer Zeitungsartikel droht.
+24.09.1990                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+01.10.1990    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+03.10.1990                  wiedervereinigung             fix           eingetreten   Deutsche Wiedervereinigung
+02.12.1990    └ Kundenstrom · * · +25% — Neue Kundschaft, Nachholbedarf.
+21.01.1991                  konkurrent_schliesst          gewürfelt     eingetreten   Konkurrent gibt auf
+01.03.1991                  amd_386dx40                   fix           eingetreten   AMD Am386DX-40
+03.08.1991                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+10.08.1991    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+02.10.1991                  reklamationswelle             gewürfelt     eingetreten   Reklamationswelle
+16.10.1991    └ Presse · negativ — Negativer Zeitungsartikel droht.
+17.10.1991                  lieferengpass                 gewürfelt     eingetreten   Lieferengpass
+23.02.1992                  neubaugebiet                  gewürfelt     eingetreten   Neubaugebiet in der Nähe
+24.03.1992    └ Kundenstrom · * · +20% — Neue Anwohner ziehen zu.
+11.03.1992                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+18.03.1992    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+06.04.1992                  win_31                        fix           eingetreten   Windows 3.1
+01.01.1993                  rezession_93                  fix           eingetreten   Konjunkturflaute
+22.03.1993                  intel_pentium                 fix           eingetreten   Intel Pentium erscheint
+05.04.1993    └ Nachfrage · ram · +20% — Pentium-Systeme wollen Speicher.
+30.03.1993                  msdos_6                       fix           eingetreten   MS-DOS 6.0
+30.04.1993                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+07.05.1993    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+01.06.1993                  reklamationswelle             gewürfelt     eingetreten   Reklamationswelle
+15.06.1993    └ Presse · negativ — Negativer Zeitungsartikel droht.
+06.10.1993                  neubaugebiet                  gewürfelt     eingetreten   Neubaugebiet in der Nähe
+05.11.1993    └ Kundenstrom · * · +20% — Neue Anwohner ziehen zu.
+01.01.1994                  cdrom_standard                fix           eingetreten   CD-ROM wird Standard
+01.01.1994                  lieferengpass                 gewürfelt     eingetreten   Lieferengpass
+15.03.1994                  konkurrent_eroeffnet          gewürfelt     eingetreten   Konkurrent eröffnet
+05.04.1994                  reklamationswelle             gewürfelt     eingetreten   Reklamationswelle
+19.04.1994    └ Presse · negativ — Negativer Zeitungsartikel droht.
+01.06.1994                  msdos_622                     fix           eingetreten   MS-DOS 6.22
+24.08.1994                  konkurrent_schliesst          gewürfelt     eingetreten   Konkurrent gibt auf
+02.11.1994                  lieferengpass                 gewürfelt     eingetreten   Lieferengpass
+07.06.1995                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+14.06.1995    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+24.08.1995                  win_95                        fix           eingetreten   Windows 95
+31.08.1995    └ Nachfrage · cdrom · +30% — Auslieferung auf CD.
+16.09.1995                  lieferengpass                 gewürfelt     eingetreten   Lieferengpass
+01.11.1995                  pentium_pro                   fix           eingetreten   Intel Pentium Pro
+28.11.1995                  internet_privat               fix           eingetreten   Internet für Privatkunden
+15.01.1996                  usb_10                        fix           eingetreten   USB 1.0 vorgestellt
+30.03.1996                  neubaugebiet                  gewürfelt     eingetreten   Neubaugebiet in der Nähe
+29.04.1996    └ Kundenstrom · * · +20% — Neue Anwohner ziehen zu.
+07.09.1996                  lieferengpass                 gewürfelt     eingetreten   Lieferengpass
+25.12.1996                  reklamationswelle             gewürfelt     eingetreten   Reklamationswelle
+08.01.1997    └ Presse · negativ — Negativer Zeitungsartikel droht.
+09.04.1997                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+16.04.1997    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+07.05.1997                  intel_pentium2                fix           eingetreten   Intel Pentium II
+02.09.1997                  konkurrent_eroeffnet          gewürfelt     eingetreten   Konkurrent eröffnet
+10.01.1998                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+17.01.1998    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+25.06.1998                  win_98                        fix           eingetreten   Windows 98
+21.12.1998                  konkurrent_schliesst          gewürfelt     eingetreten   Konkurrent gibt auf
+01.01.1999                  euro_buchgeld                 fix           eingetreten   Euro als Buchgeld
+04.03.1999                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+11.03.1999    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.
+25.07.1999                  konkurrent_eroeffnet          gewürfelt     eingetreten   Konkurrent eröffnet
+26.09.1999                  grosskunde                    gewürfelt     eingetreten   Großkunde meldet sich
+03.10.1999    └ Nachfrage · komplett_pc · +30% — Sammelbestellung in Aussicht.

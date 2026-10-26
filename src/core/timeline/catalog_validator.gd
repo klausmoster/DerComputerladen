@@ -1,7 +1,7 @@
 class_name CatalogValidator
 extends RefCounted
 
-## Prüft den Ereigniskatalog nach den Regeln V01 bis V24 aus data-model.md, Tabelle
+## Prüft den Ereigniskatalog nach den Regeln V01 bis V31 aus data-model.md, Tabelle
 ## „Prüfregeln“; V22 entsteht schon beim Lesen (EventCatalog, CatalogIssue).
 ##
 ## Die Werkstatt prüft nach jeder Änderung, das Spiel beim Start und die Tests am echten
@@ -12,9 +12,15 @@ extends RefCounted
 ## Die meisten Regeln lassen sich an einem Ereignis allein prüfen, das tut validate_event().
 ## Den ganzen Katalog brauchen nur V02 (doppelte Kennung), V18 und V23 (Kreise aus
 ## Folgeereignissen) und V21 (Kategorien).
+##
+## Seit Feature 003 prüft validate_profiles() mit V25 bis V31 die Start-Modifikatoren in den
+## Profilen von Leicht und Schwer. Ihre Meldungen haben ein leeres event_id, auch wenn der
+## Start-Modifikator auf ein Ereignis zeigt: Ein Fehler im Profil darf kein Ereignis aus dem Spiel
+## nehmen (research.md von Feature 003, R8). Die Stelle steht im Feld, etwa
+## `profiles.schwer[2].reason`.
 
 ## Regeln, die nur warnen; alle anderen sind Fehler.
-const WARNING_RULES := ["V13", "V20", "V23"]
+const WARNING_RULES := ["V13", "V20", "V23", "V31"]
 ## Die Jahre des Spielzeitraums. Seine Tage, 0 für den 01.01.1985 bis 5477 für den 31.12.1999,
 ## stehen in TimelineRun.FIRST_DAY und TimelineRun.LAST_DAY.
 const FIRST_YEAR := 1985
@@ -32,7 +38,8 @@ const KINDS_WITH_STRENGTH := [
 
 
 ## Alle Regeln aus data-model.md außer V22, die beim Lesen entsteht. Reihenfolge der Meldungen:
-## Ereignisse nach Kennung, je Ereignis nach Regel; Kategorien zuletzt.
+## Ereignisse nach Kennung, je Ereignis nach Regel; dann die Kategorien; zuletzt die Profile, Leicht
+## vor Schwer, je Profil nach Stelle und je Start-Modifikator nach Regel.
 static func validate(catalog: EventCatalog) -> Array[CatalogIssue]:
 	# Ein Nachschlagewerk Kennung → Ereignisse, einmal gebaut. get_event() in den Schleifen
 	# ginge jedes Mal die ganze Liste durch; bei 500 Ereignissen wäre das zu langsam (SC-011).
@@ -49,6 +56,31 @@ static func validate(catalog: EventCatalog) -> Array[CatalogIssue]:
 			issues.append_array(cycles[event])
 		result.append_array(_finish(issues, event))
 	result.append_array(_category_issues(catalog))
+	result.append_array(validate_profiles(catalog))
+	return result
+
+
+## Nur die Regeln der Profile, V25 bis V31 (Feature 003, data-model.md, „Prüfregeln“); validate()
+## nutzt sie. Leicht vor Schwer, je Profil nach Stelle, je Start-Modifikator nach Regel. Jede
+## Meldung hat das Feld wie in der Datei, etwa „profiles.schwer[2].reason“, und im Text den Ort aus
+## DifficultyProfile.place() und das volle Feld, wie bei Kategorien.
+static func validate_profiles(catalog: EventCatalog) -> Array[CatalogIssue]:
+	var index := _index_by_id(catalog)
+	var result: Array[CatalogIssue] = []
+	for level: int in Difficulty.WITH_PROFILE:
+		var profile := catalog.get_profile(level)
+		if profile == null:
+			continue
+		# Kennung → wie oft sie im Profil vorkommt (V30).
+		var count := {}
+		for modifier in profile.modifiers:
+			count[modifier.id] = int(count.get(modifier.id, 0)) + 1
+		for i in profile.modifiers.size():
+			var modifier := profile.modifiers[i]
+			var issues := _start_modifier_issues(modifier, index, count)
+			CatalogIssue.prefix_fields(issues, 0, DifficultyProfile.field_prefix(level, i))
+			CatalogIssue.locate(issues, 0, DifficultyProfile.place(level, i, modifier))
+			result.append_array(issues)
 	return result
 
 
@@ -425,6 +457,107 @@ static func _category_issues(catalog: EventCatalog) -> Array[CatalogIssue]:
 		CatalogIssue.locate(issues, 0, _category_place(category))
 		result.append_array(issues)
 	return result
+
+
+# --- Regeln der Profile (Feature 003) ---------------------------------------------
+
+## V25 bis V31 für einen Start-Modifikator, nach Regel, noch ohne Stelle und Ort; die setzt
+## validate_profiles(). [param index] ist Kennung → Ereignisse, [param count] Kennung → wie oft sie
+## im Profil vorkommt.
+static func _start_modifier_issues(modifier: ChanceModifier, index: Dictionary,
+		count: Dictionary) -> Array[CatalogIssue]:
+	var issues: Array[CatalogIssue] = []
+	_check_target(modifier, index, issues)
+	var period_ok := _check_period(modifier, issues)
+	if modifier.reason.strip_edges().is_empty():
+		issues.append(_issue("V29", "reason", "Der Grund ist leer."))
+	if modifier.id.is_empty():
+		issues.append(_issue("V30", "id", "Die Kennung ist leer."))
+	elif not _is_id(modifier.id):
+		issues.append(_issue("V30", "id",
+			"Die Kennung „%s“ enthält andere Zeichen als a–z, 0–9 und _." % modifier.id))
+	elif int(count[modifier.id]) > 1:
+		issues.append(_issue("V30", "id",
+			"Die Kennung „%s“ gibt es in diesem Profil mehrfach." % modifier.id))
+	# Ein Zeitraum, der umgedreht ist oder aus dem Spiel ragt, hat keine sinnvollen Würfelrunden.
+	if period_ok:
+		_check_rounds(modifier, issues)
+	return issues
+
+
+## V25: Das Ereignis fehlt oder ist unbekannt. V26: Es kommt nicht über Wahrscheinlichkeit; dann
+## hat seine Chance nichts, was ein Start-Modifikator verschieben könnte (FR-003).
+static func _check_target(modifier: ChanceModifier, index: Dictionary,
+		issues: Array[CatalogIssue]) -> void:
+	if modifier.event_id.is_empty():
+		issues.append(_issue("V25", "event_id", "Der Start-Modifikator nennt kein Ereignis."))
+		return
+	if not index.has(modifier.event_id):
+		issues.append(_issue("V25", "event_id",
+			"Das Ereignis „%s“ gibt es im Katalog nicht." % modifier.event_id))
+		return
+	var other := _not_by_chance(index[modifier.event_id])
+	if other != null:
+		issues.append(_issue("V26", "event_id", ("„%s“ hat die Art „%s“; Start-Modifikatoren "
+			+ "gehören nur zu Ereignissen über Wahrscheinlichkeit.")
+			% [modifier.event_id, other.kind_label()]))
+
+
+## V27: Ende vor dem Beginn. V28: Beginn oder Ende außerhalb des Spiels. Gibt zurück, ob der
+## Zeitraum beide Regeln besteht.
+static func _check_period(modifier: ChanceModifier, issues: Array[CatalogIssue]) -> bool:
+	var before := issues.size()
+	if modifier.to_day < modifier.from_day:
+		issues.append(_issue("V27", "to_day",
+			"Der Start-Modifikator endet am %s, vor seinem Beginn am %s."
+			% [_date(modifier.to_day), _date(modifier.from_day)]))
+	for pair: Array in [["from_day", modifier.from_day, "Der Beginn"],
+			["to_day", modifier.to_day, "Das Ende"]]:
+		var day: int = pair[1]
+		if day < TimelineRun.FIRST_DAY or day > TimelineRun.LAST_DAY:
+			issues.append(_issue("V28", pair[0],
+				"%s %s liegt außerhalb von 01.01.1985 bis 31.12.1999." % [pair[2], _date(day)]))
+	return issues.size() == before
+
+
+## V31: Gewürfelt wird am Monatsersten (FR-007). Ein Beginn mitten im Monat wirkt erst ab der
+## nächsten Würfelrunde, ein Ende mitten im Monat noch in der Würfelrunde seines Monats. Die Warnung
+## nennt diese Würfelrunde, an from_day bzw. to_day. Liegt im Zeitraum gar kein Monatserster, gibt
+## es nur eine Warnung, an from_day: Er wirkt nie (research.md von Feature 003, R8).
+static func _check_rounds(modifier: ChanceModifier, issues: Array[CatalogIssue]) -> void:
+	var first_round := _first_round_from(modifier.from_day)
+	if first_round > modifier.to_day:
+		issues.append(_issue("V31", "from_day", ("Zwischen %s und %s liegt keine Würfelrunde; der "
+			+ "Start-Modifikator wirkt nie.") % [_date(modifier.from_day), _date(modifier.to_day)]))
+		return
+	if first_round != modifier.from_day:
+		issues.append(_issue("V31", "from_day", ("Der Beginn %s ist kein Monatserster; der "
+			+ "Start-Modifikator wirkt ab der Würfelrunde am %s.")
+			% [_date(modifier.from_day), _date(first_round)]))
+	var end := GameDate.from_day_index(modifier.to_day)
+	if end.day != GameDate.days_in_month(end.year, end.month):
+		var last_round := modifier.to_day - end.day + 1
+		issues.append(_issue("V31", "to_day", ("Das Ende %s ist kein Monatsletzter; der "
+			+ "Start-Modifikator wirkt noch in der Würfelrunde am %s.")
+			% [_date(modifier.to_day), _date(last_round)]))
+
+
+## Der erste Monatserste ab [param day]: day selbst, wenn er einer ist, sonst der Erste des
+## nächsten Monats.
+static func _first_round_from(day: int) -> int:
+	var date := GameDate.from_day_index(day)
+	if date.day == 1:
+		return day
+	return day + GameDate.days_in_month(date.year, date.month) - date.day + 1
+
+
+## Das erste der Ereignisse mit einer Kennung, das nicht über Wahrscheinlichkeit kommt; null, wenn
+## alle es tun. Mehrere mit derselben Kennung meldet schon V02.
+static func _not_by_chance(events: Array) -> TimelineEvent:
+	for event: TimelineEvent in events:
+		if event.kind != TimelineEvent.Kind.CHANCE:
+			return event
+	return null
 
 
 # --- Hilfen ---------------------------------------------------------------------

@@ -1,11 +1,12 @@
 class_name WhatIfProbe
 extends RefCounted
 
-## Eine Was-wäre-wenn-Probe (FR-051; data-model.md, „WhatIfProbe“; research.md, R22): Seed und
-## Eingriffe eines Laufs aus dem Simulator, unter einem Namen gespeichert, etwa „Windiger Händler
-## ab 1990“. Jede Probe ist eine JSON-Datei im Ordner proben/ neben der Werkstatt, geschrieben
-## nach denselben Regeln wie der Katalog. Mit tools/ ist der Ordner vom Export ausgeschlossen, liegt
-## aber in der Versionsverwaltung; so lässt sich eine Balance-Probe auch nach Wochen wiederholen.
+## Eine Was-wäre-wenn-Probe (FR-051; data-model.md, „WhatIfProbe“; research.md, R22): Seed, Grad
+## und Eingriffe eines Laufs aus dem Simulator, unter einem Namen gespeichert, etwa „Windiger
+## Händler ab 1990“. Jede Probe ist eine JSON-Datei im Ordner proben/ neben der Werkstatt,
+## geschrieben nach denselben Regeln wie der Katalog. Mit tools/ ist der Ordner vom Export
+## ausgeschlossen, liegt aber in der Versionsverwaltung; so lässt sich eine Balance-Probe auch nach
+## Wochen wiederholen.
 ##
 ## Gespeichert wird nicht der Fahrplan, sondern das Eingriffsprotokoll des Laufs
 ## (TimelineRun.interventions): jeder Eingriff mit dem Tag, an dem er geschah. build_run() spielt
@@ -48,6 +49,10 @@ var name: String = ""
 ## Seed des Laufs.
 @warning_ignore("shadowed_global_identifier")
 var seed: int = 0
+## Der Grad des Durchlaufs (Feature 003, FR-019, R14). In der Datei steht er als
+## "difficulty": "schwer", immer, auch bei Mittel. Eine Probe aus Feature 002 hat ihn nicht; sie
+## gilt als Mittel.
+var difficulty: Difficulty.Level = Difficulty.DEFAULT
 ## Bis zu diesem Tag spielt build_run() den Lauf ab; −1 heißt: noch vor dem 01.01.1985. Beim
 ## Speichern ist das der Tag, auf dem der Lauf stand, mindestens aber der Tag des letzten Eingriffs,
 ## denn bis dorthin muss build_run() ohnehin spielen.
@@ -88,6 +93,11 @@ static func list_probes(folder: String = FOLDER) -> Array[WhatIfProbe]:
 ## Liest eine Probe. Fehlt die Datei oder ist sie keine Probe dieses Formats, gibt es null und eine
 ## Meldung über push_error() mit Pfad und Grund. Die Kennung ist der Dateiname, wie beim Schreiben.
 ##
+## Fehlt "difficulty", gilt Mittel, wie bei einer Probe aus Feature 002. Ist der Wert kein Text oder
+## kein Grad, auch „Schwer“ mit großem S, gibt es null und eine Meldung wie „Die Probe <Pfad> nennt
+## den Schwierigkeitsgrad „extrem“, den es nicht gibt.“ Unter einem geratenen Grad zeigte die Probe
+## ein anderes Spiel als das gespeicherte (R14).
+##
 ## Ein Eintrag mit einem Datum, das kein Kalendertag in der Form „JJJJ-MM-TT“ ist, kommt nicht ins
 ## Eingriffsprotokoll; not_applicable nennt ihn, und die übrigen Einträge gelten. So kostet ein
 ## Tippfehler beim Bearbeiten von Hand nicht die ganze Probe.
@@ -106,10 +116,16 @@ static func read_file(path: String) -> WhatIfProbe:
 		push_error("Die Probe %s lässt sich nicht lesen: %s" % [path, problem])
 		return null
 	var data: Dictionary = json.data
+	var level := _read_difficulty(data)
+	if level == -1:
+		push_error("Die Probe %s nennt den Schwierigkeitsgrad %s, den es nicht gibt." % [path,
+			_shown(data["difficulty"])])
+		return null
 	var probe := WhatIfProbe.new()
 	probe.id = path.get_file().get_basename()
 	probe.name = data["name"]
 	probe.seed = int(data["seed"])
+	probe.difficulty = level as Difficulty.Level
 	probe.until_day = GameDate.from_iso(data["until_day"]).to_day_index()
 	for record: Dictionary in data["interventions"]:
 		var wrong := _wrong_date(record)
@@ -126,11 +142,15 @@ static func read_file(path: String) -> WhatIfProbe:
 ## vier Nachkommastellen gerundet wie die Anteile im Katalog, ein Zeilenumbruch am Ende, dazu
 ## "format": 1. Gleiche Probe, gleiche Datei.
 ##
+## Der Grad steht immer darin, auch Mittel als "difficulty": "mittel"; so hat jeder Grad genau eine
+## Form in den Dateien (R14). Alphabetisch ist er der erste Schlüssel.
+##
 ## Eine Datei mit dieser Kennung wird überschrieben; ob es sie schon gibt, sagt list_probes().
 ## Fehlt der Ordner, legt write_file() ihn an. Eine Kennung mit anderen Zeichen als a–z, 0–9 und _
-## lehnt es mit ERR_INVALID_PARAMETER ab, damit keine Datei außerhalb des Ordners entsteht.
+## lehnt es mit ERR_INVALID_PARAMETER ab, damit keine Datei außerhalb des Ordners entsteht. Ebenso
+## einen unbekannten Grad wie 7: Die Datei ließe sich nicht wieder lesen.
 func write_file(folder: String = FOLDER) -> Error:
-	if not _is_valid_id(id):
+	if not _is_valid_id(id) or not Difficulty.is_valid(difficulty):
 		return ERR_INVALID_PARAMETER
 	if not DirAccess.dir_exists_absolute(folder):
 		var made := DirAccess.make_dir_recursive_absolute(folder)
@@ -140,6 +160,7 @@ func write_file(folder: String = FOLDER) -> Error:
 	for record in interventions:
 		records.append(_to_file(record))
 	var data := {
+		"difficulty": Difficulty.key(difficulty),
 		"format": FORMAT,
 		"id": id,
 		"interventions": records,
@@ -166,8 +187,9 @@ func delete_file(folder: String = FOLDER) -> Error:
 
 # Der Parameter heißt laut Vertrag name, wie das Feld; die Warnung darüber ist abgeschaltet.
 
-## Neue Probe aus einem Lauf: Seed, der Tag, bis zu dem er abgespielt ist, und eine Kopie seines
-## Eingriffsprotokolls. Die Kennung entsteht aus dem Namen wie bei Ereignissen: „Windiger Händler
+## Neue Probe aus einem Lauf: Seed, Grad, der Tag, bis zu dem er abgespielt ist, und eine Kopie
+## seines Eingriffsprotokolls. Die Start-Modifikatoren des Grads stehen dort nie; build_run() setzt
+## sie aus dem Profil neu. Die Kennung entsteht aus dem Namen wie bei Ereignissen: „Windiger Händler
 ## ab 1990“ ergibt windiger_haendler_ab_1990, ohne Buchstaben und Ziffern „probe“.
 @warning_ignore("shadowed_variable")
 static func from_run(name: String, run: TimelineRun) -> WhatIfProbe:
@@ -176,6 +198,7 @@ static func from_run(name: String, run: TimelineRun) -> WhatIfProbe:
 	# Dieselbe Regel wie für die Kennungen von Ereignissen, an einer Stelle.
 	probe.id = CatalogEditor.id_from(name, "probe")
 	probe.seed = run.seed
+	probe.difficulty = run.difficulty
 	probe.until_day = run.today
 	# duplicate(true) kopiert auch die Dictionaries darin: Ändert sich der Lauf danach, bleibt
 	# die Probe, wie sie war.
@@ -183,10 +206,10 @@ static func from_run(name: String, run: TimelineRun) -> WhatIfProbe:
 	return probe
 
 
-## Neuer Lauf mit [member seed] auf [param catalog]; spielt das Eingriffsprotokoll nach und dann
-## bis [member until_day] (data-model.md, „Neu abspielen“). Je Eingriff spielt er den Lauf bis zu
-## dessen at_day ab, bei −1 gar nicht, und wendet ihn dort mit TimelineRun.apply_intervention() an.
-## So entsteht derselbe Fahrplan wie beim Speichern.
+## Neuer Lauf mit [member seed] und [member difficulty] auf [param catalog]; spielt das
+## Eingriffsprotokoll nach und dann bis [member until_day] (data-model.md, „Neu abspielen“). Je
+## Eingriff spielt er den Lauf bis zu dessen at_day ab, bei −1 gar nicht, und wendet ihn dort mit
+## TimelineRun.apply_intervention() an. So entsteht derselbe Fahrplan wie beim Speichern.
 ##
 ## Nachgespielt wird nach at_day (TimelineRun.in_replay_order()), nicht in der Reihenfolge des
 ## Protokolls: Nach „Fahrplan erzeugen“ kann ein Eingriff vor Spielbeginn hinter einem vom
@@ -198,9 +221,12 @@ static func from_run(name: String, run: TimelineRun) -> WhatIfProbe:
 ## mit dem Grund aus TimelineRun.last_refusal (FR-051), nach den Einträgen, die schon beim Lesen
 ## wegfielen, und in der Reihenfolge des Nachspielens. Der Katalog selbst bleibt unberührt; der
 ## Lauf arbeitet auf einer Kopie.
+##
+## Die Start-Modifikatoren des Grads setzt der Lauf selbst, aus dem Profil im Katalog, wie er jetzt
+## dasteht (Feature 003, R5). Mit Mittel entsteht derselbe Fahrplan wie in Feature 002.
 func build_run(catalog: EventCatalog) -> TimelineRun:
 	not_applicable = _read_problems.duplicate()
-	var run := TimelineRun.new(catalog, seed)
+	var run := TimelineRun.new(catalog, seed, difficulty)
 	for record in TimelineRun.in_replay_order(interventions):
 		# Ohne lesbaren Tag ist der Tag −1: Der Lauf spielt nichts ab, und der Eingriff gilt dort,
 		# wo der Lauf gerade steht.
@@ -218,6 +244,17 @@ static func _comes_before(a: WhatIfProbe, b: WhatIfProbe) -> bool:
 	if order != 0:
 		return order < 0
 	return a.id < b.id
+
+
+## Der Grad aus einer gelesenen Datei, die _structure_problem() durchgelassen hat: Mittel, wenn
+## "difficulty" fehlt; −1, wenn der Wert kein Text oder kein Name aus Difficulty ist.
+static func _read_difficulty(data: Dictionary) -> int:
+	if not data.has("difficulty"):
+		return Difficulty.DEFAULT
+	var value: Variant = data["difficulty"]
+	if typeof(value) != TYPE_STRING:
+		return -1
+	return Difficulty.from_key(value)
 
 
 ## Was an einer gelesenen Datei nicht stimmt; leer, wenn sie eine Probe dieses Formats ist. Das

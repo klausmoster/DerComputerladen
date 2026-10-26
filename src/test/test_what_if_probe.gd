@@ -2,14 +2,18 @@ extends GutTest
 
 ## Prüft die Was-wäre-wenn-Proben (Feature 002, T060; FR-051, R22): aus einem Lauf erzeugen,
 ## kanonisch speichern, lesen, auflisten, löschen und neu abspielen, auch wenn sich der Katalog
-## inzwischen geändert hat (US6, Szenarien 7 und 8).
+## inzwischen geändert hat (US6, Szenarien 7 und 8). Seit Feature 003 (T023; FR-019, R14) merkt
+## sich eine Probe auch den Schwierigkeitsgrad (US3, Szenarien 3 und 4).
 ##
 ## Jeder Test schreibt in einen eigenen Ordner unter user://, den after_each() samt Inhalt wieder
 ## abräumt. In den echten Proben-Ordner der Werkstatt schreibt kein Test. Grundlage ist
-## catalog_us6_reklamation mit „Konkurrent eröffnet“, beim Start auf den 01.06.1992 gesetzt.
+## catalog_us6_reklamation mit „Konkurrent eröffnet“, beim Start auf den 01.06.1992 gesetzt. Die
+## Tests zum Grad nehmen catalog_us1_grade: Dort hat „Schwer“ den Start-Modifikator „Anspruchsvolle
+## Kunden“, +5 Prozentpunkte auf die Reklamationswelle, „Leicht“ −2.
 
 const ORDNER := "user://test_what_if_probe/"
 const KATALOG := "res://test/fixtures/catalog_us6_reklamation.json"
+const GRADE := "res://test/fixtures/catalog_us1_grade.json"
 const LETZTER_TAG := TimelineRun.LAST_DAY
 const NAME := "Windiger Händler ab 1990"
 const DATEI := ORDNER + "windiger_haendler_ab_1990.json"
@@ -98,6 +102,7 @@ func test_datei_ist_kanonisch_und_liest_sich_bytegleich_zurueck() -> void:
 	assert_eq(run.cancel_entry(konkurrent.serial, "Laden nebenan selbst gemietet"), OK)
 	var erwartet := "\n".join(PackedStringArray([
 		"{",
+		"\t\"difficulty\": \"mittel\",",
 		"\t\"format\": 1,",
 		"\t\"id\": \"windiger_haendler_ab_1990\",",
 		"\t\"interventions\": [",
@@ -134,7 +139,8 @@ func test_datei_ist_kanonisch_und_liest_sich_bytegleich_zurueck() -> void:
 
 	# Assert
 	assert_eq(gespeichert, OK)
-	assert_eq(text, erwartet, "Schlüssel alphabetisch, Tabs, Tage als Datum, Format 1.")
+	assert_eq(text, erwartet,
+		"Schlüssel alphabetisch, Tabs, Tage als Datum, Format 1, der Grad auch bei Mittel.")
 	assert_eq(noch_einmal, OK)
 	assert_eq(FileAccess.get_file_as_string(DATEI), text,
 		"Lesen und wieder schreiben ergibt bytegleichen Text.")
@@ -455,13 +461,196 @@ func test_kennung_muss_als_dateiname_taugen() -> void:
 	assert_true(FileAccess.file_exists(ORDNER + "unterordner/ausbruch.json"))
 
 
+func test_from_run_uebernimmt_den_grad() -> void:
+	# Arrange (T023): je Grad ein Lauf mit Seed 4711
+	var grade := [Difficulty.Level.LEICHT, Difficulty.Level.MITTEL, Difficulty.Level.SCHWER]
+
+	# Act
+	var uebernommen := []
+	for grad: int in grade:
+		var run := TimelineRun.new(_katalog(GRADE), 4711, grad as Difficulty.Level)
+		uebernommen.append(WhatIfProbe.from_run(NAME, run).difficulty)
+
+	# Assert
+	assert_eq(uebernommen, grade, "Die Probe hat den Grad ihres Laufs.")
+	assert_eq(WhatIfProbe.new().difficulty, Difficulty.Level.MITTEL, "Vorgabe ist Mittel.")
+
+
+func test_szenario_3_grad_schreiben_und_lesen() -> void:
+	# Arrange (US3, Szenario 3): Seed 4711, Schwer, ein eigener Eingriff, bis zum 01.01.1992
+	var run := TimelineRun.new(_katalog(GRADE), 4711, Difficulty.Level.SCHWER)
+	assert_eq(run.add_modifier(_windiger_haendler()), OK)
+	run.advance_to(_tag(1992, 1, 1))
+	var eingriffe := run.interventions.duplicate(true)
+
+	# Act
+	var gespeichert := WhatIfProbe.from_run(NAME, run).write_file(ORDNER)
+	var text := FileAccess.get_file_as_string(DATEI)
+	var geladen := WhatIfProbe.read_file(DATEI)
+	var noch_einmal := geladen.write_file(ORDNER)
+
+	# Assert
+	assert_eq(gespeichert, OK)
+	assert_true(text.begins_with("{\n\t\"difficulty\": \"schwer\",\n\t\"format\": 1,\n"),
+		"Der Grad steht klein geschrieben als erster Schlüssel: %s" % text.left(60))
+	assert_eq([geladen.seed, geladen.difficulty, geladen.until_day],
+		[4711, Difficulty.Level.SCHWER, _tag(1992, 1, 1)], "Seed, Grad und Tag sind wieder da.")
+	assert_eq(geladen.interventions, eingriffe, "Die Eingriffe auch.")
+	assert_eq(noch_einmal, OK)
+	assert_eq(FileAccess.get_file_as_string(DATEI), text,
+		"Lesen und wieder schreiben ergibt bytegleichen Text.")
+
+
+func test_jeder_grad_hat_genau_eine_form_in_der_datei() -> void:
+	# Arrange (R14): je Grad eine Probe
+	var namen := {}
+	for grad: int in [Difficulty.Level.LEICHT, Difficulty.Level.MITTEL, Difficulty.Level.SCHWER]:
+		var probe := WhatIfProbe.new()
+		probe.id = Difficulty.key(grad)
+		probe.name = Difficulty.label(grad)
+		probe.difficulty = grad as Difficulty.Level
+		assert_eq(probe.write_file(ORDNER), OK)
+		namen[grad] = probe.id
+
+	# Act und Assert: Der Schlüssel steht immer da, auch bei Mittel, und liest sich zurück.
+	for grad: int in namen:
+		var pfad: String = ORDNER + namen[grad] + ".json"
+		assert_string_contains(FileAccess.get_file_as_string(pfad),
+			"\n\t\"difficulty\": \"%s\",\n" % Difficulty.key(grad))
+		assert_eq(WhatIfProbe.read_file(pfad).difficulty, grad, Difficulty.label(grad))
+
+
+func test_szenario_4_probe_ohne_grad_gilt_als_mittel() -> void:
+	# Arrange (US3, Szenario 4): eine Probe aus Feature 002. Ihre Datei ist die von heute ohne die
+	# Zeile mit dem Grad, wie der Vergleich der ganzen Datei oben zeigt.
+	var run := TimelineRun.new(_katalog(GRADE), 4711)
+	assert_eq(run.add_modifier(_windiger_haendler()), OK)
+	run.advance_to(_tag(1993, 1, 1))
+	assert_eq(WhatIfProbe.from_run(NAME, run).write_file(ORDNER), OK)
+	var heute := FileAccess.get_file_as_string(DATEI)
+	var alt := heute.replace("\t\"difficulty\": \"mittel\",\n", "")
+	assert_ne(alt, heute, "Voraussetzung: Die Zeile stand darin.")
+	_schreibe(DATEI, alt)
+
+	# Act
+	var geladen := WhatIfProbe.read_file(DATEI)
+	var neu := geladen.build_run(_katalog(GRADE))
+	var wieder := geladen.write_file(ORDNER)
+
+	# Assert
+	assert_not_null(geladen, "Die alte Probe liest sich.")
+	assert_eq(geladen.difficulty, Difficulty.Level.MITTEL, "Ohne Schlüssel gilt Mittel.")
+	assert_eq([neu.difficulty, neu.start_modifiers.size()], [Difficulty.Level.MITTEL, 0])
+	assert_eq(ScheduleText.plan_lines(neu), ScheduleText.plan_lines(run),
+		"Derselbe Fahrplan wie mit Feature 002.")
+	assert_eq(ScheduleText.protocol_lines(neu), ScheduleText.protocol_lines(run))
+	assert_eq(wieder, OK)
+	assert_eq(FileAccess.get_file_as_string(DATEI), heute,
+		"Neu geschrieben bekommt sie den Grad als ersten Schlüssel.")
+
+
+func test_unbekannter_grad_ist_ein_lesefehler() -> void:
+	# Arrange (FR-011, R14): ein Name, den es nicht gibt, der Name groß geschrieben, ein leerer
+	# Text, die Zahl 1 (als Aufzählung wäre das Mittel) und null; dazu eine gute Probe.
+	assert_eq(WhatIfProbe.from_run("Gut", TimelineRun.new(_katalog(), 4711)).write_file(ORDNER), OK)
+	var falsch := {"extrem": "extrem", "gross": "Schwer", "leer": "", "zahl": 1, "nichts": null}
+	for datei: String in falsch:
+		_schreibe(ORDNER + datei + ".json", JSON.stringify({"difficulty": falsch[datei],
+			"format": 1, "interventions": [], "name": datei, "seed": 4711,
+			"until_day": "1990-01-01"}, "\t", true))
+
+	# Act
+	var gelesen := []
+	for datei: String in falsch:
+		gelesen.append(WhatIfProbe.read_file(ORDNER + datei + ".json"))
+	var proben := WhatIfProbe.list_probes(ORDNER)
+
+	# Assert: null statt still Mittel, mit Meldung, beim Lesen und noch einmal in list_probes().
+	assert_eq(gelesen, [null, null, null, null, null], "Keine davon liest sich.")
+	assert_eq(_namen(proben), ["Gut"], "In der Liste steht nur die gute.")
+	var gezeigt := {"extrem": "„extrem“", "gross": "„Schwer“", "leer": "„“", "zahl": "1",
+		"nichts": "<null>"}
+	for datei: String in gezeigt:
+		var meldung := "Die Probe %s%s.json nennt den Schwierigkeitsgrad %s, den es nicht gibt." % [
+			ORDNER, datei, gezeigt[datei]]
+		assert_push_error(meldung)
+		assert_push_error(meldung)
+
+
+func test_build_run_legt_den_lauf_mit_dem_grad_an() -> void:
+	# Arrange (T023): dieselbe Probe einmal mit Schwer, einmal mit Mittel
+	var probe := WhatIfProbe.new()
+	probe.seed = 4711
+	probe.until_day = LETZTER_TAG
+	probe.difficulty = Difficulty.Level.SCHWER
+	var schwer := TimelineRun.new(_katalog(GRADE), 4711, Difficulty.Level.SCHWER)
+	schwer.advance_to(LETZTER_TAG)
+	var mittel := TimelineRun.new(_katalog(GRADE), 4711)
+	mittel.advance_to(LETZTER_TAG)
+
+	# Act
+	var mit_schwer := probe.build_run(_katalog(GRADE))
+	probe.difficulty = Difficulty.Level.MITTEL
+	var mit_mittel := probe.build_run(_katalog(GRADE))
+
+	# Assert
+	assert_eq(mit_schwer.difficulty, Difficulty.Level.SCHWER)
+	assert_eq(_kennungen(mit_schwer.start_modifiers), ["reklamationswelle"],
+		"„Anspruchsvolle Kunden“ aus dem Profil Schwer.")
+	assert_eq(ScheduleText.plan_lines(mit_schwer), ScheduleText.plan_lines(schwer),
+		"Derselbe Fahrplan wie ein Spiel mit Schwer.")
+	assert_eq(ScheduleText.protocol_lines(mit_schwer), ScheduleText.protocol_lines(schwer))
+	assert_ne(ScheduleText.plan_lines(mit_schwer), ScheduleText.plan_lines(mittel),
+		"Voraussetzung: Schwer ändert bei Seed 4711 den Fahrplan.")
+	assert_eq(ScheduleText.plan_lines(mit_mittel), ScheduleText.plan_lines(mittel),
+		"Mit Mittel derselbe Fahrplan wie bisher.")
+	assert_eq(mit_mittel.start_modifiers.size(), 0)
+
+
+func test_start_modifikatoren_stehen_nie_im_eingriffsprotokoll() -> void:
+	# Arrange (data-model.md, „WhatIfProbe“): Schwer mit einem eigenen Eingriff
+	var run := TimelineRun.new(_katalog(GRADE), 4711, Difficulty.Level.SCHWER)
+	assert_eq(run.add_modifier(_windiger_haendler()), OK)
+	run.advance_to(_tag(1992, 1, 1))
+	assert_eq(run.start_modifiers.size(), 1, "Voraussetzung: Schwer hat einen Start-Modifikator.")
+
+	# Act
+	var probe := WhatIfProbe.from_run(NAME, run)
+	assert_eq(probe.write_file(ORDNER), OK)
+	var text := FileAccess.get_file_as_string(DATEI)
+	var neu := WhatIfProbe.read_file(DATEI).build_run(_katalog(GRADE))
+
+	# Assert
+	assert_eq(probe.interventions.size(), 1, "Nur der eigene Eingriff steht in der Probe.")
+	assert_false(text.contains("Anspruchsvolle Kunden"), "Auch nicht in der Datei.")
+	assert_eq(neu.interventions.size(), 1, "Im neuen Lauf nur der eigene Eingriff …")
+	assert_eq(_kennungen(neu.modifiers), ["windiger_haendler"])
+	assert_eq(_kennungen(neu.start_modifiers), ["reklamationswelle"],
+		"… der Start-Modifikator kommt aus dem Profil.")
+
+
+func test_unbekannter_grad_wird_nicht_geschrieben() -> void:
+	# Arrange: Eine Aufzählung ist zur Laufzeit eine ganze Zahl und nimmt auch eine 7 an.
+	var probe := WhatIfProbe.new()
+	probe.id = "sieben"
+	probe.name = "Sieben"
+	probe.difficulty = 7 as Difficulty.Level
+
+	# Act
+	var gespeichert := probe.write_file(ORDNER)
+
+	# Assert
+	assert_eq(gespeichert, ERR_INVALID_PARAMETER, "Die Datei ließe sich nicht wieder lesen.")
+	assert_false(FileAccess.file_exists(ORDNER + "sieben.json"), "Nichts geschrieben.")
+
+
 # --- Helfer ---------------------------------------------------------------------------
 
-## Der Test-Katalog, jedes Mal frisch gelesen.
-func _katalog() -> EventCatalog:
+## Der Test-Katalog, jedes Mal frisch gelesen; ohne Pfad catalog_us6_reklamation.
+func _katalog(pfad: String = KATALOG) -> EventCatalog:
 	var issues: Array[CatalogIssue] = []
-	var catalog := EventCatalog.read_file(KATALOG, issues)
-	assert_not_null(catalog, "%s lässt sich lesen: %s" % [KATALOG, issues])
+	var catalog := EventCatalog.read_file(pfad, issues)
+	assert_not_null(catalog, "%s lässt sich lesen: %s" % [pfad, issues])
 	return catalog
 
 

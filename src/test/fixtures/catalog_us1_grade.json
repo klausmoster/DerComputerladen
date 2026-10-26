@@ -1,0 +1,191 @@
+{
+	"categories": [
+		{
+			"color": "nacht-hell",
+			"id": "software",
+			"name": "Software"
+		},
+		{
+			"color": "gehaeuse-dunkel",
+			"id": "konkurrenz",
+			"name": "Konkurrenz"
+		},
+		{
+			"color": "holz",
+			"id": "kunde",
+			"name": "Kunde"
+		},
+		{
+			"color": "petrol",
+			"id": "reklamation",
+			"name": "Reklamation"
+		},
+		{
+			"color": "holz-dunkel",
+			"id": "lieferung",
+			"name": "Lieferung"
+		},
+		{
+			"color": "nacht",
+			"id": "kalender",
+			"name": "Kalender"
+		}
+	],
+	"events": [
+		{
+			"category": "konkurrenz",
+			"conditions": [],
+			"count_min": 1,
+			"count_weights": [
+				100
+			],
+			"description": "Im leeren Laden nebenan eröffnet ein Konkurrent.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "konkurrent_eroeffnet",
+			"kind": "preset",
+			"min_gap_days": 0,
+			"title": "Konkurrent eröffnet",
+			"window": {
+				"from": "1988-01-01",
+				"to": "1996-12-31"
+			}
+		},
+		{
+			"category": "kunde",
+			"conditions": [
+				{
+					"event": "reklamationswelle",
+					"occurred": true
+				}
+			],
+			"description": "Stammkunden wandern ab, nachdem sich Reklamationen gehäuft haben.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "kundenflucht",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 180,
+			"monthly_chance": 0.1,
+			"title": "Kundenflucht",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "lieferung",
+			"conditions": [],
+			"description": "Der Großhändler kann nicht liefern.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "lieferengpass",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 0.04,
+			"title": "Lieferengpass",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "reklamation",
+			"conditions": [],
+			"description": "Mehrere Kunden kommen gleichzeitig mit defekter Ware zurück.",
+			"duration_days": 0,
+			"effects": [
+				{
+					"delay_days": 0,
+					"kind": "reputation",
+					"magnitude": -0.1,
+					"note": "Unzufriedene Kunden reden.",
+					"scope": "once",
+					"target": "*"
+				}
+			],
+			"follow_ups": [
+				{
+					"chance": 0.5,
+					"delay_max": 21,
+					"delay_min": 7,
+					"target": "zeitungsartikel_reklamation"
+				}
+			],
+			"id": "reklamationswelle",
+			"kind": "chance",
+			"max_occurrences": 0,
+			"min_gap_days": 0,
+			"monthly_chance": 0.03,
+			"title": "Reklamationswelle",
+			"window": {
+				"from": "1985-01-01",
+				"to": "1999-12-31"
+			}
+		},
+		{
+			"category": "kalender",
+			"description": "Hauptumsatzzeit des Jahres.",
+			"effects": [],
+			"follow_ups": [],
+			"id": "weihnachtsgeschaeft",
+			"kind": "yearly",
+			"title": "Weihnachtsgeschäft",
+			"yearly": {
+				"end": "12-ende",
+				"from": 1985,
+				"start": "11-01",
+				"to": 1999
+			}
+		},
+		{
+			"category": "software",
+			"date": "1995-08-24",
+			"description": "Microsoft bringt Windows 95.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "windows_95",
+			"kind": "fixed",
+			"title": "Windows 95 erscheint"
+		},
+		{
+			"category": "reklamation",
+			"conditions": [],
+			"description": "Die Lokalzeitung berichtet über Ärger im Computerladen.",
+			"duration_days": 0,
+			"effects": [],
+			"follow_ups": [],
+			"id": "zeitungsartikel_reklamation",
+			"kind": "follow_only",
+			"title": "Zeitungsartikel über Reklamationen"
+		}
+	],
+	"format": 1,
+	"profiles": {
+		"leicht": [
+			{
+				"event_id": "reklamationswelle",
+				"from_day": "1985-01-01",
+				"id": "reklamationswelle",
+				"reason": "Nachsichtige Kunden",
+				"to_day": "1999-12-31",
+				"value": -0.02
+			}
+		],
+		"schwer": [
+			{
+				"event_id": "reklamationswelle",
+				"from_day": "1985-01-01",
+				"id": "reklamationswelle",
+				"reason": "Anspruchsvolle Kunden",
+				"to_day": "1999-12-31",
+				"value": 0.05
+			}
+		]
+	}
+}

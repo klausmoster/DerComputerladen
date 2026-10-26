@@ -927,5 +927,59 @@
 			}
 		}
 	],
-	"format": 1
+	"format": 1,
+	"profiles": {
+		"leicht": [
+			{
+				"event_id": "grosskunde",
+				"from_day": "1985-01-01",
+				"id": "grosskunde",
+				"reason": "Kunden sind geduldiger",
+				"to_day": "1999-12-31",
+				"value": 0.01
+			},
+			{
+				"event_id": "grosskunde",
+				"from_day": "1985-01-01",
+				"id": "grosskunde_2",
+				"reason": "Weniger Ärger mit Hardware",
+				"to_day": "1999-12-31",
+				"value": -0.01
+			},
+			{
+				"event_id": "grosskunde",
+				"from_day": "1985-01-01",
+				"id": "grosskunde_3",
+				"reason": "Irgendwas",
+				"to_day": "1999-12-31",
+				"value": -0.02
+			}
+		],
+		"schwer": [
+			{
+				"event_id": "grosskunde",
+				"from_day": "1985-01-01",
+				"id": "grosskunde",
+				"reason": "Test 1",
+				"to_day": "1999-12-31",
+				"value": 0.01
+			},
+			{
+				"event_id": "grosskunde",
+				"from_day": "1985-01-01",
+				"id": "grosskunde_2",
+				"reason": "Test 2",
+				"to_day": "1999-12-31",
+				"value": -0.01
+			},
+			{
+				"event_id": "grosskunde",
+				"from_day": "1985-01-01",
+				"id": "grosskunde_3",
+				"reason": "TestTest",
+				"to_day": "1999-12-31",
+				"value": 0.03
+			}
+		]
+	}
 }

@@ -6,8 +6,8 @@ extends Control
 ## Katalog über einen CatalogEditor, fragt nach, bevor etwas verloren gehen könnte, und verdrahtet
 ## die Teile.
 ##
-## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung, Zeitstrahl, Simulator und
-## Statistik. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft sie von oben
+## Die Teile sind eigene Szenen bzw. Skripte: Liste, Formular, Prüfung, Zeitstrahl, Simulator,
+## Statistik und die Schwierigkeitsgrade. Sie melden nach oben, was geschieht (Signale), und die Werkstatt ruft sie von oben
 ## auf (refresh(), show_event() …); untereinander kennen sie sich nicht. Den Katalog ändert nur der
 ## CatalogEditor, die Auswahl gehört der Werkstatt.
 ##
@@ -30,6 +30,9 @@ const SPLITS_SECTION := "teiler"
 const SETTINGS_DELAY := 1.0
 ## Größer ist kein Wert eines Teilers in Pixeln; was darüber liegt, gilt beim Lesen als kaputt.
 const MAX_SPLIT_OFFSET := 100000
+## So hoch bleibt der Inhalt eines Reiters mindestens, wenn er im zu kleinen Fenster rollt (T043):
+## so viel, wie jeder Bereich der Werkstatt mindestens hat.
+const MIN_TAB_HEIGHT := 80
 
 ## Der Katalog, den die Werkstatt öffnet. Tests setzen ihn, bevor die Szene in den Baum kommt.
 var catalog_path: String = EventCatalog.DEFAULT_PATH
@@ -42,6 +45,10 @@ var settings_path: String = "user://werkstatt_einstellungen.cfg"
 var editor := CatalogEditor.new()
 ## Das gewählte Ereignis; leer heißt keins.
 var selected_id: String = ""
+## Was _quit() nach prepare_quit() aufruft, um das Programm zu beenden; ohne Wert
+## get_tree().quit(). Tests setzen hier eine eigene Funktion, bevor sie schließen lassen, denn
+## get_tree().quit() beendete ihren ganzen Lauf.
+var quit_callback := Callable()
 
 ## Was nach erfolgreichem Speichern geschehen soll, etwa das Beenden beim Schließen.
 var _after_save := Callable()
@@ -55,11 +62,14 @@ var _keep_backup := false
 var _backup_failed := false
 ## Ergebnis von open() beim Start; nach der Frage zur Sicherungskopie kommt die zum Katalog.
 var _open_error := OK
+## Die offenen Dialoge der Werkstatt, der zuletzt geöffnete am Ende (T042).
+var _open_dialogs: Array[AcceptDialog] = []
 
 @onready var _save_button: Button = %SaveButton
 @onready var _revert_button: Button = %RevertButton
 @onready var _undo_button: Button = %UndoButton
 @onready var _redo_button: Button = %RedoButton
+@onready var _layout: VBoxContainer = $Layout
 @onready var _file_label: Label = %FileLabel
 @onready var _dirty_label: Label = %DirtyLabel
 @onready var _count_label: Label = %CountLabel
@@ -71,6 +81,7 @@ var _open_error := OK
 @onready var _timeline_view: TimelineView = %TimelineView
 @onready var _simulator_panel: SimulatorPanel = %SimulatorPanel
 @onready var _statistics_panel: StatisticsPanel = %StatisticsPanel
+@onready var _difficulty_panel: DifficultyPanel = %DifficultyPanel
 @onready var _backup_timer: Timer = %BackupTimer
 @onready var _settings_timer: Timer = %SettingsTimer
 @onready var _close_dialog: ConfirmationDialog = %CloseDialog
@@ -97,17 +108,21 @@ func _ready() -> void:
 	_tabs.set_tab_title(0, "Prüfung")
 	_tabs.set_tab_title(_tabs.get_tab_idx_from_control(_simulator_panel), "Simulator")
 	_tabs.set_tab_title(_tabs.get_tab_idx_from_control(_statistics_panel), "Statistik")
+	_tabs.set_tab_title(_tabs.get_tab_idx_from_control(_difficulty_panel), "Schwierigkeitsgrade")
 	_event_list.editor = editor
 	_event_form.editor = editor
 	_timeline_view.editor = editor
 	_simulator_panel.editor = editor
 	_statistics_panel.editor = editor
+	_difficulty_panel.editor = editor
 	# Das Häkchen der Statistik nimmt die Eingriffe, die der Simulator gesammelt hat (FR-045). Die
 	# Werkstatt reicht sie als Callable weiter; so kennen sich die beiden Teile nicht.
 	_statistics_panel.interventions_source = _simulator_interventions
 	_set_up_shortcuts()
+	_set_up_dialogs()
 	_connect_signals()
 	restore_settings()
+	_fit_tab()
 	_update_toolbar()
 	# Erst wenn alles im Baum steht, damit die Dialoge sich in der Mitte öffnen können.
 	_start.call_deferred()
@@ -145,6 +160,8 @@ func _on_selection_changed(id: String) -> void:
 	_event_list.select_event(id)
 	_event_form.show_event(id)
 	_timeline_view.select_event(id)
+	# „Neu“ im Reiter „Schwierigkeitsgrade“ nimmt das gewählte Ereignis (R11).
+	_difficulty_panel.selected_event_id = id
 
 
 ## Nach einer Änderung kann das gewählte Ereignis fehlen, etwa nach Löschen oder Rückgängig.
@@ -218,7 +235,14 @@ func _revert() -> void:
 
 ## Schließen (R15): Bei ungespeicherten Änderungen fragt ein Dialog „Speichern“, „Verwerfen“ oder
 ## „Abbrechen“. „Speichern“ läuft über dieselben Rückfragen wie der Knopf.
+##
+## Ist dabei ein anderer Dialog offen, geht er erst zu wie mit „Abbrechen“, beim Dialog zur
+## Sicherungskopie also wie mit „Später“ (T042). Dann geht das Schließen weiter wie ohne Dialog.
+## Steht die Rückfrage zum Schließen schon da, bleibt sie, wie sie ist; sie ist die Antwort.
 func request_close() -> void:
+	if _close_dialog.visible:
+		return
+	_cancel_open_dialogs()
 	_commit_focused_field()
 	if editor.catalog != null and editor.is_dirty():
 		_close_dialog.popup_centered(Vector2i(420, 0))
@@ -239,7 +263,8 @@ func _on_close_action(action: StringName) -> void:
 ##
 ## Ist der Dialog zur Sicherungskopie noch offen, hat Klaus sich nicht entschieden; er schließt
 ## das Fenster per Fensterknopf oder Cmd+Q, beides kommt als NOTIFICATION_WM_CLOSE_REQUEST. Das gilt
-## wie „Später“, die Kopie bleibt liegen (T096).
+## wie „Später“, die Kopie bleibt liegen (T096). request_close() schließt den Dialog schon vorher
+## so; zu ist er aber erst am Ende des Bilds.
 func prepare_quit() -> void:
 	if _backup_dialog.visible:
 		_keep_backup = true
@@ -250,7 +275,10 @@ func prepare_quit() -> void:
 
 func _quit() -> void:
 	prepare_quit()
-	get_tree().quit()
+	if quit_callback.is_valid():
+		quit_callback.call()
+	else:
+		get_tree().quit()
 
 
 ## Felder übernehmen ihren Wert beim Verlassen. Cmd+S verlässt das Feld aber nicht; ohne das hier
@@ -259,6 +287,55 @@ func _commit_focused_field() -> void:
 	var focus := get_viewport().gui_get_focus_owner()
 	if focus != null:
 		focus.release_focus()
+
+
+# --- Dialoge (T042) ---------------------------------------------------------------------------
+#
+# Ein Dialog ist in Godot von Haus aus „exklusiv“: Solange er offen ist, sperrt er sein Fenster,
+# und kein Klick und keine Taste kommen bei der Werkstatt an. Er sperrt dabei aber auch die
+# Schließanfrage des Fensters. Godot verwirft sie, solange ein exklusiver Dialog offen ist
+# (Window::_event_callback), und Cmd+Q und der Fensterknopf kamen nie in _notification() an.
+#
+# Die Dialoge der Werkstatt sind deshalb nicht exklusiv, und die Werkstatt sperrt selbst: _input()
+# schluckt, was an einem offenen Dialog vorbei bei ihr ankommt. Das ist ein Klick neben den Dialog,
+# oder eine Taste danach, denn so ein Klick nimmt dem Dialog den Fokus. Der Dialog bekommt den
+# Fokus dann gleich zurück. Was für ihn bestimmt ist, bekommt er vorher, bei der Werkstatt kommt es
+# gar nicht erst an. So bleibt jeder Dialog bedienbar wie bisher, und die Schließanfrage kommt
+# trotzdem an.
+
+
+## Macht alle Dialoge der Werkstatt nicht exklusiv, auch die von Liste und Simulator, und merkt
+## sich, welche offen sind. find_children() sucht mit owned = false auch in deren Szenen.
+func _set_up_dialogs() -> void:
+	for node in find_children("*", "AcceptDialog", true, false):
+		var dialog := node as AcceptDialog
+		dialog.exclusive = false
+		dialog.visibility_changed.connect(_on_dialog_visibility_changed.bind(dialog))
+
+
+func _on_dialog_visibility_changed(dialog: AcceptDialog) -> void:
+	_open_dialogs.erase(dialog)
+	if dialog.visible:
+		_open_dialogs.append(dialog)
+
+
+## Die Sperre für offene Dialoge. _input() kommt vor der Oberfläche und den Kürzeln dran; was hier
+## als behandelt gilt, erreicht weder ein Feld noch einen Knopf noch Cmd+S.
+func _input(_event: InputEvent) -> void:
+	if _open_dialogs.is_empty():
+		return
+	get_viewport().set_input_as_handled()
+	_open_dialogs[-1].grab_focus()
+
+
+## Schließt jeden offenen Dialog wie mit „Abbrechen“, den zuletzt geöffneten zuerst. Jeder bekommt
+## dafür die Nachricht, die Godot einem Dialog schickt, dessen Fenster zugehen soll: Er meldet dann
+## canceled und geht am Ende des Bilds zu, wie nach „Abbrechen“ oder Esc.
+func _cancel_open_dialogs() -> void:
+	var open := _open_dialogs.duplicate()
+	open.reverse()
+	for dialog: AcceptDialog in open:
+		dialog.notification(NOTIFICATION_WM_CLOSE_REQUEST)
 
 
 # --- Start und Sicherungskopie (R23) ----------------------------------------------------------
@@ -412,9 +489,21 @@ func _read_settings() -> ConfigFile:
 	return config if error == OK else ConfigFile.new()
 
 
-## Name eines Teilers in der Datei: sein Pfad unter der Werkstatt.
+## Name eines Teilers in der Datei: sein Pfad unter der Werkstatt, etwa
+## „Layout/Main/Center/Tabs/SimulatorPanel/Split“. Seit T043 liegt der Inhalt eines Reiters in einem
+## Rollbereich „Scroll/Content“; diese zwei Stufen zählen im Namen nicht mit. So bleiben die Namen,
+## die schon in Klaus' Datei stehen, und seine Teiler gelten weiter.
 func _split_key(split: SplitContainer) -> String:
-	return String(get_path_to(split))
+	var path := String(get_path_to(split))
+	for i in _tabs.get_tab_count():
+		var panel := _tabs.get_tab_control(i)
+		var scroll := _tab_scroll(panel)
+		if scroll == null:
+			continue
+		var inner := String(get_path_to(scroll.get_child(0))) + "/"
+		if path.begins_with(inner):
+			return String(get_path_to(panel)).path_join(path.substr(inner.length()))
+	return path
 
 
 ## Die gespeicherten Werte für [param split], wenn sie zu ihm passen: eine Liste ganzer Zahlen mit
@@ -447,6 +536,58 @@ static func _dragger_count(split: SplitContainer) -> int:
 		if control != null and control.visible and not control.top_level:
 			count += 1
 	return maxi(count - 1, 0)
+
+
+# --- Reiter im kleinen Fenster (T043) ---------------------------------------------------------
+#
+# Ein Container ist mindestens so groß, wie seine Kinder es mindestens brauchen. War der Inhalt
+# eines Reiters höher, als das Fenster hergab, wuchs deshalb die ganze Werkstatt über das Fenster
+# hinaus, nach oben und unten, und Toolbar und Knöpfe lagen außerhalb. Simulator, Statistik und
+# Schwierigkeitsgrade haben ihren Inhalt deshalb in einem ScrollContainer „Scroll“. Die Prüfung ist
+# eine Tabelle und rollt selbst.
+#
+# Rollen soll ein Reiter aber erst, wenn es sein muss. Bis dahin gibt wie bisher der Zeitstrahl
+# Platz ab, bis auf seine Mindesthöhe. Der Rollbereich rollt deshalb zunächst gar nicht
+# (SCROLL_MODE_DISABLED); dann braucht er so viel Höhe wie sein Inhalt, und alles steht wie vorher.
+# Wäre die Werkstatt damit höher als das Fenster, rollt er (SCROLL_MODE_AUTO) und nimmt nur noch so
+# viel Höhe, dass sie passt.
+#
+# Abschneiden (clip_contents) muss er nur, während er rollt. Sonst schnitte er ab, was über den
+# Rand seines Inhalts hinaus zeichnet, etwa die Fokuslinie eines Felds in der obersten Leiste.
+
+
+## Der Rollbereich im Reiter [param panel], oder null bei einem Reiter, der selbst rollt.
+static func _tab_scroll(panel: Control) -> ScrollContainer:
+	if panel == null:
+		return null
+	return panel.get_node_or_null(^"Scroll") as ScrollContainer
+
+
+## Lässt den Inhalt des gezeigten Reiters rollen, wenn das Fenster zu klein für ihn ist; sonst
+## nicht. Nach jeder Änderung der Fenstergröße, beim Wechsel des Reiters und wenn sein Inhalt
+## andere Höhe braucht, etwa weil eine Leiste umbricht oder ein Hinweis erscheint.
+##
+## get_combined_minimum_size() rechnet sofort mit dem neuen Wert; angeordnet wird erst am Ende des
+## Bilds. Das Hin und Her zwischen den beiden Modi sieht deshalb niemand.
+func _fit_tab() -> void:
+	var scroll := _tab_scroll(_tabs.get_current_tab_control())
+	if scroll == null:
+		return
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.clip_contents = false
+	scroll.custom_minimum_size.y = 0
+	# So hoch ist Layout, wenn es nicht über das Fenster hinauswächst: die Werkstatt abzüglich der
+	# Ränder, die seine Anker lassen.
+	var room := size.y + _layout.offset_bottom - _layout.offset_top
+	var over := _layout.get_combined_minimum_size().y - room
+	if over <= 0.0:
+		scroll.scroll_vertical = 0
+		return
+	var content: Control = scroll.get_child(0)
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.clip_contents = true
+	scroll.custom_minimum_size.y = maxf(MIN_TAB_HEIGHT,
+		content.get_combined_minimum_size().y - over)
 
 
 # --- Meldungen des Editors und der Teile ------------------------------------------------------
@@ -485,6 +626,12 @@ func _connect_signals() -> void:
 	_settings_timer.timeout.connect(save_settings)
 	for split in splits():
 		split.dragged.connect(_on_split_dragged)
+	resized.connect(_fit_tab)
+	_tabs.tab_changed.connect(func(_tab: int) -> void: _fit_tab())
+	for i in _tabs.get_tab_count():
+		var scroll := _tab_scroll(_tabs.get_tab_control(i))
+		if scroll != null:
+			(scroll.get_child(0) as Control).minimum_size_changed.connect(_fit_tab)
 	_save_errors_dialog.confirmed.connect(func() -> void: _save(false))
 	_save_errors_dialog.canceled.connect(_cancel_save)
 	_foreign_dialog.confirmed.connect(func() -> void: _save(true))
@@ -512,6 +659,7 @@ func _on_catalog_changed() -> void:
 	_timeline_view.refresh()
 	_simulator_panel.refresh()
 	_statistics_panel.refresh()
+	_difficulty_panel.refresh()
 	_update_toolbar()
 	_check_selection.call_deferred()
 
@@ -525,6 +673,7 @@ func _on_issues_changed(issues: Array[CatalogIssue]) -> void:
 	_event_form.refresh()
 	_simulator_panel.refresh()
 	_statistics_panel.refresh()
+	_difficulty_panel.refresh()
 	_update_toolbar()
 
 
@@ -555,7 +704,10 @@ func _on_edit_requested(id: String) -> void:
 	_event_form.focus_title()
 
 
-## Löschen fragt nach und nennt die Ereignisse, die darauf verweisen (FR-036).
+## Löschen fragt nach und nennt, was darauf verweist (FR-036): erst die Ereignisse, dann die
+## Start-Modifikatoren in den Profilen (Feature 003, FR-017). delete_event() entfernt beides im
+## selben Schritt mit, außer die Kennung gehört noch zu einem zweiten Ereignis (V02). Dann bleiben
+## die Verweise stehen, denn sie gelten auch dem anderen, und der Dialog sagt das (T037).
 func _on_delete_requested(id: String) -> void:
 	var event := editor.catalog.get_event(id)
 	if event == null:
@@ -563,14 +715,36 @@ func _on_delete_requested(id: String) -> void:
 	_pending_delete = id
 	var text := "„%s“ löschen?" % _title_of(event)
 	var references := editor.references_to(id)
-	if not references.is_empty():
-		var names := PackedStringArray()
-		for reference in references:
-			names.append("„%s“" % _title_of(editor.catalog.get_event(reference)))
-		text += ("\n\nDarauf verweisen: %s. Diese Verweise werden mit entfernt.") % ", ".join(names)
+	var in_profiles := editor.profile_references_to(id)
+	var names := PackedStringArray()
+	for reference in references:
+		names.append("„%s“" % _title_of(editor.catalog.get_event(reference)))
+	if not references.is_empty() and not in_profiles.is_empty():
+		text += "\n\nDarauf verweisen: %s. In den Profilen: %s." % [", ".join(names),
+			", ".join(in_profiles)]
+	elif not references.is_empty():
+		text += "\n\nDarauf verweisen: %s." % ", ".join(names)
+	elif not in_profiles.is_empty():
+		text += "\n\nIn den Profilen verweisen darauf: %s." % ", ".join(in_profiles)
+	var has_references := not references.is_empty() or not in_profiles.is_empty()
+	if has_references and _has_twin(id):
+		text += (" Diese Verweise bleiben stehen, denn die Kennung „%s“ gehört noch zu einem "
+			+ "zweiten Ereignis.") % id
+	elif has_references:
+		text += " Diese Verweise werden mit entfernt."
 	text += "\n\nRückgängig holt alles zurück."
 	_delete_dialog.dialog_text = text
 	_delete_dialog.popup_centered(Vector2i(440, 0))
+
+
+## Ob mehr als ein Ereignis die Kennung [param id] trägt (V02). Dieselbe Regel entscheidet in
+## CatalogEditor.delete_event(), ob die Verweise mit entfernt werden.
+func _has_twin(id: String) -> bool:
+	var count := 0
+	for event in editor.catalog.events:
+		if event.id == id:
+			count += 1
+	return count > 1
 
 
 ## Ein Termin im Simulator wählt sein Ereignis, sofern es noch im Katalog steht: Der Lauf rechnet
@@ -630,12 +804,24 @@ static func _focus_ring(control: Control) -> Rect2:
 
 
 ## Ein Klick in der Prüfung wählt das Ereignis und setzt den Fokus ins Feld (FR-033). Meldungen zu
-## Kategorien haben kein Ereignis; ihr Feld liegt im Bereich für Kategorien.
+## Kategorien haben kein Ereignis; ihr Feld liegt im Bereich für Kategorien. Meldungen zu Profilen
+## haben auch keins: Ihr Feld beginnt mit „profiles“ und liegt im Reiter „Schwierigkeitsgrade“; die
+## Auswahl des Ereignisses bleibt dann, wie sie ist (Feature 003, FR-016).
 func _on_issue_activated(event_id: String, field: String) -> void:
+	if _is_profile_field(field):
+		_tabs.current_tab = _tabs.get_tab_idx_from_control(_difficulty_panel)
+		_difficulty_panel.focus_field(field)
+		return
 	if not event_id.is_empty() and editor.catalog != null \
 			and editor.catalog.get_event(event_id) != null:
 		select_event(event_id)
 	_event_form.focus_field(field)
+
+
+## Ob [param field] zu den Profilen gehört: „profiles“ selbst oder alles darunter, nach ganzen
+## Pfadteilen; „profiles.schwer[2].reason“ ja, ein Feld „profilesx“ nicht.
+static func _is_profile_field(field: String) -> bool:
+	return field == "profiles" or field.begins_with("profiles.") or field.begins_with("profiles[")
 
 
 # --- Toolbar ----------------------------------------------------------------------------------

@@ -21,13 +21,15 @@ const SEPARATOR := "  "
 const ORIGIN_SHORT: Array[String] = ["fix", "jährlich", "gesetzt", "gewürfelt", "Folge", "Eingriff"]
 
 
-## Kopfzeile „# Seed 4711, bis 31.12.1999“, dann je Termin bis [param until_day] eine Zeile:
+## Kopfzeile „# Seed 4711, Grad Schwer, bis 31.12.1999“ mit dem Grad des Laufs, auch bei Mittel
+## (Feature 003, FR-021), dann je Termin bis [param until_day] eine Zeile:
 ## „TT.MM.JJJJ  <bis, 14>  <kennung, 28>  <herkunft, 12>  <zustand, 12>  <titel>“
 ## und je verzögerter Wirkung darunter „TT.MM.JJJJ    └ <describe()>“.
 static func plan_lines(run: TimelineRun,
 		until_day: int = TimelineRun.LAST_DAY) -> PackedStringArray:
 	var lines := PackedStringArray()
-	lines.append("# Seed %d, bis %s" % [run.seed, GameDate.from_day_index(until_day)])
+	lines.append("# Seed %d, Grad %s, bis %s" % [run.seed, Difficulty.label(run.difficulty),
+		GameDate.from_day_index(until_day)])
 	for entry in run.entries:
 		# Der Fahrplan ist nach Tag sortiert; ab dem ersten Termin danach kommt keiner mehr.
 		if entry.day > until_day:
@@ -39,7 +41,8 @@ static func plan_lines(run: TimelineRun,
 	return lines
 
 
-## Je Meldung des Protokolls TimelineMessage.to_line().
+## Je Meldung des Protokolls TimelineMessage.to_line(). Bei Leicht und Schwer stehen die Zeilen
+## „Grad“ vorn, denn die Start-Modifikatoren sind die ersten Meldungen des Protokolls.
 static func protocol_lines(run: TimelineRun) -> PackedStringArray:
 	var lines := PackedStringArray()
 	for message in run.protocol:
