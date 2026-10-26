@@ -114,3 +114,13 @@ Erreichbarkeit kostet Gerät und Gebühr und bringt dafür Aufträge (Klaus, 202
   in Abschnitt 3; Seite Nachrichten im Gerät; 03 Wirtschaftsmodell; 04 Informationssystem
   (Wissensvorsprung).
 - Offen: Was genau geht verloren, wenn ein Anruf verpasst wird? Ruft jemand wieder an?
+
+## 2026-10-26 · Zeitreise mit dem DeLorean
+
+Irgendwo im Spiel lässt sich ein DeLorean aus „Zurück in die Zukunft“ anklicken, und damit reist
+man durch die Zeit (Klaus, 2026-10-26).
+
+- Bezug: Zeitleiste und Spieldatum (Features 002 bis 004); das Gerät, das mit der Zeit wächst
+  ([recherche/navigation-taschengeraet.md](recherche/navigation-taschengeraet.md)).
+- Offen: Wo kommt er vor, etwa in einer Zeitschrift, im Fernsehen oder als Spielzeug im Laden?
+  Ist die Reise ein Gag, eine Abkürzung zu einem anderen Jahr oder ein Werkzeug zum Testen?
