@@ -26,7 +26,7 @@ Claude bleibt frei für Planung und Review.
 flowchart TD
     subgraph beschreiben["Beschreiben mit Spec Kit"]
         direction LR
-        S1["specify"] --> S2["clarify"] --> S3["plan<br/>ab hier eigene Sitzung"] --> S4["checklist"] --> S5["tasks"] --> S6["analyze"]
+        S1["specify<br/>neue Sitzung für das Feature"] --> S2["clarify"] --> S3["plan"] --> S4["checklist"] --> S5["tasks"] --> S6["analyze"]
     end
     beschreiben --> F{"Klaus gibt eine<br/>Phase frei"}
     subgraph phase["Je Phase"]
@@ -63,14 +63,18 @@ Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
    Klaus' Freigabe, erst danach folgt die Gesamtabnahme. Warum: Bei Feature 002 fand die
    Lückensuche 14 Lücken, darunter zwei Widersprüche zur Spec, obwohl alle Tests grün waren
    (Klaus, 2026-10-21).
-7. **Eine Claude-Sitzung je Feature ab dem Plan** (Klaus, 2026-10-21): Besprochen und
-   spezifiziert wird ein Feature dort, wo die Idee aufkam. Ab `/speckit-plan` läuft es in einer
-   eigenen Sitzung, im selben Ordner und auf seinem Branch; die vorige Sitzung rührt es dann
-   nicht mehr an. Was die neue Sitzung wissen muss, steht in Repo-Dateien. Sie heißt
-   „[NNN] Featurename / Beschreibung“ mit der Nummer aus Spec Kit, etwa „[003] Schwierigkeitsgrade
-   ab dem Plan“ (Klaus, 2026-10-22). Warum: Eine lange Sitzung wird zusammengefasst und verliert
-   dabei Einzelheiten. Anlass: Eine Sitzung trug Feature 001, den Start von 002 und die Spec
-   von 003.
+7. **Eine Claude-Sitzung je Feature, von `/speckit-specify` bis zur Gesamtabnahme** (Klaus,
+   2026-10-26): Sobald es heißt „wir arbeiten jetzt an Feature xy“, bekommt das Feature eine
+   eigene Sitzung, im selben Ordner und auf seinem Branch. Darin laufen alle Schritte von Spec
+   Kit und alle Phasen der Umsetzung. Eine eigene Sitzung je Schritt, etwa ab dem Plan, bietet
+   Claude nicht an. Was über die Sitzung hinaus gelten soll, steht in Repo-Dateien. Die Sitzung
+   heißt „[NNN] Featurename / Beschreibung“ mit der Nummer aus Spec Kit, etwa „[004] Neues
+   Spiel“ (Klaus, 2026-10-22). Warum: Die Schritte bauen aufeinander auf; eine neue Sitzung
+   müsste jedes Mal alles neu lesen. Einen unabhängigen Blick bringen die Prüf-Agents und die
+   Prüfer bei Analyse und Lückensuche. Eine Sitzung, die mehrere Features trägt, wird
+   zusammengefasst und verliert dabei Einzelheiten; Anlass war eine Sitzung mit Feature 001,
+   dem Start von 002 und der Spec von 003. Bis 2026-10-26 begann die eigene Sitzung erst mit
+   dem Plan, besprochen und spezifiziert wurde dort, wo die Idee aufkam (Klaus, 2026-10-21).
 8. **Phasenprüfung vor der Abnahme** (in Einführung, Klaus, 2026-10-22): Ändert eine Phase
    Sichtbares oder Texte, prüfen Prüf-Agents sie gegen den Style-Guide, bevor Klaus
    abnimmt. Wie, steht in [ki_pruefung.md](ki_pruefung.md). Das gilt ab dem Pilot im nächsten

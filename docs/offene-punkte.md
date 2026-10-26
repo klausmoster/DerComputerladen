@@ -12,21 +12,13 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
-### Feature 004, Spec (2026-10-26)
+### Feature 004, Plan (2026-10-26)
 
-Eigene Festlegungen von Claude in `specs/004-neues-spiel/spec.md`, die nicht aus Klaus' Antworten
-folgen. Klaus bestätigt sie oder ändert sie, spätestens mit dem Plan:
-- **Esc auf dem Spielbildschirm löst nichts aus** (FR-020), damit niemand versehentlich das Spiel
-  verlässt; raus geht es nur über den Knopf „Zum Hauptmenü“.
-- **Name „Spiel N“ mit N = größte vorhandene Nummer + 1** (FR-009): Nach „Spiel 1“ und „Spiel 3“
-  kommt „Spiel 4“; nach dem Löschen aller Spielstände beginnt es wieder bei „Spiel 1“.
-- **Löschmodus** (FR-017a): erkennbar an der Kopfzeile; er endet nach dem Löschen, nach
-  Abbrechen in der Rückfrage, mit „Zurück“ und Esc. Ist die Liste danach leer, geht es von selbst
-  ins Hauptmenü. Die Rückfrage hat „Abbrechen“ vorgewählt (FR-017).
-- **Nur beschädigte Spielstände machen „Spiel laden“ verfügbar** (FR-002), damit man sie löschen
-  kann; „Weiterspielen“ nimmt nur fortsetzbare.
-- **Kein Speichern während des Spiels** (Annahmen): Solange die Uhr steht, gibt es zwischen
-  Anlegen und Verlassen nichts zu verlieren.
+- **Eigener Benutzerordner, später:** Spielstände liegen unter macOS in
+  `~/Library/Application Support/Godot/app_userdata/Der Computerladen/`. Mit
+  `application/config/use_custom_user_dir` lägen sie unter „Der Computerladen“ ohne „Godot“.
+  Empfehlung: vor der ersten Veröffentlichung umstellen, nicht in Feature 004; heute zögen
+  Einstellungen und Sicherungskopien der Werkstatt mit um.
 
 ### Phase 12 von Feature 002 (2026-10-21)
 
@@ -434,6 +426,30 @@ Auslegungen des Agents, die Claude angenommen hat:
     eine hohe Tabelle die Ansicht springen.
   - Bei 1024 × 600 ist die Werkstatt zu breit; gemessen nur zur Information, nicht Teil von T043.
 
+### Feature 004, Plan (2026-10-26)
+
+Festlegungen in `specs/004-neues-spiel/research.md`, die nicht aus Spec und Klärung folgen. Noch
+nicht umgesetzt; Klaus kann sie mit der Checkliste oder jeder Abnahme ändern.
+- **Lage der Blätter (R11):** Gradwahl, Liste und Rückfrage hängen oben bei y 150 und schließen
+  rechts bei x 616 ab wie das Hauptmenü; die Liste ist 296 breit.
+- **Liste (R12):** vier Spalten, „zuletzt gespielt“ als „26.10.2026 21:40“ und ausgeschrieben im
+  Hinweis; höchstens sechs Spielstände sichtbar, mehr rollen; nicht fortsetzbare unten nach Nummer;
+  „Löschen …“ ist im Löschmodus nicht verfügbar.
+- **Sätze zu den Graden im Hinweis (R13)**, nicht alle drei gleichzeitig unter den Graden.
+- **Rückfrage (R14):** Kopfzeile LÖSCHEN?, Einträge „Abbrechen“ und „Spiel 2 löschen“; „Abbrechen“
+  übernimmt die Rolle von „Zurück“ aus FR-023.
+- **Spielbildschirm (R15):** Vollbild in `nacht`, Knopf in der Mitte, Hinweis nennt das Spiel;
+  der Knopf wird ein eigener Baustein unter `src/ui/`. Fokuslinie auf dunklem Grund in `papier`
+  (Vorschlag für den Style-Guide).
+- **Speichern beim Fortsetzen (R9).**
+- **Schließen bei gescheitertem Speichern (R8):** Das Fenster bleibt offen, die Meldung sagt es;
+  ein zweites Schließen beendet ohne Speichern.
+- **Eingriff mit falschem Datum macht den Spielstand beschädigt (R10)**, anders als bei Proben.
+- **Zurück aus einem Blatt** wählt im Hauptmenü den Eintrag, der es geöffnet hat
+  (`data-model.md`).
+- **Katalog beim Start der App gelesen:** Eine Änderung aus der Werkstatt gilt für neue Spiele,
+  sobald das Spiel neu gestartet ist, wie heute.
+
 ### KI-Workflow, Schritte 1 und 2 (2026-10-22)
 
 - **Phasenprüfung als Punkt 8:** In `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, steht sie
@@ -445,6 +461,18 @@ Auslegungen des Agents, die Claude angenommen hat:
 
 ## Erledigt
 
+- **Sätze zu den Graden (Feature 004, R18):** Klaus, 2026-10-26, nach Empfehlung Vorschlag A:
+  Leicht „Das Glück ist eher auf deiner Seite.“, Mittel „Das Glück hält sich raus.“, Schwer „Das
+  Glück ist eher auf der Seite der anderen.“ Steht in `specs/004-neues-spiel/research.md`, R18, und
+  im Vertrag `titelbildschirm.md`; der Text-Prüfer prüft sie in Phase 4.
+- **Fünf Festlegungen aus der Spec von Feature 004:** Klaus, 2026-10-26, alle bestätigt: Esc auf
+  dem Spielbildschirm löst nichts aus (FR-020); „Spiel N“ mit N = größte Nummer + 1 (FR-009); der
+  Löschmodus mit seinen Enden und „Abbrechen“ vorgewählt (FR-017, FR-017a); nur beschädigte
+  Spielstände machen „Spiel laden“ verfügbar (FR-002); kein Speichern während des Spiels, solange
+  die Uhr steht (Annahmen).
+- **Eine Sitzung je Feature von specify an:** Klaus, 2026-10-26: Ein Feature läuft von
+  `/speckit-specify` bis zur Gesamtabnahme in einer Sitzung; Claude bietet keine eigene Sitzung ab
+  dem Plan mehr an. Steht in `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, Punkt 7.
 - **Merge von Feature 003 und KI-Workflow nach `main`:** Klaus, 2026-10-26, nach Empfehlung, vor
   dem Start von Feature 004: erst Feature 003 (`6e5ea67`), dann der Branch des KI-Workflows
   (`342e0d1`). So sind Prüfer und Skill im Pilot von Feature 004 dabei.

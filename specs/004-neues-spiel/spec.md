@@ -62,6 +62,17 @@ Fragen aus `/speckit-clarify`:
   Leicht: „Das Glück ist eher auf deiner Seite.“ Claude schlägt die Sätze im Plan vor, der
   Text-Prüfer prüft sie, Klaus entscheidet. Verworfen: keine Sätze; Klaus schreibt sie selbst.
 
+### Plan 2026-10-26
+
+- Q: Gelten Claudes fünf Festlegungen aus der Spec (Esc auf dem Spielbildschirm, „Spiel N“,
+  Löschmodus, „Spiel laden“ bei nur beschädigten Spielständen, kein Speichern während des
+  Spiels)? → A: Ja, alle bestätigt (Klaus, nach Empfehlung).
+- Q: Welche Sätze stehen bei den Graden (FR-004)? → A: Vorschlag A aus `research.md`, R18:
+  Leicht „Das Glück ist eher auf deiner Seite.“, Mittel „Das Glück hält sich raus.“, Schwer „Das
+  Glück ist eher auf der Seite der anderen.“ (Klaus, nach Empfehlung). Verworfen: B mit guten und
+  schlechten Ereignissen, das nur bei passenden Profilen stimmt; C mit „Zufall“, das mehr
+  behauptet, als der Grad tut.
+
 ## Überblick
 
 Bisher endet das Spiel am Hauptmenü: „Neues Spiel“ und „Spiel laden“ sind nicht verfügbar, und im
