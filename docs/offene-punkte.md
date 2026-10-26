@@ -1,7 +1,7 @@
 # Offene Punkte
 
-Hier steht, was Klaus noch entscheiden oder bestätigen muss (`docs/ki_dev.md`, „Entscheidungen
-nicht stillschweigend treffen“):
+Hier steht, was Klaus noch entscheiden oder bestätigen muss (`docs/ki_workflow/ki_dev.md`,
+„Entscheidungen nicht stillschweigend treffen“):
 - **Offen:** Fragen, die Klaus entscheidet, und Lücken oder Widersprüche in den Dokumenten.
 - **Eigene Entscheidungen von Claude:** Festlegungen, die nicht aus den Dokumenten folgten. Sie
   sind umgesetzt, aber noch nicht von Klaus bestätigt.
@@ -36,6 +36,98 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   die Reklamationswelle mit 3 % pro Monat im Mittel bei 5,508 statt 5,4 und mit Schwer bei 14,579
   statt 14,4, beides etwa drei Standardabweichungen darüber. SC-003 ist trotzdem klar erfüllt.
   Empfehlung: später einmal die Würfel je Kennung prüfen; für Feature 003 nichts zu tun.
+
+### KI-Workflow und Prüf-Agents (2026-10-22)
+
+Aus dem Konzept, das in `docs/ki_workflow/ki_pruefung.md` aufgegangen ist. Jede Frage kommt
+einzeln, wenn ihr Schritt dran ist (dort unter „Stand der Einführung“).
+- **Gemeinsames `user://`:** Alle Arbeitsordner teilen sich `user://` von „Der
+  Computerladen“, und die Tests schreiben in feste Unterordner wie `user://test_simulator/`. Zwei
+  Testläufe zur selben Zeit, etwa im Worktree der Arbeitsweise und in der Sitzung „[003]
+  Schwierigkeitsgrade ab dem Plan“, können sich stören. Ein Hook, der von selbst testet, macht das
+  wahrscheinlicher.
+- **Merge vormerken:** Sobald Feature 003 in `main` angekommen ist, geht der Branch
+  `claude/arbeitsweise-pruef-agents-83cb9b` nach `main`, auf Klaus' Wort (siehe Erledigt).
+- **Abnahme des Skills:** `/dcl-phasenpruefung` einmal in einer neuen Sitzung aufrufen, etwa als
+  Probelauf am Titelbildschirm (Schritt 6).
+
+### Probelauf des Stil-Prüfers an Feature 001 (2026-10-22)
+
+Der Stil-Prüfer hat Titelbildschirm, Hauptmenü und Hinweis gegen den Style-Guide geprüft, Claude
+hat jeden Befund nachgeprüft. Was davon repariert oder in den Style-Guide kommt, entscheidet Klaus,
+in einem eigenen Schritt. Zahlen in `docs/ki_workflow/ki_pruefung.md`, „Nachmessen“.
+- **Bestätigt:**
+  - **Logo ohne `pixelschatten` (mittel):** Das Logo steht halb auf Himmel, halb auf der
+    Fassade, also auf unruhigem Grund. Der Style-Guide verlangt dort `pixelschatten` (Logo). Das
+    PNG hat keinen, die Szene auch nicht. Empfehlung: Schatten ergänzen, wie beim Hinweis.
+  - **Ränder nicht aus dem Raster (mittel):** Logo bei x 14 und y 12, Menü 24 vom rechten Rand,
+    Versionszeile 6 vom unteren. `raster-16` ist laut Style-Guide der „Rand zum Bildschirmrand im
+    Titel“. Die Werte kommen aus dem Titelscreen-Entwurf und stehen so im Vertrag von Feature 001.
+    Empfehlung: auf 16 ziehen; der Entwurf ist älter als die Raster-Regel.
+  - **Textschatten von 1 px (niedrig):** Untertitel und Versionszeile haben einen harten Schatten
+    in `tusche` um (1, 1). Er steht im Vertrag von Feature 001, im Style-Guide gibt es ihn nicht.
+    Empfehlung: als Token in den Style-Guide, denn er hält die Schrift auf dem Bild lesbar.
+- **Verworfen:** `papier`-Text auf dem Titelbild sei kein erlaubtes Farbpaar. Der Abschnitt Logo
+  verlangt den Untertitel aber ausdrücklich in `papier`. Das ist eine Lücke, kein Fehler (unten).
+- **Lücken im Style-Guide:**
+  - **Text auf einem Vollbild:** Die Farbpaare kennen keinen Bildgrund. Ist `papier` auf dem
+    Titelbild erlaubt, und mit welchem Schatten?
+  - **Kontur am Menü:** „Alles Bedienbare“ hat eine `tusche`-Kontur und Relief, der Baustein Menü
+    beschreibt Endlospapier ohne beides. Welche Regel gilt?
+  - **Logo im Spiel:** Der Style-Guide nennt das Original mit 850 × 164, im Spiel steht die
+    gerasterte Fassung mit 141 × 27 Bildpixeln. Wie groß darf das Logo erscheinen?
+  - **Gelbe Zeile:** Nur der Innenbereich wird `signalgelb`, die Lochränder nicht. Der Baustein
+    sagt nur „Die gewählte Zeile ist `signalgelb`“.
+  - **Vollbild ohne SubViewport:** Für Szenen beschreibt der Style-Guide einen SubViewport mit
+    320 × 180. Das Titelbild ist ein TextureRect mit 640 × 360, ganzzahlig doppelt. Reicht das für
+    Vollbilder?
+  - Verworfen: die Maße der Lochränder. Sie stehen im Baustein Bildrahmen, den Claude dem Prüfer
+    nicht mitgegeben hatte, und der Code hält sie ein.
+
+### Probelauf des Text-Prüfers an Feature 001 und der Werkstatt (2026-10-22)
+
+Der Text-Prüfer hat rund 740 Texte und alle 27 Ereignisse des Katalogs gegen den Abschnitt
+„Sprache“ und für die Werkstatt gegen „Werkzeuge“ geprüft, Claude hat jeden Befund im Code
+nachgesehen. Feature 001: keine Befunde. Alles Weitere betrifft die Werkstatt, an der gerade die
+Sitzung „[003] Schwierigkeitsgrade ab dem Plan“ arbeitet; repariert wird also erst nach Feature 003,
+wenn Klaus es will.
+- **Bestätigt:**
+  - **Prozent ohne Leerzeichen (mittel):** Wirkungen stehen als „-30%“
+    (`core/timeline/event_effect.gd:85`), verlangt ist „−30 %“ wie „3,5 %“ unter „Werkzeuge“.
+  - **Datum als „02-30“ (mittel):** `core/timeline/catalog_validator.gd:165`; zwei Zeilen davor steht
+    „29.02.“. Empfehlung: „30.02.“.
+  - **Englische Fehlertexte der Engine (mittel):** `error_string()` und `json.get_error_message()`
+    enden in deutschen Sätzen auf Englisch, etwa „… lässt sich nicht schreiben: Can't open.“ Sechs
+    Stellen. Tritt nur bei Dateifehlern auf.
+  - **Ein Feld, drei Namen (mittel):** „Chance“ im Formular, „Grundchance“ im Verlauf und in den
+    Prüfregeln; beim Folgeereignis „Chance“ und „Wahrscheinlichkeit“.
+  - **Einzahl fehlt (niedrig):** „dauert 1 Tage“, „nach 1 Tagen“, „Rechnet 1 Spiele“ sind möglich
+    (Prüfregeln V19 und Nachbarn, Statistik).
+  - **Würfel und Chance in verschiedenen Einheiten (niedrig):** „Würfel 0,4120 < 50 %“
+    (`core/timeline/schedule_entry.gd:164`).
+  - **Tastennamen englisch (niedrig):** „Ctrl+Shift+Z“ und „Enter“; deutsch wären „Strg“ und
+    „Eingabetaste“. Die Schreibweise steht so im Vertrag von Feature 002 (R15); Klaus entscheidet.
+  - **Beispiel ohne Vorzeichen (niedrig):** „+5, -6 oder 2,5“ in
+    `tools/werkstatt/intervention_dialog.tscn:51`, obwohl der Satz Vorzeichen verlangt.
+  - **Zwei Namen für Dauer 0 (niedrig):** „0 heißt Augenblick“ neben „ohne Dauer“
+    (`tools/werkstatt/event_form.gd`).
+  - **Grammatik im Katalog (niedrig):** „Preise müssen umgedacht werden“ (`euro_buchgeld`);
+    Vorschlag „umgerechnet“. Den Katalog pflegt Klaus in der Werkstatt.
+- **Verworfen:**
+  - Seed ohne Tausenderpunkt: Der Seed ist eine Kennnummer, keine Menge (siehe Lücken).
+  - Beispieldatum „1.3.1993“: Es zeigt bewusst, dass die kurze Eingabe geht.
+  - „High-End“ im Katalog: ein Computerwort der Zeit, das der Abschnitt „Sprache“ erlaubt.
+- **Lücken im Style-Guide:**
+  - Gilt „ein Satz pro Meldung“ auch für Dialoge und Tooltips der Werkzeuge? Dort stehen bis zu vier
+    Sätze, auch im Beispiel des Abschnitts „Werkzeuge“.
+  - Witz in Beispielwerten der Werkzeuge, etwa „etwa Ware vom windigen Händler“?
+  - Fachwörter im Werkzeug: Ist „Seed“ erlaubt, und schreibt man Kennnummern mit Tausenderpunkt?
+  - Daten in Dateien und auf der Kommandozeile stehen als JJJJ-MM-TT; der Abschnitt regelt nur
+    angezeigte Daten.
+  - Minuszeichen: „-“ oder „−“? Im Code steht beides.
+  - Kategorie „Tech“: ein Anglizismus, sobald sie im Spiel erscheint; deutsch wäre „Technik“.
+  - Versionsnummer „V0.1“ mit Punkt statt Komma.
+- **Unsicher:** die Mehrzahl „Beginne“ in der Statistik; „Vorkommen“ stünde schon im Kern.
 
 ### Ältere Punkte aus Claudes bisherigem lokalem Gedächtnis
 
@@ -328,11 +420,36 @@ Auslegungen des Agents, die Claude angenommen hat:
     eine hohe Tabelle die Ansicht springen.
   - Bei 1024 × 600 ist die Werkstatt zu breit; gemessen nur zur Information, nicht Teil von T043.
 
+### KI-Workflow, Schritte 1 und 2 (2026-10-22)
+
+- **Phasenprüfung als Punkt 8:** In `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, steht sie
+  am Ende statt zwischen Punkt 4 und 5. So bleiben die Nummern, auf die Specs und Aufträge
+  verweisen, etwa „Punkt 6“ für die Lückensuche.
+- **Musterbericht nachgeschärft:** Drei ausgedachte Befunde widersprachen dem Style-Guide. 2 px
+  Abstand ist erlaubt (`raster-2`), jetzt sind es 3 px; Preise stehen als „499,00 DM“; „googeln“
+  gab es bis 1999 nicht, auch nicht ab 1998.
+
 ## Erledigt
 
 - **Feature 003 abgenommen:** Klaus, 2026-10-26 (T035). Alle Phasen 1 bis 8 sind abgenommen
   oder geprüft und committet; T034 lief automatisiert mit wenigen Handgriffen von Klaus. Über den
   Merge nach `main` entscheidet Klaus; diese Sitzung wechselt den Branch nicht.
+- **Pilot und Merge des KI-Workflows** (Schritt 9): Klaus, 2026-10-22, nach Empfehlung: Der Pilot
+  läuft im nächsten Feature nach 003, in der ersten Phase mit Sichtbarem oder Texten. Ab dem Pilot
+  gelten die Prüfer, auch für Werkzeuge. Der Branch geht nach `main`, sobald Feature 003 dort ist.
+- **Hook nach dem Godot-Agent** (Schritt 8 des KI-Workflows): Klaus, 2026-10-22, nach Empfehlung:
+  vorerst keiner, Schritt 8 entfällt. Die Tests laufen beim Agent und danach zweimal bei Claude.
+  Liefert der Agent zweimal rote Tests ab, ohne es zu melden, kommt ein Hook bei `SubagentStop`
+  mit dem Matcher `godot-entwickler`. Steht in `docs/ki_workflow/ki_pruefung.md`.
+- **Text-Leitfaden als Abschnitt „Sprache“ im Style-Guide** (Schritt 4 des KI-Workflows): Klaus,
+  2026-10-22, nach Empfehlung. Den Ton hat er in vier Fragen entschieden, jeweils nach Empfehlung:
+  trocken-ironisch wie „Das Amt“; kein Witz in der Bedienung; maßvoll aus der Zeit; das Spiel duzt
+  den Spieler, Kunden, Bank und Ämter siezen den Ladenbesitzer wie damals üblich. Der Abschnitt
+  steht im Style-Guide (Version 19), die drei Textregeln unter „Schrift“ verweisen jetzt dorthin.
+- **KI-Workflow in eigenem Ordner:** Klaus, 2026-10-22: Konzept freigegeben, mit der Änderung an
+  `CLAUDE.md` (Pfad `docs/ki_workflow/`). Umgesetzt in den Schritten 1 und 2: `ki_dev.md` ist
+  umgezogen, dazu kommen der Einstieg `README.md` und `ki_pruefung.md` mit Schaubildern; die beiden
+  Konzepte sind darin aufgegangen.
 - **Analyse von Feature 003:** Klaus, 2026-10-22: alle 41 Befunde nach Empfehlung einarbeiten.
   Eingearbeitet in Spec, Plan, research.md, Datenmodell, Verträge, Quickstart, Checkliste und
   tasks.md, jetzt mit T001 bis T035. Zusammengefasst im Plan unter „Änderungen nach der Analyse“;

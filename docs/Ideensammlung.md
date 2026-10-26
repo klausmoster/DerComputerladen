@@ -64,9 +64,11 @@ Neben dem Godot-Agent eigene Prüfer, die am Ende einer Phase unabhängig und nu
 gegen den Style-Guide, Sprache (du, Ton, Wortschatz 1985–1999) und später Fakten wie Daten und
 Preise gegen die game_bible. Was sich messen lässt, prüfen Tests.
 
-- Bezug: `.claude/agents/godot-entwickler.md`; `docs/ki_dev.md`, „Prüfen, bevor Klaus es sieht“
-  und „Pflege“; Verfassung, Grundsatz IV (Style-Guide als einzige Quelle).
-- Konzept: [konzept-pruef-agents.md](konzept-pruef-agents.md) mit Grundsätzen, Anbindung an
-  Spec Kit, Beispielen und Stufen zur Einführung (2026-10-22).
-- Offen: Für den Sprach-Prüfer fehlt ein Text-Leitfaden als Maßstab. Ab wann, etwa mit dem ersten
-  echten Spielbildschirm?
+- Bezug: `.claude/agents/godot-entwickler.md`; `docs/ki_workflow/ki_dev.md`, „Prüfen, bevor Klaus
+  es sieht“; „Pflege“ im Einstieg `docs/ki_workflow/README.md`; Verfassung, Grundsatz IV
+  (Style-Guide als einzige Quelle).
+- Umsetzung: [ki_workflow/ki_pruefung.md](ki_workflow/ki_pruefung.md), in Einführung seit
+  2026-10-22, mit Grundsätzen, Anbindung an Spec Kit, Beispielen und den Schritten der Einführung.
+  Die beiden Konzepte dazu sind darin aufgegangen und stehen in der Git-Geschichte.
+- Entschieden (Klaus, 2026-10-22): Die Prüfer gelten ab dem Pilot im nächsten Feature nach 003,
+  auch für Werkzeuge. Den Maßstab für den Sprach-Prüfer gibt der Abschnitt „Sprache“ im Style-Guide.
