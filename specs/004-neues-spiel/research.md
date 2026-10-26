@@ -224,8 +224,11 @@ fragen `GameSession` und wechseln nur die Szene.
 **Entscheidung:** Solange ein Spiel läuft, setzt `GameSession` `get_tree().auto_accept_quit` auf
 `false` und fängt `NOTIFICATION_WM_CLOSE_REQUEST` ab. Diese Benachrichtigung kommt beim Schließen
 des Fensters und unter macOS bei Cmd+Q (so schon in der Werkstatt, Feature 002, R15). Sie speichert
-und beendet dann. Scheitert das Speichern, bleibt das Fenster offen, und die Meldung sagt, dass ein
-zweites Schließen ohne Speichern beendet (Claude, 2026-10-26). Ohne laufendes Spiel bleibt
+und beendet dann. Scheitert das Speichern, bleibt das Fenster offen, und die Meldung sagt nur den
+Fehler, dieselbe wie sonst: „Speichern ging nicht. Dein Spiel läuft weiter.“ Ein zweites Beenden
+endet ohne Speichern (Claude, 2026-10-26). Bis zur Phasenprüfung von Phase 3 erklärte die Meldung
+das zweite Beenden („Schließt du noch einmal, dann ohne.“); Klaus fand, ein Spiel zeigt da einfach
+den Fehler (2026-10-26). Ohne laufendes Spiel bleibt
 `auto_accept_quit` unberührt; „Beenden“ im Hauptmenü beendet wie bisher.
 
 **Grund:** FR-010 verlangt Speichern auch bei Cmd+Q und beim Schließen. FR-011 verlangt, dass der

@@ -116,7 +116,8 @@ func save() -> Error
 func leave() -> Error
 
 ## Fängt NOTIFICATION_WM_CLOSE_REQUEST ab, solange ein Spiel läuft: speichern und beenden; scheitert
-## das Speichern, bleibt das Fenster offen, und ein zweites Schließen beendet ohne Speichern (R8).
+## das Speichern, bleibt das Fenster offen mit der Meldung „Speichern ging nicht. Dein Spiel läuft
+## weiter.“, und ein zweites Schließen beendet ohne Speichern (R8).
 func _notification(what: int) -> void
 ```
 

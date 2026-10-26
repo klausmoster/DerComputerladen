@@ -119,7 +119,7 @@ Was die Liste über eine Nummer weiß, auch wenn sich die Datei nicht lesen läs
 | Seed außerhalb | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
 | Spieldatum kein Tag von 1985 bis 1999 | `DAMAGED` | „Das Spieldatum ist kein Tag von 1985 bis 1999.“ |
 | Zeitpunkt nicht lesbar | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
-| ein Eingriff mit falschem Datum oder kein Objekt | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
+| ein Eingriff mit falschem Datum, kein Objekt oder mit `at_day` nach dem Spieldatum | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
 | Katalog nicht lesbar (`EventCatalog.from_data()` gibt `null`) oder sein Format nicht 1 | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
 | sonst | `OK` | — |
 

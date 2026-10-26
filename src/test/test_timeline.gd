@@ -4,7 +4,8 @@ extends GutTest
 ## hängt sich an eine Uhr und macht aus den Meldungen des Laufs Signale, auch aus den Enden von
 ## Ereignissen und Wirkungen (T085). Dazu die Eingriffe, die es an den Lauf durchreicht (T058),
 ## und die Grenze des Seeds (T083). Seit Feature 003 (T011) auch den Start mit Grad und die
-## Meldungen zu Start-Modifikatoren, die wegfallen.
+## Meldungen zu Start-Modifikatoren, die wegfallen. Seit Feature 004 (T013) beginnt kein Spiel mehr
+## von selbst; dazu Fortsetzen mit resume_game() und Beenden mit stop_game().
 ##
 ## Wie in test_game_clock.gd arbeiten die Tests nicht mit den Autoloads. Jeder baut sich eine
 ## eigene Zeitleiste mit Test-Katalog und eigener Uhr. Die Knoten entstehen im Test selbst, nicht
@@ -14,6 +15,8 @@ extends GutTest
 const ZEITLEISTE := preload("res://core/timeline.gd")
 const UHR := preload("res://core/game_clock.gd")
 const ORDNER := "res://test/fixtures/"
+## Die fünf Signale der Zeitleiste.
+const SIGNALE := ["event_fired", "effect_applied", "event_ended", "effect_ended", "entry_skipped"]
 
 
 func test_signale_kommen_in_der_reihenfolge_des_tagesablaufs() -> void:
@@ -109,11 +112,12 @@ func test_seed_bis_zur_grenze_und_darueber() -> void:
 
 
 func test_ohne_seed_wird_gewuerfelt() -> void:
-	# Arrange und Act: start_game() kommt per call_deferred() ohne Seed.
+	# Arrange und Act: start_game() ohne Seed, wie früher beim Selbststart.
 	var zeitleiste := await _zeitleiste("catalog_us1_tagesablauf", _uhr())
+	zeitleiste.start_game()
 
 	# Assert
-	assert_not_null(zeitleiste.run, "Das Spiel startet am Ende des ersten Bilds von selbst.")
+	assert_not_null(zeitleiste.run, "Das Spiel hat begonnen.")
 	assert_between(zeitleiste.get_seed(), 0, ZEITLEISTE.MAX_SEED)
 	assert_eq(zeitleiste.run.today, 0, "Der 01.01.1985 ist abgespielt.")
 
@@ -121,8 +125,9 @@ func test_ohne_seed_wird_gewuerfelt() -> void:
 # --- Schwierigkeitsgrade (Feature 003, T011) ----------------------------------------
 
 func test_ohne_grad_gilt_mittel() -> void:
-	# Arrange und Act (US1, Szenario 5): start_game() kommt per call_deferred() ohne Argumente.
+	# Arrange und Act (US1, Szenario 5): start_game() ohne Argumente, wie früher beim Selbststart.
 	var zeitleiste := await _zeitleiste("catalog_us1_grade", _uhr())
+	zeitleiste.start_game()
 
 	# Assert
 	assert_eq(zeitleiste.get_difficulty(), Difficulty.Level.MITTEL)
@@ -267,6 +272,7 @@ func test_meldung_zu_einem_profil_bekommt_keinen_zusatz_zum_ereignis() -> void:
 
 	# Act
 	var zeitleiste := await _zeitleiste(pfad, _uhr())
+	zeitleiste.start_game()
 	DirAccess.remove_absolute(pfad)
 	DirAccess.remove_absolute(ordner)
 
@@ -304,6 +310,7 @@ func test_fehlender_katalog_ergibt_leeren_lauf_und_fehlermeldung() -> void:
 	# Arrange
 	var uhr := _uhr()
 	var zeitleiste := await _zeitleiste(ORDNER + "gibt_es_nicht.json", uhr)
+	zeitleiste.start_game()
 	watch_signals(zeitleiste)
 
 	# Act
@@ -320,6 +327,7 @@ func test_fehlender_katalog_ergibt_leeren_lauf_und_fehlermeldung() -> void:
 func test_unlesbarer_katalog_ergibt_leeren_lauf_und_fehlermeldung() -> void:
 	# Arrange und Act: In Zeile 13 fehlt ein Komma.
 	var zeitleiste := await _zeitleiste("catalog_v22_kaputt", _uhr())
+	zeitleiste.start_game()
 
 	# Assert
 	assert_push_error("catalog_v22_kaputt.json: Kein gültiges JSON in Zeile 13",
@@ -404,6 +412,233 @@ func test_eingriffe_ohne_spiel_ergeben_err_unconfigured() -> void:
 	assert_eq(zeitleiste.schedule_event("x", 100, "Grund"), ERR_UNCONFIGURED)
 
 
+# --- Spielablauf (Feature 004, T013) ------------------------------------------------
+
+func test_ohne_beginn_laeuft_kein_spiel_und_uhrtage_senden_nichts() -> void:
+	# Arrange (FR-003; US1, Szenario 5): _ready() ist gelaufen, und zwei Bilder sind vergangen.
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us1_tagesablauf", uhr)
+	watch_signals(zeitleiste)
+
+	# Act: bis zum 01.04.1990, an dem ein Spiel mit diesem Katalog acht Signale hätte
+	_vorspulen(uhr, _tag(1990, 4, 1))
+
+	# Assert
+	assert_null(zeitleiste.run, "Ohne Beginn läuft kein Spiel.")
+	assert_false(zeitleiste.is_running())
+	assert_eq([zeitleiste.get_seed(), zeitleiste.get_difficulty()], [-1, -1])
+	for signal_name in SIGNALE:
+		assert_signal_not_emitted(zeitleiste, signal_name, "Uhrtage ohne Spiel senden nichts.")
+	assert_not_null(zeitleiste.get_event("b_fix"), "Den Katalog hat sie trotzdem gelesen.")
+
+
+func test_fortsetzen_am_14_03_1986_ist_still_und_geht_weiter_wie_ohne_pause() -> void:
+	# Arrange (US3, Szenario 4; FR-008): ein Spiel ohne Pause, Seed 4711, Schwer, mit zwei
+	# Eingriffen vor dem 14.03.1986. Der zweite plant einen Termin nach dem 14.03.1986 ein.
+	var uhr_ohne_pause := _uhr()
+	var ohne_pause := await _zeitleiste("catalog_us1_grade", uhr_ohne_pause)
+	var spur_ohne_pause := []
+	_mitschreiben(ohne_pause, spur_ohne_pause, [])
+	assert_eq(ohne_pause.start_game(4711, Difficulty.Level.SCHWER), OK)
+	_vorspulen(uhr_ohne_pause, _tag(1985, 6, 1))
+	assert_eq(ohne_pause.add_modifier(_modifikator("kundenflucht", 0.2, _tag(1985, 6, 1),
+		_tag(1986, 12, 31))), OK)
+	_vorspulen(uhr_ohne_pause, _tag(1986, 2, 1))
+	assert_eq(ohne_pause.schedule_event("lieferengpass", _tag(1986, 5, 2), "Zulieferer pleite"), OK)
+	_vorspulen(uhr_ohne_pause, _tag(1986, 3, 14))
+	# Dasselbe Spiel, gespeichert am 14.03.1986: eine zweite Zeitleiste an einer zweiten Uhr, die
+	# wie beim Fortsetzen ohne Signale auf den Tag springt.
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us1_grade", uhr)
+	var spur := []
+	_mitschreiben(zeitleiste, spur, [])
+	uhr.set_date(GameDate.new(1986, 3, 14))
+	var eingriffe: Array[Dictionary] = ohne_pause.run.interventions.duplicate(true)
+
+	# Act
+	var ergebnis: Error = zeitleiste.resume_game(zeitleiste.catalog, 4711,
+		Difficulty.Level.SCHWER, eingriffe, _tag(1986, 3, 14))
+
+	# Assert: für den 14.03.1986 und davor nichts
+	assert_eq(ergebnis, OK)
+	assert_eq(spur, [], "Die Tage bis zum 14.03.1986 sind gespielt und bleiben still.")
+	assert_eq(zeitleiste.run.today, _tag(1986, 3, 14), "Der Lauf hat den 14.03.1986 abgespielt.")
+	assert_eq(zeitleiste.run.interventions, ohne_pause.run.interventions, "Beide Eingriffe gelten.")
+	# Ab dem 15.03.1986 Tag für Tag dasselbe bis zum 31.12.1986, je Tag eine Liste
+	var tage_ohne_pause := []
+	var tage := []
+	while uhr.date.to_day_index() < _tag(1986, 12, 31):
+		var vorher_ohne_pause := spur_ohne_pause.size()
+		var vorher := spur.size()
+		uhr_ohne_pause.advance_day()
+		uhr.advance_day()
+		tage_ohne_pause.append(spur_ohne_pause.slice(vorher_ohne_pause))
+		tage.append(spur.slice(vorher))
+	assert_eq(tage.size(), 292, "Vom 15.03. bis zum 31.12.1986 sind es 292 Tage.")
+	assert_eq(tage, tage_ohne_pause, "Jeden Tag dieselben Signale in derselben Reihenfolge.")
+	var anzahl: int = tage.reduce(func(summe: int, tag: Array) -> int: return summe + tag.size(), 0)
+	assert_gt(anzahl, 5, "Der Vergleich prüft echte Signale.")
+
+
+func test_fortsetzen_nimmt_die_uebergebene_kopie_nicht_den_katalog_der_zeitleiste() -> void:
+	# Arrange (FR-022): Die Zeitleiste hat Katalog A, der Spielstand bringt Kopie B mit.
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us1_tagesablauf", uhr)
+	var kopie := _katalog("catalog_us3_kalender")
+	var spur := []
+	var ereignisse := []
+	_mitschreiben(zeitleiste, spur, ereignisse)
+	uhr.set_date(GameDate.new(1990, 1, 1))
+
+	# Act
+	var ergebnis: Error = zeitleiste.resume_game(kopie, 4711, Difficulty.Level.MITTEL,
+		_keine_eingriffe(), _tag(1990, 1, 1))
+	_vorspulen(uhr, _tag(1994, 1, 1))
+
+	# Assert
+	assert_eq(ergebnis, OK)
+	assert_eq(_kennungen(zeitleiste.run.catalog), _kennungen(kopie),
+		"Die Ereignisse sind die von B.")
+	assert_null(zeitleiste.get_event("b_fix"), "Keins aus A.")
+	var gesendet := {}
+	for ereignis: TimelineEvent in ereignisse:
+		gesendet[ereignis.id] = true
+	assert_true(gesendet.has("weihnachtsgeschaeft"), "Die Signale tragen Ereignisse aus B …")
+	assert_eq(gesendet.keys().filter(func(kennung: String) -> bool:
+		return kopie.get_event(kennung) == null), [], "… und nur solche.")
+	assert_not_null(zeitleiste.catalog.get_event("b_fix"),
+		"Der Katalog der Zeitleiste bleibt A, für das nächste neue Spiel.")
+
+
+func test_fortsetzen_prueft_die_kopie_wie_den_katalog_des_spiels() -> void:
+	# Arrange (R2): dieselbe Kopie wie in
+	# test_fehlerhafte_start_modifikatoren_werden_uebersprungen_und_je_einmal_gemeldet, dort als
+	# Katalog des Spiels gelesen. Lieferengpass hat eine Grundchance über 100 %, und zwei der drei
+	# Start-Modifikatoren in Schwer fallen weg.
+	var zeitleiste := await _zeitleiste("catalog_us1_tagesablauf", _uhr())
+	var kopie := _katalog("catalog_us1_profil_kaputt")
+
+	# Act
+	var ergebnis: Error = zeitleiste.resume_game(kopie, 4711, Difficulty.Level.SCHWER,
+		_keine_eingriffe(), _tag(1986, 3, 14))
+
+	# Assert: dieselben drei Meldungen wie beim Start mit diesem Katalog, jede genau einmal
+	assert_eq(ergebnis, OK)
+	assert_push_error("Zeitleiste: Ereignis „lieferengpass“, Feld „monthly_chance“: Die "
+		+ "Grundchance von 150 % liegt außerhalb von 0 % bis 100 %. Das Ereignis wird "
+		+ "übersprungen.", "Das fehlerhafte Ereignis.")
+	assert_push_error("Zeitleiste: Profil „Schwer“, Start-Modifikator „geisterereignis“, Feld "
+		+ "„profiles.schwer[0].event_id“: Das Ereignis „gibt_es_nicht“ gibt es im Katalog nicht. "
+		+ "Der Start-Modifikator wird übersprungen.", "Mit Grad, Kennung und Fehlergrund.")
+	assert_push_error("Zeitleiste: Profil „Schwer“, Start-Modifikator „lieferengpass“: Das "
+		+ "Ereignis „lieferengpass“ wird übersprungen, deshalb auch dieser Start-Modifikator.",
+		"Der, der nur wegen seines Ereignisses wegfällt.")
+	assert_push_error_count(3, "Keine Meldung doppelt.")
+	var kennungen := zeitleiste.run.start_modifiers.map(
+		func(modifikator: ChanceModifier) -> String: return modifikator.id)
+	assert_eq(kennungen, ["reklamationswelle"], "Der dritte gilt.")
+	assert_null(zeitleiste.get_event("lieferengpass"), "Das Ereignis fehlt im Lauf …")
+	assert_not_null(kopie.get_event("lieferengpass"), "… die übergebene Kopie bleibt, wie sie ist.")
+
+
+func test_abgelehnter_eingriff_kommt_als_warnung_und_der_rest_gilt() -> void:
+	# Arrange: zwei Eingriffe aus einer Datei, Zahlen also als float; der erste nennt ein
+	# Ereignis, das es im Katalog nicht gibt.
+	var zeitleiste := await _zeitleiste("catalog_us1_grade", _uhr())
+	var eingriffe: Array[Dictionary] = [
+		{"kind": "schedule", "event_id": "gibt_es_nicht", "day": 100.0, "reason": "Messe",
+			"at_day": 50.0},
+		{"kind": "schedule", "event_id": "lieferengpass", "day": 200.0,
+			"reason": "Zulieferer pleite", "at_day": 50.0},
+	]
+
+	# Act
+	var ergebnis: Error = zeitleiste.resume_game(zeitleiste.catalog, 4711,
+		Difficulty.Level.MITTEL, eingriffe, _tag(1986, 3, 14))
+
+	# Assert
+	assert_eq(ergebnis, OK, "Ein abgelehnter Eingriff hält das Fortsetzen nicht auf.")
+	assert_push_warning("Zeitleiste: Das Ereignis „gibt_es_nicht“ gibt es im Katalog nicht. Der "
+		+ "gespeicherte Eingriff wird übersprungen.", "Die Warnung nennt den Grund.")
+	assert_push_warning_count(1)
+	assert_eq(zeitleiste.run.interventions.size(), 1, "Der zweite gilt.")
+	assert_eq(zeitleiste.run.interventions[0]["event_id"], "lieferengpass")
+
+
+func test_fortsetzen_mit_seed_grad_oder_tag_ausserhalb_wird_abgelehnt() -> void:
+	# Arrange: ein laufendes Spiel mit Schwer am 01.06.1990
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us1_grade", uhr)
+	assert_eq(zeitleiste.start_game(4711, Difficulty.Level.SCHWER), OK)
+	_vorspulen(uhr, _tag(1990, 6, 1))
+	var laufendes := zeitleiste.run
+	watch_signals(zeitleiste)
+	var mittel := Difficulty.Level.MITTEL
+	# Je Fall Seed, Grad, Tag und die Meldung
+	var faelle := [
+		[ZEITLEISTE.MAX_SEED + 1, mittel, 0, "Zeitleiste: Der Seed 2147483648 liegt außerhalb von "
+			+ "0 bis 2.147.483.647. Das Spiel wird nicht fortgesetzt."],
+		[-1, mittel, 0, "Zeitleiste: Der Seed -1 liegt außerhalb von 0 bis 2.147.483.647."],
+		[4711, 7, 0, "Zeitleiste: Den Schwierigkeitsgrad 7 gibt es nicht, bekannt sind Leicht, "
+			+ "Mittel und Schwer. Das Spiel wird nicht fortgesetzt."],
+		[4711, -1, 0, "Zeitleiste: Den Schwierigkeitsgrad -1 gibt es nicht"],
+		[4711, mittel, -1, "Zeitleiste: Der Tag -1 liegt außerhalb des Spiels, erlaubt sind 0 "
+			+ "(01.01.1985) bis 5477 (31.12.1999). Das Spiel wird nicht fortgesetzt."],
+		[4711, mittel, TimelineRun.LAST_DAY + 1, "Zeitleiste: Der Tag 5478 liegt außerhalb"],
+	]
+
+	# Act und Assert: jeder Fall abgelehnt, das laufende Spiel bleibt.
+	for fall: Array in faelle:
+		var ergebnis: Error = zeitleiste.resume_game(zeitleiste.catalog, fall[0],
+			fall[1] as Difficulty.Level, _keine_eingriffe(), fall[2])
+		assert_eq(ergebnis, ERR_INVALID_PARAMETER, fall[3])
+		assert_push_error(fall[3])
+		assert_same(zeitleiste.run, laufendes, "Das laufende Spiel bleibt.")
+	assert_push_error_count(faelle.size(), "Je Fall eine Meldung, keine aus der Prüfung der Kopie.")
+	assert_eq([zeitleiste.get_seed(), zeitleiste.get_difficulty(), zeitleiste.run.today],
+		[4711, Difficulty.Level.SCHWER, _tag(1990, 6, 1)])
+
+	# Act und Assert: die Grenzen selbst gehen.
+	assert_eq(zeitleiste.resume_game(zeitleiste.catalog, 0, Difficulty.Level.LEICHT,
+		_keine_eingriffe(), TimelineRun.FIRST_DAY), OK)
+	assert_eq([zeitleiste.get_seed(), zeitleiste.get_difficulty(), zeitleiste.run.today],
+		[0, Difficulty.Level.LEICHT, TimelineRun.FIRST_DAY], "Seed 0 am 01.01.1985.")
+	assert_eq(zeitleiste.resume_game(zeitleiste.catalog, ZEITLEISTE.MAX_SEED,
+		Difficulty.Level.SCHWER, _keine_eingriffe(), TimelineRun.LAST_DAY), OK)
+	assert_eq([zeitleiste.get_seed(), zeitleiste.get_difficulty(), zeitleiste.run.today],
+		[ZEITLEISTE.MAX_SEED, Difficulty.Level.SCHWER, TimelineRun.LAST_DAY],
+		"Der größte Seed am 31.12.1999.")
+	for signal_name in SIGNALE:
+		assert_signal_not_emitted(zeitleiste, signal_name, "Fortsetzen sendet nichts.")
+
+
+func test_nach_stop_game_kommt_kein_signal_mehr() -> void:
+	# Arrange: ein Spiel am 01.01.1990
+	var uhr := _uhr()
+	var zeitleiste := await _zeitleiste("catalog_us1_tagesablauf", uhr)
+	assert_eq(zeitleiste.start_game(4711), OK)
+	assert_true(zeitleiste.is_running())
+	_vorspulen(uhr, _tag(1990, 1, 1))
+	watch_signals(zeitleiste)
+
+	# Act: beenden, dann bis zum 01.04.1990, der acht Signale hätte
+	zeitleiste.stop_game()
+	_vorspulen(uhr, _tag(1990, 4, 1))
+
+	# Assert
+	assert_null(zeitleiste.run)
+	assert_false(zeitleiste.is_running())
+	assert_eq([zeitleiste.get_seed(), zeitleiste.get_difficulty()], [-1, -1])
+	assert_eq(zeitleiste.running_entries().size(), 0)
+	assert_eq(zeitleiste.add_modifier(ChanceModifier.new()), ERR_UNCONFIGURED, "Kein Eingriff.")
+	for signal_name in SIGNALE:
+		assert_signal_not_emitted(zeitleiste, signal_name, "Nach dem Ende sendet sie nichts.")
+	zeitleiste.stop_game()
+	assert_null(zeitleiste.run, "Ein zweites Beenden ohne Spiel schadet nicht.")
+	assert_eq(zeitleiste.start_game(4711), OK)
+	assert_true(zeitleiste.is_running(), "Danach kann ein neues Spiel beginnen.")
+
+
 # --- Helfer ----------------------------------------------------------------------
 
 ## Eine eigene Uhr im Baum, am 01.01.1985.
@@ -413,8 +648,10 @@ func _uhr() -> UHR:
 	return uhr
 
 
-## Eine eigene Zeitleiste mit Test-Katalog und Uhr, im Baum. Wartet zwei Bilder, denn
-## start_game() kommt per call_deferred() erst am Ende des ersten.
+## Eine eigene Zeitleiste mit Test-Katalog und Uhr, im Baum, ohne Spiel: Seit Feature 004 beginnt
+## keins von selbst, das tut der Test mit start_game() oder resume_game(). Wartet trotzdem zwei
+## Bilder wie früher bis zum Selbststart; so zeigt sich, dass auch am Ende des ersten Bilds nichts
+## beginnt.
 func _zeitleiste(katalog: String, uhr: UHR) -> ZEITLEISTE:
 	var zeitleiste := ZEITLEISTE.new()
 	zeitleiste.catalog_path = katalog if katalog.contains("://") else ORDNER + katalog + ".json"
@@ -422,6 +659,40 @@ func _zeitleiste(katalog: String, uhr: UHR) -> ZEITLEISTE:
 	add_child_autofree(zeitleiste)
 	await wait_process_frames(2)
 	return zeitleiste
+
+
+## Ein Test-Katalog aus [constant ORDNER], gelesen, aber ungeprüft, wie die Kopie in einem
+## Spielstand.
+func _katalog(name: String) -> EventCatalog:
+	var meldungen: Array[CatalogIssue] = []
+	var katalog := EventCatalog.read_file(ORDNER + name + ".json", meldungen)
+	assert_not_null(katalog, name)
+	return katalog
+
+
+## Die Kennungen der Ereignisse in [param katalog], sortiert.
+func _kennungen(katalog: EventCatalog) -> Array:
+	var kennungen := katalog.events.map(func(ereignis: TimelineEvent) -> String: return ereignis.id)
+	kennungen.sort()
+	return kennungen
+
+
+## Ein leeres Eingriffsprotokoll; resume_game() verlangt den Typ Array[Dictionary].
+func _keine_eingriffe() -> Array[Dictionary]:
+	var keine: Array[Dictionary] = []
+	return keine
+
+
+## Ein Modifikator auf [param ereignis] um [param wert] vom Tag [param von] bis [param bis].
+func _modifikator(ereignis: String, wert: float, von: int, bis: int) -> ChanceModifier:
+	var modifikator := ChanceModifier.new()
+	modifikator.id = "test_%s" % ereignis
+	modifikator.event_id = ereignis
+	modifikator.value = wert
+	modifikator.reason = "Test"
+	modifikator.from_day = von
+	modifikator.to_day = bis
+	return modifikator
 
 
 ## Schaltet die Uhr Tag für Tag bis zum Tag [param bis] weiter.

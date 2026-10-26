@@ -82,7 +82,8 @@ FR-023, SC-002 und SC-006; neu sind Edge Cases zu Fehlerwegen und vier Annahmen.
   schreibt nur unter einer Nummer, zu der es noch keine Datei gibt, sonst nimmt es die nächste
   (CHK002).
 - Q: Was, wenn das Speichern beim Schließen des Fensters scheitert? → A: Das Fenster bleibt offen
-  mit einer Meldung; ein zweites Schließen beendet ohne Speichern (CHK020).
+  mit einer Meldung; ein zweites Schließen beendet ohne Speichern (CHK020). Seit der Phasenprüfung
+  von Phase 3 sagt die Meldung nur den Fehler, wie überall (Klaus, 2026-10-26).
 - Q: Wie wird SC-002 gemessen? → A: mit 20 Spielständen und je 500 Ereignissen im Katalog, dazu
   das Fortsetzen eines Spielstands vom 31.12.1999 (CHK024).
 
@@ -244,8 +245,10 @@ andere ist unverändert.
   schon das erste Speichern eines neuen Spiels, entsteht weder Spielstand noch laufendes Spiel, und
   die Gradwahl bleibt mit der Meldung stehen. Scheitert es beim Fortsetzen, läuft das Spiel, und
   der Spielbildschirm zeigt die Meldung.
-- **Speichern beim Schließen scheitert**: Das Fenster bleibt offen, und die Meldung sagt es; ein
-  zweites Schließen beendet ohne Speichern.
+- **Speichern beim Beenden scheitert** (Fensterknopf, Cmd+Q): Das Fenster bleibt offen, damit der
+  Spieler die Meldung sieht, dieselbe wie sonst: „Speichern ging nicht. Dein Spiel läuft weiter.“
+  Beendet er noch einmal, endet das Spiel ohne Speichern; der vorige Stand bleibt. Die Meldung
+  erklärt das nicht (Klaus, 2026-10-26, nach der Phasenprüfung von Phase 3).
 - **Löschen scheitert**, etwa weil die Datei gesperrt ist: Der Spieler erfährt es mit einer
   Meldung, der Spielstand bleibt, und die Liste zeigt den Stand neu, ohne Löschmodus.
 - **Absturz oder Stromausfall während des Speicherns**: Der vorige Stand des Spielstands bleibt

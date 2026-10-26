@@ -171,11 +171,108 @@ func test_nach_dem_ende_bewegt_sich_nichts_mehr() -> void:
 		"Nach dem Ende darf kein Aufruf die Zeit noch weiterschieben.")
 
 
+# --- Datum setzen (Feature 004, T012) -------------------------------------
+
+func test_datum_setzen_sendet_kein_signal() -> void:
+	# Arrange (R6): Fortsetzen am 14.03.1986, mitten im Jahr nach dem Start
+	watch_signals(_clock)
+
+	# Act
+	_clock.set_date(GameDate.new(1986, 3, 14))
+
+	# Assert
+	assert_eq(str(_clock.date), "14.03.1986")
+	for signal_name in ["day_passed", "month_passed", "year_passed", "reached_end"]:
+		assert_signal_not_emitted(_clock, signal_name,
+			"Die Tage dazwischen vergehen nicht im Spiel, also kein %s." % signal_name)
+
+
+func test_datum_setzen_laesst_pause_wie_sie_ist() -> void:
+	# Arrange und Act: einmal angehalten, einmal laufend
+	_clock.set_date(GameDate.new(1990, 6, 1))
+	var angehalten: bool = _clock.paused
+	_clock.paused = false
+	_clock.set_date(GameDate.new(1991, 6, 1))
+
+	# Assert
+	assert_true(angehalten, "Angehalten bleibt angehalten.")
+	assert_false(_clock.paused, "Laufend bleibt laufend.")
+
+
+func test_nach_dem_setzen_geht_es_vom_neuen_datum_aus_weiter() -> void:
+	# Arrange: Der Tagesindex muss mitkommen, sonst ginge es vom alten Datum weiter.
+	_clock.set_date(GameDate.new(1986, 3, 14))
+	watch_signals(_clock)
+
+	# Act
+	_clock.advance_day()
+
+	# Assert
+	assert_eq(str(_clock.date), "15.03.1986")
+	assert_signal_emit_count(_clock, "day_passed", 1)
+	assert_eq(str(get_signal_parameters(_clock, "day_passed")[0]), "15.03.1986")
+
+
+func test_datum_setzen_haengt_nicht_am_uebergebenen_objekt() -> void:
+	# Arrange
+	var datum := GameDate.new(1986, 3, 14)
+
+	# Act: Der Aufrufer ändert sein Datum danach.
+	_clock.set_date(datum)
+	datum.day = 20
+
+	# Assert
+	assert_eq(str(_clock.date), "14.03.1986", "Die Uhr hat eine eigene Kopie.")
+
+
+func test_am_letzten_tag_gesetzt_ist_die_uhr_nicht_am_ende() -> void:
+	# Arrange und Act (R6): ein Spielstand vom 31.12.1999
+	_clock.set_date(GameDate.new(1999, 12, 31))
+
+	# Assert
+	assert_false(_clock.is_finished(), "Der 31.12.1999 gehört noch zum Spiel.")
+	assert_eq(str(_clock.date), "31.12.1999")
+	watch_signals(_clock)
+	_clock.advance_day()
+	assert_signal_emit_count(_clock, "day_passed", 1, "Der Tag danach kommt noch.")
+	assert_signal_emit_count(_clock, "reached_end", 1, "Danach ist das Spiel aus.")
+
+
+func test_nach_dem_ende_zurueckgesetzt_laeuft_die_uhr_wieder() -> void:
+	# Arrange: Die Uhr ist über den 31.12.1999 hinaus und am Ende.
+	_clock.set_date(GameDate.new(1999, 12, 31))
+	_clock.advance_day()
+	assert_true(_clock.is_finished())
+
+	# Act: Verlassen setzt sie zurück auf den 01.01.1985 (data-model.md, „GameSession“).
+	_clock.set_date(GameDate.new(1985, 1, 1))
+
+	# Assert
+	assert_false(_clock.is_finished(), "Im Spielzeitraum ist die Uhr nicht am Ende.")
+	_clock.advance_day()
+	assert_eq(str(_clock.date), "02.01.1985", "Sie geht wieder weiter.")
+
+
+func test_angefangener_tag_verfaellt_beim_setzen() -> void:
+	# Arrange: Die Uhr läuft und hat fast einen ganzen Tag angesammelt.
+	_clock.paused = false
+	_clock._process(0.49 / _clock.days_per_second)
+	watch_signals(_clock)
+
+	# Act
+	_clock.set_date(GameDate.new(1986, 3, 14))
+	_clock._process(0.6 / _clock.days_per_second)
+
+	# Assert
+	assert_signal_not_emitted(_clock, "day_passed",
+		"Nach dem Setzen zählt der Tag von vorn, sonst käme der 15.03. zu früh.")
+	assert_eq(str(_clock.date), "14.03.1986")
+
+
 # --- Helfer ---------------------------------------------------------------
 
-## Schiebt die Uhr Tag für Tag bis zum Zieldatum. Umständlich, aber es gibt
-## bisher keine Möglichkeit, die Uhr auf ein Datum zu setzen — siehe die offene
-## Frage zum Spielstart in 01-01.
+## Schiebt die Uhr Tag für Tag bis zum Zieldatum, mit allen Signalen unterwegs.
+## Ohne Signale springt set_date().
 func _vorspulen_bis(jahr: int, monat: int, tag: int) -> void:
 	var ziel := GameDate.new(jahr, monat, tag).to_day_index()
 	while _clock.date.to_day_index() < ziel and not _clock.is_finished():

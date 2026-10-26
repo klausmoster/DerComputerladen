@@ -23,6 +23,7 @@ config/icon="res://assets/icon/app_icon.png"
 GameClock="*res://core/game_clock.gd"
 Timeline="*res://core/timeline.gd"
 GameWindow="*res://core/game_window.gd"
+GameSession="*res://core/game_session.gd"
 
 [display]
 

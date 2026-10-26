@@ -209,10 +209,10 @@ gespeichertes Spiel läuft weiter wie ohne Pause. Abnahme durch Klaus, dann Auft
 **Purpose**: Kein Spiel startet mehr von selbst; `GameSession` legt an, setzt fort, speichert und
 verlässt, auch beim Schließen des Fensters.
 
-- [ ] T012 [A] [P] `GameClock.set_date(new_date)` in `src/core/game_clock.gd` laut spielablauf.md:
+- [x] T012 [A] [P] `GameClock.set_date(new_date)` in `src/core/game_clock.gd` laut spielablauf.md:
   „ohne Signale“, `paused` bleibt; am 31.12.1999 nicht am Ende. Test in
   `src/test/test_game_clock.gd`.
-- [ ] T013 [A] `src/core/timeline.gd` laut spielablauf.md:
+- [x] T013 [A] `src/core/timeline.gd` laut spielablauf.md:
   - `_ready()` ohne `start_game.call_deferred()` (FR-003);
   - `resume_game(game_catalog, seed, difficulty, interventions, day)`: Kopie prüfen wie
     `_load_catalog()`, Lauf anlegen, `replay()`, still bis `day`; „das erste [Signal] kommt für
@@ -233,7 +233,7 @@ verlässt, auch beim Schließen des Fensters.
   Hauptszene läuft mehrere Bilder, danach läuft kein Spiel (US1, Szenario 5); dass dabei auch keine
   Datei entsteht, prüft T020, sobald `TitleScreen.session` da ist. **Feste Größe:** Ein Spiel mit
   `start_game(4711)` sendet dieselben Signale wie vorher. Hängt an T004.
-- [ ] T014 [A] `src/core/game_session.gd` (Autoload `GameSession`) laut spielablauf.md und
+- [x] T014 [A] `src/core/game_session.gd` (Autoload `GameSession`) laut spielablauf.md und
   data-model.md, „GameSession“; in `src/project.godot` als viertes Autoload nach `GameWindow`:
   - Felder `folder`, `clock`, `timeline`, `now`, `rng`, `quit_callback`, `current`,
     `last_error`; Signal `save_failed`.
@@ -250,9 +250,9 @@ verlässt, auch beim Schließen des Fensters.
   - `auto_accept_quit` aus, solange ein Spiel läuft; `_notification()` für
     `NOTIFICATION_WM_CLOSE_REQUEST`: speichern und beenden, bei Fehler offen bleiben, beim zweiten
     Mal ohne Speichern beenden (R8).
-  - Die drei Meldungen zum Speichern als Konstanten: „Speichern ging nicht. Dein Spiel läuft
-    weiter.“, „Speichern ging nicht. Schließt du noch einmal, dann ohne.“, „Speichern ging nicht.
-    Es ist kein Spiel angelegt.“
+  - Die Meldungen zum Speichern als Konstanten: „Speichern ging nicht. Dein Spiel läuft weiter.“
+    (auch beim Beenden; bis zur Phasenprüfung von Phase 3 stand dort „Speichern ging nicht.
+    Schließt du noch einmal, dann ohne.“) und „Speichern ging nicht. Es ist kein Spiel angelegt.“
 
   Test `src/test/test_game_session.gd` mit der Liste aus spielablauf.md, darunter SC-005
   (01.01.1985, 15.02.1985, 14.03.1986, 31.12.1999, vorgespult mit der eigenen Uhr); zwei Fenster:
@@ -263,10 +263,15 @@ verlässt, auch beim Schließen des Fensters.
   (Analyse, E3); ein Spielstand mit `catalog_500.json` vom 31.12.1999 in höchstens 1 s fortgesetzt
   (SC-002), Speichern scheitert beim Anlegen, Fortsetzen, Verlassen und Schließen. Jeder Test mit
   eigener Uhr, Zeitleiste und eigenem Ordner unter `user://`. Hängt an T008, T012 und T013.
-- [ ] T015 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`: Text-Prüfer mit `Sprache.md` und den
+- [x] T015 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`: Text-Prüfer mit `Sprache.md` und den
   Meldungen aus `game_session.gd`; Befunde nachprüfen, zählen (Analyse, F18); dazu prüft Claude die
   Startprobe: still, und danach keine neue Datei in `user://spielstaende/` (FR-003).
-- [ ] T016 [K] Phase 3 abnehmen nach quickstart.md, Abschnitte 1 und 2.
+- [x] T016 [K] Phase 3 abnehmen nach quickstart.md, Abschnitte 1 und 2.
+
+Erledigt am 2026-10-26, von Klaus abgenommen: 783 Tests zweimal grün, Startprobe still,
+`start_game(4711)` unverändert, Fortsetzen vom 31.12.1999 in rund 0,15 s. Phasenprüfung mit dem
+Text-Prüfer: 1 Befund im Protokoll, behoben; Klaus hat entschieden, dass beim Beenden nur der
+Fehler erscheint („Speichern ging nicht. Dein Spiel läuft weiter.“).
 
 **Checkpoint**: Ein Spiel beginnt, läuft weiter und endet nur über `GameSession`; im Hintergrund
 läuft nichts. Abnahme durch Klaus, dann Auftrag für Phase 4.
@@ -306,7 +311,7 @@ Leicht am 01.01.1985; „Zum Hauptmenü“ wählt danach „Weiterspielen“ vor
   Spielständen und „Löschen ging nicht. Der Spielstand ist noch da.“ Test
   `src/test/test_title_texts.gd`: Jeder Text mit den längsten Platzhaltern („Spiel 9999“,
   „Schwer“, „neuere Version“) passt in höchstens zwei Zeilen des Hinweises, gemessen mit der
-  Schrift des Themes; ebenso die drei Meldungen aus `GameSession` und die Gründe aus `SaveGame`
+  Schrift des Themes; ebenso die zwei Meldungen aus `GameSession` und die Gründe aus `SaveGame`
   und `SaveSlot` (Analyse, C10).
 - [ ] T020 [A] [US1] `src/scenes/title/title_screen.gd` und `title_screen.tscn`, Teil 1, laut
   titelbildschirm.md und data-model.md, „Titelbildschirm: Blätter und Wege“:

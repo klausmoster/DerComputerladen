@@ -126,6 +126,8 @@ steht dabei. Eingearbeitet wird erst nach Klaus' Freigabe; sie kam am 2026-10-26
   [Gap, Conflict, Spec §FR-010, §FR-011; Plan R8]
   → Vorschlag, freigegeben von Klaus (2026-10-26): Das Fenster bleibt offen, die Meldung sagt „Speichern ging nicht. Schließt du noch
   einmal, dann ohne.“; ein zweites Schließen beendet ohne Speichern. Neuer Edge Case.
+  Seit der Phasenprüfung von Phase 3 sagt die Meldung nur den Fehler: „Speichern ging nicht. Dein
+  Spiel läuft weiter.“ (Klaus, 2026-10-26).
 - [x] CHK021 Ist festgelegt, was der Spieler nach einem Absturz beim Speichern sieht, wenn das
   Spiel den Stand aus einer Zwischendatei liest? [Gap, Spec Edge Cases; Plan R3]
   → Vorschlag, freigegeben von Klaus (2026-10-26): nichts Besonderes. Die Liste zeigt den Spielstand wie immer, das Protokoll nennt die

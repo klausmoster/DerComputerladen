@@ -333,6 +333,9 @@ func test_spieldatum_ausserhalb() -> void:
 	for wert: String in ["1985-01-01", "1999-12-31"]:
 		var daten := _gueltige_daten()
 		daten["day"] = wert
+		# Nur der Eingriff vor Spielbeginn: Der vom 02.01.1986 läge nach dem 01.01.1985 und machte
+		# den Spielstand beschädigt (test_eingriff_nach_dem_spieldatum).
+		daten["interventions"] = (daten["interventions"] as Array).slice(0, 1)
 		assert_eq(_lies(daten)[0].day_text(), GameDate.from_iso(wert).to_string(),
 			"Am Rand erlaubt: %s." % wert)
 
@@ -375,6 +378,28 @@ func test_eingriff_mit_falschem_datum_oder_kein_objekt() -> void:
 
 		# Act und Assert
 		_erwarte_grund(daten, TEIL, fall[1], "Eingriffe %s" % [fall[0]])
+
+
+func test_eingriff_nach_dem_spieldatum() -> void:
+	# Arrange (Feature 004, Phase 3; data-model.md, „Zustand“): Spieldatum 14.03.1986. Ein
+	# Eingriff vom Tag danach schöbe den Lauf beim Fortsetzen über das Spieldatum hinaus.
+	var danach := _gueltige_daten()
+	danach["interventions"] = [_eingriff_aus_der_datei(), {"at_day": "1986-03-15",
+		"day": "1986-06-01", "event_id": "reklamationswelle", "kind": "cancel", "reason": "Test"}]
+	var am_tag := _gueltige_daten()
+	am_tag["interventions"] = [{"at_day": "1986-03-14", "day": "1986-06-01",
+		"event_id": "reklamationswelle", "kind": "cancel", "reason": "Test"}]
+	var ohne_tag := _gueltige_daten()
+	ohne_tag["interventions"] = [{"day": "1986-06-01", "event_id": "reklamationswelle",
+		"kind": "cancel", "reason": "Test"}]
+
+	# Act und Assert: beschädigt, die Einzelheit nur im Protokoll
+	_erwarte_grund(danach, TEIL, "Eingriff 2 am „1986-03-15“ liegt nach dem Spieldatum "
+		+ "„1986-03-14“.", "Eingriff am Tag nach dem Spieldatum")
+	var gelesen := _lies(am_tag)
+	assert_not_null(gelesen[0], "Ein Eingriff am Spieldatum selbst gilt: %s" % [gelesen[2]])
+	gelesen = _lies(ohne_tag)
+	assert_not_null(gelesen[0], "Ohne at_day gilt er, wo der Lauf steht: %s" % [gelesen[2]])
 
 
 func test_katalog_nicht_lesbar() -> void:

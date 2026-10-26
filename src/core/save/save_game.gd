@@ -36,7 +36,8 @@ const REQUIRED_KEYS := ["catalog", "created_at", "day", "difficulty", "format", 
 ## „zu neu“ prüft SaveSlot.read() vorher, mit eigenen Sätzen.
 ## Für alles, was nur das Innere der Datei betrifft: Formatversion fehlt oder stimmt nicht,
 ## Pflichtfeld fehlt oder hat den falschen Typ, Seed außerhalb, Zeitpunkt nicht lesbar, Eingriff
-## falsch, Katalog nicht lesbar. Welche Stelle es ist, sagt nur das Protokoll.
+## falsch oder nach dem Spieldatum, Katalog nicht lesbar. Welche Stelle es ist, sagt nur das
+## Protokoll.
 const REASON_FILE_PART := "Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht."
 ## Der Grad ist keiner von leicht, mittel und schwer.
 const REASON_DIFFICULTY := "Der Schwierigkeitsgrad ist unbekannt."
@@ -155,6 +156,15 @@ static func from_data(data: Dictionary, p_number: int, problems: Array[String],
 		if not wrong.is_empty():
 			return _refuse(problems, REASON_FILE_PART, details,
 				"Eingriff %d: %s" % [i + 1, wrong])
+		# Ein Eingriff nach dem Spieldatum schöbe den Lauf beim Fortsetzen über dieses hinaus, und
+		# die Tage dazwischen kämen nie als Signal (replay()). Das Spiel schreibt so etwas nie; steht
+		# es in der Datei, ist sie verändert (Claude, 2026-10-26). Ohne at_day gilt der Eingriff
+		# dort, wo der Lauf gerade steht, und bleibt erlaubt.
+		var at_day: Variant = (record as Dictionary).get("at_day")
+		if at_day != null and GameDate.from_iso(at_day).to_day_index() > game_day:
+			return _refuse(problems, REASON_FILE_PART, details,
+				"Eingriff %d am %s liegt nach dem Spieldatum %s." % [i + 1, _shown(at_day),
+				_shown(data["day"])])
 	var catalog_details: Array[String] = []
 	var read_catalog := _read_catalog(data["catalog"], catalog_details)
 	if read_catalog == null:

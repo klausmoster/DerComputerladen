@@ -121,3 +121,57 @@ nichts und haben deshalb keine Notiz.
   Seed, ohne Termine festzuschreiben.
 - Verglichen werden ganze Ausgaben: Protokollzeilen ab dem 15.03.1986, der ganze Fahrplan und das
   Eingriffsprotokoll. Stichproben würden Abweichungen übersehen.
+
+## Phase 3
+
+### T012 `GameClock.set_date()`: springen statt vorspulen
+
+- Die Uhr ist ein Autoload, an dessen Signal `day_passed` die Zeitleiste hängt. Spulte das
+  Fortsetzen die Uhr Tag für Tag vor, liefe jeder Tag einmal durch das Signal, und die Zeitleiste
+  meldete die Vergangenheit noch einmal: Die Miete von 1985 wäre zweimal bezahlt. `set_date()` setzt
+  deshalb nur `date`, `_day_index` und `_ended` und sendet nichts.
+- Das Datum wird kopiert, weil `GameDate` ein `RefCounted` ist, also ein Verweis. Ohne Kopie würde
+  die Uhr mitwandern, wenn der Aufrufer sein Objekt später ändert.
+- `_accumulator` geht auf 0, sonst käme bei laufender Uhr der angefangene Tag aus `_process()`
+  schon im nächsten Bild.
+
+### T013 Kein Selbststart, `resume_game()`
+
+- Bisher stand in `_ready()` `start_game.call_deferred()`: Am Ende des ersten Bilds begann immer
+  ein Spiel. Jetzt liest `_ready()` nur den Katalog und verbindet sich mit der Uhr;
+  `_on_day_passed()` kehrt bei `run == null` sofort zurück. Ein Spiel beginnt erst über
+  `GameSession` (T014).
+- `resume_game()` ist still, weil `TimelineRun.replay()` die Meldungen der nachgespielten Tage nur
+  ins Protokoll des Laufs schreibt. Signale entstehen nur in `_send()`, und das wird hier nicht
+  aufgerufen: Der Kern weiß nichts von Signalen, die Hülle entscheidet, was gesendet wird.
+- `run` wird erst am Ende gesetzt. Ein abgelehnter Aufruf lässt das laufende Spiel deshalb
+  unberührt, und kein halb aufgebauter Lauf bekommt Uhrtage.
+- Die Kopie des Katalogs geht durch dieselbe statische Funktion `_checked_catalog()` wie der
+  Katalog des Spiels. So fällt beim Fortsetzen genau das weg, was beim Start wegfiele, mit
+  denselben Meldungen.
+- In `test_title_screen.gd` kommt das echte Autoload über `get_node(^"/root/Timeline")`: In einem
+  Skript, das GUT mit `-s` startet, kennt GDScript die Namen der Autoloads nicht.
+
+### T014 Autoload `GameSession`
+
+- **Autoload statt Szene:** Das Spiel wechselt zwischen Titel und Spielbildschirm. Ein Autoload
+  hängt dauerhaft unter `/root` und übersteht den Szenenwechsel; deshalb hält `GameSession` das
+  laufende Spiel (`current`), und die Szenen fragen es nur. Es steht in `project.godot` nach
+  `GameClock` und `Timeline`, weil Godot Autoloads in dieser Reihenfolge in den Baum hängt.
+- **Austauschbare Abhängigkeiten:** `clock` und `timeline` sind Felder; null heißt die Autoloads,
+  aufgelöst in `_clock()` und `_timeline()`. So baut jeder Test seine eigene Uhr und Zeitleiste,
+  wie bei `Timeline.clock`. Dasselbe gilt für `now` (ein `Callable` statt der Systemuhr) und `rng`
+  (ein eigener `RandomNumberGenerator` mit festem Seed im Test).
+- **Typen ohne `class_name`:** `game_clock.gd` und `timeline.gd` haben keinen Klassennamen.
+  `const CLOCK_SCRIPT := preload(...)` macht das Skript selbst zum Typ, und `as CLOCK_SCRIPT`
+  liefert typisierten Zugriff auf `set_date()` und `run`.
+- **Erst schreiben, dann starten:** `Timeline.start_game()` sendet sofort die Signale des
+  01.01.1985. Käme es vor dem Schreiben und das Schreiben scheiterte, hätten Abnehmer schon auf
+  ein Spiel reagiert, das es nicht gibt.
+- **Schließen abfangen:** Fensterknopf und Cmd+Q kommen bei jedem Knoten als
+  `NOTIFICATION_WM_CLOSE_REQUEST` an. Godot beendet die App danach nur von selbst, wenn
+  `get_tree().auto_accept_quit` an ist; `_update_quit_guard()` schaltet es aus, solange ein Spiel
+  läuft. Ohne Spiel fasst der Knoten es nie an, so behält die Werkstatt ihre eigene Einstellung.
+- **Signal und Feld:** `save_failed` meldet einen Fehler an den, der gerade zuhört; `last_error`
+  hält denselben Satz für den, der erst danach erscheint, etwa den Spielbildschirm nach dem
+  Fortsetzen.

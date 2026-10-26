@@ -246,17 +246,17 @@ Text-Prüfer prüft sie in der Phase. Die Sätze zu den Graden hat Klaus entschi
 | Liste, Spalten Grad und Spieldatum, nicht fortsetzbar | „beschädigt“ oder „neuere Version“ |
 | Spielbildschirm, Knopf | „Speichert Spiel 2 und führt ins Hauptmenü.“ |
 | Meldung, Speichern beim Fortsetzen oder Verlassen (Spielbildschirm) | „Speichern ging nicht. Dein Spiel läuft weiter.“ |
-| Meldung, Speichern beim Schließen | „Speichern ging nicht. Schließt du noch einmal, dann ohne.“ |
+| Meldung, Speichern beim Beenden (Fensterknopf, Cmd+Q) | „Speichern ging nicht. Dein Spiel läuft weiter.“; ein zweites Beenden endet ohne Speichern (Klaus, 2026-10-26) |
 | Meldung, neues Spiel | „Speichern ging nicht. Es ist kein Spiel angelegt.“ |
 | Meldung, Löschen | „Löschen ging nicht. Der Spielstand ist noch da.“ |
 
-Die vier Meldungen stehen als Konstanten in `GameSession` (Speichern) und `TitleTexts` (Löschen);
-`GameSession.last_error` ist nach einem Fehler einer der drei Sätze zum Speichern, und
+Die drei Meldungen stehen als Konstanten in `GameSession` (Speichern) und `TitleTexts` (Löschen);
+`GameSession.last_error` ist nach einem Fehler einer der zwei Sätze zum Speichern, und
 `push_warning()` nennt zusätzlich Datei und Schritt aus `SaveStore.last_error`.
 
 `test_title_texts.gd` prüft, dass jeder dieser Texte mit den längsten Platzhaltern („Spiel 9999“,
 „Schwer“, „neuere Version“) in höchstens zwei Zeilen des Hinweises passt, gemessen mit der Schrift
-des Themes. Dazu gehören auch die drei Meldungen aus `GameSession` und die Gründe aus `SaveGame` und
+des Themes. Dazu gehören auch die zwei Meldungen aus `GameSession` und die Gründe aus `SaveGame` und
 `SaveSlot` (Analyse, C10).
 
 ## Tests

@@ -76,6 +76,23 @@ func advance_one_year() -> void:
 		advance_day()
 
 
+## Setzt die Uhr auf [param new_date], ohne Signale. paused bleibt, wie es ist; liegt das Datum im
+## Spielzeitraum, ist die Uhr danach nicht am Ende. Für Anlegen, Fortsetzen und Verlassen
+## (Feature 004, research.md, R6).
+##
+## Ohne Signale, weil die Tage dazwischen nicht im Spiel vergehen: Beim Fortsetzen am 14.03.1986
+## hat die Zeitleiste sie schon still nachgespielt, und day_passed für jeden davon meldete alles
+## noch einmal. Der angefangene Tag aus _process() verfällt, so kommt der erste Tageswechsel nach
+## dem Setzen nicht schon im nächsten Bild.
+func set_date(new_date: GameDate) -> void:
+	# Eine eigene Kopie: Ändert der Aufrufer sein GameDate später, bleibt die Uhr, wo sie ist.
+	date = GameDate.new(new_date.year, new_date.month, new_date.day)
+	_day_index = date.to_day_index()
+	_accumulator = 0.0
+	# Dieselbe Grenze wie in advance_day(): Erst ein Datum nach 1999 ist das Ende.
+	_ended = date.year > END_YEAR
+
+
 func set_paused(value: bool) -> void:
 	paused = value
 

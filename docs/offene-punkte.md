@@ -41,6 +41,20 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
 - Verworfen: „Grad“ und „Schwierigkeitsgrad“ seien zwei Wörter für dasselbe. „Gradwahl“ ist nur
   der Name im Vertrag; der Spieler liest SCHWIERIGKEIT und die Grade selbst.
 
+### Feature 004, Phasenprüfung Phase 3 (2026-10-26)
+
+Lücken im Style-Guide, die der Text-Prüfer gemeldet und Claude bestätigt hat; keine blockiert:
+- **„Ein Satz pro Meldung“ gegen die Beispiele:** Der Leitsatz „Kurz und gesprochen“ verlangt
+  einen Satz, das Beispiel einer Meldung in „Sprache“ hat drei, der Baustein Meldung zwei.
+  Empfehlung: „Eine Meldung sagt eine Sache in höchstens zwei kurzen Sätzen.“
+- **„Meldung“ heißt zweierlei:** In „Sprache“ ist eine Meldung eine Nachricht aus dem Spiel mit
+  Witz, im Baustein Meldung ein Fehler ohne Witz. Empfehlung: In „Sprache“ für Nachrichten aus
+  dem Spiel „Nachricht“ sagen und ergänzen: „Die Meldung (Baustein) ist eine Fehlermeldung: ohne
+  Witz.“
+- **Dasselbe heißt überall gleich:** „Sprache“ hat keine solche Regel; Anlass war „schließen“
+  gegen „Beenden“. Mit Klaus' Entscheidung unten ist der Anlass weg. Empfehlung: die Regel
+  trotzdem aufnehmen.
+
 ### Feature 004, Plan (2026-10-26)
 
 - **Eigener Benutzerordner, später:** Spielstände liegen unter macOS in
@@ -485,6 +499,25 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
     Fortsetzen kommt mit T013. Das Fortsetzen vom 31.12.1999 in höchstens 1 s misst T014.
   - SC-002 gemessen: 20 Spielstände mit je 500 Ereignissen in rund 0,6 s gelesen.
 
+### Feature 004, Phase 3 (2026-10-26)
+
+- **Eingriff nach dem Spieldatum macht den Spielstand beschädigt:** Ein Eingriff mit `at_day`
+  nach dem gespeicherten Tag schöbe den Lauf beim Fortsetzen über diesen Tag hinaus, und die Tage
+  dazwischen kämen nie als Signal. Das Spiel schreibt so etwas nie; steht es in der Datei, ist sie
+  verändert. `SaveGame.from_data()` meldet deshalb „Ein Teil der Datei stimmt nicht“. Anlass:
+  Frage des Agents zu T013; umgesetzt mit T014.
+- **Auslegungen des Agents zu T014, angenommen:**
+  - Das zweite Schließen nach gescheitertem Speichern beendet immer ohne Speichern, auch wenn
+    dazwischen ein Speichern gelang.
+  - Ein neues Spiel weicht höchstens fünfmal auf die nächste Nummer aus.
+  - Ein Eingriff, den das Fortsetzen ablehnt, fehlt nach dem nächsten Speichern in der Datei; am
+    Fahrplan ändert das nichts, weil er ohnehin nicht galt.
+  - Ein Test hakt Godots englische Fehlermeldung „Method/function failed“ ab; sie kann sich mit
+    einer anderen Godot-Version ändern.
+- **Auslegungen des Agents zu T012 und T013, angenommen:** `resume_game()` lehnt einen negativen
+  Seed ab, statt zu würfeln; ohne Katalog läuft das Spiel wie mit einem leeren; `set_date()` setzt
+  auch den Rest des angefangenen Tags zurück.
+
 ### KI-Workflow, Schritte 1 und 2 (2026-10-22)
 
 - **Phasenprüfung als Punkt 8:** In `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, steht sie
@@ -496,6 +529,11 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 
 ## Erledigt
 
+- **Meldung beim Beenden (Phasenprüfung Phase 3):** Klaus, 2026-10-26: Scheitert beim Beenden
+  das Speichern, zeigt das Spiel nur den Fehler, dieselbe Meldung wie sonst („Speichern ging nicht.
+  Dein Spiel läuft weiter.“). Ein zweites Beenden endet ohne Speichern, ohne dass die Meldung das
+  erklärt. Vorher stand dort „Schließt du noch einmal, dann ohne.“; Klaus: Ein Spiel zeigt da
+  einfach den Fehler. Steht in Spec (Edge Cases), research.md (R8) und den Verträgen.
 - **Gründe für beschädigte Spielstände (Phasenprüfung Phase 2):** Klaus, 2026-10-26, nach
   Empfehlung: nur Wörter, die der Spieler kennt. Vier Gründe statt acht; Seed, Formatversion,
   Eingriff und Ereigniskatalog stehen nur im Protokoll. Steht im Datenmodell, „Zustand“.
