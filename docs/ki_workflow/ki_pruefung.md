@@ -268,6 +268,9 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Pilot Feature 004, Phase 2, Nachprüfung der 9 geänderten Texte (2026-10-26) | Text | 0 | 0 | 0 | 3, davon 1 schon bekannt | 0 |
 | Pilot Feature 004, Phase 3, Spielablauf, 3 Meldungen und 9 Protokolltexte (2026-10-26) | Text | 1 | 1 | 0 | 4, davon 1 schon bekannt | 1 |
 | Pilot Feature 004, Phase 3, Nachprüfung nach Klaus' Entscheidung zur Meldung (2026-10-26) | Text | 1 | 1 | 0 | 2, davon 1 schon bekannt | 1 |
+| Pilot Feature 004, Phase 4, Hauptmenü, Gradwahl, Spielbildschirm, Knopf, Meldung (2026-10-26) | Stil | 0 | 0 | 0 | 2, dazu 2 schon bekannte bestätigt | 0 |
+| Pilot Feature 004, Phase 4, 40 Texte der Blätter (2026-10-26) | Text | 1 | 1, durch Phase 5 erledigt | 0 | 4, davon 1 schon bekannt | 1 |
+| Pilot Feature 004, Phase 4, Nachprüfung Lochrand und Abstand am Knopf (2026-10-26) | Stil | 0 | 0 | 0 | 0 | 0 |
 
 „Nur er fand“ heißt hier: Die Prüfung von Feature 001 hatte es übersehen, das Feature war
 abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.

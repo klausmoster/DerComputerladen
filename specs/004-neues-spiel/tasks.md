@@ -288,7 +288,7 @@ Leicht am 01.01.1985; „Zum Hauptmenü“ wählt danach „Weiterspielen“ vor
 
 **Erste Phasenprüfung mit dem Stil-Prüfer.** Braucht Phase 1 und Phase 3.
 
-- [ ] T017 [A] Vor jeder Änderung ein Bild des Hauptmenüs ohne Spielstände mit `scripts/fotos.gd`
+- [x] T017 [A] Vor jeder Änderung ein Bild des Hauptmenüs ohne Spielstände mit `scripts/fotos.gd`
   aus `dcl-phasenpruefung` in den Scratchpad legen, nicht ins Repo (Analyse, C8). Dann
   `src/scenes/title/menu_paper.gd` (`MenuPaper`, statische Funktionen) aus dem Malen in `MainMenu`:
   Papier, Zebra, Lochränder, Schatten, Auswahl, Pfeil. `src/scenes/title/main_menu.gd` und
@@ -297,14 +297,14 @@ Leicht am 01.01.1985; „Zum Hauptmenü“ wählt danach „Weiterspielen“ vor
   `src/test/test_main_menu.gd` erweitert; `PAPER_WIDTH` bleibt als Vorgabe von `paper_width`
   (Analyse, F11). **Feste Größe:** Das Hauptmenü sieht Pixel für Pixel aus wie das Bild von vorher,
   verglichen nach der Änderung; die bisherigen Erwartungen bleiben.
-- [ ] T018 [A] [P] Baustein Knopf und Meldung laut titelbildschirm.md und Style-Guide aus T001:
+- [x] T018 [A] [P] Baustein Knopf und Meldung laut titelbildschirm.md und Style-Guide aus T001:
   `src/ui/knopf.gd` (`Knopf`, Relief und Fokuslinie in `_draw()`, `on_dark`), Theme-Varianten
   `Knopf` und `WarningPanel` in `src/ui/computerladen_theme.tres`, `MenuHint.show_text()` und
   `show_warning()` in `src/scenes/title/menu_hint.gd` (Analyse, C2). Tests
   `src/test/test_knopf.gd`: Farben nur aus der Palette, Relief, Fokuslinie hell und dunkel; und
   `src/test/test_menu_hint.gd`: `show_text()` und `show_warning()` mit Lage, Breite und Kontur
   (Analyse, F16).
-- [ ] T019 [A] [P] `src/scenes/title/title_texts.gd` (`TitleTexts`): alle Texte aus
+- [x] T019 [A] [P] `src/scenes/title/title_texts.gd` (`TitleTexts`): alle Texte aus
   titelbildschirm.md, „Texte“, mit Platzhaltern, auch die Sätze zu den Graden (Leicht „Das Glück
   ist eher auf deiner Seite.“, Mittel „Das Glück hält sich raus.“, Schwer „Das Glück ist eher auf
   der Seite der anderen.“), „Nicht löschen. Esc geht auch.“, die Rückfrage bei nicht fortsetzbaren
@@ -313,7 +313,7 @@ Leicht am 01.01.1985; „Zum Hauptmenü“ wählt danach „Weiterspielen“ vor
   „Schwer“, „neuere Version“) passt in höchstens zwei Zeilen des Hinweises, gemessen mit der
   Schrift des Themes; ebenso die zwei Meldungen aus `GameSession` und die Gründe aus `SaveGame`
   und `SaveSlot` (Analyse, C10).
-- [ ] T020 [A] [US1] `src/scenes/title/title_screen.gd` und `title_screen.tscn`, Teil 1, laut
+- [x] T020 [A] [US1] `src/scenes/title/title_screen.gd` und `title_screen.tscn`, Teil 1, laut
   titelbildschirm.md und data-model.md, „Titelbildschirm: Blätter und Wege“:
   - `session` (null heißt `GameSession`) und `scene_callback` (ungültig heißt
     `change_scene_to_file()`; Analyse, C1); fünf Einträge nach FR-001; Verfügbarkeit und Hinweise
@@ -333,7 +333,7 @@ Leicht am 01.01.1985; „Zum Hauptmenü“ wählt danach „Weiterspielen“ vor
   Maus, Esc, Abbrechen legt keine Datei an (US1, Szenario 3), SC-001 mit 3 Eingaben,
   „Weiterspielen“ mit 1 Eingabe (SC-002), Meldung bei gescheitertem Anlegen. Hängt an T014, T017,
   T018 und T019.
-- [ ] T021 [A] [US2] `src/scenes/game/game_screen.tscn` und `game_screen.gd` (`GameScreen`) laut
+- [x] T021 [A] [US2] `src/scenes/game/game_screen.tscn` und `game_screen.gd` (`GameScreen`) laut
   titelbildschirm.md: Grund `nacht`, `LeaveButton` mit `knopf.gd` und `on_dark`, Lage laut
   Style-Guide (README, „Bildaufbau“; Analyse, D1), Fokus von Anfang an, Hinweis über
   `show_text()` links daneben „Speichert Spiel 2 und führt ins Hauptmenü.“ aus `TitleTexts`; Esc
@@ -341,17 +341,23 @@ Leicht am 01.01.1985; „Zum Hauptmenü“ wählt danach „Weiterspielen“ vor
   Meldung; `save_failed` und `last_error` beim Erscheinen zeigen die Meldung. Test
   `src/test/test_game_screen.gd` nach titelbildschirm.md. Hängt an T014, T018 und T019 (Analyse,
   F8).
-- [ ] T022 [A] [US1] Bildschirmfotos und Platz laut titelbildschirm.md, „Bildschirmfotos und
+- [x] T022 [A] [US1] Bildschirmfotos und Platz laut titelbildschirm.md, „Bildschirmfotos und
   Platz“, für die Teile dieser Phase: Hauptmenü ohne und mit Spielständen, Gradwahl mit dem Satz zu
   Mittel, Spielbildschirm mit Hinweis und mit Meldung; mit `scripts/fotos.gd` im Raster 640 × 360
   und dreifach, mit eigener Session und einem Ordner unter `user://test_fotos/`, nie mit den echten
   Spielständen (Analyse, C7); dazu die Aussage, ob jede Zeile und jeder Hinweis in sein Feld passt.
   Ins Repo kommt kein Foto.
-- [ ] T023 [C] [US1] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`, Pilot: Stil-Prüfer mit README,
+- [x] T023 [C] [US1] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`, Pilot: Stil-Prüfer mit README,
   Bausteinen Menü, Hinweis, Knopf, Meldung und `tokens.json`; Text-Prüfer mit `Sprache.md` und der
   Textliste aus `title_texts.gd`, `game_screen.gd` und `title_screen.tscn` (Analyse, F19); Befunde
   nachprüfen, bestätigte an den Agent, zählen für `ki_pruefung.md`, „Nachmessen“.
-- [ ] T024 [K] [US1] Phase 4 abnehmen nach quickstart.md, Abschnitte 1, 2 und 3.1.
+- [x] T024 [K] [US1] Phase 4 abnehmen nach quickstart.md, Abschnitte 1, 2 und 3.1.
+
+Erledigt am 2026-10-26, von Klaus abgenommen: 853 Tests zweimal grün, Startprobe still, Hauptmenü
+vor und nach dem Umbau des Papiers Pixel für Pixel gleich. Erste Phasenprüfung mit Stil- und
+Text-Prüfer; Klaus hat entschieden: Rückfrage mit dem Namen vorn, kein Loch an der Unterkante,
+Hinweis am allein stehenden Knopf ab der Fokuslinie (Style-Guide, Version 27). „Spiel laden“
+tut bis T026 noch nichts.
 
 **Checkpoint**: Ein neues Spiel lässt sich beginnen, verlassen und mit „Weiterspielen“ fortsetzen
 (US1, US2). Abnahme durch Klaus, dann Auftrag für Phase 5.

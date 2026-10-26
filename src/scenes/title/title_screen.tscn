@@ -4,36 +4,10 @@
 [ext_resource type="Texture2D" path="res://assets/images/title_t01.png" id="2_title_t01"]
 [ext_resource type="Texture2D" path="res://assets/images/logo_ladenschild.png" id="3_logo"]
 [ext_resource type="PackedScene" path="res://scenes/title/main_menu.tscn" id="4_main_menu"]
-[ext_resource type="Script" path="res://scenes/title/menu_entry.gd" id="5_menu_entry"]
 [ext_resource type="PackedScene" path="res://scenes/title/menu_hint.tscn" id="6_menu_hint"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_subtitle_indent"]
 content_margin_left = 4.0
-
-[sub_resource type="Resource" id="Resource_new_game"]
-script = ExtResource("5_menu_entry")
-id = &"new_game"
-label = "Neues Spiel"
-hint = "Der Laden hat noch zu. Bald kannst du ihn eröffnen."
-
-[sub_resource type="Resource" id="Resource_load_game"]
-script = ExtResource("5_menu_entry")
-id = &"load_game"
-label = "Spiel laden"
-hint = "Noch keine Spielstände. Speichern kommt bald."
-
-[sub_resource type="Resource" id="Resource_settings"]
-script = ExtResource("5_menu_entry")
-id = &"settings"
-label = "Einstellungen"
-hint = "Noch nichts einzustellen. Kommt später."
-
-[sub_resource type="Resource" id="Resource_quit"]
-script = ExtResource("5_menu_entry")
-id = &"quit"
-label = "Beenden"
-available = true
-hint = "Laden abschließen und zurück zum Desktop."
 
 [node name="TitleScreen" type="Control"]
 layout_mode = 3
@@ -75,8 +49,15 @@ layout_mode = 0
 offset_left = 472.0
 offset_top = 150.0
 offset_right = 616.0
+offset_bottom = 270.0
+
+[node name="DifficultySheet" parent="." instance=ExtResource("4_main_menu")]
+visible = false
+layout_mode = 0
+offset_left = 472.0
+offset_top = 150.0
+offset_right = 616.0
 offset_bottom = 250.0
-entries = Array[ExtResource("5_menu_entry")]([SubResource("Resource_new_game"), SubResource("Resource_load_game"), SubResource("Resource_settings"), SubResource("Resource_quit")])
 
 [node name="MenuHint" parent="." instance=ExtResource("6_menu_hint")]
 layout_mode = 0
@@ -94,4 +75,6 @@ grow_vertical = 0
 theme_type_variation = &"VersionLine"
 
 [connection signal="entry_activated" from="MainMenu" to="." method="_on_main_menu_entry_activated"]
-[connection signal="selection_changed" from="MainMenu" to="." method="_on_main_menu_selection_changed"]
+[connection signal="selection_changed" from="MainMenu" to="." method="_on_sheet_selection_changed"]
+[connection signal="entry_activated" from="DifficultySheet" to="." method="_on_difficulty_sheet_entry_activated"]
+[connection signal="selection_changed" from="DifficultySheet" to="." method="_on_sheet_selection_changed"]

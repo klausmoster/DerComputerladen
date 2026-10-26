@@ -1,0 +1,34 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/game/game_screen.gd" id="1_game_screen"]
+[ext_resource type="Script" path="res://ui/knopf.gd" id="2_knopf"]
+[ext_resource type="PackedScene" path="res://scenes/title/menu_hint.tscn" id="3_menu_hint"]
+
+[node name="GameScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_game_screen")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+
+[node name="LeaveButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 270.0
+offset_top = 170.0
+offset_right = 371.0
+offset_bottom = 190.0
+script = ExtResource("2_knopf")
+on_dark = true
+
+[node name="MenuHint" parent="." instance=ExtResource("3_menu_hint")]
+layout_mode = 0
+
+[connection signal="pressed" from="LeaveButton" to="." method="_on_leave_button_pressed"]

@@ -41,6 +41,26 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
 - Verworfen: „Grad“ und „Schwierigkeitsgrad“ seien zwei Wörter für dasselbe. „Gradwahl“ ist nur
   der Name im Vertrag; der Spieler liest SCHWIERIGKEIT und die Grade selbst.
 
+### Feature 004, Phasenprüfung Phase 4 (2026-10-26)
+
+- **„Spiel laden“ tut in Phase 4 noch nichts** (Text-Prüfer, bestätigt): Mit Spielständen ist der
+  Eintrag verfügbar, sein Hinweis verspricht die Liste, die erst mit T026 kommt. Erledigt sich mit
+  Phase 5; bis dahin nur für die Abnahme von Phase 4 wichtig.
+- **Lücken in „Sprache“** (Text-Prüfer), je mit Empfehlung, keine blockiert:
+  - Hinweis einer Zeile der Spielstände: Er nennt „zuletzt gespielt“, sagt aber nicht, was Enter
+    tut, und erklärt das Spieldatum nicht. Empfehlung: in Phase 5 messen, ob „Spielt am 14.03.1986
+    weiter. Zuletzt gespielt am …“ in zwei Zeilen passt; sonst so lassen.
+  - Gleiche Wörter: „Weiterspielen“, „fortsetzen“ und „laden“ für dieselbe Handlung; „Noch kein
+    Spiel angefangen.“ und „Noch keine Spielstände.“ für denselben Zustand. Gehört zur offenen
+    Regel „Dasselbe heißt überall gleich“ (Phase 3).
+  - Satzform der Hinweise (Infinitiv, Imperativ, dritte Person) ist nicht geregelt. Empfehlung:
+    „Ein Hinweis sagt im Infinitiv, was der Eintrag tut; Gründe und Zustände als Aussagesatz.“
+  - Ob der Wortschatz der Zeit auch für Texte über den echten Rechner gilt („Desktop“, „Esc“).
+- **Erledigt durch Klaus' Entscheidungen** (Stil-Prüfer): Lochrand an der Unterkante und Abstand
+  des Hinweises zum allein stehenden Knopf, siehe „Erledigt“.
+- **Für Phase 5 merken:** Die Meldung „Löschen ging nicht. Der Spielstand ist noch da.“ stimmt
+  nicht, wenn `delete()` mit `ERR_FILE_NOT_FOUND` endet, weil die Datei schon weg ist.
+
 ### Feature 004, Phasenprüfung Phase 3 (2026-10-26)
 
 Lücken im Style-Guide, die der Text-Prüfer gemeldet und Claude bestätigt hat; keine blockiert:
@@ -518,6 +538,18 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
   Seed ab, statt zu würfeln; ohne Katalog läuft das Spiel wie mit einem leeren; `set_date()` setzt
   auch den Rest des angefangenen Tags zurück.
 
+### Feature 004, Phase 4 (2026-10-26)
+
+- **Auslegungen des Agents zu T017 bis T019, angenommen:** Die Fokuslinie am Knopf liegt wie in
+  `bundle.css` einen Pixel neben dem Knopf (ein Pixel Luft, dann die Linie). Relief ein Pixel
+  innerhalb der Kontur, Innenabstand 9 links und rechts, 2 oben und unten, gedrückt 3 und 1.
+  `TitleTexts` hält auch Kopfzeilen und Einträge; die Namen der Grade kommen aus
+  `Difficulty.label()`.
+- **Ausgeschalteter Knopf zeigt den Pfeil:** Der Vertrag sagte „immer die Hand“, der Style-Guide
+  „keine Reaktion beim Überfahren“. Der Style-Guide gilt; umgesetzt mit T021.
+- **Lücke im Style-Guide:** Der `pixelschatten` des Hinweises ist `tusche` und auf `nacht` (dem
+  Spielbildschirm) kaum zu sehen. Für den Stil-Prüfer in T023.
+
 ### KI-Workflow, Schritte 1 und 2 (2026-10-22)
 
 - **Phasenprüfung als Punkt 8:** In `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, steht sie
@@ -529,6 +561,14 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 
 ## Erledigt
 
+- **Lochrand und Abstand am Knopf (Phasenprüfung Phase 4):** Klaus, 2026-10-26, nach Empfehlung:
+  Ein Loch, das die Unterkante eines Blatts berühren würde, entfällt; beim allein stehenden Knopf
+  zählen die 4 Pixel bis zum Hinweis ab der Fokuslinie. Steht im Style-Guide (Bildrahmen,
+  Hinweis; Version 27).
+- **Rückfrage mit dem Namen vorn (Phase 4):** Klaus, 2026-10-26, nach Empfehlung: „Spiel 2 bleibt:
+  Schwer, 14.03.1986. Esc geht auch.“ und „Spiel 2 ist danach weg: Schwer, 14.03.1986. Für
+  immer.“ Die alte Fassung brauchte mit „Spiel 9999“ drei Zeilen. Steht im Style-Guide (Menü,
+  Version 26), research.md (R14) und im Vertrag.
 - **Meldung beim Beenden (Phasenprüfung Phase 3):** Klaus, 2026-10-26: Scheitert beim Beenden
   das Speichern, zeigt das Spiel nur den Fehler, dieselbe Meldung wie sonst („Speichern ging nicht.
   Dein Spiel läuft weiter.“). Ein zweites Beenden endet ohne Speichern, ohne dass die Meldung das

@@ -378,8 +378,10 @@ nicht in eine Zeile des Menüs.
 
 **Entscheidung:** Die Rückfrage ist ein Blatt mit der Kopfzeile LÖSCHEN? und den Einträgen
 „Abbrechen“ (vorgewählt) und „Spiel 2 löschen“. Die Hinweise nennen Name, Grad und Spieldatum:
-„Spiel 2, Schwer, 14.03.1986, bleibt. Esc geht auch.“ und „Spiel 2, Schwer, 14.03.1986, ist danach
-weg. Für immer.“ (Checkliste, CHK031) Bei einem nicht fortsetzbaren Spielstand steht statt Grad und
+„Spiel 2 bleibt: Schwer, 14.03.1986. Esc geht auch.“ und „Spiel 2 ist danach weg: Schwer,
+14.03.1986. Für immer.“ (Klaus, 2026-10-26, in Phase 4). Bis dahin stand „Spiel 2, Schwer,
+14.03.1986, bleibt. …“ (Checkliste, CHK031); der Test mit dem echten Hinweis zeigte, dass das mit
+„Spiel 9999“ drei Zeilen braucht. Gemessen hatte der Plan mit einer Schätzung des Umbruchs. Bei einem nicht fortsetzbaren Spielstand steht statt Grad und
 Spieldatum sein Zustand, „beschädigt“ oder „neuere Version“: „Spiel 3, beschädigt, bleibt. Esc geht
 auch.“ und „Spiel 3, neuere Version, ist danach weg. Für immer.“ (Analyse, C9; alle gemessen auf
 zwei Zeilen). „Abbrechen“ übernimmt die Rolle von „Zurück“ aus FR-023; Esc wirkt genauso

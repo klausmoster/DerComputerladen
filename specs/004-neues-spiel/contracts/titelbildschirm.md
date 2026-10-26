@@ -239,8 +239,8 @@ Text-Prüfer prüft sie in der Phase. Die Sätze zu den Graden hat Klaus entschi
 | Liste, Löschen … | „Einen Spielstand löschen. Vorher fragt das Spiel nach.“ |
 | Löschen …, im Löschmodus | „Wähl oben den Spielstand, der weg soll. Esc bricht ab.“ |
 | Liste im Löschmodus, Zeile | „Spiel 2 wird gelöscht. Vorher fragt das Spiel nach.“ |
-| Rückfrage, Abbrechen | „Spiel 2, Schwer, 14.03.1986, bleibt. Esc geht auch.“ |
-| Rückfrage, Spiel 2 löschen | „Spiel 2, Schwer, 14.03.1986, ist danach weg. Für immer.“ |
+| Rückfrage, Abbrechen | „Spiel 2 bleibt: Schwer, 14.03.1986. Esc geht auch.“ (Klaus, 2026-10-26: vorher „Spiel 2, Schwer, 14.03.1986, bleibt. …“, mit „Spiel 9999“ drei Zeilen) |
+| Rückfrage, Spiel 2 löschen | „Spiel 2 ist danach weg: Schwer, 14.03.1986. Für immer.“ |
 | Rückfrage, Abbrechen, nicht fortsetzbar | „Spiel 3, beschädigt, bleibt. Esc geht auch.“, bei zu neuen „neuere Version“ statt „beschädigt“ |
 | Rückfrage, löschen, nicht fortsetzbar | „Spiel 3, beschädigt, ist danach weg. Für immer.“, bei zu neuen „neuere Version“ |
 | Liste, Spalten Grad und Spieldatum, nicht fortsetzbar | „beschädigt“ oder „neuere Version“ |

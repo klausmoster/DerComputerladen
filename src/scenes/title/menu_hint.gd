@@ -1,16 +1,17 @@
 class_name MenuHint
 extends PanelContainer
 
-## Der Hinweis zur gewählten Zeile des Hauptmenüs (Baustein Hinweis im Style-Guide).
+## Der Hinweis zur gewählten Zeile eines Menüs, einer Liste oder neben einem Knopf (Baustein
+## Hinweis im Style-Guide), und an derselben Stelle die Meldung (Baustein Meldung).
 ##
 ## Er steht links neben der Zeile, 4 Pixel davor und oben bündig, erscheint ohne
-## Verzögerung und bleibt stehen, bis `show_for()` mit einer anderen Zeile kommt.
-## Godots eingebauter Tooltip passt dafür nicht: Er erscheint nur für die Maus und erst
-## nach einer Wartezeit (research.md, R10).
+## Verzögerung und bleibt stehen, bis `show_for()` oder `show_text()` mit einer anderen
+## Zeile kommt. Godots eingebauter Tooltip passt dafür nicht: Er erscheint nur für die Maus
+## und erst nach einer Wartezeit (Feature 001, research.md, R10).
 ##
-## Feld, Kontur und Innenabstand kommen aus der Theme-Variante `HintPanel`, die Schrift
-## aus `HintLabel`. Den pixelschatten malt `_draw()`, denn der Schatten einer
-## StyleBoxFlat ist weich.
+## Feld, Kontur und Innenabstand kommen aus der Theme-Variante `HintPanel`, bei einer
+## Meldung aus `WarningPanel` (Kontur kassenrot statt tusche), die Schrift aus `HintLabel`.
+## Den pixelschatten malt `_draw()`, denn der Schatten einer StyleBoxFlat ist weich.
 
 ## Abstand zwischen der rechten Kante des Hinweises und der Zeile.
 const GAP := 4
@@ -20,6 +21,10 @@ const GAP := 4
 const MAX_TEXT_WIDTH := 150
 ## pixelschatten: harter Versatz nach rechts unten, ohne Unschärfe.
 const SHADOW_OFFSET := 2
+
+## Ob gerade eine Meldung steht, und neben welcher Zeile.
+var _warning := false
+var _warning_row := Rect2()
 
 @onready var _text: Label = $Text
 
@@ -41,14 +46,46 @@ func _draw() -> void:
 ## Zeigt den Hinweis von [param entry] links neben [param row_rect]: die rechte Kante
 ## 4 Pixel vor der Zeile, die Oberkanten bündig. [param row_rect] ist global.
 func show_for(entry: MenuEntry, row_rect: Rect2) -> void:
-	_set_text(entry.hint)
+	show_text(entry.hint, row_rect)
+
+
+## Zeigt [param text] als Hinweis neben [param row_rect], wie show_for(), aber ohne MenuEntry. Für
+## die Liste und den Knopf; show_for() ruft es mit entry.hint auf.
+##
+## Steht neben derselben Zeile gerade eine Meldung, bleibt sie: Baut ein Blatt nach einem Fehler
+## seine Zeilen neu und meldet dieselbe Zeile noch einmal, soll die Meldung nicht verschwinden.
+## Wer danach etwas auslöst, räumt sie mit hide_hint() weg.
+func show_text(text: String, row_rect: Rect2) -> void:
+	if _warning and row_rect == _warning_row:
+		return
+	_warning = false
+	_show(text, row_rect, &"HintPanel")
+
+
+## Zeigt [param text] als Meldung an der Stelle des Hinweises: Kontur kassenrot (Theme-Variante
+## WarningPanel), sonst wie show_text(). Sie bleibt, bis show_for() oder show_text() mit einer
+## anderen Zeile kommt.
+func show_warning(text: String, row_rect: Rect2) -> void:
+	_warning = true
+	_warning_row = row_rect
+	_show(text, row_rect, &"WarningPanel")
+
+
+## Blendet Hinweis und Meldung aus.
+func hide_hint() -> void:
+	_warning = false
+	hide()
+
+
+## Setzt Feld und Text und stellt den Kasten links neben [param row_rect].
+func _show(text: String, row_rect: Rect2, panel: StringName) -> void:
+	# Hinweis und Meldung unterscheiden sich nur im Feld. Die Theme-Variante zu wechseln ist
+	# einfacher als ein zweiter Knoten, und die Innenabstände sind gleich, die Größe also auch.
+	theme_type_variation = panel
+	_set_text(text)
 	reset_size()
 	global_position = Vector2(row_rect.position.x - GAP - size.x, row_rect.position.y)
 	show()
-
-
-func hide_hint() -> void:
-	hide()
 
 
 ## Setzt den Text und seine Breite: so breit wie der Text in einer Zeile, höchstens

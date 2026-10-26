@@ -175,3 +175,81 @@ nichts und haben deshalb keine Notiz.
 - **Signal und Feld:** `save_failed` meldet einen Fehler an den, der gerade zuhört; `last_error`
   hält denselben Satz für den, der erst danach erscheint, etwa den Spielbildschirm nach dem
   Fortsetzen.
+
+## Phase 4
+
+### T017 `MenuPaper` und `MainMenu` zur Laufzeit
+
+- `MenuPaper` erbt von `RefCounted`, wird aber nie mit `new()` angelegt; es gibt nur Konstanten und
+  `static func`. Malen darf ein Control nur in seinem eigenen `_draw()`. Deshalb gibt
+  `MainMenu._draw()` sich selbst als `canvas` mit, und `MenuPaper` ruft `canvas.draw_rect(...)`
+  auf. So malen Menü und Liste dasselbe Papier, ohne voneinander zu erben.
+- `@export` mit Setter (`header_text`, `paper_width`): Der Setter läuft auch, wenn Godot die Szene
+  lädt, bevor `$Rows/Header` existiert. Deshalb fragt er erst `is_node_ready()`, und `_ready()` holt
+  den Wert nach.
+- `set_entries()` meldet die gewählte Zeile sofort; `_row_rect()` rechnet sie deshalb aus der Lage
+  des Menüs, denn der `VBoxContainer` ordnet neue Buttons erst im nächsten Bild an.
+- Das Hauptmenü ist vor und nach dem Umbau fotografiert und Pixel für Pixel verglichen: gleich.
+
+### T018 Knopf und Meldung
+
+- Ein Button malt zuerst seinen StyleBox und den Text, danach ruft Godot das `_draw()` des
+  Skripts. Fläche und Kontur kommen deshalb aus `StyleBoxFlat` (Theme-Variante `Knopf`); `_draw()`
+  malt nur, was eine `StyleBoxFlat` nicht kann: die Lichtkante oben links, die Schattenkante unten
+  rechts und die Fokuslinie außerhalb des Knopfs. Ein Control darf über seinen Rand hinaus malen.
+- Dass der Text beim Drücken einen Pixel tiefer rückt, macht nur das Theme: Der StyleBox `pressed`
+  hat oben 3 statt 2 Innenabstand und unten 1 statt 2.
+- `has_focus(true)` ist falsch, wenn der Fokus von einem Mausklick kommt; die Fokuslinie erscheint
+  also wie `:focus-visible` nur bei Tastatur oder `grab_focus()`.
+- Die Meldung ist kein eigener Knoten: `MenuHint` wechselt nur `theme_type_variation` zwischen
+  `HintPanel` und `WarningPanel`.
+
+### T019 `TitleTexts`: Texte an einer Stelle, gemessen statt geschätzt
+
+- Die Vorlagen nutzen benannte Platzhalter mit `String.format()`, etwa
+  `"{name} löschen".format({"name": …})`; das liest sich für Text-Prüfer besser als `%s`.
+- Der Test holt die Texte über `get_script_constant_map()` aus den Skripten. Ein neuer `HINT_*`
+  wird ohne Änderung am Test mitgeprüft.
+- Gemessen wird mit dem echten `menu_hint.tscn` und `Label.get_line_count()`, also mit derselben
+  Schrift, Breite und Umbruchregel wie im Spiel. Nur so fiel auf, dass die Rückfrage mit „Spiel
+  9999“ drei Zeilen braucht; die Rechnung im Plan mit Wortbreiten hatte zwei ergeben.
+
+### T020 Titelbildschirm mit Blättern
+
+- **Zwei Instanzen einer Szene:** `MainMenu` und `DifficultySheet` sind dieselbe `main_menu.tscn`;
+  nur `header_text` und die Einträge unterscheiden sich. Ein Blatt ist also Daten statt Code.
+  Gewechselt wird über `visible`.
+- **Erst verbergen, dann zeigen:** Ein Control, das unsichtbar wird, gibt den Fokus ab, auch den
+  eines Buttons darin. So hat das verborgene Blatt nie Tastenfokus; danach ruft `_show_only()`
+  `select()` auf dem sichtbaren Blatt.
+- **Ein Handler für zwei Signale:** Beide `selection_changed` sind mit `_on_sheet_selection_changed`
+  verbunden. Der Hinweis gehört dem Titel, nicht einem Blatt.
+- **Esc in `_unhandled_input()`:** Die Taste kommt dort an, wenn kein Bedienelement sie genommen
+  hat. Nur der Titel weiß, welche Ebene darüber liegt; `set_input_as_handled()` hält sie danach von
+  anderen fern.
+- **`call_deferred` hält den Wert der Bestellung fest:** `MainMenu._ready()` bestellt
+  `select.call_deferred(0)`. Ein `set_entries()` im `_ready()` des Titels würde danach
+  überschrieben; deshalb baut der Titel seine Blätter mit `_build_sheets.call_deferred()`.
+  Zeitversetzte Aufrufe laufen in der Reihenfolge ihrer Bestellung.
+- **`session` und `scene_callback`** sind Einhängepunkte für Tests, wie `GameSession.clock` und
+  `quit_callback`: null bzw. ungültig heißt das Autoload bzw. `change_scene_to_file()`.
+
+### T021 Spielbildschirm
+
+- Die Szene ist `Control` → `ColorRect`, `Button` mit Skript `knopf.gd`, `MenuHint`. `knopf.gd`
+  ist ein Skript auf einem eingebauten `Button`; ein eigener Knopftyp ist nicht nötig.
+- `pressed` ist in der `.tscn` verbunden, `save_failed` im Code, denn die Session steht erst zur
+  Laufzeit fest. Wird der Bildschirm freigegeben, löst Godot die Verbindung zum Autoload selbst.
+- **Signal plus Zustand:** Scheitert das Speichern schon beim Fortsetzen, kommt `save_failed`,
+  bevor der Bildschirm existiert. Deshalb liest `_ready()` zusätzlich `last_error`; ein Signal
+  allein geht verloren, wenn noch niemand zuhört.
+- Ein ausgeschalteter Knopf zeigt den Pfeil: Für `disabled` gibt es kein Signal, aber Godot malt
+  den Knopf nach jedem Umschalten neu, deshalb setzt `_draw()` den Mauszeiger.
+
+### T022 Bildschirmfotos
+
+- Ein Skript, das mit `-s` startet, wird übersetzt, bevor Godot die Namen der Autoloads kennt.
+  `preload("res://core/game_session.gd")` scheitert dort an „Identifier not found: GameClock“; die
+  Kopie des Fotoskripts lädt die Skripte deshalb erst zur Laufzeit mit `load()`.
+- Headless rendert Godot nicht; fotografiert wird mit Fenster, das Bild kommt aus
+  `root.get_texture().get_image()` im Raster 640 × 360, die dreifache Fassung mit Nearest.
