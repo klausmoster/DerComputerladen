@@ -546,11 +546,11 @@ letzte Phase.
   „Ablauf je Feature“, Punkt 6). Die Lernnotizen aller Phasen stehen vollständig in
   `specs/003-schwierigkeitsgrade/lernnotizen.md`. Gefundene Lücken werden eine eigene Phase mit
   Klaus' Freigabe, die vor T034 fertig ist.
-- [ ] T034 [K] Quickstart vollständig durchgehen, Abschnitte 1 bis 5, dazu den Quickstart von
+- [x] T034 [K] Quickstart vollständig durchgehen, Abschnitte 1 bis 5, dazu den Quickstart von
   Feature 002 mit den zwei bekannten Ausnahmen (quickstart.md, Einleitung). Für 4.1 braucht es
   eine Kopie mit geleerten Profilen, für 4.2 und 4.3 eine mit den echten (quickstart.md,
   Voraussetzungen). Hängt an T033 und an der Phase für Lücken, falls es eine gibt (Analyse, I9).
-- [ ] T035 [K] Feature abnehmen: Die Abnahmen T008, T013, T022, T027, T031 und T034 sind erledigt,
+- [x] T035 [K] Feature abnehmen: Die Abnahmen T008, T013, T022, T027, T031 und T034 sind erledigt,
   Leicht und Schwer im echten Katalog sind gefüllt. Dann entscheidet Klaus über den Merge nach
   `main`.
 

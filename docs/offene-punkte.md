@@ -330,6 +330,9 @@ Auslegungen des Agents, die Claude angenommen hat:
 
 ## Erledigt
 
+- **Feature 003 abgenommen:** Klaus, 2026-10-26 (T035). Alle Phasen 1 bis 8 sind abgenommen
+  oder geprüft und committet; T034 lief automatisiert mit wenigen Handgriffen von Klaus. Über den
+  Merge nach `main` entscheidet Klaus; diese Sitzung wechselt den Branch nicht.
 - **Analyse von Feature 003:** Klaus, 2026-10-22: alle 41 Befunde nach Empfehlung einarbeiten.
   Eingearbeitet in Spec, Plan, research.md, Datenmodell, Verträge, Quickstart, Checkliste und
   tasks.md, jetzt mit T001 bis T035. Zusammengefasst im Plan unter „Änderungen nach der Analyse“;
