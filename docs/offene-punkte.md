@@ -30,6 +30,13 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   zusammen −2, Schwer +3). Er stellt sie später mit der Statistik ein, die mit Phase 5 die Grade
   vergleicht.
 
+### Feature 003, Lückensuche (2026-10-26)
+
+- **Mögliche Schieflage der Würfel (Feature 002, `EventDice`):** Über die Seeds 1 bis 4.000 liegt
+  die Reklamationswelle mit 3 % pro Monat im Mittel bei 5,508 statt 5,4 und mit Schwer bei 14,579
+  statt 14,4, beides etwa drei Standardabweichungen darüber. SC-003 ist trotzdem klar erfüllt.
+  Empfehlung: später einmal die Würfel je Kennung prüfen; für Feature 003 nichts zu tun.
+
 ### Ältere Punkte aus Claudes bisherigem lokalem Gedächtnis
 
 - **Spielfenster ragt 6 Pixel in den Bereich des Docks** (Feature 002, Abnahme von Phase 4,
@@ -136,7 +143,8 @@ Stellen.
     `JSON.stringify(to_list())` als Sonderfall. `_text_of()` ruft es wie bei Ereignissen und
     Kategorien.
   - **FilterBar im Simulator (G10, R13):** Sie bricht nicht um und wird nicht breiter als bisher;
-    `%CompareLabel` kürzt mit „…“ und zeigt den Text beim Überfahren ganz.
+    `%CompareLabel` kürzt mit „…“ und zeigt den Text beim Überfahren ganz. Gilt bis Phase 4;
+    seither bricht sie in der kleinen Größe um (siehe „Feature 003, Phase 4, Oberfläche“).
 - **Festgelegt, wo der Bericht offen ließ:**
   - **Kein Vergleichslauf (A3, R13):** „Kein Vergleich: Der Lauf hat keine Eingriffe.“ Bei
     Mittel mit Häkchen gelten die Texte von Feature 002.
@@ -235,8 +243,9 @@ Auslegungen des Agents, die Claude angenommen hat:
   Texts allein reichte nicht, das Häkchen braucht 176 px. In 1280 × 720 bricht die Leiste jetzt in
   zwei Zeilen um, statt aus dem Fenster zu ragen; bei 1920 × 925 bleibt sie einzeilig. Steht im
   Vertrag.
-- **Entschieden von Klaus (T027, 2026-10-23): stört nicht.** Mit Schwer wird die Zeile zur Chance bei 1920 × 925 vier statt zwei
-  Zeilen hoch; der Simulator wächst um 46 px, die dem Zeitstrahl fehlen. Mit Mittel bleibt alles.
+- **Entschieden von Klaus (T027, 2026-10-23): stört nicht.** Mit Schwer wird die Zeile zur Chance
+  bei 1920 × 925 vier statt zwei Zeilen hoch; der Simulator wächst um 46 px, die dem Zeitstrahl
+  fehlen. Mit Mittel bleibt alles.
 - Auslegungen des Agents, die Claude angenommen hat:
   - `%ExcludedNotice` nennt weggelassene Start-Modifikatoren aller Profile, mit dem Grad im Ort.
   - „Katalog geändert“ merkt auch, wenn nur eine Lesemeldung zu einem Profil verschwindet.
@@ -265,9 +274,39 @@ Auslegungen des Agents, die Claude angenommen hat:
   - Beim Vergleich hat jede Zelle einen eigenen Hinweis, nicht nur jede Spalte.
   - Ob die Tabelle vergleicht, entscheidet die Rechnung, die dasteht, nicht die Auswahl.
   - In 1280 × 720 rollt die Vergleichstabelle waagerecht.
-- **Bilder:** Am Rechner hing beim Fotografieren nur der eingebaute Bildschirm; die Bilder entstanden
-  bei Faktor 1 in 1920 × 924. Die Breiten sind dieselben wie bei Faktor 2; die Schrift prüft Klaus in
-  T031 am großen Monitor.
+- **Bilder:** Am Rechner hing beim Fotografieren nur der eingebaute Bildschirm; die Bilder
+  entstanden bei Faktor 1 in 1920 × 924. Die Breiten sind dieselben wie bei Faktor 2; die Schrift
+  prüft Klaus in T031 am großen Monitor.
+
+### Feature 003, Lückensuche (2026-10-26)
+
+15 Befunde aus T033, alle von Claude am Code bestätigt. Vier gehen als T036 bis T039 an den Agent
+(tasks.md, Phase 7). Den Rest hat Claude in der Doku nachgezogen oder hier eingetragen:
+- **Weggelassene Start-Modifikatoren nennen (K1):** Jede Meldung steht einmal da; ein
+  Start-Modifikator mit zwei Fehlern also zweimal, wie ein Ereignis. Datenmodell und R8 sind
+  präzisiert.
+- **`start_modifiers` im Lauf (K2, Claudes Entscheidung):** unveränderlich per Vereinbarung, wie
+  `modifiers` aus Feature 002; kein Schreibschutz im Code.
+- **Doppelte V31-Hinweise im Reiter (W2):** Klaus, 2026-10-26: so lassen, wie beim Simulator. Mit
+  Beginn und Ende mitten im Monat wird der Reiter bei 1920 × 925 um 47 px höher, der Zeitstrahl
+  entsprechend kleiner.
+- Zusätze der Agents, die Claude angenommen hat:
+  - `select_difficulty()` im Simulator übergeht einen unbekannten Grad still (S4).
+  - Zeilen mit Start-Modifikatoren im Simulator haben einen Hinweis „Start-Modifikator von
+    Schwer: … · Kennung …“ (S4).
+  - „Je Grad“ setzt vor „%“ ein geschütztes Leerzeichen, damit Zahl und Zeichen nicht getrennt
+    umbrechen (W4).
+  - Im Reiter: Hinweise an der Gradauswahl, an „Neu“ und an den Zellen Ereignis, Grund und
+    Kennung; Platzhalter „TT.MM.JJJJ“ auch an „Beginn“ (W5).
+  - Ein Start-Modifikator ohne Kennung bekommt beim Duplizieren eine Kennung aus seinem Ereignis,
+    ersatzweise `start_modifikator` (W5).
+  - Ein Feld, das mit `profiles[` beginnt, gilt als Profilfeld (W5).
+  - Der Test `test_im_kleinen_fenster_passt_jeder_reiter_in_die_breite` (W5).
+- Auslegungen des Agents in Phase 7, die Claude angenommen hat:
+  - **T036:** Nach dem Übernehmen einer Sicherungskopie gelten die Lesemeldungen beider Profile
+    nicht mehr, ohne Vergleich des Inhalts; das Profil kommt dann aus der Kopie.
+  - **T037:** Der Löschdialog zählt die Kennung selbst (`_has_twin()`), dieselbe Regel wie
+    `delete_event()`; ein Test hält beide zusammen. „zweiten Ereignis“ gilt auch bei dreien.
 
 ## Erledigt
 

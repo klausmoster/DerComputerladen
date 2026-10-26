@@ -7,8 +7,8 @@ extends GutTest
 ## Liste, Prüfung, Zeitstrahl und Formular (T076, T077, T080), der Zeitstrahl in der Werkstatt
 ## (T049) und der Simulator (T054): Er rechnet, ohne Spieluhr und Katalog anzufassen, und sein
 ## Protokoll ist das der Textausgabe. Aus Feature 003 (T017) kommt der Reiter
-## „Schwierigkeitsgrade“ dazu: sein Platz, der Sprung aus der Prüfung, der Löschdialog und der Grad
-## in der Spalte „Ereignis“ der Prüfung.
+## „Schwierigkeitsgrade“ dazu: sein Platz, der Sprung aus der Prüfung, der Löschdialog, auch bei
+## doppelter Kennung (T037), und der Grad in der Spalte „Ereignis“ der Prüfung.
 ##
 ## Jeder Test öffnet eine Kopie eines Test-Katalogs in einem eigenen Ordner unter user:// und setzt
 ## diesen Ordner auch für die Sicherungskopien, dazu eine eigene Einstellungsdatei, bevor die Szene
@@ -1854,6 +1854,40 @@ func test_loeschdialog_nur_mit_start_modifikatoren() -> void:
 	assert_eq(dialog.dialog_text, "„Windows 95 erscheint“ löschen?\n\nRückgängig holt alles "
 		+ "zurück.")
 	dialog.hide()
+
+
+func test_loeschdialog_bei_doppelter_kennung_sagt_dass_die_verweise_bleiben() -> void:
+	# Arrange: T037. Vor der Reklamationswelle steht von Hand ein zweites Ereignis mit ihrer Kennung
+	# (V02). Es steht in der Liste vorn und wird gelöscht; die Verweise gelten dann der echten.
+	var zweites := ("{\"category\": \"reklamation\", \"date\": \"1994-03-07\", \"description\": "
+		+ "\"\", \"duration_days\": 0, \"effects\": [], \"follow_ups\": [], \"id\": "
+		+ "\"reklamationswelle\", \"kind\": \"fixed\", \"title\": \"Zweite Reklamationswelle\"},")
+	_schreiben(ORDNER + "katalog.json", FileAccess.get_file_as_string(GRADE).replace(
+		"\"events\": [", "\"events\": [\n\t\t" + zweites))
+	var werkstatt := await _werkstatt("")
+	assert_not_null(_erste_meldung(werkstatt, "V02"), "Die Kennung gibt es zweimal.")
+	var vorher := werkstatt.editor.catalog.to_json()
+
+	# Act
+	werkstatt._on_delete_requested("reklamationswelle")
+
+	# Assert
+	var dialog: ConfirmationDialog = _node(werkstatt, "%DeleteDialog")
+	assert_eq(dialog.dialog_text, "„Zweite Reklamationswelle“ löschen?\n\nDarauf verweisen: "
+		+ "„Kundenflucht“. In den Profilen: Leicht: Nachsichtige Kunden, Schwer: Anspruchsvolle "
+		+ "Kunden. Diese Verweise bleiben stehen, denn die Kennung „reklamationswelle“ gehört noch "
+		+ "zu einem zweiten Ereignis.\n\nRückgängig holt alles zurück.")
+
+	# Act und Assert: Der Dialog sagt, was delete_event() tut.
+	dialog.get_ok_button().pressed.emit()
+	var katalog := werkstatt.editor.catalog
+	assert_eq(katalog.get_event("reklamationswelle").title, "Reklamationswelle",
+		"Gelöscht ist das vordere der beiden.")
+	assert_eq(katalog.get_event("kundenflucht").conditions.size(), 1, "Die Bedingung bleibt.")
+	assert_eq(katalog.get_profile(Difficulty.Level.LEICHT).modifiers.size(), 1)
+	assert_eq(katalog.get_profile(Difficulty.Level.SCHWER).modifiers.size(), 1)
+	werkstatt.editor.undo()
+	assert_eq(werkstatt.editor.catalog.to_json(), vorher)
 
 
 # --- Helfer -----------------------------------------------------------------------------------

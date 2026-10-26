@@ -542,7 +542,7 @@ letzte Phase.
     - 11-05 sagt, dass die Grade der Zeitleiste mit Feature 003 gebaut sind;
     - 11-01 sagt, dass Spielstände den Grad speichern.
   - `docs/game_design.md`: die offene Frage „Schwierigkeitsgrade?“ nur mit Klaus' OK.
-- [ ] T033 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`docs/ki_dev.md`,
+- [x] T033 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`docs/ki_dev.md`,
   „Ablauf je Feature“, Punkt 6). Die Lernnotizen aller Phasen stehen vollständig in
   `specs/003-schwierigkeitsgrade/lernnotizen.md`. Gefundene Lücken werden eine eigene Phase mit
   Klaus' Freigabe, die vor T034 fertig ist.
@@ -700,3 +700,28 @@ Task: "T012 [A] Kopfzeile und --grad in src/core/timeline/schedule_text.gd und s
   entstehen auf Kopien.
 - Neue Bausteine im Look gibt es nicht. Braucht der Agent doch einen, hält er an und fragt
   (Grundsatz IV, CHK023).
+
+---
+
+## Phase 7: Convergence
+
+Lücken aus T033 (`/speckit-converge`, 2026-10-26), von Claude am Code bestätigt und von Klaus
+freigegeben. Die Phase ist fertig, bevor Klaus in T034 den Quickstart durchgeht. Was nur die Doku
+betraf, hat Claude direkt nachgezogen (`docs/offene-punkte.md`, „Feature 003, Lückensuche“).
+
+- [x] T036 [A] [P] Nach `restore_backup()` die Lesemeldungen V22 der Profile verwerfen, damit eine
+  gemerkte Stelle nicht den falschen Start-Modifikator trifft; Test in
+  `src/test/test_catalog_editor.gd` mit `catalog_v22_profil_wert_text.json`: duplizieren,
+  Sicherung schreiben, in einem zweiten Editor öffnen und wiederherstellen, kein Start-Modifikator
+  ist danach fehlerhaft, per R10 „Lesemeldungen eines Profils“ (partial, MEDIUM, W1)
+- [x] T037 [A] [P] Löschdialog in `src/tools/werkstatt/werkstatt.gd`: Gibt es die Kennung zweimal
+  (V02), sagt er nicht „Diese Verweise werden mit entfernt.“, sondern dass die Verweise bleiben,
+  denn `delete_event()` lässt sie dann stehen; Test in `src/test/test_werkstatt_scene.gd`, per
+  werkstatt.md „Löschdialog“ und FR-017 (contradicts, LOW, W3)
+- [x] T038 [A] [P] Test in `src/test/test_simulator.gd` für die Markierung „≠ Zustand“ in beiden
+  Reihen von Texten, beim Vergleich mit demselben Grad und mit Mittel, per T026 und werkstatt.md
+  „Texte der Markierungen“ (partial, LOW, S2)
+- [x] T039 [A] [P] Kopfkommentar von `src/core/timeline/catalog_validator.gd` auf „V01 bis V31“
+  ziehen, per data-model.md „Prüfregeln“ (contradicts, LOW, K3)
+- [x] T040 [C] Die Phase prüfen: Tests zweimal, Startprobe mit `-d`, die neuen Tests gegen den
+  Fehler, den sie fangen sollen. Hängt an T036 bis T039.

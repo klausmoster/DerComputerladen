@@ -1227,6 +1227,42 @@ func test_texte_der_markierungen_beim_vergleich_mit_demselben_grad_wie_bisher() 
 		"Fällt durch die Eingriffe weg; ohne sie stünde der Termin hier.")
 
 
+func test_texte_zu_anderem_zustand_in_beiden_reihen() -> void:
+	# Arrange: T038. Schwer mit einer Absage an „Konkurrent eröffnet“. Gesetzte Termine liegen in
+	# jedem Grad am selben Tag; ohne Eingriffe tritt er dort ein, hier ist er abgesagt. Das ergibt
+	# „≠ Zustand“ beim Vergleich mit Schwer wie mit Mittel, am selben Termin.
+	var werkstatt := await _werkstatt(GRADE)
+	var simulator := _simulator(werkstatt)
+	var vergleich: Label = simulator.get_node("%CompareLabel")
+	var begruendung: Label = simulator.get_node("%DetailText")
+	_grad_waehlen(simulator, Difficulty.Level.SCHWER)
+	_erzeugen(simulator, "4711")
+	_absagen(simulator, _termin(simulator, "konkurrent_eroeffnet", ScheduleEntry.Origin.PRESET),
+		"Laden nebenan selbst gemietet")
+	_druecken(simulator, "%EndButton")
+	var konkurrent := _termin(simulator, "konkurrent_eroeffnet", ScheduleEntry.Origin.PRESET)
+	assert_eq(konkurrent.state, ScheduleEntry.State.CANCELLED)
+
+	# Assert: Vergleich mit demselben Grad: der Text aus Feature 002
+	assert_eq(vergleich.text, "Vergleich: Schwer ohne Eingriffe")
+	assert_eq(_markierung_und_text(simulator, konkurrent),
+		["≠ Zustand", "Mit den Eingriffen in einem anderen Zustand als ohne sie."])
+	_termin_waehlen(simulator, konkurrent)
+	assert_string_contains(begruendung.text,
+		"Unterschied: Mit den Eingriffen in einem anderen Zustand als ohne sie.")
+
+	# Act: mit Mittel vergleichen
+	simulator.get_node("%CompareMittel").button_pressed = true
+
+	# Assert: die zweite Reihe, die den Vergleichslauf nennt
+	assert_eq(vergleich.text, "Vergleich: Mittel ohne Eingriffe")
+	assert_eq(_markierung_und_text(simulator, konkurrent),
+		["≠ Zustand", "In einem anderen Zustand als bei Mittel ohne Eingriffe."])
+	_termin_waehlen(simulator, konkurrent)
+	assert_string_contains(begruendung.text,
+		"Unterschied: In einem anderen Zustand als bei Mittel ohne Eingriffe.")
+
+
 func test_filterleiste_bleibt_im_kleinen_fenster_so_breit() -> void:
 	# Arrange (Analyse, G10): die kleine Fenstergröße aus test_werkstatt_settings.gd
 	var werkstatt := await _werkstatt(GRADE)
@@ -1461,6 +1497,17 @@ func _texte_je_markierung(simulator: SimulatorPanel) -> Dictionary:
 		if not markierung.is_empty():
 			texte[markierung] = zeile.get_tooltip_text(0).get_slice("\n", 2)
 	return texte
+
+
+## Die Markierung in der Zeile von [param termin] und der Text dazu in ihrem Hinweis.
+func _markierung_und_text(simulator: SimulatorPanel, termin: ScheduleEntry) -> Array:
+	var tabelle: Tree = simulator.get_node("%PlanTable")
+	for zeile in tabelle.get_root().get_children():
+		if zeile.get_metadata(SimulatorPanel.PlanColumn.DATE) == termin.serial:
+			return [zeile.get_text(SimulatorPanel.PlanColumn.DIFF),
+				zeile.get_tooltip_text(0).get_slice("\n", 2)]
+	fail_test("Der Termin %d fehlt in der Tabelle." % termin.serial)
+	return []
 
 
 ## Was der Fahrplan zeigt: Zeilen mit Hinweisen, Spalten, Zahl und den Hinweis am Filter.

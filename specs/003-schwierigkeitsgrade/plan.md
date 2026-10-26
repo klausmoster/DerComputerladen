@@ -326,7 +326,9 @@ meisten Kürzel stehen auch an den Stellen, die sie geändert haben, etwa „(An
     eigenen Zweig.
   - G10: Die FilterBar bricht nicht um. Sie wird nicht breiter als bisher, und `%CompareLabel`
     kürzt seinen Text mit „…“ und zeigt ihn beim Überfahren ganz. So bleibt die Leiste einzeilig,
-    und die Tabelle darunter behält ihre Höhe.
+    und die Tabelle darunter behält ihre Höhe. Bis Phase 4: Seit 2026-10-23 ist die Leiste ein
+    `HFlowContainer` und bricht in 1280 × 720 in zwei Zeilen um; Kürzen allein reichte nicht
+    (`docs/offene-punkte.md`, „Feature 003, Phase 4, Oberfläche“).
 
   Diese zwei und die Einzelheiten, die der Bericht offen ließ, etwa die Texte zu A3 und die Regeln
   zu V31 (U7), stehen als Claudes Entscheidungen in `docs/offene-punkte.md`.

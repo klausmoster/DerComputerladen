@@ -122,7 +122,7 @@ Neu:
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `difficulty` | `Difficulty.Level` | Grad des Spiels, gesetzt in `_init()`, danach fest (Edge Case „Kein Wechsel im Spiel“) |
-| `start_modifiers` | Array[ChanceModifier] | die Start-Modifikatoren des Profils, die der Lauf gesetzt hat, als eigene Kopien in der Reihenfolge des Profils; danach unveränderlich |
+| `start_modifiers` | Array[ChanceModifier] | die Start-Modifikatoren des Profils, die der Lauf gesetzt hat, als eigene Kopien in der Reihenfolge des Profils; danach unveränderlich, per Vereinbarung wie `modifiers` aus Feature 002: Die API ändert sie nie, die Liste ist aber nicht schreibgeschützt (Lückensuche, K2) |
 | `start_refusals` | PackedStringArray | je Start-Modifikator, den der Lauf nicht setzen konnte, ein Satz mit dem Ort aus `place()` und dem Grund; meist leer (R6) |
 
 **Anlegen** (`_init(catalog, seed, difficulty)`):
@@ -238,8 +238,10 @@ Spiel, Simulator, Statistik und Textausgabe rechnen deshalb nur mit Start-Modifi
 Prüfung bestehen. Welche weggefallen sind, liefert `EventCatalog.skipped_start_modifiers(issues)`,
 je mit Grad, Stelle, Ort aus `place()` und Fehlergrund, nach derselben Regel wie oben (Analyse,
 G1). `by_event` kennzeichnet die, die ohne eigene Meldung nur wegen ihres Ereignisses wegfallen.
-Zeitleiste und Textausgabe nennen jeden genau einmal: mit seiner eigenen Meldung oder, mit
-`by_event`, aus dieser Liste (FR-013). Simulator und Statistik nennen alle im Hinweis auf
+Zeitleiste und Textausgabe geben jede Meldung der Stufe ERROR einmal aus; ein Start-Modifikator
+mit zwei Fehlern steht also zweimal da, wie ein Ereignis. Wer keine eigene Meldung hat und nur
+wegen seines Ereignisses wegfällt (`by_event`), steht einmal da, aus dieser Liste (FR-013;
+Lückensuche, K1). Simulator und Statistik nennen alle im Hinweis auf
 Ausgenommenes.
 
 ## Abhängige Ereignisse

@@ -60,6 +60,9 @@ Tabs (TabContainer)   „Prüfung“ (IssuesPanel), „Simulator“, „Statisti
     Kunden. Diese Verweise werden mit entfernt.“
   - nur mit Start-Modifikatoren: „In den Profilen verweisen darauf: Schwer: Anspruchsvolle Kunden.
     Diese Verweise werden mit entfernt.“ (Analyse, I3)
+  - gehört die Kennung noch zu einem zweiten Ereignis (V02), bleiben die Verweise stehen, und der
+    Satz lautet: „Diese Verweise bleiben stehen, denn die Kennung „reklamationswelle“ gehört noch
+    zu einem zweiten Ereignis.“ (Lückensuche, W3; T037)
 
   Danach steht wie bisher „Rückgängig holt alles zurück.“
 - **Speichern und Verlauf:** Speichern, Cmd+S, Cmd+Z, „ungespeichert“, die Zahlen in der Toolbar,

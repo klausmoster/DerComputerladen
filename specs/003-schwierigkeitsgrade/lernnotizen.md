@@ -2,7 +2,9 @@
 
 Zu jeder umgesetzten Task die Godot-Konzepte und warum es so gebaut ist, an den Stellen im
 Projekt. Bei `[A]`-Tasks schreibt der Agent die Notizen, Claude trägt sie je Phase hier ein; baut
-Klaus eine Task selbst, schreibt Claude die Notiz beim Review.
+Klaus eine Task selbst, schreibt Claude die Notiz beim Review. Abnahmen, Prüfungen und das
+Anlegen der Profile in der Werkstatt (T008, T013, T015, T019, T020, T022, T024, T027, T029, T031)
+bauen nichts und haben deshalb keine Notiz (Lückensuche, S3).
 
 ## Phase 1
 
@@ -233,8 +235,8 @@ Klaus eine Task selbst, schreibt Claude die Notiz beim Review.
 - **Mit nur Mittel** zählt der Seed im selben Schritt wie in Feature 002; die Rechnung bleibt
   Schritt für Schritt gleich.
 - **Verschachtelte typisierte Arrays:** GDScript kennt kein `Array[Array[EventStatistic]]`.
-  `_statistics` ist deshalb `Array[Array]`, jedes Element ein echtes `Array[EventStatistic]`; den Typ
-  prüft Godot beim Übergeben zur Laufzeit.
+  `_statistics` ist deshalb `Array[Array]`, jedes Element ein echtes `Array[EventStatistic]`; den
+  Typ prüft Godot beim Übergeben zur Laufzeit.
 - **Gemessen:** SC-003 mit Mittel 5,601 und Schwer 14,715 Reklamationswellen im Mittel; alle drei
   Grade mit je 1.000 Spielen auf dem echten Katalog headless in 25,5 s.
 
@@ -257,3 +259,21 @@ Klaus eine Task selbst, schreibt Claude die Notiz beim Review.
   die weggelassenen Stellen hinein, wie im Simulator.
 - **Gemessen:** „Alle drei vergleichen“ mit 1.000 Spielen auf dem echten Katalog im Fenster 26,6 s;
   SC-004 erlaubt 90 s.
+
+## Phase 7
+
+### T036 bis T039 Lücken aus der Lückensuche
+
+- **Stellen sind kein Schlüssel** (T036, `restore_backup()`): Eine Lesemeldung zu einem Ereignis
+  hängt an dessen Kennung, eine zu einem Profil an einer Stelle wie `profiles.schwer[1]`, und
+  Stellen verschieben sich. `restore_backup()` geht nicht durch `_run()`, sondern setzt über
+  `_use_catalog()` einen neuen Katalog ein; deshalb rutschte der Fall durch. Jetzt ruft es dieselbe
+  Hilfe `_drop_read_issues()`.
+- **Die Ansicht sagt, was das Modell tut** (T037): Ob Verweise mit entfernt werden, entscheidet
+  `CatalogEditor.delete_event()`. Der Dialog nennt diese Entscheidung vorher in Worten; der Test
+  prüft den Text, bestätigt den Dialog und prüft dann, dass die Verweise noch da sind.
+- **Hinweise im Tree lesen** (T038): Der Simulator setzt je Zelle `set_tooltip_text()` und merkt
+  sich in `set_metadata()` die laufende Nummer des Termins; darüber findet der Test die Zeile.
+- **Doc-Kommentare sind Hilfe** (T039): `##`-Kommentare eines Skripts mit `class_name` zeigt der
+  Godot-Editor in seiner Hilfe an; eine veraltete Zahl dort führt in die Irre.
+- **Fehlerprobe:** Jede Mutation machte nur den neuen Test rot; vorher hätte keiner sie bemerkt.

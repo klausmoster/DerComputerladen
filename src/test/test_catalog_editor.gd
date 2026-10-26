@@ -4,7 +4,8 @@ extends GutTest
 ## Wiederholen, Kennungen und Verweise, Löschen, Artwechsel, Kategorien und ihre Farben,
 ## Speichern, Verwerfen, Meldungen beim Lesen und die Sicherungskopie. Seit Feature 003 (T014) auch
 ## die Profile: Start-Modifikatoren anlegen, duplizieren, löschen und ändern, ihre Verweise beim
-## Löschen und Umbenennen von Ereignissen und die Meldungen beim Lesen eines Profils.
+## Löschen und Umbenennen von Ereignissen und die Meldungen beim Lesen eines Profils, auch nach dem
+## Übernehmen einer Sicherungskopie (T036).
 ##
 ## Jeder Test arbeitet mit einer Kopie eines Test-Katalogs in einem eigenen Ordner unter user://,
 ## der auch der Ordner der Sicherungskopien ist; after_each() räumt beides weg. Die Fixtures unter
@@ -1503,6 +1504,37 @@ func test_lesemeldungen_werden_nach_ganzen_pfadteilen_verworfen() -> void:
 
 	# Assert
 	assert_eq(_lesemeldungen(), ["profiles.schwerr"], "profiles.schwerr gehört nicht zu Schwer.")
+
+
+func test_sicherung_uebernehmen_verwirft_die_lesemeldungen_der_profile() -> void:
+	# Arrange: T036. In der Datei hat Schwer an Stelle 1 den Wert „fünf“. Klaus dupliziert Stelle 0,
+	# die Kopie steht jetzt an Stelle 1; die Werkstatt sichert und stürzt ab. Eine neue öffnet die
+	# Datei und hat die Meldung wieder, an Stelle 1.
+	var ziel := _oeffnen(WERT_TEXT)
+	_editor.duplicate_start_modifier(Difficulty.Level.SCHWER, 0)
+	_editor.write_backup()
+	var neustart := _neuer_editor()
+	assert_eq(neustart.open(ziel), OK)
+	assert_eq(DifficultyProfile.faulty_indices(neustart.issues(), Difficulty.Level.SCHWER),
+		{1: true}, "Die Datei hat „fünf“ an Stelle 1.")
+
+	# Act
+	var fehler := neustart.restore_backup()
+
+	# Assert: An Stelle 1 steht jetzt die gültige Kopie; die Meldung zur Datei träfe sie.
+	assert_eq(fehler, OK)
+	var schwer := neustart.catalog.get_profile(Difficulty.Level.SCHWER)
+	var kennungen := schwer.modifiers.map(
+		func(modifikator: ChanceModifier) -> String: return modifikator.id)
+	assert_eq(kennungen, ["reklamationswelle", "reklamationswelle_3", "reklamationswelle_2"])
+	assert_eq(schwer.modifiers[1].value, 0.05)
+	var v22 := neustart.issues().filter(
+		func(meldung: CatalogIssue) -> bool: return meldung.rule == "V22")
+	assert_eq(v22.size(), 0, "Die Lesemeldung des Profils ist verworfen.")
+	assert_eq(DifficultyProfile.faulty_indices(neustart.issues(), Difficulty.Level.SCHWER), {},
+		"Kein Start-Modifikator ist fehlerhaft.")
+	assert_eq(neustart.catalog.skipped_start_modifiers(neustart.issues()).size(), 0,
+		"Simulator und Statistik lassen keinen weg.")
 
 
 func test_inhaltsschluessel_aendert_sich_mit_dem_profil() -> void:

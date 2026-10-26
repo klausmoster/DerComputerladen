@@ -130,7 +130,9 @@ var _undo_redo := UndoRedo.new()
 ## get_version() beim letzten Öffnen oder Speichern. -1 heißt: Diesen Stand gibt es in keiner
 ## Datei, etwa nach new_catalog().
 var _saved_version := 0
-## Meldungen beim Lesen (V22); sie bleiben bis zum nächsten erfolgreichen save() stehen.
+## Meldungen beim Lesen (V22). Die zu Ereignissen und zum Abschnitt profiles bleiben bis zum
+## nächsten erfolgreichen save() stehen. Die eines Profils verschwinden früher, sobald ein Schritt
+## das Profil ersetzt oder restore_backup() eine Sicherungskopie übernimmt (Feature 003, R10).
 var _read_issues: Array[CatalogIssue] = []
 ## Die letzte Prüfung des ganzen Katalogs.
 var _check_issues: Array[CatalogIssue] = []
@@ -254,7 +256,9 @@ func is_dirty() -> bool:
 
 
 ## Meldungen beim Lesen (V22) und die letzte Prüfung, nach jeder Änderung neu. Die Meldungen
-## beim Lesen bleiben bis zum nächsten erfolgreichen save() stehen (ereigniskatalog.md, Regel 5).
+## beim Lesen zu Ereignissen und zum Abschnitt profiles bleiben bis zum nächsten erfolgreichen
+## save() stehen (ereigniskatalog.md, Regel 5). Die eines Profils verschwinden, sobald ein Schritt
+## das Profil ersetzt oder eine Sicherungskopie übernommen wird (Feature 003, R10).
 func issues() -> Array[CatalogIssue]:
 	var result: Array[CatalogIssue] = _read_issues.duplicate()
 	result.append_array(_check_issues)
@@ -397,6 +401,10 @@ func backup_info() -> Dictionary:
 ## Verlauf leer, und is_dirty() bleibt wahr, bis gespeichert wird. Die Kopie selbst bleibt liegen,
 ## bis die Werkstatt sie nach dem Speichern löscht. Eine Kopie, die zu einem anderen Katalog
 ## gehört, übernimmt es nicht (ERR_INVALID_DATA).
+##
+## Die Meldungen beim Lesen der Datei bleiben, bis gespeichert wird, außer denen der Profile: Sie
+## hängen an einer Stelle im Profil der Datei, und in der Kopie kann dort ein anderer
+## Start-Modifikator stehen. Es gilt dieselbe Regel wie in _run() (Feature 003, R10).
 func restore_backup() -> Error:
 	var data := _read_backup()
 	if data.is_empty():
@@ -411,7 +419,10 @@ func restore_backup() -> Error:
 	if restored == null:
 		last_error = "Der Katalog in der Sicherungskopie %s ist nicht lesbar." % backup_path()
 		return ERR_PARSE_ERROR
-	# Die Meldungen beim Lesen gelten der Datei unter path; sie bleiben, bis gespeichert wird.
+	# Die Meldungen beim Lesen gelten der Datei unter path; sie bleiben, bis gespeichert wird. Die
+	# Profile kommen aber aus der Kopie und sind nicht mehr die aus der Datei.
+	for level: int in Difficulty.WITH_PROFILE:
+		_drop_read_issues(level)
 	_read_issues.append_array(found)
 	last_error = ""
 	_use_catalog(restored, false)

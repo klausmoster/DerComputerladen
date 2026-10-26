@@ -1,7 +1,7 @@
 class_name CatalogValidator
 extends RefCounted
 
-## Prüft den Ereigniskatalog nach den Regeln V01 bis V24 aus data-model.md, Tabelle
+## Prüft den Ereigniskatalog nach den Regeln V01 bis V31 aus data-model.md, Tabelle
 ## „Prüfregeln“; V22 entsteht schon beim Lesen (EventCatalog, CatalogIssue).
 ##
 ## Die Werkstatt prüft nach jeder Änderung, das Spiel beim Start und die Tests am echten

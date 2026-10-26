@@ -564,7 +564,8 @@ func _on_edit_requested(id: String) -> void:
 
 ## Löschen fragt nach und nennt, was darauf verweist (FR-036): erst die Ereignisse, dann die
 ## Start-Modifikatoren in den Profilen (Feature 003, FR-017). delete_event() entfernt beides im
-## selben Schritt mit.
+## selben Schritt mit, außer die Kennung gehört noch zu einem zweiten Ereignis (V02). Dann bleiben
+## die Verweise stehen, denn sie gelten auch dem anderen, und der Dialog sagt das (T037).
 func _on_delete_requested(id: String) -> void:
 	var event := editor.catalog.get_event(id)
 	if event == null:
@@ -583,11 +584,25 @@ func _on_delete_requested(id: String) -> void:
 		text += "\n\nDarauf verweisen: %s." % ", ".join(names)
 	elif not in_profiles.is_empty():
 		text += "\n\nIn den Profilen verweisen darauf: %s." % ", ".join(in_profiles)
-	if not references.is_empty() or not in_profiles.is_empty():
+	var has_references := not references.is_empty() or not in_profiles.is_empty()
+	if has_references and _has_twin(id):
+		text += (" Diese Verweise bleiben stehen, denn die Kennung „%s“ gehört noch zu einem "
+			+ "zweiten Ereignis.") % id
+	elif has_references:
 		text += " Diese Verweise werden mit entfernt."
 	text += "\n\nRückgängig holt alles zurück."
 	_delete_dialog.dialog_text = text
 	_delete_dialog.popup_centered(Vector2i(440, 0))
+
+
+## Ob mehr als ein Ereignis die Kennung [param id] trägt (V02). Dieselbe Regel entscheidet in
+## CatalogEditor.delete_event(), ob die Verweise mit entfernt werden.
+func _has_twin(id: String) -> bool:
+	var count := 0
+	for event in editor.catalog.events:
+		if event.id == id:
+			count += 1
+	return count > 1
 
 
 ## Ein Termin im Simulator wählt sein Ereignis, sofern es noch im Katalog steht: Der Lauf rechnet

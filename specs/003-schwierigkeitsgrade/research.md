@@ -316,9 +316,10 @@ beziehen.
     Start-Modifikator, den `without_faulty()` weglässt, mit Grad, Stelle, Ort und Fehlergrund.
     `by_event` sagt, ob er keine eigene Meldung hat und nur wegen seines Ereignisses wegfällt.
     Simulator und Statistik nennen alle im Hinweis auf Ausgenommenes. Zeitleiste und Textausgabe
-    geben ohnehin jede Meldung aus und nennen aus der Hilfe nur die mit `by_event`; so steht jeder
-    genau einmal da (FR-013). Ohne diese Hilfe gäbe es für einen, der nur wegen seines Ereignisses
-    wegfällt, gar keine Meldung (Analyse, G1).
+    geben ohnehin jede Meldung aus und nennen aus der Hilfe nur die mit `by_event`; so wird kein
+    Start-Modifikator doppelt genannt, nur ein Fehler je Meldung (FR-013; Lückensuche, K1). Ohne
+    diese Hilfe gäbe es für einen, der nur wegen seines Ereignisses wegfällt, gar keine Meldung
+    (Analyse, G1).
   - **Im Spiel:** Die Zeitleiste meldet jeden weggelassenen Start-Modifikator einmal über
     `push_error()`, mit Grad, Kennung und Fehlergrund. Den Zusatz „Das Ereignis wird
     übersprungen.“ bekommen nur Meldungen mit einer Kennung des Ereignisses, Meldungen zu Profilen
@@ -541,7 +542,9 @@ beziehen.
       gelten die Texte von Feature 002, denn auch dort kommt jeder Unterschied von den Eingriffen.
     - Häkchen und Text dürfen die Leiste nicht breiter machen, als sie bisher in der kleinen
       Fenstergröße aus `test_werkstatt_settings.gd` ist. Der Text kürzt sich dafür mit „…“ und
-      zeigt sich beim Überfahren ganz (Analyse, G10).
+      zeigt sich beim Überfahren ganz (Analyse, G10). Seit Phase 4 (2026-10-23) ist die Leiste
+      dazu ein `HFlowContainer` und bricht in der kleinen Größe in zwei Zeilen um, denn das
+      Häkchen allein braucht 176 px; bei 1920 × 925 bleibt sie einzeilig.
   - **Texte:** Beim Vergleich mit demselben Grad bleiben die Texte der Markierungen wie in
     Feature 002, denn dort kommt jeder Unterschied von den Eingriffen. Beim Vergleich mit Mittel
     nennen sie den Vergleichslauf, etwa beim Überfahren von „+ neu“: „Neu gegenüber Mittel ohne
@@ -603,8 +606,8 @@ beziehen.
     - Nach einem Abbruch zählen nur fertige Seeds. Jeder Grad hat also gleich viele Spiele mit
       denselben Seeds.
   - **Ergebnis:** `results()` liefert wie bisher den ersten Grad der Liste, `results_for()` einen
-    bestimmten. `accepted` und `refused` stammen aus dem ersten Seed im ersten Grad. Ihre Zahl ist in
-    jedem Grad gleich, weil Eingriffe eine eigene Liste haben (R5). Der Grund einer Ablehnung
+    bestimmten. `accepted` und `refused` stammen aus dem ersten Seed im ersten Grad. Ihre Zahl ist
+    in jedem Grad gleich, weil Eingriffe eine eigene Liste haben (R5). Der Grund einer Ablehnung
     kann je Grad anders lauten, etwa beim Entfernen einer Kennung, die in Schwer ein
     Start-Modifikator ist; es gilt der des ersten Grads (Phase 5, 2026-10-23).
   - **Oberfläche:** Neben „Anzahl der Spiele“ steht eine Auswahl `%DifficultyOption` mit Leicht,
