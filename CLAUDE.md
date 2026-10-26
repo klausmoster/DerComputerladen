@@ -86,7 +86,7 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 |---|---|
 | `src/` | Godot-Projekt (Projekt-Root ist `src/`, nicht das Repo-Root) |
 | `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline` (Hülle der Zeitleiste), `game_window` |
-| `src/core/timeline/` | Kern der Zeitleiste ohne Node: Datenklassen, Katalog, Prüfregeln, Fahrplan (`TimelineRun`), Vergleich, Statistik |
+| `src/core/timeline/` | Kern der Zeitleiste ohne Node: Datenklassen, Katalog, Prüfregeln, Fahrplan (`TimelineRun`), Vergleich, Statistik, Schwierigkeitsgrade (`Difficulty`, `DifficultyProfile`) |
 | `src/data/` | Ereigniskatalog `event_catalog.json`, gepflegt mit der Zeitleisten-Werkstatt |
 | `src/ui/` | Theme des ganzen Spiels (`computerladen_theme.tres`) und Farben (`ui_palette.gd`) |
 | `src/scenes/title/` | Titelbildschirm, Hauptmenü, Hinweis |
@@ -102,13 +102,15 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | `.claude/agents/` | Projekt-Agents, z.B. `godot-entwickler` für `[A]`-Aufgaben |
 
 `GameClock`, `Timeline` und `GameWindow` sind Autoloads (siehe `src/project.godot`).
-Die Zeitleiste folgt dem Fahrplan-Modell: Aus dem Katalog entsteht je Spiel und
-Seed ein Fahrplan (`TimelineRun`, ein Kern ohne Node), den die Spieluhr abspielt.
+Die Zeitleiste folgt dem Fahrplan-Modell: Aus dem Katalog entsteht je Spiel, Seed
+und Grad ein Fahrplan (`TimelineRun`, ein Kern ohne Node), den die Spieluhr
+abspielt. Leicht und Schwer verschieben über Profile aus Start-Modifikatoren nur
+Chancen; Mittel ist der Katalog allein.
 Das Autoload `Timeline` ist die Hülle darum und meldet per Signal:
 `event_fired`, `effect_applied`, `event_ended`, `effect_ended` und
 `entry_skipped`. Architekturprinzip: Die Timeline **wendet Effekte nicht an**,
 sie meldet sie nur — Wirtschaft, Nachfrage und Reputation hängen sich später dran.
-Ereignisse pflegt Klaus in der Zeitleisten-Werkstatt
+Ereignisse und die Profile der Grade pflegt Klaus in der Zeitleisten-Werkstatt
 (`src/tools/werkstatt/werkstatt.tscn`), nicht im Code.
 
 ## game_bible — Datenkonventionen

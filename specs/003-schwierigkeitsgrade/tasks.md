@@ -530,7 +530,7 @@ letzte Phase.
 
 **Purpose**: Doku, Lückensuche, Gesamtprüfung, Abnahme
 
-- [ ] T032 [C] Doku nachziehen (CHK021, CHK038):
+- [x] T032 [C] Doku nachziehen (CHK021, CHK038):
   - `CLAUDE.md`: In der Tabelle „Aufbau“ nennt `src/core/timeline/` die Schwierigkeitsgrade, und
     der Absatz zur Timeline sagt „je Spiel, Seed und Grad“. Claude schlägt den Wortlaut vor;
     eingetragen wird er erst mit Klaus' OK.
