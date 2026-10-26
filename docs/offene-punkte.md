@@ -437,15 +437,8 @@ Auslegungen des Agents, die Claude angenommen hat:
 ### Feature 004, Plan (2026-10-26)
 
 Festlegungen in `specs/004-neues-spiel/research.md`, die nicht aus Spec und Klärung folgen. Noch
-nicht umgesetzt; Klaus kann sie bei jeder Abnahme ändern. Die übrigen Festlegungen des Plans hat
-Klaus mit der Checkliste bestätigt (unter „Erledigt“).
-- **Lage der Blätter (R11):** Gradwahl, Liste und Rückfrage hängen oben bei y 150 und schließen
-  rechts bei x 616 ab wie das Hauptmenü; die Liste ist 304 breit (links bei x 312) und zeigt
-  höchstens sechs Spielstände.
-- **Spalte „zuletzt gespielt“ (R12):** in der Form „26.10.2026 21:40“, ohne Spaltenköpfe.
-- **Spielbildschirm (R15):** Vollbild in `nacht`, Knopf in der Mitte, Hinweis nennt das Spiel;
-  der Knopf wird ein eigener Baustein unter `src/ui/`. Fokuslinie auf dunklem Grund in `papier`
-  (Vorschlag für den Style-Guide, Phase 1).
+nicht umgesetzt; Klaus kann sie bei jeder Abnahme ändern. Die übrigen hat Klaus mit der Checkliste
+und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 - **Zurück aus einem Blatt** wählt im Hauptmenü den Eintrag, der es geöffnet hat
   (`data-model.md`).
 
@@ -460,6 +453,11 @@ Klaus mit der Checkliste bestätigt (unter „Erledigt“).
 
 ## Erledigt
 
+- **Style-Guide für Feature 004 (T001, T002):** Klaus, 2026-10-26, freigegeben: Version 22 mit
+  „Blätter im Titel“ und „Rückfrage“ beim Menü, den Bausteinen Liste und Meldung, dem allein
+  stehenden Knopf mit Hinweis und der Fokuslinie in `papier` auf dunklem Grund, dem Spielbildschirm
+  als Platzhalter. Damit gelten auch die Lage der Blätter, die Spalten der Liste und der
+  Spielbildschirm aus „Feature 004, Plan“ als bestätigt.
 - **Analyse von Feature 004:** Klaus, 2026-10-26: alle 44 Befunde nach Empfehlung einarbeiten.
   Eingearbeitet in Spec (Clarifications „Analyse 2026-10-26“, Edge Case „Zwei Fenster“, FR-016),
   Plan („Änderungen nach der Analyse“), research.md, Datenmodell, Verträge, Quickstart und Tasks.

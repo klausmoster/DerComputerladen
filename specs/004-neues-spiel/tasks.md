@@ -54,7 +54,7 @@ Phase“). Welche Abschnitte des Quickstarts zu welcher Abnahme gehören, steht 
 **Purpose**: Was Phase 4 und 5 zeigen, steht vorher im Style-Guide (Verfassung, Grundsatz IV;
 research.md, R17). Kein Code.
 
-- [ ] T001 [C] Style-Guide ergänzen, https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Dateien
+- [x] T001 [C] Style-Guide ergänzen, https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Dateien
   unter `project/`, nach research.md, R17 und Checkliste CHK017:
   - Baustein Menü: Abschnitt „Blätter im Titel“. Gradwahl, Spielstände und Rückfrage ersetzen das
     Hauptmenü an seiner Stelle, „oben bei y 150“ und „rechts bei x 616“; Breite nach Inhalt (144,
@@ -84,8 +84,13 @@ research.md, R17). Kein Code.
 
   Vorher liest Claude die betroffenen Dateien neu (Menue, Hinweis, Knopf, README) und ändert nur
   diese; danach gibt Claude Klaus den Link und eine Liste der Änderungen.
-- [ ] T002 [K] Phase 1 abnehmen: die neuen Abschnitte im Style-Guide lesen und freigeben oder
+- [x] T002 [K] Phase 1 abnehmen: die neuen Abschnitte im Style-Guide lesen und freigeben oder
   ändern lassen. Erst danach beginnt Phase 2.
+
+Erledigt am 2026-10-26: Style-Guide Version 22, von Klaus freigegeben. Neu sind beim Menü die
+Abschnitte „Blätter im Titel“ und „Rückfrage“, die Bausteine Liste und Meldung, beim Knopf der
+allein stehende Knopf und die Fokuslinie auf dunklem Grund, beim Hinweis Liste und Knopf, im README
+der Spielbildschirm als Platzhalter und die Meldung unter „Oberfläche“.
 
 **Checkpoint**: Der Style-Guide regelt alles, was die Oberfläche braucht. Abnahme durch Klaus, dann
 Auftrag für Phase 2; die Phasen laufen nacheinander (Verfassung, Grundsatz II; Analyse, D2).
