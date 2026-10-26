@@ -85,11 +85,13 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | Pfad | Inhalt |
 |---|---|
 | `src/` | Godot-Projekt (Projekt-Root ist `src/`, nicht das Repo-Root) |
-| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline` (Hülle der Zeitleiste), `game_window` |
+| `src/core/` | Engine-Systeme: `game_date`, `game_clock`, `timeline` (Hülle der Zeitleiste), `game_window`, `game_session` (das laufende Spiel) |
 | `src/core/timeline/` | Kern der Zeitleiste ohne Node: Datenklassen, Katalog, Prüfregeln, Fahrplan (`TimelineRun`), Vergleich, Statistik, Schwierigkeitsgrade (`Difficulty`, `DifficultyProfile`) |
+| `src/core/save/` | Spielstände: `SaveGame` (Inhalt, Formatversion), `SaveSlot` (eine Datei und ihr Zustand), `SaveStore` (Ordner `user://spielstaende/`, sicheres Schreiben, Löschen) |
 | `src/data/` | Ereigniskatalog `event_catalog.json`, gepflegt mit der Zeitleisten-Werkstatt |
 | `src/ui/` | Theme des ganzen Spiels (`computerladen_theme.tres`) und Farben (`ui_palette.gd`) |
-| `src/scenes/title/` | Titelbildschirm, Hauptmenü, Hinweis |
+| `src/scenes/title/` | Titelbildschirm mit seinen Blättern: Hauptmenü, Gradwahl, Liste der Spielstände, Rückfrage; Hinweis und Meldung; alle Texte in `title_texts.gd` |
+| `src/scenes/game/` | Spielbildschirm, bisher leer bis auf „Zum Hauptmenü“ |
 | `src/assets/` | Schriften (`fonts/`), gerasterte Bilder (`images/`), App-Symbol (`icon/`) |
 | `src/tools/werkstatt/` | Zeitleisten-Werkstatt (Editor, Zeitstrahl, Simulator, Statistik), Textausgabe `fahrplan_ausgabe.gd`, Proben unter `proben/`; vom Export ausgeschlossen |
 | `tools/raster/` | Python-Werkzeuge der Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol |
@@ -101,14 +103,16 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | `.claude/skills/` | Projekt-Skills, Präfix `dcl-` (eigene) und `speckit-` (Spec Kit) |
 | `.claude/agents/` | Projekt-Agents, z.B. `godot-entwickler` für `[A]`-Aufgaben |
 
-`GameClock`, `Timeline` und `GameWindow` sind Autoloads (siehe `src/project.godot`).
+`GameClock`, `Timeline`, `GameWindow` und `GameSession` sind Autoloads (siehe `src/project.godot`).
 Die Zeitleiste folgt dem Fahrplan-Modell: Aus dem Katalog entsteht je Spiel, Seed
 und Grad ein Fahrplan (`TimelineRun`, ein Kern ohne Node), den die Spieluhr
 abspielt. Leicht und Schwer verschieben über Profile aus Start-Modifikatoren nur
 Chancen; Mittel ist der Katalog allein.
 Das Autoload `Timeline` ist die Hülle darum und meldet per Signal:
 `event_fired`, `effect_applied`, `event_ended`, `effect_ended` und
-`entry_skipped`. Architekturprinzip: Die Timeline **wendet Effekte nicht an**,
+`entry_skipped`. Die Zeitleiste startet kein Spiel von selbst. Das tut `GameSession`: Sie beginnt
+ein neues Spiel oder setzt einen Spielstand fort, speichert beim Verlassen und beim Schließen des
+Fensters und spielt beim Fortsetzen den Fahrplan bis zum gespeicherten Tag nach. Architekturprinzip: Die Timeline **wendet Effekte nicht an**,
 sie meldet sie nur — Wirtschaft, Nachfrage und Reputation hängen sich später dran.
 Ereignisse und die Profile der Grade pflegt Klaus in der Zeitleisten-Werkstatt
 (`src/tools/werkstatt/werkstatt.tscn`), nicht im Code.

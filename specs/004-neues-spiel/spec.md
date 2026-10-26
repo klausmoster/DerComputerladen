@@ -350,8 +350,9 @@ andere ist unverändert.
 - **FR-015**: Die Liste der Spielstände muss je Spielstand Name, Grad, Spieldatum und „zuletzt
   gespielt“ zeigen, geordnet nach „zuletzt gespielt“, das jüngste oben. Nicht fortsetzbare
   Spielstände stehen darunter, nach Nummer absteigend. „Zuletzt gespielt“ ist die Ortszeit des
-  Rechners, in der Liste etwa „26.10.2026 21:40“, im Hinweis der Zeile ausgeschrieben „am
-  26.10.2026 um 21:40 Uhr“. Passen nicht alle Spielstände aufs Blatt, rollt die Liste mit der
+  Rechners, in der Liste etwa „26.10.2026 21:40“. Der Hinweis der Zeile nennt Spieldatum und
+  „zuletzt gespielt“ ausgeschrieben: „Steht am 13.07.1985. Gespielt am 26.10.2026, 21:40 Uhr.“
+  (Klaus, 2026-10-26, Phasenprüfung Phase 5). Passen nicht alle Spielstände aufs Blatt, rollt die Liste mit der
   Auswahl und dem Mausrad; „Löschen …“ und „Zurück“ bleiben immer zu sehen.
 - **FR-016**: Einen Spielstand fortsetzen muss ihn mit gespeichertem Datum, Grad und Seed zum
   laufenden Spiel machen, den Spielbildschirm zeigen und „zuletzt gespielt“ auf jetzt setzen.

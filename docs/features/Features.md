@@ -31,8 +31,8 @@ Die Nummer ist Teil der `feature_id` (`SS-NN`) und stabil.
 | 07 | Handelsnetzwerk | Idee |
 | 08 | Qualität & Risiko | Idee |
 | 09 | Adventure-Layer | Idee (Orte, Dialoge, Interaktion) |
-| 10 | Präsentation & UI | In Arbeit (Feature 001: Start bis zum Hauptmenü) |
-| 11 | Infrastruktur | Idee (Speichern, Build, Sound) |
+| 10 | Präsentation & UI | In Arbeit (Feature 001: Start bis zum Hauptmenü; Feature 004: Blätter im Titel, Liste der Spielstände, leerer Spielbildschirm) |
+| 11 | Infrastruktur | In Arbeit (Feature 004: Spielstände anlegen, fortsetzen, löschen); Build und Sound Idee |
 
 01–08 entsprechen den Kernsystemen aus dem GDD. 09–11 stehen dort verstreut bzw.
 unter „Offene Fragen", sind aber eigene Systeme.
@@ -47,7 +47,7 @@ unter „Offene Fragen", sind aber eigene Systeme.
 | 001 | [Start bis zum Hauptmenü](../../specs/001-hauptmenue/spec.md), Spec-Kit-Pilot, System 10 | fertig | tasks |
 | 002 | [Zeitleisten-Werkstatt](../../specs/002-zeitleisten-werkstatt/spec.md), System 01 | fertig | tasks |
 | 003 | [Schwierigkeitsgrade der Zeitleiste](../../specs/003-schwierigkeitsgrade/spec.md), System 01 | fertig | tasks |
-| 004 | [Neues Spiel starten](../../specs/004-neues-spiel/spec.md), System 11 und 01, Pilot der Prüf-Agents | spezifiziert | spec |
+| 004 | [Neues Spiel starten](../../specs/004-neues-spiel/spec.md), System 11 und 01, Pilot der Prüf-Agents | umgesetzt, Gesamtabnahme offen | tasks |
 
 Diese Tabelle wird derzeit von Hand gepflegt. Ab etwa zehn Features lohnt ein
 Generator, der sie aus dem Frontmatter baut — gleiches Prinzip wie

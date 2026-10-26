@@ -168,7 +168,7 @@ extends Button
 @export var on_dark: bool = false
 ```
 
-Theme-Variante `Knopf` für Schrift und Innenabstand. Mauszeiger: die Hand.
+Theme-Variante `Knopf` für Schrift und Innenabstand. Mauszeiger: die Hand, ausgeschaltet der Pfeil (Style-Guide, Baustein Menü; Phase 4).
 
 ## GameScreen
 

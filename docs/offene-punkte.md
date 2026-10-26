@@ -41,6 +41,24 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
 - Verworfen: „Grad“ und „Schwierigkeitsgrad“ seien zwei Wörter für dasselbe. „Gradwahl“ ist nur
   der Name im Vertrag; der Spieler liest SCHWIERIGKEIT und die Grade selbst.
 
+### Feature 004, Lückensuche (T033, 2026-10-26)
+
+- **`/speckit-converge`:** 64 Anforderungen, Szenarien und Edge Cases, 24 Plan-Entscheidungen und
+  7 Grundsätze der Verfassung geprüft. Zwei kleine Funde, beide in Phase 7: Speichern verliert bei
+  zwei Fehlern hintereinander eine `.neu` (T036, Klaus: reparieren), der Knopf des
+  Spielbildschirms ohne laufendes Spiel (T041, Auslegung angenommen). FR-015 in der Spec war
+  veraltet und ist nachgezogen.
+- **Stil-Prüfer:** kein Verstoß am Gebauten. Der Vertrag sagte beim Knopf „Mauszeiger: die Hand“
+  ohne Ausnahme; nachgezogen. Lücken entschieden (Style-Guide Version 30): Zebra an der Stelle,
+  Rollmarken nur Anzeige, Fokuslinie nur bei Tastatur. **Offen, ohne Eile:** Was geschieht, wenn ein
+  Hinweis unten aus dem Bild ragen würde? Heute bleiben 10 Pixel; Empfehlung: dann rechts neben der
+  Zeile oder nach oben versetzt, festlegen, wenn ein höheres Blatt kommt.
+- **Text-Prüfer:** zwei Befunde bestätigt, beide in Phase 7 (T037 Grund ohne „das Spiel“, T038
+  Hinweis von „Spiel laden“). Verworfen: „Spiel laden“ neben „Laden aufmachen“ sei ein Wort für
+  zwei Dinge; Verb und Name des Ladens sind verschiedene Wörter, „Spiel laden“ ist der übliche
+  Menüeintrag. Lücken entschieden (Version 30): Namen im Satz groß, das Programm heißt nicht „das
+  Spiel“, ein Hinweis verspricht nur, was geht.
+
 ### Feature 004, Phasenprüfung Phase 5 (2026-10-26)
 
 - **Erledigt durch Klaus' Entscheidungen** (Style-Guide Version 29, Vertrag nachgezogen):
@@ -54,7 +72,7 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
     26.10.2026, 21:40 Uhr.“ Damit ist der Punkt aus Phase 4 „erklärt das Spieldatum nicht“ erledigt.
 - **Repariert** (Stil-Prüfer, bestätigt): Die Meldung „Löschen ging nicht“ blieb beim Rollen an der
   Stelle statt beim Spielstand. Sie gehört jetzt zum Spielstand.
-- **Lücke im Style-Guide, offen** (Stil-Prüfer): README, Bewegung, nennt Übergänge von 150 bis
+- **Lücke im Style-Guide, erledigt in Version 30** (Stil-Prüfer): README, Bewegung, nennt Übergänge von 150 bis
   250 ms, „Fenster gleiten oder klappen auf“. Ob ein Blatt im Titel, das ein anderes ersetzt, und
   das Rollen der Liste einen Übergang haben, regelt er nicht; gebaut ist ein Sprung, seit Phase 4.
   Empfehlung: Blätter und Rollen springen, wie ein neuer Ausdruck aus dem Drucker; in „Bewegung“
@@ -65,7 +83,7 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
   entfernen.
 - **GUT meldet 4 Orphans in `test_main_menu.gd`** (Buttons), schon vor der Reparatur. Die Tests
   sind grün. Empfehlung: in Phase 6 ansehen.
-- **Lücke im Style-Guide, offen** (Stil-Prüfer, Nachprüfung): Baustein Meldung sagt „bleibt, bis
+- **Lücke im Style-Guide, erledigt in Version 30** (Stil-Prüfer, Nachprüfung): Baustein Meldung sagt „bleibt, bis
   der Spieler eine andere Zeile wählt“, aber nicht, ob die Zeile der Eintrag oder die Stelle ist.
   Gebaut ist: Die Meldung gehört zum Eintrag und wandert beim Rollen mit; rollt er aus dem Fenster
   und die Auswahl rückt nach, ersetzt der Hinweis sie. Empfehlung: diesen Satz in den Baustein

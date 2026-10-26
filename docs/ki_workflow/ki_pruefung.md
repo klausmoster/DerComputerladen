@@ -275,9 +275,22 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Pilot Feature 004, Phase 5, 23 Texte der Liste und Rückfrage (2026-10-26) | Text | 1 | 1 als Widerspruch zum Vertrag | 0 | 3, davon 1 verworfen, 1 schon bekannt | 1 |
 | Pilot Feature 004, Phase 5, Nachprüfung nach der Reparatur (2026-10-26) | Stil | 0 | 0 | 0 | 1 | 0 |
 | Pilot Feature 004, Phase 5, Nachprüfung der 6 geänderten Vorlagen (2026-10-26) | Text | 0 | 0 | 0 | 1, verworfen | 0 |
+| Feature 004, Lückensuche über das ganze Feature (2026-10-26) | Stil | 1 | 1 als Widerspruch zum Vertrag | 0 | 4 | 1 |
+| Feature 004, Lückensuche, 52 Texte (2026-10-26) | Text | 3 | 2 | 1 | 4, davon 1 verworfen | 2 |
 
 „Nur er fand“ heißt hier: Die Prüfung von Feature 001 hatte es übersehen, das Feature war
 abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.
+
+**Auswertung des Pilots in Feature 004** (Phasen 2 bis 5, 2026-10-26), ohne die Lückensuche:
+
+| Prüfer | Läufe | Befunde | bestätigt | davon Widerspruch zum Vertrag | verworfen | nur er fand | Lücken gemeldet |
+|---|---|---|---|---|---|---|---|
+| Text | 7 | 11 | 11 | 2 | 0 | 11 | 23 |
+| Stil | 4 | 2 | 2 | 1 | 0 | 2 | 8 |
+
+Jeder bestätigte Befund war einer, den Claudes eigene Prüfung nicht gefunden hatte. Kein Befund war
+falsch. Drei standen so im Vertrag, den Claude geschrieben hatte. Die Lücken wiederholen sich:
+„schon bekannt“ kam in fünf Läufen vor.
 
 Jede Phasenprüfung kostet zwei bis drei Prüfer-Läufe und läuft nur in Phasen, die Sichtbares oder
 Texte ändern. Sitzt der Ablauf, lässt er sich als gespeicherter Workflow fest einrichten.
@@ -311,7 +324,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 | 6 | Skill `dcl-phasenpruefung` mit den Hilfsskripten für Bildschirmfotos und Textliste | [C] | erledigt, 2026-10-22 |
 | 7 | Tests `test_bilder.gd` und `test_texte.gd` | [A] | erledigt, 2026-10-22 |
 | 8 | Hook, wenn gewollt: Tests laufen von selbst, sobald der Godot-Agent fertig ist | [C] | entfällt vorerst (Klaus, 2026-10-22); kommt, wenn der Agent zweimal rote Tests abliefert, ohne es zu melden |
-| 9 | Pilot in einer echten Phase mit Sichtbarem oder Texten, mit Zählung | [C] | im nächsten Feature nach 003, in seiner ersten Phase mit Sichtbarem oder Texten (Klaus, 2026-10-22) |
+| 9 | Pilot in einer echten Phase mit Sichtbarem oder Texten, mit Zählung | [C] | erledigt in Feature 004, Phasen 2 bis 5, 2026-10-26; die Prüfer bleiben (Klaus) |
 | 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | |
 
 ## Erfahrungen
@@ -335,9 +348,24 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 - **Ein Teil der Textbefunde ist messbar.** „1 Tage“ und „1 Spiele“, „-30%“ statt „−30 %“: Das
   findet auch ein Test, der Texte mit Zahlen erzeugt. Kandidaten für `test_texte.gd`. Anlass:
   Probelauf in Schritt 5 (2026-10-22).
+- **Die Prüfer finden, was Claude übersieht.** Im Pilot waren alle 13 bestätigten Befunde neu für
+  Claude, keiner war falsch. Anlass: Pilot Feature 004 (2026-10-26).
+- **Verträge enthalten Stilfehler.** 3 der 13 Befunde standen so im Vertrag, den Claude geschrieben
+  hatte. Wortlaute und Zustände im Vertrag schon vor dem Bau gegen den Style-Guide lesen lassen,
+  etwa mit dem Text-Prüfer über den Abschnitt „Texte“ bei der Checkliste. Anlass: Pilot Feature
+  004, Phasen 2 und 5 (2026-10-26).
+- **Der Auftrag nennt Umfang und Maßstab, keine eigene Einschätzung.** In Phase 2 stand „Seed
+  eingeführt“ im Auftrag, und der Prüfer übernahm diese Sicht. Anlass: Pilot Feature 004, Phase 2
+  (2026-10-26).
+- **Der Stil-Prüfer findet auch Verhalten, nicht nur Pixel.** Die Meldung, die beim Rollen neben
+  dem falschen Spielstand stand, las er aus dem Code. Maße messen die Tests, Zustände sieht der
+  Prüfer. Anlass: Pilot Feature 004, Phase 5 (2026-10-26).
+- **Lücken gleich vorlegen.** 31 Lücken kamen im Pilot, fünfmal „schon bekannt“. Eine Lücke geht
+  mit Empfehlung gleich an Klaus, statt bis zur Lückensuche liegen zu bleiben. Anlass: Pilot
+  Feature 004 (2026-10-26).
 
 ## Offen
 
-Zur Einführung ist nichts mehr offen (2026-10-22). Die Prüfer gelten ab dem Pilot im nächsten
-Feature nach 003, für jede Phase mit Sichtbarem oder Texten, auch in Werkzeugen. Danach entscheidet
-Klaus, ob sie bleiben, und über die Regel in der Verfassung (Schritt 10).
+Der Pilot ist ausgewertet: Beide Prüfer bleiben, für jede Phase mit Sichtbarem oder Texten, auch
+in Werkzeugen (Klaus, 2026-10-26). Offen ist nur Schritt 10: die Regel in der Verfassung über
+`/speckit-constitution`, beschlossen von Klaus.
