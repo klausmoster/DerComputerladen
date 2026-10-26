@@ -5,14 +5,26 @@
 [node name="DifficultyPanel" type="VBoxContainer"]
 script = ExtResource("1_difficulty")
 
-[node name="TopBar" type="HBoxContainer" parent="."]
+[node name="Scroll" type="ScrollContainer" parent="."]
+clip_contents = false
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TopBar" type="HBoxContainer" parent="Scroll/Content"]
 layout_mode = 2
 
-[node name="DifficultyCaption" type="Label" parent="TopBar"]
+[node name="DifficultyCaption" type="Label" parent="Scroll/Content/TopBar"]
 layout_mode = 2
 text = "Grad"
 
-[node name="DifficultyOption" type="OptionButton" parent="TopBar"]
+[node name="DifficultyOption" type="OptionButton" parent="Scroll/Content/TopBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Das Profil dieses Grads zeigen. Mittel ist der Katalog selbst und hat kein Profil."
@@ -25,12 +37,12 @@ popup/item_1/id = 1
 popup/item_2/text = "Schwer"
 popup/item_2/id = 2
 
-[node name="CountLabel" type="Label" parent="TopBar"]
+[node name="CountLabel" type="Label" parent="Scroll/Content/TopBar"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 
-[node name="MittelNote" type="Label" parent="."]
+[node name="MittelNote" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -38,172 +50,172 @@ theme_type_variation = &"MutedLabel"
 text = "Mittel ist der Katalog ohne Start-Modifikatoren. Seine Chancen sind die Grundchancen der Ereignisse."
 autowrap_mode = 3
 
-[node name="Split" type="HSplitContainer" parent="."]
+[node name="Split" type="HSplitContainer" parent="Scroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="TableBox" type="VBoxContainer" parent="Split"]
+[node name="TableBox" type="VBoxContainer" parent="Scroll/Content/Split"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.3
 
-[node name="Table" type="Tree" parent="Split/TableBox"]
+[node name="Table" type="Tree" parent="Scroll/Content/Split/TableBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="TableButtons" type="HBoxContainer" parent="Split/TableBox"]
+[node name="TableButtons" type="HBoxContainer" parent="Scroll/Content/Split/TableBox"]
 layout_mode = 2
 
-[node name="NewButton" type="Button" parent="Split/TableBox/TableButtons"]
+[node name="NewButton" type="Button" parent="Scroll/Content/Split/TableBox/TableButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Neu"
 
-[node name="DuplicateButton" type="Button" parent="Split/TableBox/TableButtons"]
+[node name="DuplicateButton" type="Button" parent="Scroll/Content/Split/TableBox/TableButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Den gewählten Start-Modifikator direkt dahinter kopieren"
 text = "Duplizieren"
 
-[node name="DeleteButton" type="Button" parent="Split/TableBox/TableButtons"]
+[node name="DeleteButton" type="Button" parent="Scroll/Content/Split/TableBox/TableButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Den gewählten Start-Modifikator löschen; Rückgängig holt ihn zurück"
 text = "Löschen"
 
-[node name="Fields" type="GridContainer" parent="Split"]
+[node name="Fields" type="GridContainer" parent="Scroll/Content/Split"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 columns = 2
 
-[node name="EventCaption" type="Label" parent="Split/Fields"]
+[node name="EventCaption" type="Label" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 text = "Ereignis"
 
-[node name="EventCell" type="VBoxContainer" parent="Split/Fields"]
+[node name="EventCell" type="VBoxContainer" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="EventOption" type="OptionButton" parent="Split/Fields/EventCell"]
+[node name="EventOption" type="OptionButton" parent="Scroll/Content/Split/Fields/EventCell"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 clip_text = true
 fit_to_longest_item = false
 
-[node name="EventHint" type="Label" parent="Split/Fields/EventCell"]
+[node name="EventHint" type="Label" parent="Scroll/Content/Split/Fields/EventCell"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"ErrorLabel"
 autowrap_mode = 3
 
-[node name="ValueCaption" type="Label" parent="Split/Fields"]
+[node name="ValueCaption" type="Label" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 text = "Wert"
 
-[node name="ValueCell" type="VBoxContainer" parent="Split/Fields"]
+[node name="ValueCell" type="VBoxContainer" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ValueLine" type="HBoxContainer" parent="Split/Fields/ValueCell"]
+[node name="ValueLine" type="HBoxContainer" parent="Scroll/Content/Split/Fields/ValueCell"]
 layout_mode = 2
 
-[node name="ValueEdit" type="LineEdit" parent="Split/Fields/ValueCell/ValueLine"]
+[node name="ValueEdit" type="LineEdit" parent="Scroll/Content/Split/Fields/ValueCell/ValueLine"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
 tooltip_text = "Prozentpunkte mit Vorzeichen, etwa +5 oder -2,5; Komma oder Punkt"
 
-[node name="ValueUnit" type="Label" parent="Split/Fields/ValueCell/ValueLine"]
+[node name="ValueUnit" type="Label" parent="Scroll/Content/Split/Fields/ValueCell/ValueLine"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Prozentpunkte"
 
-[node name="ValueHint" type="Label" parent="Split/Fields/ValueCell"]
+[node name="ValueHint" type="Label" parent="Scroll/Content/Split/Fields/ValueCell"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"ErrorLabel"
 autowrap_mode = 3
 
-[node name="FromCaption" type="Label" parent="Split/Fields"]
+[node name="FromCaption" type="Label" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 text = "Beginn"
 
-[node name="FromCell" type="VBoxContainer" parent="Split/Fields"]
+[node name="FromCell" type="VBoxContainer" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="FromEdit" type="LineEdit" parent="Split/Fields/FromCell"]
+[node name="FromEdit" type="LineEdit" parent="Scroll/Content/Split/Fields/FromCell"]
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "TT.MM.JJJJ"
 
-[node name="FromHint" type="Label" parent="Split/Fields/FromCell"]
+[node name="FromHint" type="Label" parent="Scroll/Content/Split/Fields/FromCell"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"ErrorLabel"
 autowrap_mode = 3
 
-[node name="ToCaption" type="Label" parent="Split/Fields"]
+[node name="ToCaption" type="Label" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 text = "Ende"
 
-[node name="ToCell" type="VBoxContainer" parent="Split/Fields"]
+[node name="ToCell" type="VBoxContainer" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ToEdit" type="LineEdit" parent="Split/Fields/ToCell"]
+[node name="ToEdit" type="LineEdit" parent="Scroll/Content/Split/Fields/ToCell"]
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "TT.MM.JJJJ, unbegrenzt 31.12.1999"
 
-[node name="ToHint" type="Label" parent="Split/Fields/ToCell"]
+[node name="ToHint" type="Label" parent="Scroll/Content/Split/Fields/ToCell"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"ErrorLabel"
 autowrap_mode = 3
 
-[node name="ReasonCaption" type="Label" parent="Split/Fields"]
+[node name="ReasonCaption" type="Label" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 text = "Grund"
 
-[node name="ReasonCell" type="VBoxContainer" parent="Split/Fields"]
+[node name="ReasonCell" type="VBoxContainer" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ReasonEdit" type="LineEdit" parent="Split/Fields/ReasonCell"]
+[node name="ReasonEdit" type="LineEdit" parent="Scroll/Content/Split/Fields/ReasonCell"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="ReasonHint" type="Label" parent="Split/Fields/ReasonCell"]
+[node name="ReasonHint" type="Label" parent="Scroll/Content/Split/Fields/ReasonCell"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"ErrorLabel"
 autowrap_mode = 3
 
-[node name="IdCaption" type="Label" parent="Split/Fields"]
+[node name="IdCaption" type="Label" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 text = "Kennung"
 
-[node name="IdCell" type="VBoxContainer" parent="Split/Fields"]
+[node name="IdCell" type="VBoxContainer" parent="Scroll/Content/Split/Fields"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="IdEdit" type="LineEdit" parent="Split/Fields/IdCell"]
+[node name="IdEdit" type="LineEdit" parent="Scroll/Content/Split/Fields/IdCell"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Im Profil eindeutig; nur a–z, 0–9 und _"
 
-[node name="IdHint" type="Label" parent="Split/Fields/IdCell"]
+[node name="IdHint" type="Label" parent="Scroll/Content/Split/Fields/IdCell"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

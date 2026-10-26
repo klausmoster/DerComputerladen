@@ -725,3 +725,27 @@ betraf, hat Claude direkt nachgezogen (`docs/offene-punkte.md`, „Feature 003, 
   ziehen, per data-model.md „Prüfregeln“ (contradicts, LOW, K3)
 - [x] T040 [C] Die Phase prüfen: Tests zweimal, Startprobe mit `-d`, die neuen Tests gegen den
   Fehler, den sie fangen sollen. Hängt an T036 bis T039.
+
+---
+
+## Phase 8: Funde aus dem Quickstart
+
+Der automatische Durchlauf beider Quickstarts für T034 (2026-10-26) fand drei Zeilen aus dem
+Quickstart von Feature 002, die nicht bestehen. Zwei Fehler stammen aus Feature 002, den dritten hat
+Feature 003 verschärft. Klaus hat am 2026-10-26 entschieden: alle drei vor der Abnahme beheben;
+im kleinen Fenster darf der Reiter rollen, bei 1920 × 925 bleibt alles, wie es ist.
+
+- [x] T041 [A] [P] Tab im Formular: Die Beschreibung (`TextEdit` in
+  `src/tools/werkstatt/event_form.gd`, `_add_description_row()`) nimmt Tab nicht als Zeichen,
+  sondern gibt den Fokus weiter, damit Tab durch das ganze Formular bis „Anlegen“ kommt; Test mit
+  echter Tab-Taste statt `grab_focus()`, per Quickstart 002, 4.1, T094 (contradicts)
+- [x] T042 [A] [P] Cmd+Q bei offenem Dialog zur Sicherungskopie schließt die Werkstatt wie
+  „Später“: Die Kopie bleibt und wird beim nächsten Start wieder angeboten; Test über den Weg, den
+  Cmd+Q wirklich nimmt, nicht nur `prepare_quit()`, per Quickstart 002, 4.1, T096 und FR-050
+  (contradicts)
+- [x] T043 [A] Kleines Fenster: Ist das Fenster zu klein für einen Reiter, rollt der Inhalt des
+  Reiters senkrecht, statt Werkzeugleiste und Knöpfe aus dem Fenster zu schieben; bei 1920 × 925
+  bleibt alles, wie es ist, und die gespeicherten Teiler gelten weiter; Test, dass bei 1280 × 720
+  jeder Reiter ins Fenster passt, per Quickstart 002, 4.1, „Fenster verkleinern“ (partial)
+- [x] T044 [C] Die Phase prüfen: Tests zweimal, Startprobe mit `-d`, die drei Quickstart-Zeilen im
+  echten Fenster noch einmal, Bild bei 1920 × 925 gegen das von vorher. Hängt an T041 bis T043.

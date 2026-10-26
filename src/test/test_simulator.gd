@@ -1267,7 +1267,7 @@ func test_filterleiste_bleibt_im_kleinen_fenster_so_breit() -> void:
 	# Arrange (Analyse, G10): die kleine Fenstergröße aus test_werkstatt_settings.gd
 	var werkstatt := await _werkstatt(GRADE)
 	var simulator := _simulator(werkstatt)
-	var leiste: Control = simulator.get_node("FilterBar")
+	var leiste: Control = simulator.get_node("Scroll/Content/FilterBar")
 	var layout: Control = werkstatt.get_node("Layout")
 	var vergleich: Label = simulator.get_node("%CompareLabel")
 	werkstatt.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)

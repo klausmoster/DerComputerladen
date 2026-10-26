@@ -438,6 +438,9 @@ func _add_description_row(event: TimelineEvent) -> void:
 	text.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	text.custom_minimum_size.y = 72
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Tab und Shift+Tab geben den Fokus weiter wie in jedem anderen Feld (T041). Ein TextEdit nimmt
+	# Tab sonst als Zeichen, und mit Tab kam niemand aus der Beschreibung heraus.
+	text.tab_input_mode = false
 	# Im TextEdit macht Enter eine neue Zeile; übernommen wird beim Verlassen.
 	text.focus_exited.connect(func() -> void:
 		if _building or text.is_queued_for_deletion() or _inputs.get("description") != text:

@@ -5,25 +5,37 @@
 [node name="StatisticsPanel" type="VBoxContainer"]
 script = ExtResource("1_statistics")
 
-[node name="InputBar" type="HFlowContainer" parent="."]
+[node name="Scroll" type="ScrollContainer" parent="."]
+clip_contents = false
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="InputBar" type="HFlowContainer" parent="Scroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="CountCaption" type="Label" parent="InputBar"]
+[node name="CountCaption" type="Label" parent="Scroll/Content/InputBar"]
 layout_mode = 2
 text = "Anzahl der Spiele"
 
-[node name="CountEdit" type="LineEdit" parent="InputBar"]
+[node name="CountEdit" type="LineEdit" parent="Scroll/Content/InputBar"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 tooltip_text = "Wie viele Spiele, von 1 bis 100.000. Gerechnet werden die Seeds 1, 2, 3 und so weiter; Enter startet."
 
-[node name="DifficultyCaption" type="Label" parent="InputBar"]
+[node name="DifficultyCaption" type="Label" parent="Scroll/Content/InputBar"]
 layout_mode = 2
 text = "Grad"
 
-[node name="DifficultyOption" type="OptionButton" parent="InputBar"]
+[node name="DifficultyOption" type="OptionButton" parent="Scroll/Content/InputBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Der Schwierigkeitsgrad der Spiele; seine Start-Modifikatoren gelten ab Spielbeginn.
@@ -39,27 +51,27 @@ popup/item_2/id = 2
 popup/item_3/text = "Alle drei vergleichen"
 popup/item_3/id = 3
 
-[node name="WithInterventions" type="CheckBox" parent="InputBar"]
+[node name="WithInterventions" type="CheckBox" parent="Scroll/Content/InputBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Jedes Spiel bekommt die Modifikatoren und Einplanungen, die du im Simulator gesammelt hast, an ihrem Tag. Absagen und Verschiebungen meinen einen Termin eines bestimmten Seeds und gelten deshalb nicht."
 text = "Mit Modifikatoren und Einplanungen aus dem Simulator"
 
-[node name="StartSeparator" type="VSeparator" parent="InputBar"]
+[node name="StartSeparator" type="VSeparator" parent="Scroll/Content/InputBar"]
 layout_mode = 2
 
-[node name="StartButton" type="Button" parent="InputBar"]
+[node name="StartButton" type="Button" parent="Scroll/Content/InputBar"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Starten"
 
-[node name="CancelButton" type="Button" parent="InputBar"]
+[node name="CancelButton" type="Button" parent="Scroll/Content/InputBar"]
 unique_name_in_owner = true
 layout_mode = 2
 disabled = true
 text = "Abbrechen"
 
-[node name="Progress" type="ProgressBar" parent="InputBar"]
+[node name="Progress" type="ProgressBar" parent="Scroll/Content/InputBar"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 16)
 layout_mode = 2
@@ -69,24 +81,24 @@ max_value = 1.0
 step = 1.0
 show_percentage = false
 
-[node name="ProgressLabel" type="Label" parent="InputBar"]
+[node name="ProgressLabel" type="Label" parent="Scroll/Content/InputBar"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="InterventionInfo" type="Label" parent="."]
+[node name="InterventionInfo" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 autowrap_mode = 3
 
-[node name="CountHint" type="Label" parent="."]
+[node name="CountHint" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"ErrorLabel"
 autowrap_mode = 3
 
-[node name="CatalogNotice" type="Label" parent="."]
+[node name="CatalogNotice" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -95,14 +107,14 @@ mouse_filter = 1
 theme_type_variation = &"WarningLabel"
 text = "? Katalog geändert, neu starten"
 
-[node name="ExcludedNotice" type="Label" parent="."]
+[node name="ExcludedNotice" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"ErrorNoticeLabel"
 autowrap_mode = 3
 
-[node name="RefusedNotice" type="Label" parent="."]
+[node name="RefusedNotice" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -111,30 +123,30 @@ mouse_filter = 1
 theme_type_variation = &"WarningLabel"
 autowrap_mode = 3
 
-[node name="ResultLabel" type="Label" parent="."]
+[node name="ResultLabel" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 3
 
-[node name="Split" type="VSplitContainer" parent="."]
+[node name="Split" type="VSplitContainer" parent="Scroll/Content"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ResultTable" type="Tree" parent="Split"]
+[node name="ResultTable" type="Tree" parent="Scroll/Content/Split"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="YearBox" type="VBoxContainer" parent="Split"]
+[node name="YearBox" type="VBoxContainer" parent="Scroll/Content/Split"]
 layout_mode = 2
 
-[node name="YearTitle" type="Label" parent="Split/YearBox"]
+[node name="YearTitle" type="Label" parent="Scroll/Content/Split/YearBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text_overrun_behavior = 3
 
-[node name="YearChart" type="Control" parent="Split/YearBox"]
+[node name="YearChart" type="Control" parent="Scroll/Content/Split/YearBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2

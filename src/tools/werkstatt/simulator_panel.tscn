@@ -6,32 +6,44 @@
 [node name="SimulatorPanel" type="VBoxContainer"]
 script = ExtResource("1_simulator")
 
-[node name="RunBar" type="HFlowContainer" parent="."]
+[node name="Scroll" type="ScrollContainer" parent="."]
+clip_contents = false
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RunBar" type="HFlowContainer" parent="Scroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="SeedCaption" type="Label" parent="RunBar"]
+[node name="SeedCaption" type="Label" parent="Scroll/Content/RunBar"]
 layout_mode = 2
 text = "Seed"
 
-[node name="SeedEdit" type="LineEdit" parent="RunBar"]
+[node name="SeedEdit" type="LineEdit" parent="Scroll/Content/RunBar"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 tooltip_text = "Der Seed bestimmt alle Zufallsentscheidungen eines Spiels. Nur Ziffern, von 0 bis 2.147.483.647; Enter erzeugt den Fahrplan."
 placeholder_text = "etwa 4711"
 
-[node name="RollButton" type="Button" parent="RunBar"]
+[node name="RollButton" type="Button" parent="Scroll/Content/RunBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Einen zufälligen Seed ins Feld schreiben"
 text = "Würfeln"
 
-[node name="DifficultyCaption" type="Label" parent="RunBar"]
+[node name="DifficultyCaption" type="Label" parent="Scroll/Content/RunBar"]
 layout_mode = 2
 text = "Grad"
 
-[node name="DifficultyOption" type="OptionButton" parent="RunBar"]
+[node name="DifficultyOption" type="OptionButton" parent="Scroll/Content/RunBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Der Schwierigkeitsgrad des Laufs; seine Start-Modifikatoren gelten ab Spielbeginn.
@@ -45,100 +57,100 @@ popup/item_1/id = 1
 popup/item_2/text = "Schwer"
 popup/item_2/id = 2
 
-[node name="GenerateButton" type="Button" parent="RunBar"]
+[node name="GenerateButton" type="Button" parent="Scroll/Content/RunBar"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Fahrplan erzeugen"
 
-[node name="RestartSeparator" type="VSeparator" parent="RunBar"]
+[node name="RestartSeparator" type="VSeparator" parent="Scroll/Content/RunBar"]
 layout_mode = 2
 
-[node name="RestartWithButton" type="Button" parent="RunBar"]
+[node name="RestartWithButton" type="Button" parent="Scroll/Content/RunBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Derselbe Seed mit allen gesammelten Eingriffen an ihren Tagen.
 Bis zum selben Tag, mindestens bis zum letzten Eingriff."
 text = "Neu starten mit Eingriffen"
 
-[node name="RestartWithoutButton" type="Button" parent="RunBar"]
+[node name="RestartWithoutButton" type="Button" parent="Scroll/Content/RunBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Derselbe Seed bis zum selben Tag, ohne Eingriffe; die gesammelten bleiben für den nächsten Neustart"
 text = "Neu starten ohne Eingriffe"
 
-[node name="ProbeSeparator" type="VSeparator" parent="RunBar"]
+[node name="ProbeSeparator" type="VSeparator" parent="Scroll/Content/RunBar"]
 layout_mode = 2
 
-[node name="ProbeButtons" type="HBoxContainer" parent="RunBar"]
+[node name="ProbeButtons" type="HBoxContainer" parent="Scroll/Content/RunBar"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="SaveProbeButton" type="Button" parent="RunBar/ProbeButtons"]
+[node name="SaveProbeButton" type="Button" parent="Scroll/Content/RunBar/ProbeButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Seed, Stand und gesammelte Eingriffe unter einem Namen speichern.
 Der Stand reicht mindestens bis zum letzten Eingriff."
 text = "Probe speichern …"
 
-[node name="LoadProbeButton" type="Button" parent="RunBar/ProbeButtons"]
+[node name="LoadProbeButton" type="Button" parent="Scroll/Content/RunBar/ProbeButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Eine gespeicherte Probe laden; ihre Eingriffe ersetzen die gesammelten"
 text = "Probe laden …"
 
-[node name="DeleteProbeButton" type="Button" parent="RunBar/ProbeButtons"]
+[node name="DeleteProbeButton" type="Button" parent="Scroll/Content/RunBar/ProbeButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Probe löschen"
 
-[node name="StepBar" type="HFlowContainer" parent="."]
+[node name="StepBar" type="HFlowContainer" parent="Scroll/Content"]
 layout_mode = 2
 
-[node name="DayButton" type="Button" parent="StepBar"]
+[node name="DayButton" type="Button" parent="Scroll/Content/StepBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Einen Tag abspielen"
 text = "+1 Tag"
 
-[node name="MonthButton" type="Button" parent="StepBar"]
+[node name="MonthButton" type="Button" parent="Scroll/Content/StepBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Bis zum Ersten des nächsten Monats abspielen, wie die Spieluhr"
 text = "+1 Monat"
 
-[node name="YearButton" type="Button" parent="StepBar"]
+[node name="YearButton" type="Button" parent="Scroll/Content/StepBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Bis zum 1. Januar des nächsten Jahres abspielen, wie die Spieluhr"
 text = "+1 Jahr"
 
-[node name="UntilButton" type="Button" parent="StepBar"]
+[node name="UntilButton" type="Button" parent="Scroll/Content/StepBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Bis einschließlich zum Datum im Feld daneben abspielen"
 text = "Bis"
 
-[node name="UntilEdit" type="LineEdit" parent="StepBar"]
+[node name="UntilEdit" type="LineEdit" parent="Scroll/Content/StepBar"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(104, 0)
 layout_mode = 2
 tooltip_text = "Datum, etwa 31.12.1990; Enter spielt bis dorthin."
 placeholder_text = "TT.MM.JJJJ"
 
-[node name="EndButton" type="Button" parent="StepBar"]
+[node name="EndButton" type="Button" parent="Scroll/Content/StepBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Bis zum 31.12.1999 abspielen"
 text = "Bis zum Ende"
 
-[node name="DateSeparator" type="VSeparator" parent="StepBar"]
+[node name="DateSeparator" type="VSeparator" parent="Scroll/Content/StepBar"]
 layout_mode = 2
 
-[node name="DateLabel" type="Label" parent="StepBar"]
+[node name="DateLabel" type="Label" parent="Scroll/Content/StepBar"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="CatalogNotice" type="Label" parent="StepBar"]
+[node name="CatalogNotice" type="Label" parent="Scroll/Content/StepBar"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -147,52 +159,52 @@ mouse_filter = 1
 theme_type_variation = &"WarningLabel"
 text = "? Katalog geändert, neu starten"
 
-[node name="InputHint" type="Label" parent="."]
+[node name="InputHint" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"ErrorLabel"
 autowrap_mode = 3
 
-[node name="ExcludedNotice" type="Label" parent="."]
+[node name="ExcludedNotice" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"ErrorNoticeLabel"
 autowrap_mode = 3
 
-[node name="ProbeNotice" type="Label" parent="."]
+[node name="ProbeNotice" type="Label" parent="Scroll/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"WarningLabel"
 autowrap_mode = 3
 
-[node name="FilterBar" type="HFlowContainer" parent="."]
+[node name="FilterBar" type="HFlowContainer" parent="Scroll/Content"]
 layout_mode = 2
 
-[node name="StateCaption" type="Label" parent="FilterBar"]
+[node name="StateCaption" type="Label" parent="Scroll/Content/FilterBar"]
 layout_mode = 2
 text = "Zustand"
 
-[node name="StateFilter" type="OptionButton" parent="FilterBar"]
+[node name="StateFilter" type="OptionButton" parent="Scroll/Content/FilterBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Nur Termine in diesem Zustand zeigen"
 
-[node name="DiffFilter" type="CheckBox" parent="FilterBar"]
+[node name="DiffFilter" type="CheckBox" parent="Scroll/Content/FilterBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Nur Termine zeigen, die mit den Eingriffen anders sind als ohne sie"
 text = "nur Unterschiede"
 
-[node name="CompareMittel" type="CheckBox" parent="FilterBar"]
+[node name="CompareMittel" type="CheckBox" parent="Scroll/Content/FilterBar"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Mit demselben Seed unter Mittel ohne Eingriffe vergleichen statt mit demselben Grad ohne Eingriffe; so zeigt der Fahrplan, was der Grad bewirkt. Bei Mittel ändert es nichts."
 text = "mit Mittel vergleichen"
 
-[node name="CompareLabel" type="Label" parent="FilterBar"]
+[node name="CompareLabel" type="Label" parent="Scroll/Content/FilterBar"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -200,129 +212,129 @@ mouse_filter = 1
 theme_type_variation = &"MutedLabel"
 text_overrun_behavior = 3
 
-[node name="PlanCount" type="Label" parent="FilterBar"]
+[node name="PlanCount" type="Label" parent="Scroll/Content/FilterBar"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 
-[node name="Split" type="HSplitContainer" parent="."]
+[node name="Split" type="HSplitContainer" parent="Scroll/Content"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PlanSplit" type="VSplitContainer" parent="Split"]
+[node name="PlanSplit" type="VSplitContainer" parent="Scroll/Content/Split"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TableBox" type="VBoxContainer" parent="Split/PlanSplit"]
+[node name="TableBox" type="VBoxContainer" parent="Scroll/Content/Split/PlanSplit"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PlanTable" type="Tree" parent="Split/PlanSplit/TableBox"]
+[node name="PlanTable" type="Tree" parent="Scroll/Content/Split/PlanSplit/TableBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 size_flags_vertical = 3
 allow_rmb_select = true
 
-[node name="EntryButtons" type="HBoxContainer" parent="Split/PlanSplit/TableBox"]
+[node name="EntryButtons" type="HBoxContainer" parent="Scroll/Content/Split/PlanSplit/TableBox"]
 layout_mode = 2
 
-[node name="CancelButton" type="Button" parent="Split/PlanSplit/TableBox/EntryButtons"]
+[node name="CancelButton" type="Button" parent="Scroll/Content/Split/PlanSplit/TableBox/EntryButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Den gewählten Termin mit Grund absagen; auch per Rechtsklick in der Tabelle"
 text = "Absagen …"
 
-[node name="MoveButton" type="Button" parent="Split/PlanSplit/TableBox/EntryButtons"]
+[node name="MoveButton" type="Button" parent="Scroll/Content/Split/PlanSplit/TableBox/EntryButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Den gewählten Termin mit Grund auf einen anderen Tag legen; auch per Rechtsklick in der Tabelle"
 text = "Verschieben …"
 
-[node name="DetailScroll" type="ScrollContainer" parent="Split/PlanSplit"]
+[node name="DetailScroll" type="ScrollContainer" parent="Scroll/Content/Split/PlanSplit"]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 horizontal_scroll_mode = 0
 
-[node name="Detail" type="VBoxContainer" parent="Split/PlanSplit/DetailScroll"]
+[node name="Detail" type="VBoxContainer" parent="Scroll/Content/Split/PlanSplit/DetailScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="DetailTitle" type="Label" parent="Split/PlanSplit/DetailScroll/Detail"]
+[node name="DetailTitle" type="Label" parent="Scroll/Content/Split/PlanSplit/DetailScroll/Detail"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
 autowrap_mode = 3
 
-[node name="DetailText" type="Label" parent="Split/PlanSplit/DetailScroll/Detail"]
+[node name="DetailText" type="Label" parent="Scroll/Content/Split/PlanSplit/DetailScroll/Detail"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 3
 
-[node name="ProtocolBox" type="VSplitContainer" parent="Split"]
+[node name="ProtocolBox" type="VSplitContainer" parent="Scroll/Content/Split"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Protocol" type="Tree" parent="Split/ProtocolBox"]
+[node name="Protocol" type="Tree" parent="Scroll/Content/Split/ProtocolBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="InterventionBox" type="VBoxContainer" parent="Split/ProtocolBox"]
+[node name="InterventionBox" type="VBoxContainer" parent="Scroll/Content/Split/ProtocolBox"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="InterventionHead" type="HFlowContainer" parent="Split/ProtocolBox/InterventionBox"]
+[node name="InterventionHead" type="HFlowContainer" parent="Scroll/Content/Split/ProtocolBox/InterventionBox"]
 layout_mode = 2
 
-[node name="InterventionTitle" type="Label" parent="Split/ProtocolBox/InterventionBox/InterventionHead"]
+[node name="InterventionTitle" type="Label" parent="Scroll/Content/Split/ProtocolBox/InterventionBox/InterventionHead"]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
 text = "Eingriffe"
 
-[node name="ProbeLabel" type="Label" parent="Split/ProtocolBox/InterventionBox/InterventionHead"]
+[node name="ProbeLabel" type="Label" parent="Scroll/Content/Split/ProtocolBox/InterventionBox/InterventionHead"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 
-[node name="ModifierButton" type="Button" parent="Split/ProtocolBox/InterventionBox/InterventionHead"]
+[node name="ModifierButton" type="Button" parent="Scroll/Content/Split/ProtocolBox/InterventionBox/InterventionHead"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Die Chance eines Ereignisses über Wahrscheinlichkeit für eine Zeit verschieben"
 text = "Modifikator …"
 
-[node name="ScheduleButton" type="Button" parent="Split/ProtocolBox/InterventionBox/InterventionHead"]
+[node name="ScheduleButton" type="Button" parent="Scroll/Content/Split/ProtocolBox/InterventionBox/InterventionHead"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Ein Ereignis, das weder fix noch jährlich ist, mit Grund an einem Tag einplanen"
 text = "Einplanen …"
 
-[node name="ModifierList" type="Tree" parent="Split/ProtocolBox/InterventionBox"]
+[node name="ModifierList" type="Tree" parent="Scroll/Content/Split/ProtocolBox/InterventionBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ModifierFoot" type="HBoxContainer" parent="Split/ProtocolBox/InterventionBox"]
+[node name="ModifierFoot" type="HBoxContainer" parent="Scroll/Content/Split/ProtocolBox/InterventionBox"]
 layout_mode = 2
 
-[node name="RemoveModifierButton" type="Button" parent="Split/ProtocolBox/InterventionBox/ModifierFoot"]
+[node name="RemoveModifierButton" type="Button" parent="Scroll/Content/Split/ProtocolBox/InterventionBox/ModifierFoot"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
 tooltip_text = "Den gewählten Modifikator ab der nächsten Würfelrunde entfernen"
 text = "Entfernen"
 
-[node name="ChanceLabel" type="Label" parent="Split/ProtocolBox/InterventionBox/ModifierFoot"]
+[node name="ChanceLabel" type="Label" parent="Scroll/Content/Split/ProtocolBox/InterventionBox/ModifierFoot"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 autowrap_mode = 3
 
-[node name="InterventionHint" type="Label" parent="Split/ProtocolBox/InterventionBox"]
+[node name="InterventionHint" type="Label" parent="Scroll/Content/Split/ProtocolBox/InterventionBox"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

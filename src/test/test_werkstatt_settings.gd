@@ -3,7 +3,8 @@ extends GutTest
 ## Die Werkstatt merkt sich die Lage ihrer Teiler (Feature 002, Phase 10): Ziehen speichert sie
 ## entprellt in einer Einstellungsdatei, der nächste Start stellt sie wieder her, eine Lage, die
 ## nicht ins Fenster passt, lässt jeden Bereich sichtbar, und eine kaputte Datei lässt still die
-## Vorgaben gelten.
+## Vorgaben gelten. Aus Phase 8 (T043): Im kleinen Fenster rollt ein Reiter, der zu hoch ist, bei
+## Klaus' Größe rollt keiner, und die Teiler behalten in der Datei ihre Namen.
 ##
 ## Jeder Test setzt Katalog, Sicherungskopie und Einstellungsdatei in einen eigenen Ordner unter
 ## user://, bevor die Szene in den Baum kommt; after_each() räumt ihn weg. Die echte
@@ -51,11 +52,19 @@ func test_alle_teiler_sind_dabei_und_die_vorgabe_liegt_unter_user() -> void:
 	assert_eq(vorgabe, ECHTE_DATEI, "Die Einstellungen liegen außerhalb des Projekts.")
 	var namen := []
 	for split in werkstatt.splits():
-		namen.append(String(werkstatt.get_path_to(split)))
+		namen.append(werkstatt._split_key(split))
 	assert_eq(namen, [LISTE_MITTE_FORMULAR, ZEITSTRAHL_REITER, SIMULATOR, SIMULATOR_FAHRPLAN,
 		SIMULATOR_PROTOKOLL, STATISTIK, SCHWIERIGKEITSGRADE], "Liste | Mitte | Formular, "
 		+ "Zeitstrahl über Reitern, die drei im Simulator, der in der Statistik und der zwischen "
 		+ "Tabelle und Feldern im Reiter „Schwierigkeitsgrade“.")
+	# Seit T043 liegen die Teiler der Reiter in deren Rollbereich; ihre Namen in der Datei bleiben,
+	# damit Klaus' gespeicherte Lage weiter gilt.
+	for reiter: String in ["%SimulatorPanel", "%StatisticsPanel", "%DifficultyPanel"]:
+		var rollbereich: ScrollContainer = werkstatt.get_node(reiter).get_node("Scroll")
+		assert_eq(String(werkstatt.get_path_to(rollbereich.get_child(0))),
+			String(werkstatt.get_path_to(werkstatt.get_node(reiter))) + "/Scroll/Content")
+	assert_true(werkstatt.get_node("%SimulatorPanel/Scroll").is_ancestor_of(
+		_split(werkstatt, SIMULATOR_PROTOKOLL)), "Der Name ohne „Scroll/Content“ findet den Teiler.")
 
 
 func test_ziehen_speichert_die_teiler_entprellt() -> void:
@@ -179,6 +188,85 @@ func test_im_kleinen_fenster_passt_jeder_reiter_in_die_breite() -> void:
 			"„%s“: Layout endet im Fenster." % titel)
 
 
+func test_im_kleinen_fenster_passt_jeder_reiter_in_die_hoehe() -> void:
+	# Arrange (T043; Quickstart 002, 4.1, „Fenster verkleinern“): Bei 1280 × 720 war der Simulator
+	# höher, als das Fenster hergab. Layout wuchs nach oben und unten hinaus, und Toolbar und Knöpfe
+	# lagen außerhalb. Jetzt rollt der Inhalt eines Reiters, der nicht mehr hineinpasst.
+	var werkstatt := await _werkstatt(KLEIN)
+	var tabs: TabContainer = werkstatt.get_node("%Tabs")
+	var layout: Control = werkstatt.get_node("Layout")
+	var toolbar: Control = werkstatt.get_node("Layout/Toolbar")
+	var fenster := Rect2(Vector2.ZERO, KLEIN)
+	var gerollt := []
+
+	for i in tabs.get_tab_count():
+		# Act
+		tabs.current_tab = i
+		await wait_process_frames(2)
+
+		# Assert: Alles liegt im Fenster, die Toolbar ganz oben.
+		var titel := tabs.get_tab_title(i)
+		var reiter := tabs.get_tab_control(i)
+		assert_gte(layout.position.y, 0.0, "„%s“: Layout beginnt im Fenster." % titel)
+		assert_lte(layout.position.y + layout.size.y, KLEIN.y, "„%s“: Layout endet im Fenster." % titel)
+		assert_true(fenster.encloses(toolbar.get_global_rect()),
+			"„%s“: Die Toolbar ist ganz zu sehen, %s." % [titel, toolbar.get_global_rect()])
+		assert_true(fenster.encloses(reiter.get_global_rect()),
+			"„%s“: Der Reiter liegt im Fenster, %s." % [titel, reiter.get_global_rect()])
+		var rollbereich := Werkstatt._tab_scroll(reiter)
+		if rollbereich == null:
+			continue
+		var inhalt: Control = rollbereich.get_child(0)
+		if inhalt.size.y <= rollbereich.size.y:
+			assert_false(rollbereich.get_v_scroll_bar().visible, "„%s“ passt und rollt nicht." % titel)
+			continue
+		gerollt.append(titel)
+		assert_true(rollbereich.get_v_scroll_bar().visible,
+			"„%s“: Eine Rollleiste zeigt, dass unten mehr kommt." % titel)
+		assert_true(rollbereich.clip_contents, "„%s“: Was nicht hineinpasst, schneidet er ab." % titel)
+
+		# Act: ganz nach unten rollen
+		rollbereich.scroll_vertical = ceili(inhalt.size.y)
+		await wait_process_frames(1)
+
+		# Assert: Das Ende des Inhalts mit den Knöpfen ist zu sehen.
+		assert_almost_eq(inhalt.get_global_rect().end.y, rollbereich.get_global_rect().end.y, 0.5,
+			"„%s“: Gerollt steht das Ende des Inhalts am Ende des Reiters." % titel)
+	assert_eq(gerollt, ["Simulator"], "In dieser Größe muss nur der Simulator rollen.")
+
+
+func test_bei_klaus_groesse_rollt_kein_reiter() -> void:
+	# Arrange (T043): Bei 1920 × 925 in der Vorgabe-Teilung bleibt alles, wie es war. Der
+	# Rollbereich rollt nicht, hat keine Leiste, und sein Inhalt füllt den Reiter genau.
+	var werkstatt := await _werkstatt()
+	var tabs: TabContainer = werkstatt.get_node("%Tabs")
+	var geprueft := 0
+
+	for i in tabs.get_tab_count():
+		# Act
+		tabs.current_tab = i
+		await wait_process_frames(2)
+
+		# Assert
+		var titel := tabs.get_tab_title(i)
+		var reiter := tabs.get_tab_control(i)
+		var rollbereich := Werkstatt._tab_scroll(reiter)
+		if rollbereich == null:
+			continue
+		geprueft += 1
+		var inhalt: Control = rollbereich.get_child(0)
+		assert_eq(rollbereich.vertical_scroll_mode, ScrollContainer.SCROLL_MODE_DISABLED,
+			"„%s“ rollt nicht." % titel)
+		assert_false(rollbereich.get_v_scroll_bar().visible, "„%s“ hat keine Rollleiste." % titel)
+		assert_false(rollbereich.clip_contents,
+			"„%s“ schneidet nichts ab, auch keine Fokuslinie am Rand." % titel)
+		assert_eq(rollbereich.get_global_rect(), reiter.get_global_rect(),
+			"„%s“: Der Rollbereich nimmt den ganzen Reiter." % titel)
+		assert_eq(inhalt.get_global_rect(), reiter.get_global_rect(),
+			"„%s“: Der Inhalt steht, wo er vorher direkt im Reiter stand." % titel)
+	assert_eq(geprueft, 3, "Simulator, Statistik und Schwierigkeitsgrade; die Prüfung rollt selbst.")
+
+
 func test_kaputte_datei_laesst_die_vorgaben_ohne_meldung() -> void:
 	# Arrange: abgebrochen geschrieben
 	_schreiben(EINSTELLUNGEN, "[teiler]\nLayout/Main=PackedInt32Array(420, -46")
@@ -249,8 +337,14 @@ func _werkstatt(groesse: Vector2 = GROSS) -> Werkstatt:
 	return werkstatt
 
 
-func _split(werkstatt: Werkstatt, pfad: String) -> SplitContainer:
-	return werkstatt.get_node(pfad)
+## Der Teiler, der in der Einstellungsdatei [param name] heißt. Seit T043 ist das nicht mehr
+## überall sein Pfad: Die Teiler der Reiter liegen in deren Rollbereich „Scroll/Content“.
+func _split(werkstatt: Werkstatt, name: String) -> SplitContainer:
+	for split in werkstatt.splits():
+		if werkstatt._split_key(split) == name:
+			return split
+	fail_test("Kein Teiler heißt in der Datei „%s“." % name)
+	return autofree(HSplitContainer.new())
 
 
 ## Die Vorgabe der Szene: 0 für jeden Teiler.

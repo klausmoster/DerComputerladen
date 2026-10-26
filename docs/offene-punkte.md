@@ -308,6 +308,26 @@ Auslegungen des Agents, die Claude angenommen hat:
   - **T037:** Der Löschdialog zählt die Kennung selbst (`_has_twin()`), dieselbe Regel wie
     `delete_event()`; ein Test hält beide zusammen. „zweiten Ereignis“ gilt auch bei dreien.
 
+### Feature 003, Quickstart automatisiert (2026-10-26)
+
+- **Automatischer Durchlauf statt Prüfung von Hand (Klaus, 2026-10-26):** Klaus bat, T034
+  automatisiert durchzutesten, weil die Tabellen für ihn schwer nachzuvollziehen sind. Zwei Agents
+  haben beide Quickstarts Zeile für Zeile Tests zugeordnet oder im echten Fenster nachgespielt.
+  Feature 003: 61 von 64 Zeilen bestanden, Rest von Hand oder entfällt. Feature 002: 92 von 98
+  bestanden, drei nicht.
+- **Drei Funde, Klaus, 2026-10-26: alle vor der Abnahme beheben** (tasks.md, Phase 8): Tab bleibt
+  in der Beschreibung hängen (T094); Cmd+Q wirkt nicht bei offenem Dialog zur Sicherungskopie
+  (T096); unter 1440 × 900 ist der Simulator höher als das Fenster. Im kleinen Fenster darf der
+  Reiter rollen, bei 1920 × 925 bleibt alles, wie es ist.
+- **Umsetzung in Phase 8, Auslegungen des Agents, die Claude angenommen hat:**
+  - Für Cmd+Q bei offenem Dialog sind die Dialoge nicht mehr `exclusive`, und die Werkstatt sperrt
+    selbst. Das gilt für alle 15 Dialoge: Der offene Dialog geht zu wie mit „Abbrechen“, dann läuft
+    das Schließen weiter. Bei „Trotzdem speichern“ und der fremden Änderung entfällt das Speichern.
+  - Neu ist: Nach einem Klick neben einen Dialog hat der Dialog sofort wieder den Fokus.
+  - Im rollenden Reiter folgt die Ansicht der Tab-Taste nicht; `follow_focus` ließe beim Klick in
+    eine hohe Tabelle die Ansicht springen.
+  - Bei 1024 × 600 ist die Werkstatt zu breit; gemessen nur zur Information, nicht Teil von T043.
+
 ## Erledigt
 
 - **Analyse von Feature 003:** Klaus, 2026-10-22: alle 41 Befunde nach Empfehlung einarbeiten.

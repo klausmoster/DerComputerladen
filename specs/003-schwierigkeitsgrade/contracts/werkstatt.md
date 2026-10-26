@@ -371,6 +371,25 @@ var difficulty: Difficulty.Level = Difficulty.DEFAULT
 - **Ausgenommen:** `%ExcludedNotice` nennt wie im Simulator die Start-Modifikatoren aus
   `skipped_start_modifiers()` (FR-013; Analyse, G1).
 
+## Nachtrag Phase 8 (2026-10-26)
+
+Aus dem automatischen Durchlauf des Quickstarts von Feature 002 (tasks.md, Phase 8). Es gilt
+auch für den Vertrag von Feature 002, wo er davon abweicht:
+- **Kleines Fenster (T043):** Der Inhalt von Simulator, Statistik und Schwierigkeitsgraden liegt
+  unter `Scroll` (ScrollContainer) → `Content` (VBoxContainer). Klassen, `%`-Namen und das Panel
+  als Kind des Reiters bleiben. `Werkstatt._fit_tab()` lässt einen Reiter nur rollen, wenn das
+  Fenster sonst zu klein wäre; bei 1920 × 925 und 1440 × 870 rollt keiner, die Bilder sind
+  pixelgleich wie vorher. Die Namen der Teiler in der Einstellungsdatei sind der Pfad unter der
+  Werkstatt ohne `Scroll/Content` (`_split_key()`), gespeicherte Teiler gelten also weiter.
+- **Dialoge (T042):** Die Dialoge der Werkstatt sind nicht mehr `exclusive`; die Werkstatt sperrt
+  Eingaben neben einem offenen Dialog selbst in `_input()`. So erreicht die Schließanfrage von
+  Cmd+Q und dem Fensterknopf die Werkstatt: Ein offener Dialog geht zu wie mit „Abbrechen“, beim
+  Dialog zur Sicherungskopie heißt das „Später“, dann läuft das Schließen wie ohne Dialog. Ist die
+  Rückfrage zum Schließen schon offen, bleibt sie stehen.
+- **`Werkstatt.quit_callback`:** eine Naht für Tests; ein `Callable` ersetzt `get_tree().quit()`.
+- **Tab (T041):** Die Beschreibung im Formular (`TextEdit`) gibt Tab als Wechsel des Fokus weiter
+  (`tab_input_mode = false`).
+
 ## Tests
 
 | Datei | Prüft |

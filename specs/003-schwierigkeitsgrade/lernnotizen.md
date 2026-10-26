@@ -277,3 +277,23 @@ bauen nichts und haben deshalb keine Notiz (Lückensuche, S3).
 - **Doc-Kommentare sind Hilfe** (T039): `##`-Kommentare eines Skripts mit `class_name` zeigt der
   Godot-Editor in seiner Hilfe an; eine veraltete Zahl dort führt in die Irre.
 - **Fehlerprobe:** Jede Mutation machte nur den neuen Test rot; vorher hätte keiner sie bemerkt.
+
+## Phase 8
+
+### T041 bis T043 Funde aus dem Quickstart
+
+- **Tab im `TextEdit`** (T041): Eine Taste geht zuerst an das Feld mit dem Fokus. Erst wenn das Feld
+  sie nicht nimmt, macht der Viewport aus Tab `ui_focus_next`. Ein `TextEdit` nimmt Tab von Haus aus
+  als Einrückung; `tab_input_mode = false` lässt die Taste durch. Der alte Test setzte den Fokus mit
+  `grab_focus()` und sprang an genau diesem Weg vorbei; der neue drückt Tab.
+- **Exklusive Dialoge** (T042): Ein `AcceptDialog` ist von Haus aus `exclusive`. Solange er offen
+  ist, verwirft Godot jede Schließanfrage an das Fenster, unter macOS auch Cmd+Q; kein Skript erfährt
+  davon. Deshalb sind die Dialoge nicht mehr exklusiv, und die Werkstatt sperrt Eingaben in
+  `_input()` selbst. Das geht, weil ein Dialog mit Fokus sein Ereignis zuerst bekommt.
+- **Mindestgrößen** (T043): Ein Container ist mindestens so groß wie die Mindestgrößen seiner
+  Kinder; deshalb wuchs die Werkstatt über das Fenster hinaus. Ein `ScrollContainer` braucht beim
+  Rollen keine Mindesthöhe. `_fit_tab()` lässt erst den Zeitstrahl nachgeben und schaltet das Rollen
+  nur ein, wenn es sonst nicht passt; so bleibt bei 1920 × 925 alles pixelgleich.
+- **`%Name` überlebt das Umhängen:** Knoten mit eindeutigem Namen findet der Code nach dem
+  Einschieben von `Scroll/Content` weiter, Pfade wie `"Split/YearBox"` nicht.
+- **Fehlerprobe:** Jeder zurückgenommene Fix machte seinen Test rot, sieben Proben.
