@@ -46,8 +46,6 @@ einzeln, wenn ihr Schritt dran ist (dort unter „Stand der Einführung“).
   Testläufe zur selben Zeit, etwa im Worktree der Arbeitsweise und in der Sitzung „[003]
   Schwierigkeitsgrade ab dem Plan“, können sich stören. Ein Hook, der von selbst testet, macht das
   wahrscheinlicher.
-- **Merge vormerken:** Sobald Feature 003 in `main` angekommen ist, geht der Branch
-  `claude/arbeitsweise-pruef-agents-83cb9b` nach `main`, auf Klaus' Wort (siehe Erledigt).
 - **Abnahme des Skills:** `/dcl-phasenpruefung` einmal in einer neuen Sitzung aufrufen, etwa als
   Probelauf am Titelbildschirm (Schritt 6).
 
@@ -431,6 +429,9 @@ Auslegungen des Agents, die Claude angenommen hat:
 
 ## Erledigt
 
+- **Merge von Feature 003 und KI-Workflow nach `main`:** Klaus, 2026-10-26, nach Empfehlung, vor
+  dem Start von Feature 004: erst Feature 003 (`6e5ea67`), dann der Branch des KI-Workflows
+  (`342e0d1`). So sind Prüfer und Skill im Pilot von Feature 004 dabei.
 - **Feature 003 abgenommen:** Klaus, 2026-10-26 (T035). Alle Phasen 1 bis 8 sind abgenommen
   oder geprüft und committet; T034 lief automatisiert mit wenigen Handgriffen von Klaus. Über den
   Merge nach `main` entscheidet Klaus; diese Sitzung wechselt den Branch nicht.
