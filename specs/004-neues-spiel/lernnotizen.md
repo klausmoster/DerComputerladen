@@ -253,3 +253,73 @@ nichts und haben deshalb keine Notiz.
   Kopie des Fotoskripts lädt die Skripte deshalb erst zur Laufzeit mit `load()`.
 - Headless rendert Godot nicht; fotografiert wird mit Fenster, das Bild kommt aus
   `root.get_texture().get_image()` im Raster 640 × 360, die dreifache Fassung mit Nearest.
+
+## Phase 5
+
+### T025 `SaveList`: ein Fenster aus festen Zeilen
+
+- **Feste Zeilen statt `ScrollContainer`:** `_build_rows()` legt einmal 6 + 2 Buttons an. Beim
+  Rollen ändert sich nur `_first_visible`, und `_refresh_rows()` schreibt neue Inhalte in dieselben
+  Buttons. So rollt die Liste nie um halbe Zeilen und braucht keinen Rollbalken; das Zebra malt
+  `MenuPaper.draw_paper()` nach der Lage auf dem Papier.
+- **Navigation selbst in der Hand:** Am Rand des Fensters soll der Fokus auf demselben Button
+  bleiben und nur der Inhalt rollen. `_on_row_gui_input()` fängt `ui_up`, `ui_down`,
+  `ui_focus_next` und `ui_focus_prev` ab und beendet sie mit `accept_event()`; `gui_input` kommt,
+  bevor der Viewport den Fokus verschiebt. `exact_match = true`, sonst zählte Shift+Tab als Tab.
+- **Melden ohne Fokuswechsel:** Zeigt derselbe Button nach dem Rollen einen anderen Spielstand,
+  gibt es kein neues `focus_entered`; `select()` sendet `selection_changed` deshalb selbst.
+- **Labels im Button:** Ein Button ist kein Container, seine Kinder stehen an ihrer `position`.
+  `mouse_filter = IGNORE`, damit Klicks beim Button ankommen; Schrift und Farbe holen sie aus der
+  Theme-Variante `MenuRow`.
+- **Gedämpft ist nicht gesperrt:** `disabled` heißt nur „löst nichts aus“; gedämpft wird über die
+  Farbe. So kann eine beschädigte Zeile im Löschmodus gedämpft bleiben und trotzdem löschen.
+- **Kürzen macht Godot:** `text_overrun_behavior = OVERRUN_TRIM_ELLIPSIS` mit `ellipsis_char` „…“.
+- **Mausrad:** Buttons halten Mausereignisse auf, deshalb behandelt `_on_row_gui_input()` das Rad
+  über den Zeilen; über der Kopfzeile kommt es in `SaveList._gui_input()` an.
+
+### T026 bis T028 Liste, Löschmodus und Rückfrage im Titelbildschirm
+
+- **Ein Blatt mehr, kein neuer Mechanismus:** Die Rückfrage ist die dritte Instanz von
+  `main_menu.tscn`, nur mit `header_text` „LÖSCHEN?“ und zwei Einträgen. `_show_only()` nimmt jetzt
+  `Control` statt `MainMenu`, damit auch die `SaveList` dazugehört; mehr braucht es dafür nicht.
+- **Die Liste meldet, der Titel entscheidet:** `SaveList` sendet `resume_requested`,
+  `delete_requested` und `back_requested` und tut selbst nichts. Fortsetzen geht über die Session,
+  Löschen über ihren `SaveStore`. So bleibt die Liste ohne Wissen über Dateien und Szenen, und ihre
+  Tests brauchen keinen Ordner.
+- **Esc an einer Stelle:** `_unhandled_input()` fragt der Reihe nach, welche Ebene oben liegt:
+  Rückfrage, Liste (im Löschmodus nur den Modus beenden), Gradwahl. Die Reihenfolge der `if`-Zweige
+  ist die Reihenfolge der Ebenen von oben nach unten.
+- **Erst sichtbar, dann die Einträge:** Bei der Rückfrage ruft der Titel `set_entries()` nach
+  `_show_only()`. Dann nimmt „Abbrechen“ sofort den Fokus, und `selection_changed` bringt seinen
+  Hinweis mit. Bei der Liste ist es umgekehrt: `show_slots()` merkt sich die Zeile, solange sie
+  unsichtbar ist, und `select()` nach dem Zeigen bringt Fokus und Hinweis.
+- **Neu lesen, wo sich etwas geändert haben kann:** „Spiel laden“ und ein bestätigtes Löschen
+  lesen den Ordner neu, „Abbrechen“ nicht, denn da ist nichts passiert. Die Liste merkt sich die
+  gelesenen `SaveSlot` in `_list_slots`; Fortsetzen und Löschen nehmen genau diesen Stand.
+- **Nach Nummer suchen, nicht nach Objekt:** Nach dem Neulesen sind die `SaveSlot` neue Objekte.
+  `_index_of_number()` findet einen Spielstand deshalb über `number` wieder, etwa für die Meldung,
+  wenn Löschen scheitert.
+- **Meldung nach dem Hinweis:** `select()` zeigt den Hinweis der gewählten Zeile; die Meldung kommt
+  danach und ersetzt ihn an derselben Stelle. Andersherum würde der Hinweis die Meldung sofort
+  überdecken.
+
+### Reparatur nach der Phasenprüfung (T029)
+
+- **Die Meldung gehört zum Spielstand, nicht zur Stelle.** `MenuHint` kennt nur Stellen:
+  `show_text()` lässt eine Meldung stehen, solange dieselbe `row_rect` kommt. In Menüs mit festen
+  Zeilen ist das richtig, etwa wenn die Maus noch einmal über die Zeile fährt. Die Liste rollt aber:
+  Nach dem Rollen zeigt derselbe Button einen anderen Spielstand an derselben Stelle. Gelöst ist das
+  im Titelbildschirm, denn nur er hat das Löschen ausgeführt und weiß, zu welchem Spielstand die
+  Meldung gehört. Er merkt sich `_warning_number`. In `_on_save_list_selection_changed()` vergleicht
+  er die Nummer mit `selected_slot()`: Ist es derselbe Spielstand, wandert die Meldung mit
+  `show_warning()` an die neue Stelle. Sonst blendet `_hide_hint()` sie aus, und der Hinweis kommt.
+  Beides geschieht im selben Bild, also ohne Flackern. `MenuHint` und sein Vertrag bleiben, wie sie
+  sind; ein Schlüssel in `show_warning()` hätte dem Hinweis Wissen über Spielstände gegeben.
+- **Ein Helfer, der beides vergisst:** `_hide_hint()` blendet aus und vergisst die Nummer. Sonst käme
+  die Meldung zurück, sobald derselbe Spielstand wieder gewählt wird, etwa nach Esc und erneutem
+  Öffnen der Liste.
+- **Gedämpft hängt an derselben Bedingung wie `disabled`:** In `_fill_row()` steuert jetzt
+  `triggers := _delete_mode or resumable` Farbe, `disabled` und Mauszeiger zugleich, `_is_dimmed()`
+  den Pfeil nach derselben Regel. So kann eine Zeile nicht gesperrt aussehen und doch auslösen.
+- **Eine Vorlage statt zwei:** Die Rückfrage hat einen Platzhalter `{angaben}`, gefüllt mit „Schwer,
+  14.03.1986“ oder dem Zustand. Zwei Satzformen für dasselbe laufen sonst mit der Zeit auseinander.

@@ -325,7 +325,8 @@ Spalte 64) und zuletzt gespielt („26.10.2026 21:40“, 90). Die Spalten beginn
 und 172 ab dem Text der Zeile; zusammen 262. Mit 24 links, 6 Luft und 12 rechts ergibt das 304
 (Analyse, F9, B4). Nummern ab 10.000 passen nicht mehr in die Spalte; der Name wird dann mit „…“
 gekürzt. Der Hinweis der Zeile nennt „zuletzt gespielt“ ausgeschrieben: „Zuletzt gespielt am
-26.10.2026 um 21:40 Uhr.“ (Claude, 2026-10-26).
+26.10.2026 um 21:40 Uhr.“ (Claude, 2026-10-26). Seit der Phasenprüfung von Phase 5 nennt er beide
+Daten: „Steht am 13.07.1985. Gespielt am 26.10.2026, 21:40 Uhr.“ (Klaus, 2026-10-26).
 
 Weitere Regeln:
 - **Ordnung:** fortsetzbare nach „zuletzt gespielt“, das jüngste oben; bei Gleichstand die höhere
@@ -333,7 +334,7 @@ Weitere Regeln:
 - **Nicht fortsetzbar:** Name wie immer, in den Spalten Grad und Spieldatum zusammen „beschädigt“
   oder „neuere Version“ (81 breit, Platz 108), alles gedämpft wie ein nicht verfügbarer Eintrag. Der
   Hinweis nennt den Grund (R10). Wählen geht, fortsetzen nicht; im Löschmodus lässt sich die Zeile
-  löschen (FR-017a).
+  löschen (FR-017a) und ist dort nicht gedämpft (Klaus, 2026-10-26, Phasenprüfung Phase 5).
 - **Rollen:** Zu sehen sind höchstens 6 Spielstände. Gibt es mehr, rollt die Liste mit der Auswahl
   und mit dem Mausrad zeilenweise; „Löschen …“ und „Zurück“ bleiben immer unten stehen. Ein kleines
   Dreieck rechts in der Kopfzeile zeigt, dass oben mehr steht, eins rechts in der Zeile „Löschen …“,
@@ -342,7 +343,8 @@ Weitere Regeln:
   Gebaut wird das als Fenster aus sechs Zeilen, deren Inhalt wechselt, nicht als `ScrollContainer`:
   So bleiben das Zebra der Zeilen und jede Zeile ganz, ohne Rollbalken.
 - **Löschmodus:** „Löschen …“ schaltet ihn ein. Die Kopfzeile lautet dann WELCHES LÖSCHEN?, der
-  Hinweis jeder Zeile „Spiel 2 wird gelöscht. Vorher fragt das Spiel nach.“ „Löschen …“ ist im Modus
+  Hinweis jeder Zeile „Spiel 2 wird gelöscht. Vorher kommt eine Rückfrage.“ (bis zur Phasenprüfung
+  von Phase 5 „Vorher fragt das Spiel nach.“) „Löschen …“ ist im Modus
   nicht verfügbar; sein Hinweis sagt, wie es weitergeht (Claude, 2026-10-26). „Zurück“ beendet im
   Löschmodus nur den Modus, wie Esc, und sein Hinweis lautet dann „Nicht löschen. Esc geht auch.“
   (Analyse, F3). Der Modus endet wie in FR-017a.
@@ -382,9 +384,9 @@ nicht in eine Zeile des Menüs.
 14.03.1986. Für immer.“ (Klaus, 2026-10-26, in Phase 4). Bis dahin stand „Spiel 2, Schwer,
 14.03.1986, bleibt. …“ (Checkliste, CHK031); der Test mit dem echten Hinweis zeigte, dass das mit
 „Spiel 9999“ drei Zeilen braucht. Gemessen hatte der Plan mit einer Schätzung des Umbruchs. Bei einem nicht fortsetzbaren Spielstand steht statt Grad und
-Spieldatum sein Zustand, „beschädigt“ oder „neuere Version“: „Spiel 3, beschädigt, bleibt. Esc geht
-auch.“ und „Spiel 3, neuere Version, ist danach weg. Für immer.“ (Analyse, C9; alle gemessen auf
-zwei Zeilen). „Abbrechen“ übernimmt die Rolle von „Zurück“ aus FR-023; Esc wirkt genauso
+Spieldatum sein Zustand, „beschädigt“ oder „neuere Version“: „Spiel 3 bleibt: beschädigt. Esc geht
+auch.“ und „Spiel 3 ist danach weg: neuere Version. Für immer.“ (Analyse, C9; alle gemessen auf
+zwei Zeilen; Satzform wie bei fortsetzbaren seit der Phasenprüfung von Phase 5, Klaus, 2026-10-26). „Abbrechen“ übernimmt die Rolle von „Zurück“ aus FR-023; Esc wirkt genauso
 (Claude, 2026-10-26).
 
 **Grund:** FR-017 verlangt die Rückfrage mit Name, Grad und Spieldatum und „Abbrechen“ vorgewählt;

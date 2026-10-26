@@ -41,6 +41,43 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
 - Verworfen: „Grad“ und „Schwierigkeitsgrad“ seien zwei Wörter für dasselbe. „Gradwahl“ ist nur
   der Name im Vertrag; der Spieler liest SCHWIERIGKEIT und die Grade selbst.
 
+### Feature 004, Phasenprüfung Phase 5 (2026-10-26)
+
+- **Erledigt durch Klaus' Entscheidungen** (Style-Guide Version 29, Vertrag nachgezogen):
+  - Im Löschmodus sind beschädigte und zu neue Spielstände verfügbar, nicht gedämpft; gedämpft heißt
+    immer „löst nichts aus“ (Stil-Prüfer, Widerspruch zum Vertrag).
+  - Rückfrage bei nicht fortsetzbaren Spielständen in derselben Satzform wie bei fortsetzbaren:
+    „Spiel 9 bleibt: neuere Version. Esc geht auch.“ (Text-Prüfer, Widerspruch zum Vertrag).
+  - „Vorher fragt das Spiel nach.“ wird „Vorher kommt eine Rückfrage.“; in „Sprache“ steht die
+    Regel „Kein Wort für zwei Dinge auf demselben Blatt“ (Text-Prüfer, Lücke).
+  - Der Hinweis einer Zeile der Liste nennt beide Daten: „Steht am 13.07.1985. Gespielt am
+    26.10.2026, 21:40 Uhr.“ Damit ist der Punkt aus Phase 4 „erklärt das Spieldatum nicht“ erledigt.
+- **Repariert** (Stil-Prüfer, bestätigt): Die Meldung „Löschen ging nicht“ blieb beim Rollen an der
+  Stelle statt beim Spielstand. Sie gehört jetzt zum Spielstand.
+- **Lücke im Style-Guide, offen** (Stil-Prüfer): README, Bewegung, nennt Übergänge von 150 bis
+  250 ms, „Fenster gleiten oder klappen auf“. Ob ein Blatt im Titel, das ein anderes ersetzt, und
+  das Rollen der Liste einen Übergang haben, regelt er nicht; gebaut ist ein Sprung, seit Phase 4.
+  Empfehlung: Blätter und Rollen springen, wie ein neuer Ausdruck aus dem Drucker; in „Bewegung“
+  so festhalten. Für die Lückensuche in Phase 6.
+- **`SaveGame.time_sentence()` wird nicht mehr gebraucht** (Godot-Agent): Der neue Hinweis der
+  Liste setzt Datum und Uhrzeit aus `time_text()` zusammen. `time_sentence()` steht noch im Vertrag
+  `contracts/spielstand.md` und in `test_save_game.gd`. Empfehlung: in Phase 6 mit Vertrag und Test
+  entfernen.
+- **GUT meldet 4 Orphans in `test_main_menu.gd`** (Buttons), schon vor der Reparatur. Die Tests
+  sind grün. Empfehlung: in Phase 6 ansehen.
+- **Lücke im Style-Guide, offen** (Stil-Prüfer, Nachprüfung): Baustein Meldung sagt „bleibt, bis
+  der Spieler eine andere Zeile wählt“, aber nicht, ob die Zeile der Eintrag oder die Stelle ist.
+  Gebaut ist: Die Meldung gehört zum Eintrag und wandert beim Rollen mit; rollt er aus dem Fenster
+  und die Auswahl rückt nach, ersetzt der Hinweis sie. Empfehlung: diesen Satz in den Baustein
+  Meldung aufnehmen, in Phase 6.
+- **Verworfen** (Text-Prüfer, Nachprüfung): „Spiel 4 ist danach weg: beschädigt. Für immer.“ lasse
+  sich als „für immer beschädigt“ lesen. Der Punkt trennt die Sätze, und die Satzform ist die der
+  fortsetzbaren Spielstände, die Klaus abgenommen hat.
+- **Verworfen:** „WELCHES LÖSCHEN?“ statt „WELCHEN“ (Text-Prüfer): richtig, bezogen auf „Spiel 7“,
+  und so im Style-Guide. Rollmarke in `tusche` neben dem gedämpften „Löschen …“ (Stil-Prüfer): Sie
+  gehört zur Liste, nicht zum Eintrag. Rollen ohne Auswahlwechsel als „andere Zeile“ (Stil-Prüfer):
+  Die Regel der Meldung beantwortet das, gewählt bleibt derselbe Spielstand.
+
 ### Feature 004, Phasenprüfung Phase 4 (2026-10-26)
 
 - **„Spiel laden“ tut in Phase 4 noch nichts** (Text-Prüfer, bestätigt): Mit Spielständen ist der
@@ -549,6 +586,27 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
   „keine Reaktion beim Überfahren“. Der Style-Guide gilt; umgesetzt mit T021.
 - **Lücke im Style-Guide:** Der `pixelschatten` des Hinweises ist `tusche` und auf `nacht` (dem
   Spielbildschirm) kaum zu sehen. Für den Stil-Prüfer in T023.
+
+### Feature 004, Phase 5 (2026-10-26)
+
+- **Auslegungen des Agents zu T025, angenommen:** Hinter dem Namen bleiben wie hinter der letzten
+  Spalte 6 Pixel Luft, die Namensspalte ist also 58 breit; „Spiel 10000“ wird zu „Spiel 10…“. Das
+  Mausrad rollt nur das Fenster; rollt der gewählte Spielstand hinaus, rückt die Auswahl auf die
+  nächste sichtbare Zeile. Bei nicht fortsetzbaren Zeilen bleibt „zuletzt gespielt“ leer. Die
+  Liste schaltet den Löschmodus bei „Löschen …“ selbst ein, aus nie selbst.
+- **Löschen einer Datei, die schon weg ist:** Endet `SaveStore.delete()` mit
+  `ERR_FILE_NOT_FOUND`, etwa weil ein zweites Fenster sie gelöscht hat, ist der Wunsch des Spielers
+  erfüllt. Keine Meldung, die Liste wird neu gelesen. „Löschen ging nicht. Der Spielstand ist
+  noch da.“ kommt nur, wenn der Spielstand danach wirklich noch da ist. Anlass: Text-Prüfer in
+  Phase 4.
+- **Auslegungen des Agents zu T026 bis T028, angenommen:** Ist der Ordner beim Öffnen von
+  „Spiel laden“ inzwischen leer, bleibt das Hauptmenü, neu gelesen und auf „Spiel laden“; dessen
+  Hinweis sagt dann, dass es keine gibt. „Abbrechen“ in der Rückfrage liest den Ordner nicht neu.
+  Scheitert das Fortsetzen eines fortsetzbaren Spielstands doch, liest die Liste neu, ohne Meldung
+  (kommt nicht vor, nur abgesichert).
+- **„Spiel 10000 löschen“ passt nicht in die Rückfrage:** 109 Pixel bei 108 Platz. Liegt außerhalb
+  dessen, was die Spec abdeckt (bis „Spiel 9999“); kein Handlungsbedarf, solange niemand 10 000
+  Spiele anlegt.
 
 ### KI-Workflow, Schritte 1 und 2 (2026-10-22)
 

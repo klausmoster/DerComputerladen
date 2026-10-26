@@ -7,8 +7,10 @@ extends RefCounted
 ##
 ## Texte mit Platzhaltern stehen als Vorlage da, etwa „Weiter mit {name}, {grad}, am {datum}.“;
 ## die Funktionen unten füllen sie mit String.format(). Die Platzhalter heißen {name} („Spiel 2“),
-## {grad} („Schwer“), {datum} („14.03.1986“), {uhrzeit} („21:40“) und {zustand} („beschädigt“ oder
-## „neuere Version“). Datum und Uhrzeit kommen schon fertig geschrieben herein.
+## {grad} („Schwer“), {datum} („14.03.1986“), {spieldatum} („13.07.1985“), {uhrzeit} („21:40“) und
+## {angaben} („Schwer, 14.03.1986“ oder „beschädigt“). {datum} ist meist das Spieldatum; nur im
+## Hinweis einer Zeile der Liste ist es der Tag von „zuletzt gespielt“, und das Spieldatum heißt
+## dort {spieldatum}. Datum und Uhrzeit kommen schon fertig geschrieben herein.
 ##
 ## Nicht hier, damit nichts doppelt steht: die Namen der Grade (Difficulty.label()), die Meldungen
 ## zum Speichern (GameSession.MESSAGE_*) und die Gründe, warum ein Spielstand nicht fortsetzbar ist
@@ -69,13 +71,13 @@ const HINT_BACK := "Zurück zum Hauptmenü. Esc geht auch."
 
 # --- Liste der Spielstände ---------------------------------------------------------------------
 
-## Eine fortsetzbare Zeile; Datum und Uhrzeit von „zuletzt gespielt“.
-const HINT_SLOT := "Zuletzt gespielt am {datum} um {uhrzeit} Uhr."
-const HINT_DELETE_MODE := "Einen Spielstand löschen. Vorher fragt das Spiel nach."
+## Eine fortsetzbare Zeile: erst das Spieldatum, dann Datum und Uhrzeit von „zuletzt gespielt“.
+const HINT_SLOT := "Steht am {spieldatum}. Gespielt am {datum}, {uhrzeit} Uhr."
+const HINT_DELETE_MODE := "Einen Spielstand löschen. Vorher kommt eine Rückfrage."
 ## „Löschen …“ im Löschmodus, wo es nicht verfügbar ist.
 const HINT_DELETE_MODE_ACTIVE := "Wähl oben den Spielstand, der weg soll. Esc bricht ab."
 ## Eine Zeile im Löschmodus.
-const HINT_SLOT_DELETE := "{name} wird gelöscht. Vorher fragt das Spiel nach."
+const HINT_SLOT_DELETE := "{name} wird gelöscht. Vorher kommt eine Rückfrage."
 ## „Zurück“ im Löschmodus: Es beendet nur den Modus.
 const HINT_BACK_DELETE_MODE := "Nicht löschen. Esc geht auch."
 ## Statt Grad und Spieldatum, in den Spalten und in der Rückfrage.
@@ -85,12 +87,13 @@ const STATE_TOO_NEW := "neuere Version"
 # --- Rückfrage ---------------------------------------------------------------------------------
 
 ## Der Name steht vorn, damit der Hinweis auch mit „Spiel 9999“ in zwei Zeilen passt (Klaus,
-## 2026-10-26).
-const HINT_CONFIRM_CANCEL := "{name} bleibt: {grad}, {datum}. Esc geht auch."
-const HINT_CONFIRM_DELETE := "{name} ist danach weg: {grad}, {datum}. Für immer."
-## Bei einem Spielstand, der sich nicht fortsetzen lässt, steht sein Zustand statt Grad und Datum.
-const HINT_CONFIRM_CANCEL_UNRESUMABLE := "{name}, {zustand}, bleibt. Esc geht auch."
-const HINT_CONFIRM_DELETE_UNRESUMABLE := "{name}, {zustand}, ist danach weg. Für immer."
+## 2026-10-26). Nach dem Doppelpunkt stehen {angaben}: Grad und Spieldatum nach CONFIRM_DETAILS, bei
+## einem Spielstand, der sich nicht fortsetzen lässt, sein Zustand (STATE_DAMAGED, STATE_TOO_NEW).
+## Eine Satzform für beide, damit sie gleich bleiben.
+const HINT_CONFIRM_CANCEL := "{name} bleibt: {angaben}. Esc geht auch."
+const HINT_CONFIRM_DELETE := "{name} ist danach weg: {angaben}. Für immer."
+## Die Angaben eines fortsetzbaren Spielstands in der Rückfrage.
+const CONFIRM_DETAILS := "{grad}, {datum}"
 
 # --- Spielbildschirm ---------------------------------------------------------------------------
 
@@ -120,12 +123,13 @@ static func difficulty_hint(level: int) -> String:
 	return ""
 
 
-## „Zuletzt gespielt am 26.10.2026 um 21:40 Uhr.“
-static func slot_hint(date: String, time: String) -> String:
-	return HINT_SLOT.format({"datum": date, "uhrzeit": time})
+## „Steht am 13.07.1985. Gespielt am 26.10.2026, 21:40 Uhr.“ [param game_day] ist das Spieldatum,
+## [param date] und [param time] sind „zuletzt gespielt“.
+static func slot_hint(game_day: String, date: String, time: String) -> String:
+	return HINT_SLOT.format({"spieldatum": game_day, "datum": date, "uhrzeit": time})
 
 
-## „Spiel 2 wird gelöscht. Vorher fragt das Spiel nach.“
+## „Spiel 2 wird gelöscht. Vorher kommt eine Rückfrage.“
 static func slot_delete_hint(game_name: String) -> String:
 	return HINT_SLOT_DELETE.format({"name": game_name})
 
@@ -137,25 +141,31 @@ static func delete_label(game_name: String) -> String:
 
 ## „Spiel 2 bleibt: Schwer, 14.03.1986. Esc geht auch.“
 static func confirm_cancel_hint(game_name: String, difficulty: String, date: String) -> String:
-	return HINT_CONFIRM_CANCEL.format({"name": game_name, "grad": difficulty, "datum": date})
+	return HINT_CONFIRM_CANCEL.format({"name": game_name,
+		"angaben": _confirm_details(difficulty, date)})
 
 
 ## „Spiel 2 ist danach weg: Schwer, 14.03.1986. Für immer.“
 static func confirm_delete_hint(game_name: String, difficulty: String, date: String) -> String:
-	return HINT_CONFIRM_DELETE.format({"name": game_name, "grad": difficulty, "datum": date})
+	return HINT_CONFIRM_DELETE.format({"name": game_name,
+		"angaben": _confirm_details(difficulty, date)})
 
 
-## „Spiel 3, beschädigt, bleibt. Esc geht auch.“; [param state] ist STATE_DAMAGED oder
-## STATE_TOO_NEW.
+## „Spiel 3 bleibt: beschädigt. Esc geht auch.“; [param state] ist STATE_DAMAGED oder STATE_TOO_NEW.
 static func confirm_cancel_hint_unresumable(game_name: String, state: String) -> String:
-	return HINT_CONFIRM_CANCEL_UNRESUMABLE.format({"name": game_name, "zustand": state})
+	return HINT_CONFIRM_CANCEL.format({"name": game_name, "angaben": state})
 
 
-## „Spiel 3, beschädigt, ist danach weg. Für immer.“
+## „Spiel 3 ist danach weg: beschädigt. Für immer.“
 static func confirm_delete_hint_unresumable(game_name: String, state: String) -> String:
-	return HINT_CONFIRM_DELETE_UNRESUMABLE.format({"name": game_name, "zustand": state})
+	return HINT_CONFIRM_DELETE.format({"name": game_name, "angaben": state})
 
 
 ## „Speichert Spiel 2 und führt ins Hauptmenü.“
 static func leave_hint(game_name: String) -> String:
 	return HINT_LEAVE.format({"name": game_name})
+
+
+## „Schwer, 14.03.1986“: die Angaben eines fortsetzbaren Spielstands in der Rückfrage.
+static func _confirm_details(difficulty: String, date: String) -> String:
+	return CONFIRM_DETAILS.format({"grad": difficulty, "datum": date})

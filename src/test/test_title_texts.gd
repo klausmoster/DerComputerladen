@@ -20,9 +20,10 @@ const SITZUNG := preload("res://core/game_session.gd")
 const LAENGSTE := {
 	"name": "Spiel 9999",
 	"grad": "Schwer",
-	"zustand": "neuere Version",
 	"datum": "14.03.1986",
+	"spieldatum": "14.03.1986",
 	"uhrzeit": "21:40",
+	"angaben": "Schwer, 14.03.1986",
 }
 ## Style-Guide, Baustein Hinweis: höchstens zwei Zeilen.
 const MAX_ZEILEN := 2
@@ -50,9 +51,9 @@ func test_jeder_hinweis_und_jede_meldung_passt_in_zwei_zeilen() -> void:
 	# Arrange
 	var texte := _hinweise_und_meldungen()
 
-	# Assert: Ohne Texte prüfte der Test nichts. 23 aus TitleTexts, 2 aus GameSession, 3 aus
+	# Assert: Ohne Texte prüfte der Test nichts. 21 aus TitleTexts, 2 aus GameSession, 3 aus
 	# SaveGame, 2 aus SaveSlot.
-	assert_eq(texte.size(), 30, "Alle Hinweise und Meldungen gefunden: %s" % [texte.keys()])
+	assert_eq(texte.size(), 28, "Alle Hinweise und Meldungen gefunden: %s" % [texte.keys()])
 	for herkunft: String in texte:
 		var text: String = texte[herkunft]
 		var zeilen := _zeilen(text)
@@ -73,8 +74,11 @@ func test_die_platzhalter_sind_die_laengsten() -> void:
 	for grad: int in [Difficulty.Level.LEICHT, Difficulty.Level.MITTEL, Difficulty.Level.SCHWER]:
 		assert_true(breite.call(LAENGSTE.grad) >= breite.call(Difficulty.label(grad)),
 			"„%s“ ist nicht schmaler als „%s“." % [LAENGSTE.grad, Difficulty.label(grad)])
+	# Die Angaben in der Rückfrage: Grad und Spieldatum oder ein Zustand.
+	assert_eq(LAENGSTE.angaben, TitleTexts.CONFIRM_DETAILS.format(LAENGSTE),
+		"Die längsten Angaben sind der längste Grad mit einem Datum.")
 	for zustand: String in [TitleTexts.STATE_DAMAGED, TitleTexts.STATE_TOO_NEW]:
-		assert_true(breite.call(LAENGSTE.zustand) >= breite.call(zustand), zustand)
+		assert_true(breite.call(LAENGSTE.angaben) >= breite.call(zustand), zustand)
 	# Alle Ziffern sind gleich breit; jedes Datum und jede Uhrzeit misst also gleich.
 	for ziffer in "0123456789":
 		assert_eq(breite.call(ziffer), breite.call("9"), "Ziffer %s" % ziffer)
@@ -134,19 +138,24 @@ func test_zustandswoerter_passen_in_die_spalten_grad_und_spieldatum() -> void:
 func test_funktionen_fuellen_die_vorlagen_wie_im_vertrag() -> void:
 	assert_eq(TitleTexts.continue_hint("Spiel 2", "Schwer", "14.03.1986"),
 		"Weiter mit Spiel 2, Schwer, am 14.03.1986.")
-	assert_eq(TitleTexts.slot_hint("26.10.2026", "21:40"),
-		"Zuletzt gespielt am 26.10.2026 um 21:40 Uhr.")
+	assert_eq(TitleTexts.slot_hint("13.07.1985", "25.10.2026", "18:40"),
+		"Steht am 13.07.1985. Gespielt am 25.10.2026, 18:40 Uhr.")
 	assert_eq(TitleTexts.slot_delete_hint("Spiel 2"),
-		"Spiel 2 wird gelöscht. Vorher fragt das Spiel nach.")
+		"Spiel 2 wird gelöscht. Vorher kommt eine Rückfrage.")
+	assert_eq(TitleTexts.HINT_DELETE_MODE, "Einen Spielstand löschen. Vorher kommt eine Rückfrage.")
 	assert_eq(TitleTexts.delete_label("Spiel 2"), "Spiel 2 löschen")
 	assert_eq(TitleTexts.confirm_cancel_hint("Spiel 2", "Schwer", "14.03.1986"),
 		"Spiel 2 bleibt: Schwer, 14.03.1986. Esc geht auch.")
 	assert_eq(TitleTexts.confirm_delete_hint("Spiel 2", "Schwer", "14.03.1986"),
 		"Spiel 2 ist danach weg: Schwer, 14.03.1986. Für immer.")
-	assert_eq(TitleTexts.confirm_cancel_hint_unresumable("Spiel 3", TitleTexts.STATE_DAMAGED),
-		"Spiel 3, beschädigt, bleibt. Esc geht auch.")
-	assert_eq(TitleTexts.confirm_delete_hint_unresumable("Spiel 3", TitleTexts.STATE_TOO_NEW),
-		"Spiel 3, neuere Version, ist danach weg. Für immer.")
+	assert_eq(TitleTexts.confirm_cancel_hint_unresumable("Spiel 4", TitleTexts.STATE_DAMAGED),
+		"Spiel 4 bleibt: beschädigt. Esc geht auch.")
+	assert_eq(TitleTexts.confirm_delete_hint_unresumable("Spiel 4", TitleTexts.STATE_DAMAGED),
+		"Spiel 4 ist danach weg: beschädigt. Für immer.")
+	assert_eq(TitleTexts.confirm_cancel_hint_unresumable("Spiel 9", TitleTexts.STATE_TOO_NEW),
+		"Spiel 9 bleibt: neuere Version. Esc geht auch.")
+	assert_eq(TitleTexts.confirm_delete_hint_unresumable("Spiel 9", TitleTexts.STATE_TOO_NEW),
+		"Spiel 9 ist danach weg: neuere Version. Für immer.")
 	assert_eq(TitleTexts.leave_hint("Spiel 2"), "Speichert Spiel 2 und führt ins Hauptmenü.")
 
 

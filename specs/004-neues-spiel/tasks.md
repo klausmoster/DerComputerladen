@@ -371,7 +371,7 @@ tut bis T026 noch nichts.
 **Independent Test**: Quickstart 3.2 bis 3.4: drei Spiele in der Liste, das älteste fortsetzen,
 eins löschen, nicht fortsetzbare gedämpft und löschbar.
 
-- [ ] T025 [A] [US3] `src/scenes/title/save_list.tscn` und `save_list.gd` (`SaveList`) laut
+- [x] T025 [A] [US3] `src/scenes/title/save_list.tscn` und `save_list.gd` (`SaveList`) laut
   titelbildschirm.md: Signale,
   `show_slots()`, `set_delete_mode()`, `is_delete_mode()`, `selected_slot()`; die Werte von
   `VISIBLE_ROWS`, `COLUMNS` und `PAPER_WIDTH` aus dem Style-Guide, Baustein Liste (Analyse, D1);
@@ -382,13 +382,13 @@ eins löschen, nicht fortsetzbare gedämpft und löschbar.
   löschen. Esc geht auch.“ bei „Zurück“ (Analyse, F3). Test
   `src/test/test_save_list.gd` nach titelbildschirm.md, mit 3, 7 und 20 Spielständen. Hängt an
   T017, T018 und T019.
-- [ ] T026 [A] [US3] `title_screen.gd`, Teil 2: „Spiel laden“ öffnet die Liste, „bei jedem Öffnen
+- [x] T026 [A] [US3] `title_screen.gd`, Teil 2: „Spiel laden“ öffnet die Liste, „bei jedem Öffnen
   neu gelesen“ (CHK001); eine fortsetzbare Zeile setzt fort; nicht fortsetzbare lösen außerhalb des
   Löschmodus nichts aus. Tests in `test_title_screen.gd`: 2 Klicks und höchstens 4 Tasten über
   die Liste, Anzeige mit 20 Spielständen in höchstens 1 s (SC-002), ein älterer Spielstand rückt
   nach dem Fortsetzen nach oben (US3, Szenario 3), eine Datei, die nach dem Erscheinen des Titels
   in den Ordner kommt, steht beim Öffnen der Liste darin (Analyse, E3). Hängt an T020 und T025.
-- [ ] T027 [A] [US4] Löschen in `title_screen.gd` und `title_screen.tscn`: ConfirmSheet als
+- [x] T027 [A] [US4] Löschen in `title_screen.gd` und `title_screen.tscn`: ConfirmSheet als
   Instanz von `main_menu.tscn`, LÖSCHEN?, „Abbrechen“ vorgewählt und „Spiel 2 löschen“, Hinweise
   mit Name, Grad und Spieldatum, bei nicht fortsetzbaren mit dem Zustand (FR-017); Esc und
   „Abbrechen“ zurück zur Liste, Löschmodus aus; „Zurück“ und Esc im Löschmodus beenden nur den
@@ -399,13 +399,13 @@ eins löschen, nicht fortsetzbare gedämpft und löschbar.
   ins Hauptmenü, „Weiterspielen“ nennt den nächsten (Analyse, F2); Löschen scheitert über einen
   Ordner mit Inhalt an der Stelle von `spiel_N.json` neben einer fortsetzbaren `spiel_N.json.alt`:
   Meldung, der Spielstand steht weiter in der Liste (Analyse, E2). Hängt an T026.
-- [ ] T028 [A] [US3] [US4] Bildschirmfotos und Platz für diese Phase: Liste mit 3 und mit 9
+- [x] T028 [A] [US3] [US4] Bildschirmfotos und Platz für diese Phase: Liste mit 3 und mit 9
   Spielständen, darunter ein beschädigter und ein zu neuer, aus den Fixtures im Fotoordner;
   Löschmodus; Rückfrage; wie T022.
-- [ ] T029 [C] [US3] [US4] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Stil- und Text-Prüfer
+- [x] T029 [C] [US3] [US4] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Stil- und Text-Prüfer
   wie T023, dazu Baustein Liste und Rückfrage und die Gründe aus `save_slot.gd` und `save_game.gd`
   (Analyse, F17); Befunde nachprüfen, zählen.
-- [ ] T030 [K] [US3] [US4] Phase 5 abnehmen nach quickstart.md, Abschnitte 1, 2 und 3.2 bis 3.5.
+- [x] T030 [K] [US3] [US4] Phase 5 abnehmen nach quickstart.md, Abschnitte 1, 2 und 3.2 bis 3.5.
 
 **Checkpoint**: Alle vier User Stories sind erfüllt. Abnahme durch Klaus, dann Auftrag für den
 Abschluss.

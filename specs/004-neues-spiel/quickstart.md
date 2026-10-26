@@ -110,23 +110,28 @@ keine neue Datei (FR-003).
 
 ### 3.4 Nicht fortsetzbare Spielstände (ab Phase 5)
 
-Eine Datei `notizen.txt` und zwei Fixtures in den Ordner legen, als `spiel_8.json` und
-`spiel_9.json`:
+Eine Datei `notizen.txt` und zwei Fixtures in den Ordner legen, als `spiel_18.json` und
+`spiel_19.json`. Die Nummern liegen absichtlich hoch: Eine belegte Nummer würde einen Spielstand aus
+3.2 überschreiben (Abnahme Phase 5).
 
 ```bash
-cp src/test/fixtures/spielstaende/spiel_kein_json.json ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende/spiel_8.json
+cp src/test/fixtures/spielstaende/spiel_kein_json.json ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende/spiel_18.json
 ```
 
 ```bash
-cp src/test/fixtures/spielstaende/spiel_format_2.json ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende/spiel_9.json
+cp src/test/fixtures/spielstaende/spiel_format_2.json ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende/spiel_19.json
 ```
 
-1. Die Liste zeigt „Spiel 9 … neuere Version“ und „Spiel 8 … beschädigt“ gedämpft unten;
+```bash
+echo "Kein Spielstand." > ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende/notizen.txt
+```
+
+1. Die Liste zeigt „Spiel 19 … neuere Version“ und „Spiel 18 … beschädigt“ gedämpft unten;
    `notizen.txt` erscheint nicht. Enter auf ihnen tut nichts, ihr Hinweis nennt den Grund (Edge
    Cases).
-2. Ein neues Spiel beginnen und verlassen: Es heißt „Spiel 10“, denn 8 und 9 sind noch da (FR-009).
-3. Spiel 8 und Spiel 9 lassen sich über „Löschen …“ löschen; die Rückfrage nennt ihren Zustand
-   statt Grad und Datum; `notizen.txt` bleibt liegen (Analyse, F6).
+2. Ein neues Spiel beginnen und verlassen: Es heißt „Spiel 20“, denn 18 und 19 sind noch da (FR-009).
+3. Spiel 18 und Spiel 19 lassen sich über „Löschen …“ löschen; im Löschmodus sind sie nicht gedämpft;
+   die Rückfrage nennt ihren Zustand statt Grad und Datum; `notizen.txt` bleibt liegen (Analyse, F6).
 
 ### 3.5 Eigener Katalog im Spielstand (ab Phase 5)
 

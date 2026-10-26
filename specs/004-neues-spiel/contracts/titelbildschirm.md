@@ -132,8 +132,10 @@ Verhalten:
   steht (R12). Pfeiltasten und Tab laufen an den Enden um wie im Hauptmenü.
 - Der Name in der ersten Spalte wird mit „…“ gekürzt, wenn er nicht hineinpasst (ab „Spiel
   10000“).
-- Nicht fortsetzbare Zeilen sind gedämpft, wählbar und lösen außerhalb des Löschmodus nichts aus;
-  im Löschmodus schon (FR-017a). Mauszeiger: die Hand nur über Zeilen, die etwas auslösen.
+- Nicht fortsetzbare Zeilen sind gedämpft, wählbar und lösen außerhalb des Löschmodus nichts aus.
+  Im Löschmodus sind sie verfügbar: normale Schrift, Hand, Löschhinweis; ihr Zustandswort bleibt in
+  der Spalte (FR-017a; Klaus, 2026-10-26, Phasenprüfung Phase 5). Gedämpft heißt immer „löst nichts
+  aus“. Mauszeiger: die Hand nur über Zeilen, die etwas auslösen.
 - „Löschen …“ ist im Löschmodus nicht verfügbar. Der Hinweis von „Zurück“ lautet im Löschmodus
   „Nicht löschen. Esc geht auch.“ (Analyse, F3).
 - Rechtsklick wählt und zeigt den Hinweis, wie im Menü.
@@ -234,15 +236,15 @@ Text-Prüfer prüft sie in der Phase. Die Sätze zu den Graden hat Klaus entschi
 | Gradwahl, Schwer | „Das Glück ist eher auf der Seite der anderen.“ |
 | Zurück, in Gradwahl und Liste | „Zurück zum Hauptmenü. Esc geht auch.“ |
 | Zurück, in der Liste im Löschmodus | „Nicht löschen. Esc geht auch.“ |
-| Liste, fortsetzbare Zeile | „Zuletzt gespielt am 26.10.2026 um 21:40 Uhr.“ |
+| Liste, fortsetzbare Zeile | „Steht am 13.07.1985. Gespielt am 26.10.2026, 21:40 Uhr.“: Spieldatum, dann zuletzt gespielt (Klaus, 2026-10-26, Phasenprüfung Phase 5; vorher nur „Zuletzt gespielt am …“) |
 | Liste, nicht fortsetzbare Zeile | der Grund aus `SaveSlot.reason` |
-| Liste, Löschen … | „Einen Spielstand löschen. Vorher fragt das Spiel nach.“ |
+| Liste, Löschen … | „Einen Spielstand löschen. Vorher kommt eine Rückfrage.“ |
 | Löschen …, im Löschmodus | „Wähl oben den Spielstand, der weg soll. Esc bricht ab.“ |
-| Liste im Löschmodus, Zeile | „Spiel 2 wird gelöscht. Vorher fragt das Spiel nach.“ |
+| Liste im Löschmodus, Zeile | „Spiel 2 wird gelöscht. Vorher kommt eine Rückfrage.“ (Klaus, 2026-10-26: vorher „Vorher fragt das Spiel nach.“, „Spiel“ für zwei Dinge) |
 | Rückfrage, Abbrechen | „Spiel 2 bleibt: Schwer, 14.03.1986. Esc geht auch.“ (Klaus, 2026-10-26: vorher „Spiel 2, Schwer, 14.03.1986, bleibt. …“, mit „Spiel 9999“ drei Zeilen) |
 | Rückfrage, Spiel 2 löschen | „Spiel 2 ist danach weg: Schwer, 14.03.1986. Für immer.“ |
-| Rückfrage, Abbrechen, nicht fortsetzbar | „Spiel 3, beschädigt, bleibt. Esc geht auch.“, bei zu neuen „neuere Version“ statt „beschädigt“ |
-| Rückfrage, löschen, nicht fortsetzbar | „Spiel 3, beschädigt, ist danach weg. Für immer.“, bei zu neuen „neuere Version“ |
+| Rückfrage, Abbrechen, nicht fortsetzbar | „Spiel 3 bleibt: beschädigt. Esc geht auch.“, bei zu neuen „neuere Version“ statt „beschädigt“ (Klaus, 2026-10-26: vorher „Spiel 3, beschädigt, bleibt. …“) |
+| Rückfrage, löschen, nicht fortsetzbar | „Spiel 3 ist danach weg: beschädigt. Für immer.“, bei zu neuen „neuere Version“ |
 | Liste, Spalten Grad und Spieldatum, nicht fortsetzbar | „beschädigt“ oder „neuere Version“ |
 | Spielbildschirm, Knopf | „Speichert Spiel 2 und führt ins Hauptmenü.“ |
 | Meldung, Speichern beim Fortsetzen oder Verlassen (Spielbildschirm) | „Speichern ging nicht. Dein Spiel läuft weiter.“ |
