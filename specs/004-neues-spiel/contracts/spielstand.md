@@ -157,11 +157,14 @@ func _init(p_folder: String = FOLDER) -> void
 func list_slots() -> Array[SaveSlot]
 ## Größte Nummer unter den Dateien eines Spielstands plus 1; ohne solche Dateien 1 (R4).
 func next_number() -> int
-## Schreibt [param game] nach R3 in fünf Schritten. OK oder der Fehler des Schritts, der scheiterte;
+## Schreibt [param game] nach R3 in fünf Schritten. Mit [param is_new] true, für ein neues Spiel,
+## schreibt es nur, wenn es zu game.number noch keine Datei gibt; sonst ERR_ALREADY_EXISTS, und
+## GameSession versucht es mit der nächsten Nummer (CHK002).
+## OK oder der Fehler des Schritts, der scheiterte;
 ## dann ist der vorige Stand lesbar, und last_error nennt Datei und Schritt für das Protokoll, etwa
 ## „Die Datei user://spielstaende/spiel_2.json.neu lässt sich nicht schreiben.“ Den Satz für den
 ## Spieler wählt GameSession (spielablauf.md).
-func write(game: SaveGame) -> Error
+func write(game: SaveGame, is_new: bool = false) -> Error
 ## Löscht spiel_<N>.json, .neu und .alt dieser Nummer, sonst nichts (FR-018).
 func delete(p_number: int) -> Error
 ## Pfad der Datei zu einer Nummer, etwa „user://spielstaende/spiel_2.json“.
@@ -177,7 +180,7 @@ sie in `after_each()` ab. Kataloge kommen aus `src/test/fixtures/`, nie aus `src
 |---|---|---|
 | `test_intervention_file.gd` | Umrechnung hin und zurück, falsches Datum mit Satz, −1 als „1984-12-31“ | R5 |
 | `test_save_game.gd` | Rundreise Speicher → Text → Speicher, Text Zeichen für Zeichen gegen eine Erwartung; jede Zeile der Tabelle „Zustand“ mit ihrem Grund; Zeitpunkte als UTC; `default_name()` | FR-007, FR-013, FR-014 |
-| `test_save_store.gd` | Liste mit Ordnung, fremde Dateien, fehlender Ordner; nächste Nummer mit Lücken, beschädigten und `.neu`; Schreiben über einen vorhandenen Stand; jeder Abbruch aus R3 mit dem lesbaren Stand danach; Speichern scheitert, weil an der Stelle der `.neu` ein Ordner liegt: alter Stand unverändert, `last_error` gesetzt; Löschen nur der drei Dateien einer Nummer; beschädigte und zu neue werden nie überschrieben; 20 Spielstände mit `catalog_500.json` in höchstens 1 s gelesen | FR-009, FR-011, FR-013, FR-018, SC-002, SC-004 |
+| `test_save_store.gd` | Liste mit Ordnung, fremde Dateien, fehlender Ordner; nächste Nummer mit Lücken, beschädigten und `.neu`; Schreiben über einen vorhandenen Stand; jeder Abbruch aus R3 mit dem lesbaren Stand danach; Speichern scheitert, weil an der Stelle der `.neu` ein Ordner liegt: alter Stand unverändert, `last_error` gesetzt; Löschen nur der drei Dateien einer Nummer; beschädigte und zu neue werden nie überschrieben; ein neues Spiel weicht einer vorhandenen Nummer aus; Lesen aus `.neu` oder `.alt` meldet `push_warning()`; 20 Spielstände mit `catalog_500.json` in höchstens 1 s gelesen | FR-009, FR-011, FR-013, FR-018, SC-002, SC-004 |
 | `test_save_resume_run.gd` | SC-003: Seeds 1, 4711, 99999 × drei Grade, Lauf ohne Pause gegen Lauf mit Datei am 14.03.1986, alle Zeilen ab dem 15.03.1986 gleich; dasselbe mit Eingriffen vor und nach dem 14.03.1986; eine Kopie mit einem fehlerhaften Ereignis läuft ohne dieses weiter | FR-008, FR-022, SC-003 |
 
 Die Fixtures unter `fixtures/spielstaende/` sind kleine Dateien je Fehlerfall, benannt nach dem

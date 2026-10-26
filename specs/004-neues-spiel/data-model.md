@@ -139,8 +139,12 @@ gibt es nur eine unlesbare `.neu`, erscheint die Nummer nicht (das erste Speiche
 Spiels ist gescheitert, einen Spielstand gab es nie). Geordnet nach R12. Fehlt der Ordner, ist die
 Liste leer.
 
+Liest die Liste einen Spielstand aus `.neu` oder `.alt`, meldet `push_warning()` das mit dem Pfad;
+der Spieler sieht nichts Besonderes (Checkliste, CHK021).
+
 **Nächste Nummer:** größte Nummer unter allen Dateien nach dem Muster, auch `.neu` und `.alt`,
-plus 1; ohne Dateien 1 (R4).
+plus 1; ohne Dateien 1 (R4). Ein neues Spiel schreibt nur, wenn es zu seiner Nummer keine Datei
+gibt; sonst nimmt es die nächste (CHK002).
 
 **Schreiben:** die fünf Schritte aus R3. Fehlt der Ordner, wird er angelegt. Schlägt ein Schritt
 fehl, gibt es den Fehler zurück, `last_error` nennt Datei und Schritt, und der vorige Stand ist
@@ -229,11 +233,14 @@ stateDiagram-v2
   Spielstands auf „Neues Spiel“ (US4, Szenario 5).
 - **Weiterspielen** nimmt den ersten fortsetzbaren Spielstand der Liste, also den zuletzt
   gespielten.
+- **Neu gelesen** wird der Ordner jedes Mal, wenn der Titelbildschirm erscheint und wenn „Spiel
+  laden“ die Liste öffnet. Fortsetzen nimmt den Stand, den die Liste gelesen hat (CHK001).
 - **Verfügbar** (FR-002): „Weiterspielen“ mit mindestens einem fortsetzbaren Spielstand, „Spiel
   laden“ mit mindestens einem Spielstand gleich welchen Zustands, „Einstellungen“ nie.
 - **Vorwahl in Blättern:** Gradwahl „Mittel“; Liste die oberste Zeile; Rückfrage „Abbrechen“.
 - **Im Löschmodus** bleibt die Auswahl, wo sie war. Nach dem Löschen steht sie auf der Zeile, die
   an die Stelle der gelöschten rückt, sonst auf der letzten.
+- **Löschen scheitert:** Meldung, Liste neu gelesen, Löschmodus aus (CHK003).
 - **Meldung:** Scheitert Anlegen, Fortsetzen, Löschen oder Verlassen, steht der Satz aus
   `last_error` als Meldung an der Stelle des Hinweises, bis die Auswahl wechselt oder etwas
   ausgelöst wird.

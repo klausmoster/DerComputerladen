@@ -429,26 +429,17 @@ Auslegungen des Agents, die Claude angenommen hat:
 ### Feature 004, Plan (2026-10-26)
 
 Festlegungen in `specs/004-neues-spiel/research.md`, die nicht aus Spec und Klärung folgen. Noch
-nicht umgesetzt; Klaus kann sie mit der Checkliste oder jeder Abnahme ändern.
+nicht umgesetzt; Klaus kann sie bei jeder Abnahme ändern. Die übrigen Festlegungen des Plans hat
+Klaus mit der Checkliste bestätigt (unter „Erledigt“).
 - **Lage der Blätter (R11):** Gradwahl, Liste und Rückfrage hängen oben bei y 150 und schließen
-  rechts bei x 616 ab wie das Hauptmenü; die Liste ist 296 breit.
-- **Liste (R12):** vier Spalten, „zuletzt gespielt“ als „26.10.2026 21:40“ und ausgeschrieben im
-  Hinweis; höchstens sechs Spielstände sichtbar, mehr rollen; nicht fortsetzbare unten nach Nummer;
-  „Löschen …“ ist im Löschmodus nicht verfügbar.
-- **Sätze zu den Graden im Hinweis (R13)**, nicht alle drei gleichzeitig unter den Graden.
-- **Rückfrage (R14):** Kopfzeile LÖSCHEN?, Einträge „Abbrechen“ und „Spiel 2 löschen“; „Abbrechen“
-  übernimmt die Rolle von „Zurück“ aus FR-023.
+  rechts bei x 616 ab wie das Hauptmenü; die Liste ist 296 breit und zeigt höchstens sechs
+  Spielstände.
+- **Spalte „zuletzt gespielt“ (R12):** in der Form „26.10.2026 21:40“, ohne Spaltenköpfe.
 - **Spielbildschirm (R15):** Vollbild in `nacht`, Knopf in der Mitte, Hinweis nennt das Spiel;
   der Knopf wird ein eigener Baustein unter `src/ui/`. Fokuslinie auf dunklem Grund in `papier`
-  (Vorschlag für den Style-Guide).
-- **Speichern beim Fortsetzen (R9).**
-- **Schließen bei gescheitertem Speichern (R8):** Das Fenster bleibt offen, die Meldung sagt es;
-  ein zweites Schließen beendet ohne Speichern.
-- **Eingriff mit falschem Datum macht den Spielstand beschädigt (R10)**, anders als bei Proben.
+  (Vorschlag für den Style-Guide, Phase 1).
 - **Zurück aus einem Blatt** wählt im Hauptmenü den Eintrag, der es geöffnet hat
   (`data-model.md`).
-- **Katalog beim Start der App gelesen:** Eine Änderung aus der Werkstatt gilt für neue Spiele,
-  sobald das Spiel neu gestartet ist, wie heute.
 
 ### KI-Workflow, Schritte 1 und 2 (2026-10-22)
 
@@ -461,6 +452,13 @@ nicht umgesetzt; Klaus kann sie mit der Checkliste oder jeder Abnahme ändern.
 
 ## Erledigt
 
+- **Review-Checkliste von Feature 004:** Klaus, 2026-10-26: alle 36 Vorschläge freigegeben
+  (`specs/004-neues-spiel/checklists/review.md`), eingearbeitet in Spec, Plan, research.md,
+  Datenmodell, Verträge und Quickstart. Damit bestätigt sind auch diese Festlegungen des Plans, die
+  jetzt in der Spec stehen: Ordnung und Rollen der Liste, „Löschen …“ im Löschmodus nicht
+  verfügbar, die Sätze zu den Graden im Hinweis, „Abbrechen“ als Zurück der Rückfrage, Speichern
+  beim Fortsetzen, Schließen bei gescheitertem Speichern, ein Eingriff mit falschem Datum macht den
+  Spielstand beschädigt, Katalog beim Start der App gelesen.
 - **Sätze zu den Graden (Feature 004, R18):** Klaus, 2026-10-26, nach Empfehlung Vorschlag A:
   Leicht „Das Glück ist eher auf deiner Seite.“, Mittel „Das Glück hält sich raus.“, Schwer „Das
   Glück ist eher auf der Seite der anderen.“ Steht in `specs/004-neues-spiel/research.md`, R18, und

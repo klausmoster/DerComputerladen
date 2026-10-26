@@ -107,6 +107,10 @@ unter Windows in einem Zug tut, hängt von der Version ab; so ist es egal. Godot
 Spielstand gehören, plus 1, auch unter beschädigten, zu neuen und übrig gebliebenen `.neu` oder
 `.alt`. Ohne solche Dateien ist es 1 (FR-009).
 
+Ein neues Spiel schreibt nur unter einer Nummer, zu der es noch keine Datei gibt; findet es dort
+eine, nimmt es die nächste. So überschreibt auch ein zweites Fenster des Spiels, das zur selben Zeit
+ein Spiel anlegt, kein anderes (Checkliste, CHK002).
+
 **Grund:** Zählen auch beschädigte und zu neue Spielstände mit, überschreibt ein neues Spiel nie
 einen davon (FR-013). Der Name in der Datei ist der, den die Liste zeigt: Hat der Laden später
 einen eigenen Namen (05 Standort), steht dort dieser, und die Nummer bleibt die Kennung.
@@ -333,8 +337,8 @@ nicht in eine Zeile des Menüs.
 
 **Entscheidung:** Die Rückfrage ist ein Blatt mit der Kopfzeile LÖSCHEN? und den Einträgen
 „Abbrechen“ (vorgewählt) und „Spiel 2 löschen“. Die Hinweise nennen Name, Grad und Spieldatum:
-„Spiel 2, Schwer, 14.03.1986, bleibt, wie es ist.“ und „Spiel 2, Schwer, 14.03.1986, ist danach
-weg. Für immer.“ „Abbrechen“ übernimmt die Rolle von „Zurück“ aus FR-023; Esc wirkt genauso
+„Spiel 2, Schwer, 14.03.1986, bleibt. Esc geht auch.“ und „Spiel 2, Schwer, 14.03.1986, ist danach
+weg. Für immer.“ (Checkliste, CHK031) „Abbrechen“ übernimmt die Rolle von „Zurück“ aus FR-023; Esc wirkt genauso
 (Claude, 2026-10-26).
 
 **Grund:** FR-017 verlangt die Rückfrage mit Name, Grad und Spieldatum und „Abbrechen“ vorgewählt;
@@ -387,7 +391,8 @@ Bauen in den Style-Guide (Grundsatz IV, R17).
   15.02.1985, am 14.03.1986 und am 31.12.1999.
 - SC-002: Liste mit 20 Spielständen, je mit einer Kopie von `catalog_500.json` (500 Ereignisse,
   rund 25-mal so viele wie heute), in höchstens einer Sekunde gelesen; das Anzeigen des Blatts
-  misst der Test der Oberfläche.
+  misst der Test der Oberfläche. Dazu ein Spielstand mit `catalog_500.json` vom 31.12.1999, in
+  höchstens einer Sekunde fortgesetzt (Checkliste, CHK024).
 - SC-004: je Fehlerfall ein Test mit einer kaputten Datei als Fixture oder im Testordner erzeugt;
   ein Speichern, das scheitert, entsteht ohne Hilfe im Code: Liegt dort, wo die `.neu` hin soll, ein
   Ordner, lässt sie sich nicht schreiben.
@@ -413,7 +418,9 @@ Stichproben übersehen hätten.
 4. **Meldung** (neu): wie der Hinweis, aber mit Kontur in `kassenrot`; sie ersetzt den Hinweis,
    bis der Spieler die Auswahl ändert oder etwas auslöst. Für „Speichern ging nicht“.
 5. **Knopf auf dunklem Grund:** Fokuslinie in `papier`; dazu der Spielbildschirm als Platzhalter:
-   Vollbild in `nacht`, Knopf in der Mitte.
+   Vollbild in `nacht`, Knopf in der Mitte. Ein Knopf, der allein auf einem Bildschirm steht und
+   den Fokus hat, zeigt seinen Hinweis wie ein Menüeintrag, ohne Verzögerung; Knöpfe in Fenstern
+   behalten den Tooltip (Checkliste, CHK017).
 
 Claude schreibt die Abschnitte, Klaus gibt sie frei; erst dann baut der Agent die Oberfläche.
 

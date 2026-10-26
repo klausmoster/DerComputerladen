@@ -135,7 +135,8 @@ class_name Knopf
 extends Button
 
 ## Der Baustein Knopf aus dem Style-Guide: gehaeuse, Kontur tusche, Relief erhaben, gedrückt
-## vertieft, beim Überfahren signalgelb, Schrift menue. Das Relief und die Fokuslinie malt _draw(),
+## vertieft, beim Überfahren signalgelb, Schrift menue. Steht er allein auf einem Bildschirm, zeigt
+## der Bildschirm seinen Hinweis wie im Menü statt eines Tooltips (Style-Guide, CHK017). Das Relief und die Fokuslinie malt _draw(),
 ## denn eine StyleBoxFlat kennt kein Relief in zwei Farben. Auf dunklem Grund ist die Fokuslinie
 ## papier (Style-Guide, R17).
 
@@ -177,8 +178,9 @@ var session: Node = null
 - „Weiterspielen“: `session.resume()` mit dem ersten fortsetzbaren Spielstand, dann Spielbildschirm.
 - Gradwahl bestätigen: `session.start_new(grad)`; bei OK Spielbildschirm, sonst Meldung auf der
   Gradwahl.
-- Liste: Fortsetzen wie „Weiterspielen“; im Löschmodus Rückfrage; bestätigt `store().delete()`,
-  Liste neu, Löschmodus aus; ist sie leer, Hauptmenü mit „Neues Spiel“.
+- Liste: wird bei jedem Öffnen neu gelesen (CHK001). Fortsetzen wie „Weiterspielen“; im Löschmodus
+  Rückfrage; bestätigt `store().delete()`, Liste neu, Löschmodus aus; ist sie leer, Hauptmenü mit
+  „Neues Spiel“. Scheitert das Löschen: Meldung, Liste neu, Löschmodus aus (CHK003).
 - `ui_cancel` (Esc): eine Ebene zurück, im Hauptmenü nichts. Im Löschmodus beendet Esc den Modus,
   die Liste bleibt (US4, Szenario 2).
 - „Beenden“: wie bisher `get_tree().quit()`; es läuft kein Spiel.
@@ -201,13 +203,13 @@ Text-Prüfer prüft sie in der Phase. Die Sätze zu den Graden hat Klaus entschi
 | Gradwahl, Leicht | „Das Glück ist eher auf deiner Seite.“ (Klaus, 2026-10-26, R18) |
 | Gradwahl, Mittel | „Das Glück hält sich raus.“ |
 | Gradwahl, Schwer | „Das Glück ist eher auf der Seite der anderen.“ |
-| Zurück, in Gradwahl und Liste | „Zurück zum Hauptmenü.“ |
+| Zurück, in Gradwahl und Liste | „Zurück zum Hauptmenü. Esc geht auch.“ |
 | Liste, fortsetzbare Zeile | „Zuletzt gespielt am 26.10.2026 um 21:40 Uhr.“ |
 | Liste, nicht fortsetzbare Zeile | der Grund aus `SaveSlot.reason` |
 | Liste, Löschen … | „Einen Spielstand löschen. Vorher fragt das Spiel nach.“ |
 | Löschen …, im Löschmodus | „Wähl oben den Spielstand, der weg soll. Esc bricht ab.“ |
 | Liste im Löschmodus, Zeile | „Spiel 2 wird gelöscht. Vorher fragt das Spiel nach.“ |
-| Rückfrage, Abbrechen | „Spiel 2, Schwer, 14.03.1986, bleibt, wie es ist.“ |
+| Rückfrage, Abbrechen | „Spiel 2, Schwer, 14.03.1986, bleibt. Esc geht auch.“ |
 | Rückfrage, Spiel 2 löschen | „Spiel 2, Schwer, 14.03.1986, ist danach weg. Für immer.“ |
 | Spielbildschirm, Knopf | „Speichert Spiel 2 und führt ins Hauptmenü.“ |
 | Meldung, Speichern beim Verlassen | „Speichern ging nicht. Dein Spiel läuft weiter.“ |

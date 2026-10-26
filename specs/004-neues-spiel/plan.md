@@ -85,7 +85,7 @@ Testdateien, vier geänderte, etwa zehn kleine Fixtures. Fünf Abschnitte im Sty
 |---|---|---|---|
 | I. Nur Desktop | Bedienung mit Maus und Tastatur wie im Hauptmenü: Überfahren wählt, Rechtsklick zeigt den Hinweis, Pfeile, Tab, Enter, Esc, Mausrad zum Rollen. Fenster schließen und Cmd+Q speichern. Keine Touch-Eingaben, Forward+ bleibt | erfüllt | erfüllt |
 | II. Klaus entscheidet, der Agent baut, Claude plant und prüft | Der Plan enthält nur Signaturen. Umgesetzt wird phasenweise auf Klaus' Auftrag, `/speckit-implement` nie; Lernnotizen in `lernnotizen.md` zu jeder umgesetzten Task. Die fünf Festlegungen aus der Spec und die Sätze zu den Graden hat Klaus entschieden; Claudes Festlegungen aus dem Plan stehen gekennzeichnet in research.md und `docs/offene-punkte.md` | erfüllt | erfüllt |
-| III. Erst spezifizieren | Spec mit zehn Klärungen, zwei davon zum Plan, eigener Branch, Systeme 11, 01 und 10 genannt. 18 Entscheidungen mit verworfenen Alternativen in research.md | erfüllt | erfüllt |
+| III. Erst spezifizieren | Spec mit zehn Klärungen, zwei davon zum Plan, dazu das Review mit 36 Punkten, eigener Branch, Systeme 11, 01 und 10 genannt. 18 Entscheidungen mit verworfenen Alternativen in research.md | erfüllt | erfüllt |
 | IV. Ein Look: der Style-Guide | Neue Bausteine und Regeln kommen in Phase 1 in den Style-Guide, bevor gebaut wird (R17); Specs und Verträge verweisen auf ihn. Maße in R11 und R12 sind Messungen für den Platz, keine neuen Werte | erfüllt, mit Vorarbeit | erfüllt, mit Vorarbeit |
 | V. Daten sauber halten | Spielstände sind Spieldaten des Spielers unter `user://`, nicht Spielinhalt; game_bible unberührt. Der Katalog wird nicht verändert, ein Spielstand führt eine Kopie | erfüllt | erfüllt |
 | Technische Rahmenbedingungen | Godot 4.7, GUT 9.7.1, Projekt in `src/`. `GameClock` und `Timeline` bleiben Autoloads, `GameSession` kommt dazu. Die Timeline meldet weiter nur und bleibt die eine Quelle für Ereignisse; der Spielstand hält nur, was ihren Fahrplan festlegt | erfüllt | erfüllt |
@@ -110,7 +110,8 @@ specs/004-neues-spiel/
 │   ├── spielablauf.md           # Timeline, GameClock, GameSession
 │   └── titelbildschirm.md       # Blätter, Liste, Rückfrage, Spielbildschirm, Knopf, Texte
 ├── checklists/
-│   └── requirements.md          # Qualitätsprüfung der Spec
+│   ├── requirements.md          # Qualitätsprüfung der Spec
+│   └── review.md                # Review der Anforderungen, 36 Punkte, von Klaus freigegeben
 ├── tasks.md                     # entsteht mit /speckit-tasks
 └── lernnotizen.md               # entsteht bei der Umsetzung
 ```
@@ -228,21 +229,41 @@ Kandidaten für Lernnotizen und für `[K]`-Aufgaben, die Klaus sich aussucht:
 | Autoloads | `GameClock`, `Timeline`, `GameWindow` | dazu `GameSession` | `project.godot`, CLAUDE.md in Phase 6 |
 | `auto_accept_quit` | nur die Werkstatt schaltet es | dazu `GameSession`, solange ein Spiel läuft | in der Werkstatt läuft nie ein Spiel |
 
+## Änderungen nach der Checkliste
+
+Im Review der Checkliste [review.md](checklists/review.md) am 2026-10-26 hat Klaus alle 36
+Vorschläge freigegeben. An Spec und Plan hat das geändert:
+- **Fehlerwege, neu in den Edge Cases:** Datei ändert sich von außen (CHK001), zwei Fenster legen
+  gleichzeitig ein Spiel an (CHK002; R4, `SaveStore.write(game, is_new)`), Löschen scheitert
+  (CHK003), Speichern scheitert beim Anlegen, beim Fortsetzen und beim Schließen (CHK004, CHK020,
+  CHK022), was nach einem Absturz beim Speichern zu sehen ist (CHK021), Werte außerhalb ihres
+  Bereichs mit Spieldatum und Eingriffen (CHK009).
+- **Präzisiert:** FR-004 mit dem Satz im Hinweis (CHK011), FR-010 mit dem Fortsetzen (CHK004),
+  FR-011 mit dem Ort der Meldung (CHK014), FR-015 mit Ordnung, Ortszeit und Rollen (CHK005,
+  CHK006, CHK013), FR-017 bei nicht fortsetzbaren Spielständen (CHK008), FR-017a mit „Löschen …“
+  im Löschmodus (CHK007), FR-018 mit den Zwischendateien (CHK012), FR-023 mit „Abbrechen“ und Esc
+  im Hauptmenü (CHK010, CHK016).
+- **Messbar gemacht:** SC-002 mit 20 Spielständen zu je 500 Ereignissen und dem Fortsetzen vom
+  31.12.1999 (CHK024), SC-006 mit Hinweisen und Höhe des Menüs (CHK019).
+- **Annahmen:** Katalog beim Start gelesen (CHK018), Spielstände sind nur Daten (CHK035), die Uhr
+  des Rechners geht richtig (CHK023), geprüft bis 20 Spielstände (CHK036).
+- **Plan und Verträge:** Hinweis am allein stehenden Knopf statt Tooltip, als Regel für den
+  Style-Guide (CHK017, R17); Esc in den Hinweisen von „Zurück“ und „Abbrechen“ (CHK031); Liste bei
+  jedem Öffnen neu gelesen (CHK001); FR-012 im Quickstart (CHK026).
+
+Die übrigen Punkte waren erfüllt oder brauchten keine Änderung.
+
 ## Eigene Festlegungen des Plans
 
 Claude hat beim Planen festgelegt, was nicht aus Spec und Klärung folgt. Jede steht mit Grund in
-research.md und gekennzeichnet in `docs/offene-punkte.md`, „Feature 004, Plan“:
-- alle Blätter oben bei y 150 und rechts bündig wie das Hauptmenü; die Liste zeigt höchstens sechs
-  Spielstände und rollt (R11, R12);
-- „zuletzt gespielt“ als vierte Spalte „26.10.2026 21:40“, ausgeschrieben im Hinweis (R12);
-- nicht fortsetzbare Spielstände unten in der Liste; „Löschen …“ im Löschmodus nicht verfügbar
-  (R12);
-- die Sätze zu den Graden im Hinweis der Zeile (R13);
-- Rückfrage mit „Abbrechen“ und „Spiel N löschen“, „Abbrechen“ in der Rolle von „Zurück“ (R14);
+research.md. Mit der Checkliste hat Klaus am 2026-10-26 die bestätigt, die jetzt in der Spec
+stehen: Ordnung und Rollen der Liste, „Löschen …“ im Löschmodus, Sätze im Hinweis, „Abbrechen“ in
+der Rückfrage, Speichern beim Fortsetzen, Schließen bei gescheitertem Speichern, falsche Eingriffe
+als Schaden, Katalog beim Start. Offen in `docs/offene-punkte.md`, „Feature 004, Plan“, bleiben:
+- alle Blätter oben bei y 150 und rechts bündig wie das Hauptmenü; sechs sichtbare Spielstände
+  (R11, R12);
+- „zuletzt gespielt“ als vierte Spalte „26.10.2026 21:40“ (R12);
 - Spielbildschirm in `nacht`, Knopf in der Mitte, Hinweis nennt das Spiel (R15);
-- Speichern auch beim Fortsetzen (R9);
-- scheitert das Speichern beim Schließen, bleibt das Fenster offen, ein zweites Schließen beendet
-  ohne Speichern (R8);
 - zurück aus einem Blatt steht die Auswahl auf dem Eintrag, der es geöffnet hat (data-model.md).
 
 ## Entscheidungen von Klaus zum Plan

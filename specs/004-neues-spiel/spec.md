@@ -73,6 +73,19 @@ Fragen aus `/speckit-clarify`:
   schlechten Ereignissen, das nur bei passenden Profilen stimmt; C mit „Zufall“, das mehr
   behauptet, als der Grad tut.
 
+### Review 2026-10-26
+
+Aus der Checkliste [review.md](checklists/review.md) mit 36 Punkten; Klaus hat am 2026-10-26 alle
+Vorschläge freigegeben. Präzisiert sind FR-004, FR-010, FR-011, FR-015, FR-017, FR-017a, FR-018,
+FR-023, SC-002 und SC-006; neu sind Edge Cases zu Fehlerwegen und vier Annahmen. Die wichtigsten:
+- Q: Was, wenn zwei Fenster des Spiels gleichzeitig ein neues Spiel anlegen? → A: Ein neues Spiel
+  schreibt nur unter einer Nummer, zu der es noch keine Datei gibt, sonst nimmt es die nächste
+  (CHK002).
+- Q: Was, wenn das Speichern beim Schließen des Fensters scheitert? → A: Das Fenster bleibt offen
+  mit einer Meldung; ein zweites Schließen beendet ohne Speichern (CHK020).
+- Q: Wie wird SC-002 gemessen? → A: mit 20 Spielständen und je 500 Ereignissen im Katalog, dazu
+  das Fortsetzen eines Spielstands vom 31.12.1999 (CHK024).
+
 ## Überblick
 
 Bisher endet das Spiel am Hauptmenü: „Neues Spiel“ und „Spiel laden“ sind nicht verfügbar, und im
@@ -215,11 +228,27 @@ andere ist unverändert.
 - **Zu neuer Spielstand**: Ein Spielstand aus einer neueren Version des Spiels, erkennbar an seiner
   Formatversion, erscheint in der Liste mit dem Hinweis, dass er eine neuere Version braucht. Er
   lässt sich nicht fortsetzen, aber löschen, und wird nie überschrieben.
-- **Unbekannter Grad oder Seed außerhalb des Bereichs**: Der Spielstand gilt als beschädigt.
+- **Werte außerhalb ihres Bereichs**: Ein unbekannter Grad, ein Seed außerhalb, ein Spieldatum
+  außerhalb von 1985 bis 1999 oder ein Eingriff mit einem Datum, das es nicht gibt: Der
+  Spielstand gilt als beschädigt.
 - **Speichern scheitert**, etwa weil der Datenträger voll ist: Der Spieler erfährt es mit einer
-  Meldung, der vorige Stand des Spielstands bleibt lesbar, und das Spiel läuft weiter.
+  Meldung, der vorige Stand des Spielstands bleibt lesbar, und das Spiel läuft weiter. Scheitert
+  schon das erste Speichern eines neuen Spiels, entsteht weder Spielstand noch laufendes Spiel, und
+  die Gradwahl bleibt mit der Meldung stehen. Scheitert es beim Fortsetzen, läuft das Spiel, und
+  der Spielbildschirm zeigt die Meldung.
+- **Speichern beim Schließen scheitert**: Das Fenster bleibt offen, und die Meldung sagt es; ein
+  zweites Schließen beendet ohne Speichern.
+- **Löschen scheitert**, etwa weil die Datei gesperrt ist: Der Spieler erfährt es mit einer
+  Meldung, der Spielstand bleibt, und die Liste zeigt den Stand neu, ohne Löschmodus.
 - **Absturz oder Stromausfall während des Speicherns**: Der vorige Stand des Spielstands bleibt
-  lesbar; es entsteht nie eine halb geschriebene Datei an seiner Stelle.
+  lesbar; es entsteht nie eine halb geschriebene Datei an seiner Stelle. Der Spieler sieht danach
+  nichts Besonderes, nur das Protokoll nennt, was übrig blieb.
+- **Datei ändert sich von außen**, etwa im Finder gelöscht, während die Liste zu sehen ist:
+  Fortsetzen nimmt den Stand, den die Liste gelesen hat, und das Speichern dabei schreibt ihn
+  wieder. Die Liste liest den Ordner jedes Mal neu, wenn sie erscheint.
+- **Zwei Fenster des Spiels gleichzeitig**: Ein neues Spiel schreibt nur unter einer Nummer, zu der
+  es noch keine Datei gibt, sonst nimmt es die nächste; so überschreibt auch dann keins ein anderes.
+  Spielen beide Fenster dasselbe Spiel, gilt das letzte Speichern.
 - **Geänderter Ereigniskatalog**: Klaus ändert nach dem Speichern den Katalog in der Werkstatt,
   etwa die Chance von „Konkurrent eröffnet“. Ein gespeichertes Spiel läuft mit seinem eigenen
   Katalog weiter, als wäre nichts geändert; erst ein neues Spiel nutzt den geänderten (FR-022).
@@ -259,9 +288,11 @@ andere ist unverändert.
 **Neues Spiel**
 
 - **FR-004**: „Neues Spiel“ muss eine Wahl des Schwierigkeitsgrads zeigen: Leicht, Mittel und
-  Schwer, in dieser Reihenfolge, vorgewählt Mittel. Zu jedem Grad steht ein Satz, der nur
+  Schwer, in dieser Reihenfolge, vorgewählt Mittel. Zu jedem Grad gibt es einen Satz, der nur
   verspricht, was der Grad tut (heute: Ereignisse kommen öfter oder seltener), trocken im Ton des
-  Abschnitts „Sprache“ im Style-Guide. Die Sätze schlägt der Plan vor, Klaus entscheidet sie.
+  Abschnitts „Sprache“ im Style-Guide. Der Hinweis der gewählten Zeile nennt den Satz zu ihrem
+  Grad; weil Mittel vorgewählt ist, steht sein Satz sofort da. Die Sätze schlägt der Plan vor,
+  Klaus entscheidet sie.
 - **FR-005**: Die Wahl muss sich bestätigen und abbrechen lassen, mit Maus und Tastatur wie das
   Hauptmenü. Abbrechen über „Zurück“ oder Esc führt ohne Spielstand zurück ins Hauptmenü
   (FR-023).
@@ -283,12 +314,13 @@ andere ist unverändert.
   überschreibt nie einen vorhandenen. Jeder Spielstand heißt automatisch „Spiel N“, wobei N um
   eins größer ist als die größte Nummer unter den vorhandenen Spielständen; ohne Spielstände ist
   es „Spiel 1“. Beispiel: Es gibt „Spiel 1“ und „Spiel 3“, das nächste heißt „Spiel 4“.
-- **FR-010**: Das Spiel muss automatisch speichern: beim Anlegen, beim Verlassen über den Knopf „Zum
-  Hauptmenü“ und beim Beenden der App, auch mit Cmd+Q und dem Schließen des Fensters. Ein eigenes
-  „Speichern“ zum Anklicken gibt es nicht.
+- **FR-010**: Das Spiel muss automatisch speichern: beim Anlegen, beim Fortsetzen, beim Verlassen
+  über den Knopf „Zum Hauptmenü“ und beim Beenden der App, auch mit Cmd+Q und dem Schließen des
+  Fensters. Ein eigenes „Speichern“ zum Anklicken gibt es nicht.
 - **FR-011**: Speichern muss so geschehen, dass ein Abbruch mittendrin den vorigen Stand lesbar
   lässt. Scheitert das Speichern, erfährt der Spieler es mit einer Meldung, und das Spiel läuft
-  weiter.
+  weiter. Die Meldung steht an der Stelle des Hinweises, bis der Spieler etwas anderes wählt oder
+  auslöst; wie sie aussieht, regelt der Style-Guide.
 - **FR-012**: Spielstände müssen im Benutzerordner des Spiels liegen, nicht im Spielprojekt, und
   Updates des Spiels überstehen.
 - **FR-013**: Ein Spielstand, der sich nicht lesen lässt, dessen Formatversion neuer ist als die
@@ -304,23 +336,30 @@ andere ist unverändert.
 **Fortsetzen und Liste**
 
 - **FR-015**: Die Liste der Spielstände muss je Spielstand Name, Grad, Spieldatum und „zuletzt
-  gespielt“ zeigen, geordnet nach „zuletzt gespielt“, das jüngste oben.
+  gespielt“ zeigen, geordnet nach „zuletzt gespielt“, das jüngste oben. Nicht fortsetzbare
+  Spielstände stehen darunter, nach Nummer absteigend. „Zuletzt gespielt“ ist die Ortszeit des
+  Rechners, in der Liste etwa „26.10.2026 21:40“, im Hinweis der Zeile ausgeschrieben „am
+  26.10.2026 um 21:40 Uhr“. Passen nicht alle Spielstände aufs Blatt, rollt die Liste mit der
+  Auswahl und dem Mausrad; „Löschen …“ und „Zurück“ bleiben immer zu sehen.
 - **FR-016**: Einen Spielstand fortsetzen muss das Spiel am gespeicherten Datum mit dem
   gespeicherten Grad auf dem Spielbildschirm zeigen und „zuletzt gespielt“ auf jetzt setzen.
 
 **Löschen**
 
-- **FR-017**: Löschen muss vorher nachfragen. Die Rückfrage nennt Name, Grad und Spieldatum,
-  vorgewählt ist „Abbrechen“; Esc bricht ab. Erst die Bestätigung löscht den Spielstand
+- **FR-017**: Löschen muss vorher nachfragen. Die Rückfrage nennt Name, Grad und Spieldatum, bei
+  einem nicht fortsetzbaren Spielstand statt Grad und Spieldatum seinen Zustand, etwa „beschädigt“.
+  Vorgewählt ist „Abbrechen“; Esc bricht ab. Erst die Bestätigung löscht den Spielstand
   endgültig.
 - **FR-017a**: Gelöscht wird über den Eintrag „Löschen …“ unter den Spielständen der Liste, vor
   „Zurück“. Er schaltet die Liste in einen Löschmodus, erkennbar an der geänderten Kopfzeile;
   im Hinweis jeder Zeile steht dann, dass sie gelöscht wird. Die gewählte Zeile führt zur
   Rückfrage (FR-017). Der Modus endet nach dem Löschen, nach Abbrechen in der Rückfrage, mit
   „Zurück“ und mit Esc; danach setzt eine Zeile wieder fort. Im Löschmodus lassen sich auch
-  nicht fortsetzbare Spielstände wählen. Ist nach dem Löschen kein Spielstand mehr übrig, führt
-  das Spiel von selbst ins Hauptmenü.
-- **FR-018**: Löschen darf nur den gewählten Spielstand entfernen, keine anderen Dateien.
+  nicht fortsetzbare Spielstände wählen. „Löschen …“ selbst ist im Löschmodus nicht verfügbar; sein
+  Hinweis sagt, wie es weitergeht. Ist nach dem Löschen kein Spielstand mehr übrig, führt das Spiel
+  von selbst ins Hauptmenü.
+- **FR-018**: Löschen darf nur den gewählten Spielstand entfernen, samt den Zwischendateien, die
+  beim Speichern zu ihm entstehen, und keine anderen Dateien.
 
 **Spielbildschirm**
 
@@ -340,9 +379,10 @@ andere ist unverändert.
 - **FR-023**: Die Wahl des Grads, die Liste der Spielstände und die Rückfrage beim Löschen müssen
   auf dem Titelbildschirm erscheinen: Titelbild, Logo und Versionszeile bleiben, an der Stelle
   des Hauptmenüs steht ein eigenes Blatt Endlospapier mit Kopfzeile, etwa „SCHWIERIGKEIT“ und
-  „SPIELSTÄNDE“. Jedes Blatt hat einen Eintrag „Zurück“; er und Esc führen eine Ebene zurück, aus
-  der Liste und der Gradwahl ins Hauptmenü, aus der Rückfrage in die Liste. Ob ein Blatt dafür
-  breiter sein darf als das Hauptmenü, regelt der Style-Guide.
+  „SPIELSTÄNDE“. Jedes Blatt hat einen Eintrag, der eine Ebene zurückführt: „Zurück“, in der
+  Rückfrage „Abbrechen“ (FR-017). Er und Esc führen aus der Liste und der Gradwahl ins Hauptmenü,
+  aus der Rückfrage in die Liste. Im Hauptmenü selbst tut Esc nichts, wie in Feature 001. Ob ein
+  Blatt dafür breiter sein darf als das Hauptmenü, regelt der Style-Guide.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -363,8 +403,9 @@ andere ist unverändert.
   Tastatur höchstens 3 Eingaben, mit Vorgabe Mittel.
 - **SC-002**: „Weiterspielen“ bringt den Spieler vom Titelbildschirm mit 1 Eingabe auf den
   Spielbildschirm; über „Spiel laden“ braucht er mit der Maus 2 Klicks, mit der Tastatur
-  höchstens 4 Eingaben. Laden und Anzeigen dauern auf dem Entwicklungsrechner höchstens
-  1 Sekunde.
+  höchstens 4 Eingaben. Auf dem Entwicklungsrechner erscheint die Liste mit 20 Spielständen, je mit
+  einem Katalog von 500 Ereignissen, in höchstens 1 Sekunde, und ein Spielstand vom 31.12.1999 ist
+  in höchstens 1 Sekunde fortgesetzt.
 - **SC-003**: Für die Seeds 1, 4711 und 99999 in allen drei Graden gilt: Ein Spiel, das am
   14.03.1986 gespeichert, neu geöffnet und bis zum 31.12.1999 gespielt wird, meldet dieselben
   Ereignisse an denselben Tagen wie ein Spiel, das ohne Pause durchläuft.
@@ -375,7 +416,7 @@ andere ist unverändert.
   stand, auf den Tag genau; ein automatischer Test belegt das für den 01.01.1985, einen Tag im
   Februar 1985, den 14.03.1986 und den 31.12.1999.
 - **SC-006**: Die Startprobe bleibt still, und ohne Spielstände sieht der Titelbildschirm aus wie
-  in Feature 001, bis auf die geänderten Einträge des Menüs.
+  in Feature 001, bis auf Einträge, Hinweise und Höhe des Menüs.
 
 ## Assumptions
 
@@ -397,6 +438,14 @@ andere ist unverändert.
   übertragen, in der Cloud sichern oder exportieren ist nicht Teil des Features.
 - Die Werkstatt und ihre Proben bleiben, wie sie sind. Die Proben halten wie ein Spielstand Seed,
   Grad und Eingriffe; der Plan prüft, was sich teilen lässt.
+- Den Ereigniskatalog liest das Spiel beim Start; eine Änderung aus der Werkstatt gilt für neue
+  Spiele nach dem nächsten Start.
+- Ein Spielstand enthält nur Daten; eine von Hand veränderte Datei kann höchstens beschädigt sein,
+  aber nichts ausführen.
+- Die Uhr des Rechners geht richtig; „zuletzt gespielt“ steht so in der Liste, wie es gespeichert
+  wurde.
+- Geprüft ist die Liste mit bis zu 20 Spielständen (SC-002). Mehr sind erlaubt und dauern länger;
+  eine Grenze gibt es nicht.
 - Die automatischen Tests schreiben ihre Spielstände in einen eigenen Ordner, nie in den echten
   (`docs/ki_workflow/ki_dev.md`, „Tests“).
 - Das Feature ist der Pilot der Prüf-Agents: Jede Phase mit Sichtbarem oder Texten endet mit der

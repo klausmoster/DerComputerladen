@@ -27,6 +27,10 @@ fünf Einträge, und im Hintergrund startet kein Spiel mehr von selbst.
   mv ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende_beiseite
   ```
 
+FR-012 (Spielstände überstehen Updates) ist in diesem Feature nur durch den Ort belegt: Der Ordner
+liegt unter `user://`, außerhalb der App. Ein echter Test kommt mit dem ersten Export (Checkliste,
+CHK026).
+
 ## 1. Automatische Tests
 
 ```bash
@@ -41,7 +45,8 @@ Phase fertig ist, sind damit belegt:
   und jeder Abbruch beim Speichern: kein Absturz, kein verlorener Spielstand.
 - SC-005 (Phase 3): Datum im Spielstand nach dem Verlassen am 01.01.1985, 15.02.1985, 14.03.1986
   und 31.12.1999.
-- SC-002 (Phase 2 und 5): 20 Spielstände in höchstens 1 s gelesen und gezeigt.
+- SC-002 (Phase 2, 3 und 5): 20 Spielstände mit je 500 Ereignissen in höchstens 1 s gelesen und
+  gezeigt; ein Spielstand vom 31.12.1999 in höchstens 1 s fortgesetzt.
 - SC-001 und SC-002 (Phase 4 und 5): die Zahl der Eingaben.
 - FR-003 (Phase 3): Ohne begonnenes Spiel läuft keins, und es entsteht keine Datei.
 

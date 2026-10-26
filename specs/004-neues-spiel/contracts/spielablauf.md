@@ -94,7 +94,8 @@ func is_running() -> bool
 func store() -> SaveStore
 
 ## Beginnt ein Spiel am 01.01.1985 mit [param difficulty] und [param seed] (< 0 heißt würfeln),
-## legt den Spielstand „Spiel N“ an und speichert ihn (FR-006, FR-009). Bei einem Fehler läuft
+## legt den Spielstand „Spiel N“ an und speichert ihn (FR-006, FR-009). Gibt es zur Nummer schon
+## eine Datei, etwa aus einem zweiten Fenster, nimmt es die nächste (CHK002). Bei einem Fehler läuft
 ## danach kein Spiel, und last_error sagt warum.
 @warning_ignore("shadowed_global_identifier")
 func start_new(difficulty: Difficulty.Level, seed: int = -1) -> Error
@@ -123,7 +124,7 @@ Zeitleiste und `GameSession` mit Test-Katalog und eigenem Ordner unter `user://`
 |---|---|---|
 | `test_timeline.gd` | Nach `_ready()` und zwei Bildern läuft kein Spiel (`run == null`, Uhrtage senden nichts); `resume_game()` am 14.03.1986 sendet für den 14.03. nichts und ab dem 15.03. dasselbe wie ein Spiel ohne Pause, Tag für Tag bis zum 31.12.1986, Seed 4711, Schwer; Grenzen von Seed, Grad, Tag; `stop_game()`. Die Tests, die bisher den Selbststart nutzten, rufen `start_game()` selbst auf | FR-003, FR-008, US3 Szenario 4 |
 | `test_game_clock.gd` | `set_date()` ohne Signale, am 31.12.1999 nicht am Ende | R6 |
-| `test_game_session.gd` | Neues Spiel legt „Spiel 1“ mit Grad, Seed, 01.01.1985 an; zwei neue Spiele mit demselben Grad haben verschiedene Seeds; Nummern mit Lücken; Verlassen speichert das Datum auf den Tag: 01.01.1985, 15.02.1985, 14.03.1986, 31.12.1999, vorgespult mit der eigenen Uhr; Fortsetzen setzt Uhr, Lauf und „zuletzt gespielt“; Speichern scheitert beim Anlegen, beim Verlassen und beim Schließen; Schließen mit Spiel speichert und ruft `quit_callback`, beim zweiten Mal nach einem Fehler ohne Speichern; ohne Spiel kein Speichern | FR-006, FR-009, FR-010, FR-011, FR-016, SC-005, US1 Szenario 4 |
+| `test_game_session.gd` | Neues Spiel legt „Spiel 1“ mit Grad, Seed, 01.01.1985 an; zwei neue Spiele mit demselben Grad haben verschiedene Seeds; Nummern mit Lücken; Verlassen speichert das Datum auf den Tag: 01.01.1985, 15.02.1985, 14.03.1986, 31.12.1999, vorgespult mit der eigenen Uhr; Fortsetzen setzt Uhr, Lauf und „zuletzt gespielt“; zwei Sessions auf demselben Ordner legen nacheinander ein Spiel mit derselben vorberechneten Nummer an, und keins überschreibt das andere; ein Spielstand mit `catalog_500.json` vom 31.12.1999 ist in höchstens 1 s fortgesetzt; Speichern scheitert beim Anlegen, beim Fortsetzen, beim Verlassen und beim Schließen; Schließen mit Spiel speichert und ruft `quit_callback`, beim zweiten Mal nach einem Fehler ohne Speichern; ohne Spiel kein Speichern | FR-006, FR-009, FR-010, FR-011, FR-016, SC-002, SC-005, US1 Szenario 4 |
 | `test_title_screen.gd`, Startprobe | Die Hauptszene startet, und nach mehreren Bildern läuft kein Spiel und es gibt keine Datei im Ordner der Session | FR-003, US1 Szenario 5, SC-006 |
 
 **Feste Größe:** Ein Spiel, das mit `start_game(4711)` beginnt, sendet dieselben Signale wie vor
