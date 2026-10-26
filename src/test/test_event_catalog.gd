@@ -2,6 +2,7 @@ extends GutTest
 
 ## Prüft den Ereigniskatalog als Datei (Feature 002, T013): lesen, kanonisch schreiben, Zahlen,
 ## Strukturfehler beim Lesen (V22) mit ihren Vorgaben und das Ausnehmen fehlerhafter Ereignisse.
+## Seit Feature 004 (T005) auch from_data() für schon geparste Daten, wie sie im Spielstand stehen.
 ##
 ## Der wichtigste Test ist die Rundreise: Eine Datei lesen und wieder schreiben muss denselben
 ## Text ergeben, Byte für Byte. Sonst erzeugte schon das erste Speichern in der Werkstatt einen
@@ -784,6 +785,94 @@ func test_weggelassene_start_modifikatoren_mit_ort_und_grund() -> void:
 	var leer: Array[CatalogIssue] = []
 	assert_eq(EventCatalog.read_file(ALLE_ARTEN, leer).skipped_start_modifiers(leer).size(), 0,
 		"Ohne Meldungen fällt bei einem gültigen Katalog nichts weg.")
+
+
+# --- Schon geparste Daten (Feature 004, T005) ------------------------------
+
+func test_from_data_liest_ein_objekt_ohne_json_text() -> void:
+	# Arrange (R2): So steht der Katalog im Spielstand, als Abschnitt „catalog“ im gelesenen JSON,
+	# mit jeder Zahl als float.
+	var datei := FileAccess.get_file_as_string(ALLE_ARTEN)
+	var daten: Variant = JSON.parse_string(datei)
+	var vorher: Dictionary = daten.duplicate(true)
+	var issues: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_data(daten, issues)
+
+	# Assert
+	assert_eq(issues.size(), 0, "Ohne Meldung: %s" % [issues])
+	assert_not_null(catalog)
+	if catalog == null:
+		return
+	assert_eq(catalog.to_json(), datei, "Derselbe Katalog wie aus dem Text, bytegleich.")
+	assert_eq(catalog.profiles[1].modifiers.size(), 1, "Mit den Profilen.")
+	assert_eq(daten, vorher, "Die Daten selbst bleiben, wie sie waren.")
+	var noch_einmal := EventCatalog.from_data(catalog.to_dict(), issues)
+	assert_eq(noch_einmal.to_json(), datei, "Auch aus to_dict(), mit ganzen Zahlen als int.")
+	assert_eq(issues.size(), 0, "%s" % [issues])
+
+
+func test_from_data_mit_zahl_statt_objekt() -> void:
+	# Arrange: ein Spielstand mit "catalog": 42
+	var issues: Array[CatalogIssue] = []
+	var aus_text: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_data(42.0, issues)
+	EventCatalog.from_json("42", aus_text)
+
+	# Assert
+	assert_null(catalog, "Aus einer Zahl entsteht kein Katalog.")
+	assert_eq(_texte(issues),
+		["Katalog: Erwartet wird ein Objekt { … }, in der Datei steht die Zahl 42."])
+	assert_eq(_stellen(issues), ["V22 ERROR - "])
+	assert_eq(_texte(aus_text), _texte(issues), "Dieselbe Meldung wie aus dem Text.")
+	issues.clear()
+	assert_null(EventCatalog.from_data(null, issues), "Fehlt der Abschnitt, auch keiner.")
+	assert_eq(_texte(issues),
+		["Katalog: Erwartet wird ein Objekt { … }, in der Datei steht null."])
+
+
+func test_from_data_im_format_2_ergibt_keinen_katalog() -> void:
+	# Arrange: ein Katalog aus einer späteren Version, mit dem Format als float wie aus JSON
+	var daten: Variant = JSON.parse_string(_text([_fixes("intel_pentium")], 2))
+	var issues: Array[CatalogIssue] = []
+	var aus_text: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_data(daten, issues)
+	EventCatalog.from_json(_text([_fixes("intel_pentium")], 2), aus_text)
+
+	# Assert
+	assert_null(catalog, "Ein Katalog im Format 2 darf nicht als Format 1 gelesen werden.")
+	assert_eq(_texte(issues), ["Katalog, Feld „format“: Das Format 2 kennt diese Version nicht, "
+		+ "sie liest nur 1."])
+	assert_eq(_stellen(issues), ["V22 ERROR - format"])
+	assert_eq(_texte(aus_text), _texte(issues), "Dieselbe Meldung wie aus dem Text.")
+
+
+func test_from_data_meldet_fehler_in_eintraegen_wie_from_json() -> void:
+	# Arrange: die Fehler aus test_falscher_typ_ist_v22_mit_vorgabe(), dazu ein unbekannter
+	# Schlüssel oben
+	var pentium := _fixes("intel_pentium", {"date": 5})
+	var welle := _zufall("reklamationswelle",
+		{"monthly_chance": "drei Prozent", "min_gap_days": 1.5})
+	var text := _text([pentium, welle]).replace("\"format\": 1", "\"format\": 1,\n\t\"farbe\": 2")
+	var issues: Array[CatalogIssue] = []
+	var aus_text: Array[CatalogIssue] = []
+
+	# Act
+	var catalog := EventCatalog.from_data(JSON.parse_string(text), issues)
+	var aus_dem_text := EventCatalog.from_json(text, aus_text)
+
+	# Assert: Fehler in Einträgen erlauben einen Katalog, mit denselben Meldungen wie aus dem Text.
+	assert_not_null(catalog)
+	assert_eq(issues.size(), 4, "%s" % [issues])
+	assert_eq(_texte(issues), _texte(aus_text))
+	assert_eq(_stellen(issues), _stellen(aus_text))
+	if catalog != null and aus_dem_text != null:
+		assert_eq(catalog.to_json(), aus_dem_text.to_json(), "Derselbe Katalog.")
 
 
 # --- Helfer ---------------------------------------------------------------

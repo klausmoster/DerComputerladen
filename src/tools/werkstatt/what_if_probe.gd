@@ -16,8 +16,9 @@ extends RefCounted
 ##
 ## Im Speicher sind alle Tage Tagesindizes wie im Lauf; in der Datei stehen sie lesbar als
 ## „JJJJ-MM-TT“ wie im Katalog, −1 also als „1984-12-31“. Umgesetzt wird nur beim Schreiben und
-## Lesen. Alles, was Dateien liest oder schreibt, nimmt den Ordner als Parameter; die Vorgabe ist
-## FOLDER. Die Tests schreiben so in einen eigenen Ordner.
+## Lesen, mit InterventionFile, das auch der Spielstand nutzt (Feature 004, R5). Alles, was Dateien
+## liest oder schreibt, nimmt den Ordner als Parameter; die Vorgabe ist FOLDER. Die Tests schreiben
+## so in einen eigenen Ordner.
 
 ## Hier liegen die Proben der Werkstatt.
 const FOLDER := "res://tools/werkstatt/proben/"
@@ -28,9 +29,6 @@ const FORMAT := 1
 ## Der größte Seed (FR-014), wie im Autoload Timeline und im Simulator. Eine Probe mit einem Seed
 ## außerhalb von 0 bis MAX_SEED liest read_file() nicht (T099).
 const MAX_SEED := 2147483647
-## Die Schlüssel im Eingriffsprotokoll, die Tage sind, auch im Modifikator darin. Dazu kommt
-## until_day in der Probe selbst.
-const DATE_KEYS := ["at_day", "day", "new_day", "from_day", "to_day"]
 ## Wie die Arten des Eingriffsprotokolls in not_applicable heißen.
 const KIND_LABELS := {
 	TimelineRun.INTERVENTION_ADD_MODIFIER: "Modifikator",
@@ -119,7 +117,7 @@ static func read_file(path: String) -> WhatIfProbe:
 	var level := _read_difficulty(data)
 	if level == -1:
 		push_error("Die Probe %s nennt den Schwierigkeitsgrad %s, den es nicht gibt." % [path,
-			_shown(data["difficulty"])])
+			InterventionFile.shown(data["difficulty"])])
 		return null
 	var probe := WhatIfProbe.new()
 	probe.id = path.get_file().get_basename()
@@ -128,9 +126,9 @@ static func read_file(path: String) -> WhatIfProbe:
 	probe.difficulty = level as Difficulty.Level
 	probe.until_day = GameDate.from_iso(data["until_day"]).to_day_index()
 	for record: Dictionary in data["interventions"]:
-		var wrong := _wrong_date(record)
+		var wrong := InterventionFile.wrong_date(record)
 		if wrong.is_empty():
-			probe.interventions.append(_from_file(record))
+			probe.interventions.append(InterventionFile.from_file(record))
 		else:
 			probe._read_problems.append("%s: %s" % [_label(record), wrong])
 	probe.not_applicable = probe._read_problems.duplicate()
@@ -158,7 +156,7 @@ func write_file(folder: String = FOLDER) -> Error:
 			return made
 	var records: Array[Dictionary] = []
 	for record in interventions:
-		records.append(_to_file(record))
+		records.append(InterventionFile.to_file(record))
 	var data := {
 		"difficulty": Difficulty.key(difficulty),
 		"format": FORMAT,
@@ -209,7 +207,9 @@ static func from_run(name: String, run: TimelineRun) -> WhatIfProbe:
 ## Neuer Lauf mit [member seed] und [member difficulty] auf [param catalog]; spielt das
 ## Eingriffsprotokoll nach und dann bis [member until_day] (data-model.md, „Neu abspielen“). Je
 ## Eingriff spielt er den Lauf bis zu dessen at_day ab, bei −1 gar nicht, und wendet ihn dort mit
-## TimelineRun.apply_intervention() an. So entsteht derselbe Fahrplan wie beim Speichern.
+## TimelineRun.apply_intervention() an. So entsteht derselbe Fahrplan wie beim Speichern. Das
+## Nachspielen selbst übernimmt TimelineRun.replay(), dasselbe wie beim Fortsetzen eines
+## Spielstands (Feature 004, R5).
 ##
 ## Nachgespielt wird nach at_day (TimelineRun.in_replay_order()), nicht in der Reihenfolge des
 ## Protokolls: Nach „Fahrplan erzeugen“ kann ein Eingriff vor Spielbeginn hinter einem vom
@@ -227,13 +227,8 @@ static func from_run(name: String, run: TimelineRun) -> WhatIfProbe:
 func build_run(catalog: EventCatalog) -> TimelineRun:
 	not_applicable = _read_problems.duplicate()
 	var run := TimelineRun.new(catalog, seed, difficulty)
-	for record in TimelineRun.in_replay_order(interventions):
-		# Ohne lesbaren Tag ist der Tag −1: Der Lauf spielt nichts ab, und der Eingriff gilt dort,
-		# wo der Lauf gerade steht.
-		run.advance_to(TimelineRun.intervention_day(record))
-		if run.apply_intervention(record) != OK:
-			not_applicable.append("%s: %s" % [_label(record), run.last_refusal])
-	run.advance_to(until_day)
+	for refused in run.replay(interventions, until_day):
+		not_applicable.append("%s: %s" % [_label(refused["record"]), refused["reason"]])
 	return run
 
 
@@ -259,25 +254,25 @@ static func _read_difficulty(data: Dictionary) -> int:
 
 ## Was an einer gelesenen Datei nicht stimmt; leer, wenn sie eine Probe dieses Formats ist. Das
 ## Format kommt zuerst: In einer anderen Version können alle übrigen Schlüssel anders aussehen. Die
-## Einträge des Eingriffsprotokolls prüfen erst _wrong_date() und apply_intervention(); hier zählt
-## nur, dass es Objekte sind.
+## Einträge des Eingriffsprotokolls prüfen erst InterventionFile.wrong_date() und
+## apply_intervention(); hier zählt nur, dass es Objekte sind.
 static func _structure_problem(data: Variant) -> String:
 	if typeof(data) != TYPE_DICTIONARY:
 		return "Die Datei enthält kein Objekt { … }."
 	var probe: Dictionary = data
 	if not probe.has("format"):
 		return "Das Format („format“) fehlt; diese Version liest nur Format %d." % FORMAT
-	if not _is_whole_number(probe["format"]) or int(probe["format"]) != FORMAT:
+	if not InterventionFile.is_whole_number(probe["format"]) or int(probe["format"]) != FORMAT:
 		return "Das Format %s kennt diese Version nicht, sie liest nur %d." % [
-			_shown(probe["format"]), FORMAT]
+			InterventionFile.shown(probe["format"]), FORMAT]
 	if typeof(probe.get("name")) != TYPE_STRING:
 		return "Der Name („name“) fehlt oder ist kein Text."
-	if not _is_whole_number(probe.get("seed")):
+	if not InterventionFile.is_whole_number(probe.get("seed")):
 		return "„seed“ fehlt oder ist keine ganze Zahl."
 	# Einen anderen Seed hat kein Spiel (FR-014); der Simulator nimmt ihn im Feld gar nicht an.
 	if probe["seed"] < 0 or probe["seed"] > MAX_SEED:
 		return "„seed“ liegt außerhalb von 0 bis 2.147.483.647."
-	if not _is_date(probe.get("until_day")):
+	if not InterventionFile.is_date(probe.get("until_day")):
 		return "„until_day“ fehlt oder ist kein gültiges Datum JJJJ-MM-TT."
 	if typeof(probe.get("interventions")) != TYPE_ARRAY:
 		return "Die Eingriffe („interventions“) fehlen oder sind keine Liste."
@@ -287,77 +282,9 @@ static func _structure_problem(data: Variant) -> String:
 	return ""
 
 
-## Warum ein Eintrag aus der Datei kein gültiges Datum hat, als Satz; leer, wenn jeder Tag darin,
-## auch im Modifikator, ein Kalendertag „JJJJ-MM-TT“ ist. Ein fehlender Tag ist hier kein Fehler;
-## über den entscheidet apply_intervention(), wie bei jedem anderen fehlenden Feld.
-static func _wrong_date(record: Dictionary) -> String:
-	for key: Variant in record:
-		var value: Variant = record[key]
-		if typeof(value) == TYPE_DICTIONARY:
-			var inner := _wrong_date(value)
-			if not inner.is_empty():
-				return inner
-		elif DATE_KEYS.has(key) and not _is_date(value):
-			return "Bei „%s“ steht %s, kein gültiges Datum JJJJ-MM-TT." % [key, _shown(value)]
-	return ""
-
-
-## Kopie eines Eintrags aus der Datei mit Tagesindizes statt „JJJJ-MM-TT“, auch im Modifikator
-## darin. Nur für Einträge, die _wrong_date() durchgelassen hat.
-static func _from_file(record: Dictionary) -> Dictionary:
-	var result := {}
-	for key: Variant in record:
-		var value: Variant = record[key]
-		if typeof(value) == TYPE_DICTIONARY:
-			value = _from_file(value)
-		elif DATE_KEYS.has(key):
-			value = GameDate.from_iso(value).to_day_index()
-		result[key] = value
-	return result
-
-
-## Kopie eines Eintrags für die Datei: Tage als „JJJJ-MM-TT“, auch vor 1985 (−1 ist der
-## 31.12.1984). Der Wert eines Modifikators ist ein Anteil und wird wie die Anteile im Katalog auf
-## vier Nachkommastellen gerundet (ereigniskatalog.md, Schreibregel 3); +5 Prozentpunkte stehen
-## als 0.05 darin.
-static func _to_file(record: Dictionary) -> Dictionary:
-	var result := {}
-	for key: Variant in record:
-		var value: Variant = record[key]
-		if typeof(value) == TYPE_DICTIONARY:
-			value = _to_file(value)
-		elif DATE_KEYS.has(key) and _is_whole_number(value):
-			value = GameDate.from_day_index(int(value)).to_iso()
-		elif key == "value" and (typeof(value) == TYPE_FLOAT or typeof(value) == TYPE_INT):
-			value = roundf(float(value) * 10000.0) / 10000.0
-		result[key] = value
-	return result
-
-
 ## Wie die Art eines Eintrags in not_applicable heißt; „Eingriff“, wenn sie unbekannt ist.
 static func _label(record: Dictionary) -> String:
 	return KIND_LABELS.get(record.get("kind"), "Eingriff")
-
-
-## Ob [param value] ein Kalendertag in der Form „JJJJ-MM-TT“ ist, wie die Daten im Katalog.
-static func _is_date(value: Variant) -> bool:
-	return typeof(value) == TYPE_STRING and GameDate.from_iso(value) != null
-
-
-## Ob [param value] eine ganze Zahl ist, als int oder als float ohne Nachkommastellen.
-static func _is_whole_number(value: Variant) -> bool:
-	if typeof(value) == TYPE_INT:
-		return true
-	return typeof(value) == TYPE_FLOAT and value == floorf(value) and absf(value) < 1e15
-
-
-## Ein Wert aus der Datei für Meldungen: Text in „…“, eine ganze Zahl ohne Nachkomma.
-static func _shown(value: Variant) -> String:
-	if typeof(value) == TYPE_STRING:
-		return "„%s“" % value
-	if _is_whole_number(value):
-		return str(int(value))
-	return str(value)
 
 
 ## Ob [param text] als Kennung und Dateiname taugt: nicht leer, nur a–z, 0–9 und _.

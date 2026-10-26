@@ -20,6 +20,27 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   zeigt Claude Klaus, welche Dateien im Projekt sich ändern würden, etwa an einer Probe in einem
   leeren Ordner; erst nach seinem OK wird aktualisiert.
 
+### Feature 004, Phasenprüfung Phase 2 (2026-10-26)
+
+Lücken im Abschnitt „Sprache“, die der Text-Prüfer gemeldet und Claude bestätigt hat. Zwei hat
+Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine blockiert etwas:
+- **Grund im Hinweis: Fehlermeldung oder Hinweis?** „Sprache“ erlaubt Witz in Hinweisen, aber
+  nicht in Fehlermeldungen. Ein Grund wie „Der Schwierigkeitsgrad ist unbekannt.“ steht im Hinweis,
+  ist aber eine Fehlermeldung. Empfehlung: ergänzen „Was ein Hinweis über einen Fehler sagt, ist
+  eine Fehlermeldung: ohne Witz.“
+- **Wörter aus dem Inneren des Spiels:** Klaus hat für die Gründe entschieden, dass Seed,
+  Formatversion, Eingriff und Ereigniskatalog nicht beim Spieler erscheinen. Empfehlung: als
+  allgemeine Regel unter „Nicht“ aufnehmen: „Keine Wörter aus dem Inneren des Spiels in Texten für
+  den Spieler, etwa Seed oder Formatversion; die gehören in die Werkzeuge und ins Protokoll.“
+- **Tausenderpunkt außerhalb von Geld:** „Sprache“ zeigt ihn nur an DM-Beträgen. Empfehlung:
+  Punkt bei Beträgen und Mengen ab vier Stellen, nicht bei Nummern und Namen („Spiel 10000“).
+- **Gilt „Sprache“ auch fürs Protokoll?** (Nachprüfung) Der Abschnitt sagt nicht, ob er auch
+  für Texte gilt, die nur ins Protokoll gehen (`push_warning()`, `last_error`). Das Datenmodell
+  erlaubt dort Godots englische Fehlertexte. Empfehlung: im Einleitungssatz klarstellen „für alle
+  Texte, die der Spieler sieht; das Protokoll ist für Entwickler und muss nur richtig sein“.
+- Verworfen: „Grad“ und „Schwierigkeitsgrad“ seien zwei Wörter für dasselbe. „Gradwahl“ ist nur
+  der Name im Vertrag; der Spieler liest SCHWIERIGKEIT und die Grade selbst.
+
 ### Feature 004, Plan (2026-10-26)
 
 - **Eigener Benutzerordner, später:** Spielstände liegen unter macOS in
@@ -442,6 +463,28 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 - **Zurück aus einem Blatt** wählt im Hauptmenü den Eintrag, der es geöffnet hat
   (`data-model.md`).
 
+### Feature 004, Phase 2 (2026-10-26)
+
+- **Katalog mit falschem Format im Spielstand ist beschädigt:** `EventCatalog.from_data()` fällt
+  bei `"format": "zwei"` wie `from_json()` auf 1 zurück und meldet nur V22. Ein Spielstand wird
+  aber nur vom Spiel geschrieben; steht dort etwas anderes als die ganze Zahl 1, ist die Datei
+  verändert. `SaveGame.from_data()` prüft das deshalb vorher und meldet den Spielstand als
+  beschädigt. Anlass: Bericht des Agents zu T005.
+- **`replay()` gibt den Eintrag selbst zurück, keine Kopie** (Auslegung des Agents zu T004,
+  angenommen): So sieht die Probe genau ihren eigenen Eintrag; ein Test prüft es.
+- **Auslegungen des Agents zu T006 bis T009, von Claude angenommen:**
+  - `SaveGame.from_data()` hat einen vierten, freiwilligen Parameter `details` für das Protokoll,
+    damit der Satz für den Spieler nie einen Wert aus der Datei enthält.
+  - Scheitert Schritt 5 (die `.alt` löschen), gibt `write()` OK zurück und meldet nur
+    `push_warning()`: Der neue Stand ist zu diesem Zeitpunkt schon gespeichert.
+  - Ein Ordner mit dem Namen einer Spielstandsdatei zählt für die nächste Nummer mit, erscheint
+    aber nie in der Liste.
+  - Zeitpunkte werden streng als `JJJJ-MM-TTTHH:MM:SSZ` gelesen; ein Name nur aus Leerzeichen zählt
+    wie ein leerer.
+  - Der Test zu SC-003 im Kern nimmt den Katalog, wie er gelesen ist; Prüfen und Weglassen beim
+    Fortsetzen kommt mit T013. Das Fortsetzen vom 31.12.1999 in höchstens 1 s misst T014.
+  - SC-002 gemessen: 20 Spielstände mit je 500 Ereignissen in rund 0,6 s gelesen.
+
 ### KI-Workflow, Schritte 1 und 2 (2026-10-22)
 
 - **Phasenprüfung als Punkt 8:** In `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, steht sie
@@ -453,6 +496,11 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 
 ## Erledigt
 
+- **Gründe für beschädigte Spielstände (Phasenprüfung Phase 2):** Klaus, 2026-10-26, nach
+  Empfehlung: nur Wörter, die der Spieler kennt. Vier Gründe statt acht; Seed, Formatversion,
+  Eingriff und Ereigniskatalog stehen nur im Protokoll. Steht im Datenmodell, „Zustand“.
+- **Uhrzeit in Spalten einer Liste ohne „Uhr“:** Klaus, 2026-10-26, nach Empfehlung; steht in
+  „Sprache“, „Zahlen, Geld und Daten“ (Style-Guide, Version 24).
 - **Style-Guide für Feature 004 (T001, T002):** Klaus, 2026-10-26, freigegeben: Version 22 mit
   „Blätter im Titel“ und „Rückfrage“ beim Menü, den Bausteinen Liste und Meldung, dem allein
   stehenden Knopf mit Hinweis und der Fokuslinie in `papier` auf dunklem Grund, dem Spielbildschirm

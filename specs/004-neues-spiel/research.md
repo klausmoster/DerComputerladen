@@ -265,7 +265,8 @@ in der Liste weiter unten, obwohl es zuletzt gespielt wurde.
   beim Fortsetzen weg (R2).
 
 Jeder Grund ist ein kurzer deutscher Satz für den Hinweis, höchstens zwei Zeilen, ohne Englisch der
-Engine und ohne Werte aus der Datei, etwa „Der Schwierigkeitsgrad ist unbekannt.“ Ein Wert aus der
+Engine, ohne Werte aus der Datei und ohne Wörter aus dem Inneren wie Seed oder Formatversion
+(Klaus, 2026-10-26), etwa „Der Schwierigkeitsgrad ist unbekannt.“ Ein Wert aus der
 Datei könnte beliebig lang sein und den Hinweis sprengen (Analyse, B4). Die genaue Stelle und der
 Wert, etwa die Zeile im JSON oder „extrem“, kommen zusätzlich mit `push_warning()` ins Protokoll.
 

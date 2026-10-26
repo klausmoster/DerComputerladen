@@ -113,17 +113,19 @@ Was die Liste über eine Nummer weiß, auch wenn sich die Datei nicht lesen läs
 |---|---|---|
 | kein gültiges JSON oder kein Objekt | `DAMAGED` | „Lässt sich nicht lesen: Die Datei ist beschädigt.“ |
 | `"format"` ganze Zahl > 1 | `TOO_NEW` | „Stammt aus einer neueren Version des Spiels.“ |
-| `"format"` fehlt, keine ganze Zahl oder < 1 | `DAMAGED` | „Lässt sich nicht lesen: Die Formatversion fehlt.“ |
-| Pflichtfeld fehlt oder hat den falschen Typ | `DAMAGED` | „Lässt sich nicht lesen: Ein Eintrag fehlt.“ |
+| `"format"` fehlt, keine ganze Zahl oder < 1 | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
+| Pflichtfeld fehlt oder hat den falschen Typ | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
 | Grad unbekannt | `DAMAGED` | „Der Schwierigkeitsgrad ist unbekannt.“ |
-| Seed außerhalb | `DAMAGED` | „Der Seed liegt außerhalb von 0 bis 2.147.483.647.“ |
-| Spieldatum kein Tag von 1985 bis 1999 | `DAMAGED` | „Das Spieldatum liegt außerhalb von 1985 bis 1999.“ |
-| Zeitpunkt nicht lesbar | `DAMAGED` | „Lässt sich nicht lesen: Ein Zeitpunkt fehlt.“ |
-| ein Eingriff mit falschem Datum oder kein Objekt | `DAMAGED` | „Lässt sich nicht lesen: Ein Eingriff ist falsch.“ |
-| Katalog nicht lesbar (`EventCatalog.from_data()` gibt `null`) | `DAMAGED` | „Der Ereigniskatalog im Spielstand ist beschädigt.“ |
+| Seed außerhalb | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
+| Spieldatum kein Tag von 1985 bis 1999 | `DAMAGED` | „Das Spieldatum ist kein Tag von 1985 bis 1999.“ |
+| Zeitpunkt nicht lesbar | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
+| ein Eingriff mit falschem Datum oder kein Objekt | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
+| Katalog nicht lesbar (`EventCatalog.from_data()` gibt `null`) oder sein Format nicht 1 | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
 | sonst | `OK` | — |
 
-Die Sätze sind Vorschläge, jeder gemessen auf höchstens zwei Zeilen im Hinweis; Feldnamen wie
+Die Sätze nennen nur, was der Spieler kennt: Wörter aus dem Inneren wie Seed, Formatversion,
+Eingriff oder Ereigniskatalog stehen nur im Protokoll (Klaus, 2026-10-26, nach der Phasenprüfung
+von Phase 2). Jeder ist gemessen auf höchstens zwei Zeilen im Hinweis; Feldnamen wie
 „seed“ nennt nur das Protokoll. Der Text-Prüfer prüft sie in Phase 2. Zusätzlich meldet
 `push_warning()` Datei, Feld und Stelle, etwa „Spielstand user://spielstaende/spiel_3.json: kein
 gültiges JSON in Zeile 4.“ oder „… Schwierigkeitsgrad „extrem“.“ Dort darf Godots englischer Text

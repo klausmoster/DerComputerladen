@@ -104,7 +104,7 @@ und Werkstatt. Keine Oberfläche.
 
 **⚠️ CRITICAL**: Phase 3 braucht `SaveStore` aus dieser Phase.
 
-- [ ] T003 [A] `src/core/timeline/intervention_file.gd` (`InterventionFile`) laut spielstand.md,
+- [x] T003 [A] `src/core/timeline/intervention_file.gd` (`InterventionFile`) laut spielstand.md,
   übernommen aus `WhatIfProbe`: `DATE_KEYS`, `to_file()`, `from_file()`, `wrong_date()`,
   `is_date()`, `is_whole_number()`, `shown()`. `src/tools/werkstatt/what_if_probe.gd` ruft sie auf
   statt eigener Funktionen; nur Hilfen wie `_label()` bleiben dort (Analyse, C12). Test
@@ -112,7 +112,7 @@ und Werkstatt. Keine Oberfläche.
   „auf vier Nachkommastellen“, falsches Datum mit Satz, auch im Modifikator. **Feste Größe:**
   `test_what_if_probe.gd` und `test_simulator.gd` laufen unverändert grün, und eine Probe, die die
   Werkstatt schreibt, ist Byte für Byte dieselbe wie vorher (R5).
-- [ ] T004 [A] `TimelineRun.replay(records, until_day)` in `src/core/timeline/timeline_run.gd` laut
+- [x] T004 [A] `TimelineRun.replay(records, until_day)` in `src/core/timeline/timeline_run.gd` laut
   spielstand.md: Reihenfolge aus `in_replay_order()`, je Eintrag `advance_to(at_day)` und
   `apply_intervention()`, dann bis `until_day`; zurück je abgelehntem Eintrag
   `{ "record": Dictionary, "reason": String }` „in der Reihenfolge des Nachspielens“.
@@ -120,11 +120,11 @@ und Werkstatt. Keine Oberfläche.
   `src/test/test_timeline_run.gd`: dieselben Fahrpläne wie mit dem bisherigen Nachspielen, ein
   abgelehnter Eintrag mit Grund. Feste Größe wie T003. Hängt an T003 (beide ändern
   `what_if_probe.gd`).
-- [ ] T005 [A] [P] `EventCatalog.from_data(data, issues)` in `src/core/timeline/event_catalog.gd`
+- [x] T005 [A] [P] `EventCatalog.from_data(data, issues)` in `src/core/timeline/event_catalog.gd`
   laut spielstand.md; `from_json()` parst und ruft es. „Die Meldungen von `from_json()` bleiben
   Zeichen für Zeichen gleich“; `test_event_catalog.gd` läuft unverändert. Neue Fälle dort: ein
   Objekt ohne JSON-Text, eine Zahl statt Objekt, Format 2.
-- [ ] T006 [A] `src/core/save/save_game.gd` (`SaveGame`) laut spielstand.md und data-model.md,
+- [x] T006 [A] `src/core/save/save_game.gd` (`SaveGame`) laut spielstand.md und data-model.md,
   „SaveGame“:
   - Felder mit den Regeln der Tabelle, darunter: `name` „nicht leer; beim Anlegen „Spiel N““,
     `seed` „0 bis 2.147.483.647“, `day` „0 bis 5477, also 01.01.1985 bis 31.12.1999“,
@@ -144,7 +144,7 @@ und Werkstatt. Keine Oberfläche.
   Test `src/test/test_save_game.gd`: Rundreise Speicher → Text → Speicher, der Text Zeichen für
   Zeichen gegen eine Erwartung; jede Zeile der Tabelle mit ihrem Grund; Zeitpunkte als UTC; Ortszeit
   mit vorgegebenem Versatz. Hängt an T003 und T005.
-- [ ] T007 [A] `src/core/save/save_slot.gd` (`SaveSlot`) laut spielstand.md: `State { OK,
+- [x] T007 [A] `src/core/save/save_slot.gd` (`SaveSlot`) laut spielstand.md: `State { OK,
   DAMAGED, TOO_NEW }`, `read()` „wirft nie und gibt nie null zurück“, die Prüfreihenfolge aus
   data-model.md, „Zustand“, mit Format > 1 als `TOO_NEW` „Stammt aus einer neueren Version des
   Spiels.“, `push_warning()` mit Datei, Feld und Stelle; `can_resume()`, `display_name()`. Dazu die
@@ -154,7 +154,7 @@ und Werkstatt. Keine Oberfläche.
   `spiel_datum_2000.json`, `spiel_eingriff_datum.json`, `spiel_katalog_zahl.json` und
   `spiel_gueltig.json` mit `catalog_alle_arten.json` und einem Eingriff. Tests in
   `src/test/test_save_game.gd`: jede Fixture mit Zustand und Grund. Hängt an T006.
-- [ ] T008 [A] `src/core/save/save_store.gd` (`SaveStore`) laut spielstand.md und data-model.md,
+- [x] T008 [A] `src/core/save/save_store.gd` (`SaveStore`) laut spielstand.md und data-model.md,
   „SaveStore“:
   - Dateien nur nach dem Muster `spiel_<N>.json`, `.json.neu`, `.json.alt`, „N eine Zahl ohne
     führende Null“; fremde Dateien nie gelistet, nie gelöscht.
@@ -182,17 +182,22 @@ und Werkstatt. Keine Oberfläche.
   beschädigte und zu neue nie überschrieben, und 20 Spielstände mit `catalog_500.json` in
   höchstens 1 s gelesen (SC-002). Reicht die Sekunde nicht, meldet der Agent das mit der Messung,
   statt die Prüfung zu ändern (R10). Hängt an T007.
-- [ ] T009 [A] `src/test/test_save_resume_run.gd` (SC-003 im Kern): Seeds 1, 4711, 99999 in allen
+- [x] T009 [A] `src/test/test_save_resume_run.gd` (SC-003 im Kern): Seeds 1, 4711, 99999 in allen
   drei Graden, ein Lauf ohne Pause gegen einen, der am 14.03.1986 über `SaveGame.to_json()` und
   `SaveSlot.read()` als Datei gespeichert, gelesen und mit `replay()` bis zum 31.12.1999
   weitergespielt wird; alle Zeilen ab dem 15.03.1986 gleich. Dasselbe mit Eingriffen vor und nach
   dem 14.03.1986. Eine Kopie mit einem fehlerhaften Ereignis läuft ohne dieses weiter, und ein
   Spielstand läuft mit seinem Katalog weiter, auch wenn der aktuelle ein anderer ist (FR-022;
   Analyse, E1). Katalog `catalog_alle_arten.json`. Hängt an T004 und T008.
-- [ ] T010 [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, **Beginn des Piloten** (Analyse,
+- [x] T010 [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, **Beginn des Piloten** (Analyse,
   F7): Text-Prüfer mit `Sprache.md` und der Textliste der Gründe aus `save_slot.gd` und
   `save_game.gd`; Befunde nachprüfen, zählen.
-- [ ] T011 [K] Phase 2 abnehmen nach quickstart.md, Abschnitt 1.
+- [x] T011 [K] Phase 2 abnehmen nach quickstart.md, Abschnitt 1.
+
+Erledigt am 2026-10-26, von Klaus abgenommen: 747 Tests zweimal grün, Startprobe still, Proben
+Byte für Byte gleich, SC-002 mit rund 0,6 s. Phasenprüfung mit dem Text-Prüfer: 7 Befunde, alle
+behoben; Klaus hat entschieden, dass die Gründe nur Spielerwörter nennen und Listenspalten die
+Uhrzeit ohne „Uhr“ zeigen (Style-Guide, Version 24).
 
 **Checkpoint**: Spielstände lassen sich lesen, prüfen, sicher schreiben und löschen; ein
 gespeichertes Spiel läuft weiter wie ohne Pause. Abnahme durch Klaus, dann Auftrag für Phase 3.

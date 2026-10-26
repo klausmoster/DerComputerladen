@@ -513,6 +513,27 @@ static func in_replay_order(records: Array[Dictionary]) -> Array[Dictionary]:
 	return sorted
 
 
+## Spielt [param records] wie ein Eingriffsprotokoll nach: in der Reihenfolge von
+## in_replay_order(), je Eintrag bis zu seinem at_day vor und dort apply_intervention(); danach bis
+## [param until_day]. Gibt je abgelehntem Eintrag { "record": Dictionary, "reason": String } zurück,
+## reason aus last_refusal, in der Reihenfolge des Nachspielens. Die Meldungen des Abspielens
+## landen wie immer im Protokoll; zurückgegeben werden sie nicht.
+##
+## Ein Eintrag ohne lesbaren Tag spielt bis −1, also gar nicht ab, und gilt dort, wo der Lauf
+## gerade steht (intervention_day()). Ein abgelehnter Eintrag hält nichts auf; die übrigen gelten.
+## "record" ist der Eintrag aus [param records] selbst, keine Kopie. Die Proben der Werkstatt
+## (WhatIfProbe.build_run()) und das Fortsetzen eines Spielstands spielen beide hierüber nach,
+## mit derselben Regel (Feature 004, R5).
+func replay(records: Array[Dictionary], until_day: int) -> Array[Dictionary]:
+	var refused: Array[Dictionary] = []
+	for record in in_replay_order(records):
+		advance_to(intervention_day(record))
+		if apply_intervention(record) != OK:
+			refused.append({"record": record, "reason": last_refusal})
+	advance_to(until_day)
+	return refused
+
+
 ## Die Vorkommen eines jährlichen Ereignisses, die in den Fahrplan kommen (R9), aufsteigend, je als
 ## Vector2i(Beginn, letzter Tag) in Tagesindizes; ohne Dauer ist der letzte Tag der Beginn. Ein
 ## Vorkommen, das vor dem 01.01.1985 beginnt, behält hier seinen echten Beginn, beim Winter ab dem

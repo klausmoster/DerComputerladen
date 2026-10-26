@@ -264,6 +264,8 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 |---|---|---|---|---|---|---|
 | Probelauf Feature 001, Titelbildschirm (2026-10-22) | Stil | 4 | 3 | 1 | 6, davon 1 verworfen | 3 |
 | Probelauf Feature 001 und Werkstatt, rund 740 Texte und der Ereigniskatalog (2026-10-22) | Text | 13 | 10 | 3 | 7 | 10 |
+| Pilot Feature 004, Phase 2, Kern Spielstand, 49 Texte (2026-10-26) | Text | 7 | 7, davon 1 als Widerspruch zum Vertrag | 0 | 6, davon 1 verworfen | 7 |
+| Pilot Feature 004, Phase 2, Nachprüfung der 9 geänderten Texte (2026-10-26) | Text | 0 | 0 | 0 | 3, davon 1 schon bekannt | 0 |
 
 „Nur er fand“ heißt hier: Die Prüfung von Feature 001 hatte es übersehen, das Feature war
 abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.
