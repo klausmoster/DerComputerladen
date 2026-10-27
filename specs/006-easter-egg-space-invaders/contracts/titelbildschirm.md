@@ -51,12 +51,13 @@ func progress() -> int
 - **Druck:** Nimmt der Titel keine Eingabe an (`_accepts_input()` false) oder steht das Spiel auf der
   Anzeige, zählt der Druck nicht. Sonst `_sequence.press(index)`.
 - **Start**, wenn `press()` true gibt: merken, was zu sehen ist (Seite, Fokus-Owner, Zeile und Text des
-  Hinweises; die Meldung zählt dabei wie ein Hinweis), `hide_hint()`, `Invaders.start()`,
+  Hinweises), `hide_hint()`, `Invaders.start()`,
   `show_page(Invaders)`. Der Communicator bewegt sich nicht (FR-010).
 - **Esc:** Steht das Spiel, nimmt die Seite Esc selbst; `_unhandled_input()` des Titels sieht es nicht.
 - **Ende** bei `finished`: `show_page()` der gemerkten Seite, Fokus zurück auf das gemerkte Control
   (deferred, wenn es zu der Zeit noch nicht sichtbar ist), Hinweis zur gemerkten Zeile wieder zeigen
-  (eine Meldung kommt als Hinweis zurück, nicht als Meldung), `_sequence.reset()` (FR-022).
+  (eine Meldung, die beim Start stand, kommt als Hinweis der Zeile zurück, nicht als Meldung;
+  Review, CHK008), `_sequence.reset()` (FR-022).
 - **Verlassen:** Der Titel startet kein Spiel des Computerladens aus dem Easter Egg, schreibt keinen
   Spielstand und ruft `GameSession` nicht (FR-007). Beginnt der Spieler nach dem Easter Egg ein Spiel,
   gilt alles aus Feature 005 unverändert.
@@ -78,5 +79,6 @@ Seed).
 - Esc im Spiel und `finished` nach dem Ende: dieselbe Seite, derselbe Fokus, derselbe Hinweis wie
   vorher; danach bedienen sich die Seiten wie zuvor.
 - Fährt das Gerät hinaus (Spielstart), zählt kein Druck.
-- Kein Spielstand im Testordner wird angelegt oder geändert.
+- Kein Spielstand im Testordner wird angelegt oder geändert, auch nicht beim Schließen des Fensters
+  während des Spiels (Review, CHK019).
 - Alle bisherigen Tests des Titels laufen unverändert (SC-004).

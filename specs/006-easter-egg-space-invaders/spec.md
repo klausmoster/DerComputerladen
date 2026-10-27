@@ -32,7 +32,8 @@ Fragen aus `/speckit-specify`, von Klaus einzeln als Auswahl beantwortet:
   wie das Menü auf der Anzeige; keine neue Farbe, keine Bilder aus Leonardo (Klaus, nach
   Empfehlung). Verworfen: Sprite-Bilder als PNG, weil sie Rasterfassung und Prompt-Log brauchen;
   Bilder aus Leonardo, weil es so winzige Figuren schlecht trifft und auf einer einfarbigen Anzeige
-  wenig davon bleibt.
+  wenig davon bleibt. Das Ende heißt seit dem Review „Ergebnisanzeige“, damit es nicht mit dem
+  Baustein Meldung verwechselt wird.
 
 ### Clarify 2026-10-27
 
@@ -74,6 +75,21 @@ ihn ein (Klaus, 2026-10-27). Die Fragen dazu hat Klaus einzeln als Auswahl beant
   ist fest und eher leise, einstellbar wird sie mit dem Menüeintrag „Einstellungen“ (Klaus, nach
   Empfehlung). Verworfen: eine Taste zum Stummschalten, weil sie nirgends erklärt ist; ohne
   getrennte Kanäle, weil „Einstellungen“ sonst jede Tonquelle anfassen müsste.
+
+### Review 2026-10-27
+
+Aus `checklists/review.md`, 34 Punkte mit Stil- und Text-Prüfer, von Klaus am 2026-10-27 alle nach
+Vorschlag freigegeben. Die wichtigsten für die Spec:
+- Die Ausnahme für die Knöpfe gilt für alles, was der Style-Guide bei anklickbaren Stellen verlangt:
+  kein Zeigerwechsel, kein `signalgelb`, kein Tooltip, kein Relief (CHK001 bis CHK003).
+- Das Ende des Spiels heißt **Ergebnisanzeige**, nicht Meldung (CHK004).
+- Tastenkürzel des Fensters wie Vollbild wirken auch im Spiel (CHK006).
+- Schuss und Bombe fliegen aneinander vorbei; ein Treffer zeigt kurz eine Explosion (CHK011,
+  CHK012).
+- Gelandet sind die Außerirdischen, sobald einer die Oberkante der Kanone erreicht (CHK010).
+- SC-002 und SC-003 sind jetzt messbar (CHK016, CHK017).
+- Wortlaute: „ALLE ERWISCHT.“, „DIE SIND GELANDET.“, „Weiter mit Taste oder Klick.“ (CHK030 bis
+  CHK032).
 
 ## Begriffe
 
@@ -166,7 +182,7 @@ danach der Titel bedienbar da wie vorher.
 
 **Acceptance Scenarios**:
 
-1. **Given** das Level ist gewonnen oder verloren, **When** die Meldung mit Ergebnis und Punkten steht und
+1. **Given** das Level ist gewonnen oder verloren, **When** die Ergebnisanzeige mit Ergebnis und Punkten steht und
    der Spieler eine Taste drückt oder klickt, **Then** zeigt die Anzeige wieder die Seite, auf der
    er war.
 2. **Given** das Spiel läuft, **When** der Spieler Esc drückt, **Then** endet das Spiel sofort ohne
@@ -188,6 +204,8 @@ danach der Titel bedienbar da wie vorher.
 - Ein Klick der rechten oder mittleren Maustaste auf einen Knopf zählt nicht und drückt ihn nicht
   ein.
 - Der Spieler klickt die Folge mehrmals schnell hintereinander: Es startet genau ein Spiel.
+- Der Spieler klickt die Knöpfe, während das Spiel läuft: Sie drücken sich ein und klicken, starten
+  aber nichts und stören das Spiel nicht.
 - Während Space Invaders läuft, drückt der Spieler Enter, Leertaste oder Pfeile: Nur das Spiel
   reagiert; das Menü dahinter löst nichts aus und wechselt keine Auswahl.
 - Das Fenster verliert den Fokus, während das Spiel läuft: Das Spiel und sein Ton halten an, bis
@@ -196,7 +214,10 @@ danach der Titel bedienbar da wie vorher.
 - Auf dem Rechner ist kein Tonausgang da oder er ist stumm: Das Spiel läuft ohne Ton weiter, ohne
   Meldung.
 - Der Spieler schließt das Fenster während des Spiels: Die App beendet sich wie vom Titel aus; es
-  gibt nichts zu speichern.
+  gibt nichts zu speichern, denn im Titel läuft kein Spiel des Computerladens
+  (`docs/spielbeschreibung/spielablauf.md`).
+- Der Spieler drückt im Spiel die Taste für Vollbild oder schließt das Fenster mit dem Kürzel: Das
+  wirkt wie immer.
 - Es gibt keinen Spielstand oder einen beschädigten: Das Easter Egg geht trotzdem, es braucht
   keinen.
 
@@ -210,10 +231,14 @@ danach der Titel bedienbar da wie vorher.
   drückbar sein. Ihre Klickfläche MUSS mit dem sichtbaren Knopf im Bild übereinstimmen. Ein Druck
   zählt, wenn die Maustaste über demselben Knopf losgelassen wird, auf dem sie gedrückt wurde.
 - **FR-001a**: Solange die linke Maustaste auf einem Knopf unten ist, MUSS er eingedrückt
-  erscheinen: 1 Bildpixel tiefer, ohne Lichtkante. Das gilt für jeden der drei Knöpfe, auch wenn
-  der Druck die Folge nicht weiterbringt.
-- **FR-001b**: Über den Knöpfen MUSS der Mauszeiger der Pfeil bleiben. Die Ausnahme von der Regel
-  „Hand nur, wo ein Klick etwas tut“ kommt vor dem Bau in den Style-Guide.
+  erscheinen: 1 Bildpixel tiefer, ohne Lichtkante, und zwar im nächsten Bild nach dem Drücken. Was
+  zur Lichtkante gehört (oberste Zeile, dazu die linke Spalte, wenn sie hell ist), klärt die
+  Vermessung vor dem Bau. Das gilt für jeden der drei Knöpfe, auch wenn der Druck die Folge nicht
+  weiterbringt.
+- **FR-001b**: Über den Knöpfen MUSS der Mauszeiger der Pfeil bleiben; es gibt kein `signalgelb`,
+  keinen Tooltip, keinen Hinweis und kein Relief. Die einzige Rückmeldung ist das Eindrücken und der
+  Klick. Diese Ausnahme von den Regeln für anklickbare Stellen kommt vor dem Bau in den Style-Guide,
+  mit Grund: Die Knöpfe sind Teil des Gehäusebilds und versteckt (FR-005).
 - **FR-002**: Die Folge erster, zweiter, dritter Knopf MUSS Space Invaders starten.
 - **FR-003**: Jede andere Reihenfolge DARF NICHT starten. Nur ein Druck auf den falschen grauen
   Knopf bricht eine angefangene Folge ab; ist der falsche Knopf 1, beginnt damit eine neue Folge.
@@ -235,30 +260,37 @@ danach der Titel bedienbar da wie vorher.
   beim Start und beim Ende nicht. Der Hinweis neben dem Gerät ist verborgen, solange das Spiel auf
   der Anzeige steht.
 - **FR-011**: Das Spiel MUSS genau ein Level haben, ohne Deckungen und ohne Ufo: ein Block Außerirdischer, der seitwärts hin und
-  her zieht, am Rand eine Stufe tiefer rückt und schneller wird, je weniger übrig sind.
+  her zieht, am Rand eine Stufe tiefer rückt und schneller wird, je weniger übrig sind. Ein Treffer
+  zeigt kurz eine Explosion an der Stelle; sie hält nichts auf.
 - **FR-012**: Pfeil links und Pfeil rechts MÜSSEN die Kanone fahren lassen, solange sie gehalten
   werden; die Leertaste MUSS schießen. Höchstens ein eigener Schuss ist zugleich im Feld. Andere
-  Tasten außer Esc tun im Spiel nichts.
+  Tasten außer Esc tun im Spiel nichts; Tastenkürzel mit Cmd, Strg oder Alt und das Kürzel für
+  Vollbild wirken wie immer.
 - **FR-012a**: Der Spieler MUSS mit drei Leben beginnen. Trifft eine Bombe die Kanone, verliert er
   eines, und die Kanone erscheint nach einer kurzen Pause wieder in der Mitte.
 - **FR-013**: Die Außerirdischen MÜSSEN Bomben nach unten werfen; immer nur einer aus der untersten
-  Reihe einer Spalte kann werfen.
+  Reihe einer Spalte kann werfen. Schuss und Bombe fliegen aneinander vorbei.
 - **FR-014**: Das Spiel MUSS Punkte und verbleibende Leben anzeigen. Punkte werden nicht dauerhaft
   gespeichert.
 - **FR-015**: Das Level MUSS als gewonnen enden, wenn kein Außerirdischer übrig ist, und als
-  verloren, wenn die Kanone ohne Leben getroffen wird oder ein Außerirdischer ihre Höhe erreicht.
-- **FR-016**: Das Spiel MUSS anhalten, solange das Fenster nicht den Fokus hat.
+  verloren, wenn die Kanone ohne Leben getroffen wird oder die Unterkante eines Außerirdischen die
+  Oberkante der Kanone erreicht.
+- **FR-016**: Das Spiel MUSS anhalten, solange das Fenster nicht den Fokus hat. Das gilt für alle
+  seine Zeiten, auch die Pause nach einem Treffer und die Sperre der Ergebnisanzeige.
 - **FR-017**: Während das Spiel läuft, DÜRFEN Tastatur und Maus nichts im Menü des Titels auslösen
   oder wählen.
 
 **Ende und Rückweg**
 
-- **FR-020**: Nach Sieg oder Niederlage MUSS die Anzeige eine Meldung mit dem Ergebnis und den
+- **FR-020**: Nach Sieg oder Niederlage MUSS die Anzeige die Ergebnisanzeige mit dem Ergebnis und den
   Punkten zeigen. Eine Taste oder ein Linksklick auf die Anzeige MUSS danach zur vorigen Seite
-  zurückführen; ein Druck, der noch aus dem Spiel stammt (etwa ein gehaltener Schuss), DARF die
-  Meldung nicht gleich überspringen.
+  zurückführen. Als Taste zählt jede außer Shift, Strg, Alt und Cmd allein; von der Maus nur der
+  Linksklick, der Zeiger bleibt der Pfeil; ein Druck, der noch aus dem Spiel stammt (etwa ein gehaltener Schuss), DARF die
+  Ergebnisanzeige nicht gleich überspringen.
 - **FR-021**: Esc MUSS das laufende Spiel jederzeit sofort beenden und zum Titel zurückführen.
-- **FR-022**: Zurück auf dem Titel MÜSSEN Seite und Auswahl dieselben sein wie beim Start der Folge.
+- **FR-022**: Zurück auf dem Titel MÜSSEN Seite und Auswahl dieselben sein wie beim Start der Folge,
+  und der Hinweis der gewählten Zeile steht wieder da. Eine Meldung (Baustein Meldung), die beim
+  Start stand, kommt nicht zurück: Seitdem hat der Spieler etwas ausgelöst.
 
 **Aussehen**
 
@@ -300,9 +332,11 @@ danach der Titel bedienbar da wie vorher.
 ### Measurable Outcomes
 
 - **SC-001**: Nach dem dritten Knopf der Folge ist das Spiel in höchstens 0,5 s spielbereit.
-- **SC-002**: Ein durchschnittlicher Spieler kann das Level in 1 bis 3 Minuten gewinnen; verlieren
-  ist möglich, wenn er nicht ausweicht.
-- **SC-003**: Das Spiel läuft flüssig, ohne sichtbares Ruckeln, bei Klaus' Fenstergröße.
+- **SC-002**: Ein gezielter Durchlauf (Kanone fährt unter den Block und schießt) gewinnt in
+  höchstens 3 Minuten Spielzeit; ohne einen Schuss erreicht der Block die Kanone frühestens nach
+  1 Minute. Klaus bestätigt das Spielgefühl bei der Abnahme.
+- **SC-003**: Das Spiel rechnet in festen Schritten von 1/60 s, holt nach einem langen Bild
+  höchstens 4 Schritte nach und zeigt bei Klaus' Fenstergröße 60 Bilder je Sekunde.
 - **SC-004**: Alle bestehenden Tests des Titels laufen nach dem Feature unverändert grün.
 - **SC-005**: Von 20 zufälligen Folgen aus drei Klicks, die nicht 1-2-3 sind, startet keine das
   Spiel.

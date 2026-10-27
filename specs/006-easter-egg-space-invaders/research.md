@@ -53,7 +53,9 @@ an einer Montage ×8 nach, bevor sie in den Style-Guide kommen; der Agent übern
 die Taste ihren eigenen Ausschnitt aus dem Gehäusebild, **ohne seine oberste Zeile**, um 1 Bildpixel
 tiefer; die frei werdende oberste Zeile füllt er mit der Farbe des Spalts links neben der Taste. Die
 Vorderkante wird dadurch eine Zeile schmaler. Kein neues Bild, keine neue Farbe (Spec, FR-001a;
-Claude, 2026-10-27).
+Claude, 2026-10-27). Hat die Taste auf der Montage ×8 auch eine helle linke Spalte, fällt sie
+ebenso weg und wird mit der Spaltfarbe gefüllt (Review, CHK029). Gehäusetasten sind Teil des
+Bildes und bekommen deshalb kein `relief-gedrueckt` (Review, CHK003).
 
 **Grund:** Ein Ausschnitt mit `AtlasTexture` aus der vorhandenen Textur hält Farben und Raster des
 Gehäuses genau; fährt das Gerät, fährt die Taste mit. Die Farbe des Spalts steht schon im Bild.
@@ -100,7 +102,7 @@ Spiel im ersten (Spec, Randfälle: genau ein Spiel).
   als Liste von Ereignissen, die die Seite in Töne und Bilder übersetzt.
 - `InvadersPage` (Control): eine Seite des Communicators. Sammelt die Eingabe, taktet den Kern mit
   festem Schritt aus `_process()` (Zeitspeicher, höchstens 4 Schritte je Bild), malt in `_draw()`,
-  spielt Töne und zeigt am Ende die Meldung.
+  spielt Töne und zeigt am Ende die Ergebnisanzeige.
 
 Beide liegen unter `src/scenes/title/invaders/` (Claude, 2026-10-27).
 
@@ -123,17 +125,23 @@ Bildpixel, gezeigt ×2 als 320 × 160 Oberflächenpixel. Alles liegt auf ganzen 
 
 | Teil | Maß in Bildpixeln |
 |---|---|
-| Kopfzeile | oben 8 hoch: Punkte links, Leben rechts als kleine Kanonen |
+| Innenrand | 2 an jeder Seite (4 Oberflächenpixel wie bei Menü und Liste); nichts liegt außerhalb |
+| Kopfzeile | oben 8 hoch: Punkte ab x 2 in `drucker`, Leben rechts als Muster `life` (7 × 4, Abstand 2), das letzte endet bei x 157 |
 | Außerirdische | 8 × 6, Block 8 Spalten × 4 Reihen, Abstand 4 waagrecht, 3 senkrecht; Block 92 × 33 |
 | Start des Blocks | oben bei y 12, waagrecht mittig |
-| Kanone | 9 × 5, Unterkante bei y 77 |
+| Kanone | 9 × 5, Unterkante bei y 77; Mitte heißt x 75 bis 83 |
 | Schuss | 1 × 4, 2 Bildpixel je Schritt |
-| Bombe | 1 × 3, 1 Bildpixel je zwei Schritte |
+| Bombe | 1 × 3, 1 Bildpixel je zwei Schritte; Schuss und Bombe fliegen aneinander vorbei |
+| Explosion | Muster `explosion` 8 × 6 an der Stelle des Getroffenen, 0,25 s; hält nichts auf |
+| Gelandet | sobald die Unterkante eines lebenden Außerirdischen y 72 erreicht, die Oberkante der Kanone |
 | Takt des Blocks | ein Schritt von 2 Bildpixeln; am Rand 3 tiefer und Richtungswechsel |
 | Abstand der Takte | von 0,5 s bei 32 übrigen bis 0,05 s bei einem, linear über die Zahl der übrigen |
 | Bomben | höchstens 3 zugleich; je Takt mit Chance 1/4 von einer zufälligen untersten in einer Spalte |
 | Punkte | oberste Reihe 30, die beiden mittleren 20, unterste 10; höchstens 640 |
 | Leben | 3; nach einem Treffer 1 s Pause, Bomben weg, Kanone wieder in der Mitte |
+
+Das Feld liegt auf dem Bildraster wie eine Szene; die Abstände `raster-2` bis `raster-16` gelten
+dort nicht (Review, CHK028). Alle Lagen sind ganze Bildpixel (Review, CHK023).
 
 Mit diesen Zahlen braucht ein Durchgang über die Breite am Anfang rund 17 s; bis der Block die
 Kanone erreicht, vergehen ohne Treffer gut 2 Minuten, mit Treffern wird er schneller. Das zielt auf
@@ -159,9 +167,11 @@ Assumptions). Dass Klaus die Muster selbst zeichnet, ist ein guter Kandidat für
 
 **Entscheidung:** Die Seite nimmt beim Start den Fokus (`focus_mode` ALL) und wertet Tasten in
 `_gui_input()` aus: Pfeil links und rechts als gehaltener Zustand (gedrückt bis losgelassen, Echo
-zählt nicht), Leertaste als Schuss bei jedem neuen Druck, Esc beendet. Jede Taste, auch eine
-unbekannte, wird mit `accept_event()` verbraucht, damit nichts zum Titel durchdringt (Spec, FR-012,
-FR-017). Die Maus: Ein Linksklick auf die Anzeige zählt nur in der Meldung am Ende (FR-020). Verliert
+zählt nicht), Leertaste als Schuss bei jedem neuen Druck, Esc beendet. Jede Taste ohne Cmd, Strg
+oder Alt, auch eine unbekannte, wird mit `accept_event()` verbraucht, damit nichts zum Titel
+durchdringt (Spec, FR-012, FR-017). Tasten mit Cmd, Strg oder Alt und die Aktion `toggle_fullscreen`
+lässt sie durch: „Fenster schließen und Vollbild wirken wie immer“ (Baustein Communicator; Review,
+CHK006). Die Seite zeigt keinen Fokusrahmen (Review, CHK025). Die Maus: Ein Linksklick auf die Anzeige zählt nur in der Ergebnisanzeige (FR-020). Verliert
 die Seite den Fokus, etwa durch einen Klick auf eine Gehäusetaste, holt sie ihn zurück (Claude,
 2026-10-27).
 
@@ -172,23 +182,33 @@ keinen Fokus mehr, weil `show_page()` sie verbirgt. Ein eigener Tastenzustand st
 **Verworfen:** Eigene Aktionen in der InputMap (`invaders_left` …): Für drei Tasten in einem
 versteckten Spiel ist das mehr Projekteinstellung als Nutzen; die Pfeile sind fest gewählt (Clarify).
 
-## R10 Ende, Meldung und Rückweg
+## R10 Ende, Ergebnisanzeige und Rückweg
 
-**Entscheidung:** Am Ende hält der Kern an, und die Seite zeigt auf der Anzeige die Meldung, mittig,
-in der Schrift der LCD-Zeilen. Sie nimmt eine Taste oder einen Linksklick erst **0,5 s** nach dem Ende
-und nur als neuen Druck an (kein Echo, kein noch gehaltener Schuss; FR-020). Dann meldet sie
+**Entscheidung:** Am Ende hält der Kern an, und die Seite zeigt auf der Anzeige die Ergebnisanzeige.
+Sie heißt nicht Meldung, weil der Baustein Meldung ein Fehlerhinweis neben dem Gehäuse ist (Review,
+CHK004). Aufbau (Review, CHK024): Zeilen 1 und 2 in `drucker` (Doto) und Versalien wie Kopfzeilen,
+Zeile 3 in `menue` (Ark Pixel 12) wie ein Eintrag; Zeilenhöhe 20, als Block mittig in der Anzeige;
+vom Feld bleibt nur die Kopfzeile. Über der Anzeige bleibt der Zeiger der Pfeil (Review, CHK022).
+Sie nimmt eine Taste oder einen Linksklick erst **0,5 s** nach dem Ende und nur als neuen Druck an
+(kein Echo, kein noch gehaltener Schuss; FR-020). Shift, Strg, Alt und Cmd allein zählen nicht
+(Review, CHK009). Dann meldet sie
 `finished`; Esc meldet zu jeder Zeit `finished`. Der Titel merkt sich beim Start Seite, Fokus und
-Zeile des Hinweises und stellt alle drei beim Ende wieder her (FR-022; Claude, 2026-10-27).
+Zeile des Hinweises und stellt alle drei beim Ende wieder her; eine Meldung von vorher kommt als
+Hinweis der Zeile zurück (FR-022; Claude, 2026-10-27; Review, CHK008).
 
-**Wortlaut (Vorschlag, gültig nach der Checkliste mit Text-Prüfer):**
+**Wortlaut** (nach der Checkliste mit Text-Prüfer, Review CHK030 bis CHK034):
 
 | Fall | Zeile 1 | Zeile 2 | Zeile 3 |
 |---|---|---|---|
-| gewonnen | `ALLE ERWISCHT!` | `640 PUNKTE` | `Weiter mit einer Taste.` |
-| verloren, Kanone kaputt | `KANONE KAPUTT.` | `380 PUNKTE` | `Weiter mit einer Taste.` |
-| verloren, gelandet | `SIE SIND GELANDET.` | `380 PUNKTE` | `Weiter mit einer Taste.` |
+| gewonnen | `ALLE ERWISCHT.` | `640 PUNKTE` | `Weiter mit Taste oder Klick.` |
+| verloren, Kanone kaputt | `KANONE KAPUTT.` | `380 PUNKTE` | `Weiter mit Taste oder Klick.` |
+| verloren, gelandet | `DIE SIND GELANDET.` | `380 PUNKTE` | `Weiter mit Taste oder Klick.` |
 
-Die Kopfzeile im Spiel zeigt `PUNKTE 0380`. Alle Wortlaute stehen in `TitleTexts` (Feature 004, alle
+Die Kopfzeile im Spiel zeigt `PUNKTE 0380`: führende Nullen nur dort, wo die Stellenzahl fest ist;
+in der Ergebnisanzeige ohne. Zeilen 1 und 2 zählen als Meldung im Sinne des Abschnitts Sprache
+(trocken, Witz im Nachsatz erlaubt), Zeile 3 als Bedienung (ohne Witz); je Zeile ein Satz. Bis zum
+Review hießen sie „ALLE ERWISCHT!“, „SIE SIND GELANDET.“ und „Weiter mit einer Taste.“; das
+Ausrufezeichen war zu laut, „SIE“ las sich wie die Anrede, und der Klick fehlte. Alle Wortlaute stehen in `TitleTexts` (Feature 004, alle
 Texte des Titels an einer Stelle).
 
 **Verworfen:** Esc mit Rückfrage: Das Spiel dauert Minuten und speichert nichts.
@@ -197,7 +217,9 @@ Texte des Titels an einer Stelle).
 
 **Entscheidung:** Die Seite hört auf `NOTIFICATION_APPLICATION_FOCUS_OUT` und `…_FOCUS_IN`. Ohne
 Fokus taktet sie den Kern nicht und hält ihre Töne an (`stream_paused`); mit Fokus geht es weiter, ohne
-dass die verlorene Zeit nachgeholt wird (Spec, FR-016, FR-044; Claude, 2026-10-27).
+dass die verlorene Zeit nachgeholt wird (Spec, FR-016, FR-044; Claude, 2026-10-27). Das gilt für
+alle Zeiten des Spiels: die Pause nach einem Treffer, die Explosionen und die Sperre der
+Ergebnisanzeige (Review, CHK014).
 
 **Verworfen:** `get_tree().paused`: hielte auch Titel und Communicator an und braucht `process_mode`
 an jedem Node, der weiterlaufen soll.
@@ -206,10 +228,19 @@ an jedem Node, der weiterlaufen soll.
 
 **Entscheidung:** Vor dem ersten Code kommen in den Style-Guide (Phase 1, Claude schreibt, Klaus gibt
 frei):
-1. Baustein Communicator, **Gehäusetasten**: Lage der drei Tasten in G-03 (R2), eingedrückt (R3),
-   Zeiger Pfeil als Ausnahme von „Hand nur, wo ein Klick etwas tut“ mit Grund (Spec, FR-001b).
-2. Neuer Abschnitt **Spiel auf der Anzeige**: Feld, Kopfzeile, Maße (R7), Pixelmuster (R8),
-   Meldung am Ende (R10), nur `tusche` auf `lcd`.
+1. Baustein Communicator, **Gehäusetasten**: Lage der drei Tasten in G-03 (R2), eingedrückt (R3).
+   Ausnahme von allen Regeln für anklickbare Stellen, mit Grund (versteckt, Teil des Bildes): kein
+   Zeigerwechsel, kein `signalgelb`, kein Tooltip, kein Hinweis, kein Relief (Spec, FR-001b; Review,
+   CHK002, CHK003). Der Satz „Das Gehäuse ist reine Grafik: Ein Klick darauf tut nichts“ wird zu
+   „Das Gehäuse ist Grafik bis auf seine Gehäusetasten“ (CHK001). Die Beschreibung von G-03 nennt
+   die drei grauen Tasten (CHK027).
+2. Neuer Abschnitt **Spiel auf der Anzeige**: Feld, Innenrand, Kopfzeile in `drucker`, Maße und
+   Lagen (R7), Pixelmuster mit `explosion` und `life` (R8), Ergebnisanzeige (R10), nur `tusche` auf
+   `lcd`; kein Fokusrahmen, Zeiger Pfeil, „Bewegung reduzieren“ gilt nicht, `raster-*` gilt nicht im
+   Feld; Regeln für Texte im Spiel und führende Nullen (Review, CHK021 bis CHK028, CHK033, CHK034).
+   Im Baustein Communicator: Eine Seite ist ein Menü, eine Liste oder das Spiel; während des Spiels
+   ist der Hinweis verborgen (CHK021, CHK027). Im Abschnitt Sprache ein Verweis auf die Regeln für
+   Texte im Spiel (CHK034).
 3. Neuer Abschnitt **Ton**: Klang (Rechteckwelle), Tonhöhen, Längen, Pegel, die Tonkanäle (R13,
    R14), und dass das Menü stumm bleibt.
 
@@ -231,6 +262,8 @@ gültig mit dem Style-Guide):
 | `niederlage.wav` | verloren | Rechteck, absteigend G4 E4 C4, je 160 ms |
 
 Jeder Ton beginnt ohne Stille und endet mit 5 ms Ausblenden gegen Knacken. Spitzenpegel −6 dBFS.
+Die vier Marschtöne teilen sich einen Player: Ein neuer Takt schneidet den vorigen Ton ab, auch wenn
+die Takte kürzer werden als der Ton (Review, CHK015).
 
 **Grund:** Spec, Ton 2026-10-27. 22 050 Hz reicht für Rechteck und Rauschen und hält die Dateien
 klein (zusammen unter 100 KB). Ohne Stille am Anfang trifft SC-007 (höchstens 50 ms); Godots

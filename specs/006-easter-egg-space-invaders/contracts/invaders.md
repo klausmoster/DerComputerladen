@@ -5,7 +5,7 @@ FR-040, FR-044). Entscheidungen in [research.md](../research.md) R6 bis R11, Zus
 [data-model.md](../data-model.md). Rümpfe stehen hier bewusst nicht (Verfassung, Grundsatz II).
 
 **Vorbedingung:** Der Abschnitt „Spiel auf der Anzeige“ steht im Style-Guide mit Feld, Maßen,
-Pixelmustern und Meldung, und Klaus hat ihn freigegeben (R12). Die Zahlen in R7 sind Vorschläge;
+Pixelmustern und Ergebnisanzeige, und Klaus hat ihn freigegeben (R12). Die Zahlen in R7 sind Vorschläge;
 die Konstanten tragen die Werte aus dem Style-Guide. Für die Seite sind außerdem die Töne aus
 [ton.md](ton.md) da.
 
@@ -18,7 +18,7 @@ src/scenes/title/
 │   ├── invaders_sprites.gd              # neu: class_name InvadersSprites, Pixelmuster als Daten
 │   ├── invaders_page.gd                 # neu: class_name InvadersPage, die Seite
 │   └── invaders_page.tscn               # neu: Seite mit ihren AudioStreamPlayern
-└── title_texts.gd                       # geändert: Kopfzeile und Meldungen (R10)
+└── title_texts.gd                       # geändert: Kopfzeile und Ergebnisanzeige (R10)
 src/test/
 ├── test_invaders_game.gd                # neu: Kern
 ├── test_invaders_sprites.gd             # neu: Muster
@@ -92,7 +92,7 @@ der Style-Guide (oben `alien_a` für 30 Punkte, Mitte `alien_b` für 20, unten `
 class_name InvadersPage
 extends Control
 
-## Das Spiel ist vorbei: nach der Meldung oder durch Esc. Der Bildschirm kehrt zurück.
+## Das Spiel ist vorbei: nach der Ergebnisanzeige oder durch Esc. Der Bildschirm kehrt zurück.
 signal finished
 
 ## true: Die Seite taktet sich selbst in _process(). false: Tests takten mit advance().
@@ -104,11 +104,13 @@ func start(seed: int = -1) -> void
 func advance(seconds: float) -> void
 ## Die laufende Partie (Tests).
 func game() -> InvadersGame
-## Ob die Meldung am Ende steht und eine Taste annimmt.
+## Ob die Ergebnisanzeige steht und eine Taste annimmt.
 func is_waiting_for_key() -> bool
 ```
 
-**Eingabe** (R9): in `_gui_input()`, jede Taste mit `accept_event()`.
+**Eingabe** (R9): in `_gui_input()`, jede Taste ohne Cmd, Strg oder Alt mit `accept_event()`. Tasten
+mit Cmd, Strg oder Alt und die Aktion `toggle_fullscreen` gehen durch (Review, CHK006). Shift, Strg,
+Alt und Cmd allein zählen in der Ergebnisanzeige nicht als Taste (CHK009).
 
 | Eingabe | läuft | Ende, gesperrt (0,5 s) | Ende, wartet |
 |---|---|---|---|
@@ -117,14 +119,18 @@ func is_waiting_for_key() -> bool
 | andere Taste | nichts | – | `finished` |
 | Esc | `finished` | `finished` | `finished` |
 | Linksklick auf die Seite | nichts | – | `finished` |
+| Rechts- oder Mittelklick, Mausrad | nichts | – | nichts |
 
 Echo-Ereignisse zählen nie als neuer Druck. Verliert die Seite den Fokus, während sie zu sehen ist,
-holt sie ihn zurück (`focus_exited` → `grab_focus` deferred).
+holt sie ihn zurück (`focus_exited` → `grab_focus` deferred). Die Seite zeigt keinen Fokusrahmen
+(CHK025); der Zeiger über ihr ist immer der Pfeil (CHK022).
 
 **Malen:** `_draw()` füllt nichts (der Grund ist die Anzeige in `lcd`) und malt jedes Pixel aus
-`drawables()` als 2 × 2 Oberflächenpixel in `UiPalette.TUSCHE`; die Kopfzeile mit Punkten als Text in
-der Schrift von `LcdRow` und den Leben als Muster `life`. Die Meldung am Ende steht mittig, drei
-Zeilen, Schrift wie `LcdRow`; Block, Kanone und Schüsse sind dann ausgeblendet.
+`drawables()` als 2 × 2 Oberflächenpixel in `UiPalette.TUSCHE`. Die Kopfzeile: Punkte als Text in
+`drucker` wie `LcdHeader`, ab dem Innenrand links, und die Leben als Muster `life`, rechtsbündig am
+Innenrand (R7; Review, CHK005, CHK023). Die Ergebnisanzeige (R10): Zeilen 1 und 2 in `drucker`,
+Zeile 3 in `menue` wie `LcdRow`, Zeilenhöhe 20, als Block mittig; vom Feld bleibt nur die
+Kopfzeile (CHK024).
 
 **Töne** (`invaders_page.tscn`, je ein `AudioStreamPlayer` auf `Effekte`):
 
@@ -136,10 +142,12 @@ Zeilen, Schrift wie `LcdRow`; Block, Kanone und Schüsse sind dann ausgeblendet.
 | `CANNON_HIT` | `kanone.wav` |
 | `WON` / `LOST` | `sieg.wav` / `niederlage.wav` |
 
+Die vier Marschtöne teilen sich einen Player; ein neuer Takt schneidet den vorigen Ton ab (CHK015).
 `finished` und eine verborgene Seite stoppen alle Töne der Seite (FR-044).
 
 **Fokus des Fensters** (R11): Bei `NOTIFICATION_APPLICATION_FOCUS_OUT` taktet die Seite nicht mehr
-und setzt `stream_paused` auf allen Playern; bei `…_FOCUS_IN` geht es ohne Nachholen weiter.
+und setzt `stream_paused` auf allen Playern; bei `…_FOCUS_IN` geht es ohne Nachholen weiter. Auch
+die Sperre der Ergebnisanzeige läuft nur mit Fokus (CHK014).
 
 ## Texte (`TitleTexts`)
 
@@ -147,14 +155,14 @@ Neu, Wortlaute aus R10 nach der Checkliste:
 
 ```gdscript
 const INVADERS_SCORE := "PUNKTE %04d"
-const INVADERS_WON := "ALLE ERWISCHT!"
+const INVADERS_WON := "ALLE ERWISCHT."
 const INVADERS_LOST_HIT := "KANONE KAPUTT."
-const INVADERS_LOST_LANDED := "SIE SIND GELANDET."
+const INVADERS_LOST_LANDED := "DIE SIND GELANDET."
 const INVADERS_POINTS := "%d PUNKTE"
-const INVADERS_CONTINUE := "Weiter mit einer Taste."
+const INVADERS_CONTINUE := "Weiter mit Taste oder Klick."
 ```
 
-`test_title_texts.gd` prüft, dass jede Zeile der Meldung in die Breite der Anzeige passt.
+`test_title_texts.gd` prüft, dass jede Zeile der Ergebnisanzeige in die Breite der Anzeige passt.
 
 ## Tests
 
@@ -175,6 +183,8 @@ nur `#` und `.`; die beiden Bilder je Außerirdischem unterscheiden sich.
 `test_invaders_page.gd` (mit `autoplay = false` und `advance()`):
 - `start()` nimmt den Fokus; Pfeile, Leertaste und unbekannte Tasten erreichen den Titel nicht.
 - Ereignisse spielen den passenden Player auf `Effekte`.
-- Die Meldung nimmt in den ersten 0,5 s nichts außer Esc; danach einen neuen Druck, kein Echo.
+- Die Ergebnisanzeige nimmt in den ersten 0,5 s nichts außer Esc; danach einen neuen Druck, kein Echo;
+  Shift allein zählt nicht.
+- Cmd+Q, Strg+Cmd+F und `toggle_fullscreen` werden nicht verbraucht.
 - Esc zu jeder Zeit `finished`; danach spielt kein Player mehr.
 - Ohne Fokus des Fensters taktet nichts und die Player sind angehalten.

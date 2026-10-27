@@ -55,7 +55,7 @@ Beispiele: 1-2-3 startet; 1-1-2-3 startet; 2-1-3 nicht; 1-2-2-3 nicht.
 | `march_note` | 0 bis 3, welcher der vier Marschtöne als Nächstes kommt |
 | `shot` | eigener Schuss oder keiner |
 | `bombs` | höchstens 3 |
-| `explosions` | kurz sichtbare Treffer, mit Restzeit |
+| `explosions` | kurz sichtbare Treffer, je 0,25 s; halten nichts auf |
 | `rng` | Zufall für Bomben, mit Seed |
 
 ```mermaid
@@ -76,6 +76,8 @@ stateDiagram-v2
 - Die Kanone bleibt im Feld; links und rechts zugleich heben sich auf.
 - Ein neuer Schuss nur, wenn keiner im Feld ist. In `RESPAWN` gibt es keinen Schuss und keine Bombe.
 - Treffer sind Überschneidungen von Rechtecken auf Bildpixeln; ein Schuss trifft höchstens einen.
+- Schuss und Bombe fliegen aneinander vorbei.
+- Gelandet: Die Unterkante eines lebenden Außerirdischen erreicht die Oberkante der Kanone.
 - Der Takt rückt den Block; am Rand erst tiefer und Richtungswechsel, im nächsten Takt weiter.
 - Abstand der Takte aus der Zahl der Übrigen (R7); der Block wird schneller, je weniger übrig sind.
 
@@ -85,8 +87,8 @@ stateDiagram-v2
 |---|---|---|
 | läuft | Kopfzeile, Block, Kanone, Schüsse, Bomben | Pfeile, Leertaste, Esc |
 | angehalten (Fenster ohne Fokus) | das letzte Bild | keine; Töne angehalten |
-| Ende, gesperrt (0,5 s) | Meldung | nur Esc |
-| Ende, wartet | Meldung | jede neue Taste, Linksklick, Esc → `finished` |
+| Ende, gesperrt (0,5 s) | Ergebnisanzeige | nur Esc |
+| Ende, wartet | Ergebnisanzeige | jede neue Taste, Linksklick, Esc → `finished` |
 
 ## Titel
 

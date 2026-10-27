@@ -49,10 +49,14 @@ Erwartet: kurze Piepser wie ein Taschengerät, kein Knacken am Ende, nichts laut
 
 1. Das Spiel läuft auf der Anzeige: dunkle Pixel auf `lcd`, auf dem Bildraster, nichts verwischt.
 2. Pfeile fahren, Leertaste schießt; Schuss, Treffer, Marschtakt und Kanone klingen.
-3. Der Block wird schneller, je weniger übrig sind. Gewinnen dauert 1 bis 3 Minuten (SC-002).
+3. Der Block wird schneller, je weniger übrig sind. Gezielt gewinnt man in höchstens 3 Minuten;
+   ohne zu schießen landet der Block frühestens nach 1 Minute (SC-002).
 4. In ein anderes Fenster klicken: Spiel und Ton halten an; zurück: es geht weiter.
-5. Am Ende die Meldung; eine gehaltene Leertaste überspringt sie nicht; danach eine Taste.
+5. Am Ende die Ergebnisanzeige; eine gehaltene Leertaste überspringt sie nicht; danach eine Taste.
 6. Esc beendet sofort; kein Ton klingt nach.
+7. Im Spiel wirken Vollbild und Fenster-Schließen wie immer.
+8. Texte: „ALLE ERWISCHT.“, „KANONE KAPUTT.“, „DIE SIND GELANDET.“, darunter die Punkte und
+   „Weiter mit Taste oder Klick.“
 
 ## Im Titel (Phase 5)
 
@@ -67,4 +71,4 @@ Erwartet: kurze Piepser wie ein Taschengerät, kein Knacken am Ende, nichts laut
 4. Im Spiel lösen Pfeile, Leertaste und Enter im Menü dahinter nichts aus.
 5. Nach Sieg, Niederlage und Esc steht dieselbe Seite da, mit derselben Auswahl und ihrem Hinweis.
 6. Danach ein Spiel beginnen: Alles läuft wie vor dem Easter Egg; kein Spielstand ist neu.
-7. Bildschirmfotos aus dem echten Fenster in 1920 × 925: Knopf eingedrückt, Spiel läuft, Meldung.
+7. Bildschirmfotos aus dem echten Fenster in 1920 × 925: Knopf eingedrückt, Spiel läuft, Ergebnisanzeige.

@@ -8,7 +8,7 @@
 
 Auf dem Titel werden die drei grauen Knöpfe unter der Anzeige des Communicators drückbar. Wer sie der
 Reihe nach drückt, spielt auf der Anzeige eine Welle Space Invaders: einfarbige Pixelmuster in
-`tusche` auf `lcd`, Pfeile und Leertaste, drei Leben. Am Ende nennt eine Meldung das Ergebnis, eine
+`tusche` auf `lcd`, Pfeile und Leertaste, drei Leben. Am Ende nennt die Ergebnisanzeige das Ergebnis, eine
 Taste führt zurück zur Seite, auf der der Spieler war. Mit dem Feature kommt Ton ins Spiel:
 Rechteck-Piepser aus einem Skript, über eigene Tonkanäle.
 
@@ -141,11 +141,22 @@ Die Phasen laufen streng nacheinander (Grundsatz II).
 | 1 | Vorarbeit: Style-Guide (Gehäusetasten, Spiel auf der Anzeige mit Pixelmustern, Ton) und Vermessung der Knöpfe. Kein Code | Vorarbeit |
 | 2 | Ton: `tools/ton/make_sounds.py` und README `[C]`; zehn WAV; `default_bus_layout.tres` und `test_ton.gd` `[A]`; Klaus hört die Töne an | Grundlage US2, US1 |
 | 3 | Spielkern: `InvadersGame`, `InvadersSprites`, `test_invaders_game.gd`, `test_invaders_sprites.gd`. Nichts Sichtbares | US2 |
-| 4 | Spielseite: `InvadersPage` mit Szene, Eingabe, Malen, Tönen, Meldung, Anhalten; Texte in `TitleTexts`; Probeszene; `test_invaders_page.gd`. Klaus spielt in der Probeszene und stellt Tempi ein | US2, US3 (Teil) |
+| 4 | Spielseite: `InvadersPage` mit Szene, Eingabe, Malen, Tönen, Ergebnisanzeige, Anhalten; Texte in `TitleTexts`; Probeszene; `test_invaders_page.gd`. Klaus spielt in der Probeszene und stellt Tempi ein | US2, US3 (Teil) |
 | 5 | Knöpfe und Titel, in zwei Teilen (ki_dev Punkt 4): erst Gehäusetasten am Communicator mit Probeszene und `test_communicator.gd`; dann `KeySequence`, Einbau in den Titel, Rückweg, `test_key_sequence.gd`, `test_title_screen.gd` | US1, US3 |
 | 6 | Abschluss: Lückensuche mit `/speckit-converge`; Spielbeschreibung prüfen (`communicator.md`, `titel-und-hauptmenue.md`, `darstellung.md`, `build-und-tests.md`, neu wohl `ton.md`; Index) und Klaus vorlegen; `docs/features/Features.md`; `CLAUDE.md` (Tabelle „Aufbau“: `src/assets/sounds/`, `tools/ton/`) nur mit Klaus' OK; Gesamtabnahme; Tagebuch | – |
 
 Phase 3 hängt an Phase 1 (Muster und Maße), Phase 4 an 2 und 3, Phase 5 an 4.
+
+## Änderungen nach der Checkliste
+
+Aus [checklists/review.md](checklists/review.md), 34 Punkte, davon 14 aus der Prüfung des Vertrags
+durch Stil- und Text-Prüfer; von Klaus am 2026-10-27 alle freigegeben. Eingearbeitet in Spec
+(Clarifications „Review 2026-10-27“, FR-001a, FR-001b, FR-011 bis FR-016, FR-020, FR-022, Randfälle,
+SC-002, SC-003), research.md (R3, R7, R9 bis R13), Datenmodell, Verträge und Quickstart. Das Ende
+heißt seitdem Ergebnisanzeige. Phase 1 hat dadurch mehr Inhalt für den Style-Guide (R12): die
+vollständige Ausnahme für die Gehäusetasten, Änderungen an zwei Sätzen im Baustein Communicator, den
+Abschnitt „Spiel auf der Anzeige“ mit Innenrand, Lagen, Ergebnisanzeige und Textregeln, und einen
+Verweis im Abschnitt Sprache.
 
 ## Prüfer je Phase
 
@@ -157,6 +168,6 @@ Jede Phase mit Sichtbarem oder Texten endet mit der [C]-Aufgabe „Phasenprüfun
 | 1 Style-Guide | den Maßstab selbst | keine; Klaus nimmt ab | – |
 | 2 Ton | Töne, nichts Sichtbares | keine; Klaus hört ab | Abschnitt „Ton“ |
 | 3 Spielkern | nichts Sichtbares | keine | – |
-| 4 Spielseite | Spiel und Meldung auf der Anzeige, neue Texte | Stil, Text | „Spiel auf der Anzeige“, Baustein Communicator, `tokens.json`, `Sprache.md`; Bildschirmfotos der Probeszene: Spiel läuft, Meldung gewonnen und verloren |
+| 4 Spielseite | Spiel und Ergebnisanzeige auf der Anzeige, neue Texte | Stil, Text | „Spiel auf der Anzeige“, Baustein Communicator, `tokens.json`, `Sprache.md`; Bildschirmfotos der Probeszene: Spiel läuft, Ergebnisanzeige gewonnen und verloren |
 | 5 Knöpfe und Titel | Gehäuse mit eingedrückter Taste, Titel mit Spiel | Stil | Gehäusetasten, Bewegung, Titel; Bildschirmfotos aus dem echten Fenster |
 | 6 Abschluss | Doku | bei der Lückensuche Stil und Text einmal über das ganze Feature | wie 4 und 5 |
