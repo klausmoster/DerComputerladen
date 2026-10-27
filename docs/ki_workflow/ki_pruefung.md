@@ -272,6 +272,7 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Pilot Feature 004, Phase 4, 40 Texte der Blätter (2026-10-26) | Text | 1 | 1, durch Phase 5 erledigt | 0 | 4, davon 1 schon bekannt | 1 |
 | Pilot Feature 004, Phase 4, Nachprüfung Lochrand und Abstand am Knopf (2026-10-26) | Stil | 0 | 0 | 0 | 0 | 0 |
 | Pilot Feature 004, Phase 5, Liste, Löschmodus, Rückfrage, Meldung (2026-10-26) | Stil | 2 | 2, davon 1 als Widerspruch zum Vertrag | 0 | 5, davon 2 verworfen, 1 schon bekannt | 2 |
+| Feature 005, Phase 2, Baustein Communicator und Probeszene (2026-10-27) | Stil | 2 | 2, davon 1 erst mit G-02 wirksam (T027) | 0 | 2 | 2 |
 | Pilot Feature 004, Phase 5, 23 Texte der Liste und Rückfrage (2026-10-26) | Text | 1 | 1 als Widerspruch zum Vertrag | 0 | 3, davon 1 verworfen, 1 schon bekannt | 1 |
 | Pilot Feature 004, Phase 5, Nachprüfung nach der Reparatur (2026-10-26) | Stil | 0 | 0 | 0 | 1 | 0 |
 | Pilot Feature 004, Phase 5, Nachprüfung der 6 geänderten Vorlagen (2026-10-26) | Text | 0 | 0 | 0 | 1, verworfen | 0 |

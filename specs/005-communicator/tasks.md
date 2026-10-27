@@ -105,13 +105,13 @@ jeder mit eigenen Tests (C10).
 Menü aus drei Einträgen, fährt ihn herein und hinaus, wählt per Tastatur und bekommt den Eintrag
 gemeldet, ohne Titelbildschirm und `TitleTexts` (SC-005).
 
-- [ ] T004 [A] [US3] `lcd` in `src/ui/ui_palette.gd`: `const LCD` mit dem Wert aus dem Style-Guide,
+- [x] T004 [A] [US3] `lcd` in `src/ui/ui_palette.gd`: `const LCD` mit dem Wert aus dem Style-Guide,
   Token `&"lcd"` in `TOKENS`, Kopfkommentar „16 Farben; `lcd` nicht in der Hauptpalette“ (R1);
   `CATEGORY_TOKENS` bleibt. Tests: `src/test/test_ui_palette.gd` mit 16 Farben und den vier
   Kontrasten aus R2 gegen 4,5 : 1 und 3 : 1 (CHK023); `src/test/test_bilder.gd` prüft die 15
   reservierten Farben in der Hauptpalette, `lcd` als Ausnahme mit Verweis auf R1, und ein neuer
   Test sichert ausdrücklich, dass `lcd` nicht in `docs/art/hauptpalette.gpl` steht (C13).
-- [ ] T005 [A] [US3] Teil 1, Aufbau und Seiten: `src/ui/communicator/communicator.tscn` und
+- [x] T005 [A] [US3] Teil 1, Aufbau und Seiten: `src/ui/communicator/communicator.tscn` und
   `communicator.gd` (`class_name Communicator`) laut communicator.md, „Szenenaufbau“ und
   „Seiten“: `Case` als Platzhalter (Rechteck in `gehaeuse`, Kontur `tusche`, R11), `Display`,
   `Hint` (`menu_hint.tscn`), die Seiten als direkte Kinder danach; Lage und Farbe der Anzeige als
@@ -120,7 +120,7 @@ gemeldet, ohne Titelbildschirm und `TitleTexts` (SC-005).
   den Seiten lässt die Maus durch, ein Klick auf das Gehäuse tut nichts (CHK002). Tests in
   `src/test/test_communicator.gd`: Seiten aus der Szene liegen auf der Anzeige, genau eine ist zu
   sehen, `show_page()` bewegt nichts, Klick aufs Gehäuse tut nichts.
-- [ ] T006 [A] [US3] Teil 2, Fahrt: `place_hidden()`, `slide_in()`, `slide_out()`, `is_in()`,
+- [x] T006 [A] [US3] Teil 2, Fahrt: `place_hidden()`, `slide_in()`, `slide_out()`, `is_in()`,
   `slide_y`, `animate`, Signal `slide_finished(arrived_in)`; Tween angehalten und in `_process()`
   getaktet, der erste Schritt jeder Fahrt höchstens 1/60 s, danach höchstens 1/30 s (C2); herein
   `EASE_OUT`, hinaus `EASE_IN`, `TRANS_CUBIC`; Umkehr aus der aktuellen Lage; Endlage auf ganzen
@@ -130,7 +130,7 @@ gemeldet, ohne Titelbildschirm und `TitleTexts` (SC-005).
   fahrenden Bild bei 1/60 s und 1/30 s je Bild und mit einem ersten Bild von 0,5 s (SC-002,
   CHK010); im ersten Bild höchstens ein Viertel des Wegs; Umkehr in beide Richtungen;
   `slide_finished` einmal je Fahrt, mit `animate = false` sofort.
-- [ ] T007 [A] [US3] Teil 3, Eingabe und Hinweis: `accepts_input()`; ab `slide_out()` nimmt keine
+- [x] T007 [A] [US3] Teil 3, Eingabe und Hinweis: `accepts_input()`; ab `slide_out()` nimmt keine
   Seite Fokus, Maus oder Tastatur an, auch nicht durch `mouse_entered` oder Mausbewegung, bis
   `slide_in()` kommt; der Agent prüft in der Doku von Godot 4.7, ob es dafür eine rekursive Sperre
   an `Control` gibt, sonst eine deckende Sperrfläche, und nennt die Lösung im Bericht (B2).
@@ -142,20 +142,28 @@ gemeldet, ohne Titelbildschirm und `TitleTexts` (SC-005).
   hinaus lösen Enter, Leertaste, Linksklick und „Maus bewegen, dann Enter“ nichts aus; ruhender
   Zeiger wählt nicht; Hinweis links neben dem Gehäuse und um genau die Strecke der Fahrt
   mitbewegt.
-- [ ] T008 [A] [US3] Probeszene `src/test/fixtures/communicator_probe.tscn` (Hintergrund `nacht`,
+- [x] T008 [A] [US3] Probeszene `src/test/fixtures/communicator_probe.tscn` (Hintergrund `nacht`,
   ein Communicator, ein `MainMenu` mit drei `MenuEntry`) und der Test der Probeseite in
   `src/test/test_communicator.gd`: Pfeil runter, Enter meldet den zweiten Eintrag, ohne
   `title_screen.tscn` und `TitleTexts` (SC-005). Bis Phase 3 steht das Menü auf `PAPER`; T014
   stellt es auf `LCD` um.
-- [ ] T009 [A] [US3] Lernnotizen zu T004 bis T008 in `specs/005-communicator/lernnotizen.md`
+- [x] T009 [A] [US3] Lernnotizen zu T004 bis T008 in `specs/005-communicator/lernnotizen.md`
   (neu): Tween mit `custom_step()`, gerundete Eigenschaft als Ziel, gedeckelter erster Schritt,
   Seiten als Kinder einer Instanz, Hinweis als Kind statt per Differenz, wie die Eingabe gesperrt
   ist.
-- [ ] T010 [C] [US3] Prüfen: Tests zweimal, Startprobe mit `-d` still, Code an Fahrt und Eingabe
+- [x] T010 [C] [US3] Prüfen: Tests zweimal, Startprobe mit `-d` still, Code an Fahrt und Eingabe
   lesen, Bildschirmfoto der Probeszene im echten Fenster in Klaus' Größe.
-- [ ] T011 [C] [US3] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`: Stil-Prüfer mit Baustein
+- [x] T011 [C] [US3] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`: Stil-Prüfer mit Baustein
   Communicator und `tokens.json`; Bildschirmfotos der Probeszene in Endlage und unterwegs.
-- [ ] T012 [K] [US3] Phase 2 abnehmen (Quickstart, Zuordnung Phase 2).
+- [x] T012 [K] [US3] Phase 2 abnehmen (Quickstart, Zuordnung Phase 2).
+
+Erledigt am 2026-10-27, von Klaus abgenommen: 980 Tests zweimal grün (16.550 Prüfungen, vorher
+937), Startprobe und Probeszene still, Hauptpalette unverändert. Gebaut ist der Baustein in drei
+Teilen mit 39 Tests, die Sperre über Godots rekursive Sperre für Fokus und Maus. Phasenprüfung:
+Stil-Prüfer mit 2 Befunden, beide bestätigt; der Hinweis der Probe fährt jetzt mit hinaus, der
+Faktor ×2 des Gehäusebilds kommt mit T027. Zwei Lücken im Style-Guide hat Klaus nach Empfehlung
+entschieden (Version 37): Der rechte Rand bis 616 gilt für Anzeige und Seiten, das Gehäuse darf bis
+an den Bildrand; der Hinweis fährt mit hinaus.
 
 **Checkpoint**: Der Communicator fährt, zeigt eine Seite und meldet sie, ohne den Titel.
 
@@ -243,7 +251,10 @@ dann der Spielbildschirm (Quickstart, „Von Hand“).
 
 - [ ] T027 [A] [US1] `src/ui/communicator/communicator.tscn`: `Case` zeigt `organizer_1991.png` ×2
   statt des Platzhalters, Lage der Anzeige nach der Messung aus T021; Tests aus Phase 2 bleiben
-  grün.
+  grün. Genau ×2 absichern: `Case` ist so groß wie die Textur mal 2, oder `STRETCH_KEEP` mit
+  `scale` 2, dazu ein Test; heute zieht `expand_mode = 1` mit `STRETCH_SCALE` jede Textur auf
+  432 × 264 (Phasenprüfung Phase 2, Befund 2). Am Foto nachsehen, dass das Gehäuse unten aus dem
+  Bild ragt und keine geschlossene Unterkante zeigt.
 - [ ] T028 [A] [US1] `src/scenes/title/title_screen.tscn`: `Background` mit `title_t02.png`;
   `Communicator` in der Endlage aus dem Style-Guide mit den Seiten `MainMenu`, `DifficultySheet`,
   `SaveList`, `ConfirmSheet`, alle `look = LCD`; der eigene `MenuHint` entfällt

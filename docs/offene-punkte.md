@@ -12,6 +12,33 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 005, Phase 2 (2026-10-27)
+
+Auslegungen des Agents beim Baustein Communicator, von Claude übernommen. Klaus bestätigt sie oder
+ändert sie mit der Abnahme von Phase 2 (T012):
+- **Ungerade Endlage meldet eine Warnung:** Steht der Communicator in seiner Szene nicht auf ganzen
+  Bildpixeln, meldet `_ready()` das per `push_warning`; jeder Bildschirm fällt so beim Start auf.
+- **Fahrt ohne Weg meldet sofort:** Steht der Communicator schon am Ziel, kommt `slide_finished`
+  gleich, damit ein Bildschirm, der darauf wartet, nie hängen bleibt. Ein zweites `slide_in()`
+  während der Fahrt ändert nichts; `place_hidden()` meldet nichts, es ist keine Fahrt.
+- **Ende der Fahrt aus dem Tween:** Das Ende meldet das Signal `finished` des Tweens, nicht der
+  Rückgabewert von `custom_step()`, der erst ein Bild später `false` wird (Fehler im Spike, bei 30
+  Bildern je Sekunde 267 statt 233 ms).
+- **Sperre über Godots rekursive Sperre:** `focus_behavior_recursive` und
+  `mouse_behavior_recursive` sperren beim Hinausfahren den ganzen Teilbaum, auch Zeilen, die ein
+  Menü erst zur Laufzeit baut; keine Sperrfläche (sie hielte die Tastatur nicht ab).
+- **Ruhender Zeiger:** Godot 4.7 meldet `mouse_entered` nur bei echter Mausbewegung; eine eigene
+  Sperre für die Fahrt herein ist nicht nötig. Im echten Fenster prüft Klaus es mit der Probeszene.
+- **Hinweis ohne neue Funktion:** Der Communicator reicht `MenuHint` ein Rechteck mit der linken
+  Kante des Gehäuses; `MenuHint` bleibt unverändert.
+- **Lücken aus der Phasenprüfung:** rechter Rand und Hinweis beim Hinausfahren; von Klaus am
+  2026-10-27 nach Empfehlung entschieden und im Baustein Communicator eingetragen (Style-Guide,
+  Version 37): Der Rand bis 616 gilt für Anzeige und Seiten, das Gehäuse darf bis an den Bildrand;
+  der Hinweis fährt mit hinaus. Die Auslegungen oben hat Klaus mit der Abnahme bestätigt.
+- **Für Phase 5 merken:** Ruft der Titel während der Sperre `select()` an Menü oder Liste, druckt
+  Godot „can't grab focus“, und die Startprobe würde laut. Das Flag `_leaving` muss deshalb auch vor
+  jedem `select()` greifen (T029).
+
 ### Feature 005, Plan (2026-10-27)
 
 Eigene Festlegungen von Claude in `specs/005-communicator/research.md`. Klaus bestätigt sie oder

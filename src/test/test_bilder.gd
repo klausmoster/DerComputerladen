@@ -13,12 +13,20 @@ extends GutTest
 ##
 ## Die Prüffunktionen nehmen einen Pfad oder ein Image, damit sich auch eine Kopie außerhalb des
 ## Projekts prüfen lässt. Der Test schreibt nichts.
+##
+## Seit Feature 005 (T004): Von den 16 Farben aus UiPalette stehen 15 in der Hauptpalette. Die 16.,
+## `lcd`, gibt es nur in der Oberfläche, nie in einem Bild; die Hauptpalette bleibt eingefroren
+## (research.md von Feature 005, R1). Steht `lcd` nicht in der Hauptpalette, kann sie wegen des
+## ersten Tests auch in keinem Bild vorkommen.
 
 const BILDORDNER := "res://assets/images/"
 ## So viele Fundstellen nennt die Fehlermeldung, dazu die Gesamtzahl.
 const ERSTE_FUNDSTELLEN := 5
 ## Index 0 der Hauptpalette, Magenta, steht für die Transparenz und ist keine deckende Farbe.
 const TRANSPARENZ := 0xff00ff
+## Farben aus UiPalette, die nicht in der Hauptpalette stehen: lcd gibt es nur in der Oberfläche
+## (Feature 005, R1).
+const NUR_OBERFLAECHE: Array[StringName] = [&"lcd"]
 
 
 func test_jedes_bild_nur_in_farben_der_hauptpalette() -> void:
@@ -36,8 +44,10 @@ func test_palette_hat_256_farben_und_die_15_der_oberflaeche() -> void:
 	# Arrange
 	var palette := _lies_palette(_palettenpfad())
 	var oberflaeche := []
-	for farbe: Color in UiPalette.TOKENS.values():
-		oberflaeche.append(_als_zahl(farbe))
+	for token: StringName in UiPalette.TOKENS:
+		if token in NUR_OBERFLAECHE:
+			continue
+		oberflaeche.append(_als_zahl(UiPalette.TOKENS[token]))
 
 	# Assert: Index 0 Transparenz, 1 bis 15 die Oberflächenfarben (Style-Guide), Rest Szenenfarben.
 	assert_eq(palette.size(), 256, "Die Hauptpalette hat 256 Einträge.")
@@ -49,6 +59,19 @@ func test_palette_hat_256_farben_und_die_15_der_oberflaeche() -> void:
 	oberflaeche.sort()
 	assert_eq(reserviert, oberflaeche,
 		"Index 1 bis 15 sind für die Farben aus UiPalette reserviert.")
+
+
+func test_lcd_steht_nicht_in_der_hauptpalette() -> void:
+	# Arrange
+	var palette := _lies_palette(_palettenpfad())
+
+	# Assert: Stünde lcd doch drin, dürfte ein Bild sie benutzen, und die eingefrorene Palette
+	# wäre verändert worden.
+	assert_eq(palette.size(), 256, "Voraussetzung: die ganze Hauptpalette gelesen.")
+	assert_does_not_have(palette, _als_zahl(UiPalette.LCD),
+		"lcd gibt es nur in der Oberfläche, nie in einem Bild (Feature 005, R1).")
+	assert_eq(NUR_OBERFLAECHE.size() + 15, UiPalette.TOKENS.size(),
+		"Jede Farbe aus UiPalette steht in der Hauptpalette oder ist als Ausnahme genannt.")
 
 
 func test_fremder_pixel_und_halbtransparenz_fallen_auf() -> void:
