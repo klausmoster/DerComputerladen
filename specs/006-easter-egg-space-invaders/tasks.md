@@ -192,12 +192,12 @@ FR-040, FR-044; R9 bis R11; contracts/invaders.md, `InvadersPage`).
 **Independent Test**: Probeszene `src/test/fixtures/invaders_probe.tscn` von Anfang bis Sieg oder
 Niederlage durchspielen, ohne Titel (Spec, Story 2); `test_invaders_page.gd` grün.
 
-- [ ] T016 [A] [US2] Texte in `src/scenes/title/title_texts.gd` laut Vertrag, „Texte“:
+- [x] T016 [A] [US2] Texte in `src/scenes/title/title_texts.gd` laut Vertrag, „Texte“:
   `INVADERS_SCORE`, `INVADERS_WON`, `INVADERS_LOST`, `INVADERS_POINTS`,
   `INVADERS_CONTINUE` mit den Wortlauten aus R10; `src/test/test_title_texts.gd`: jede Zeile der
   Ergebnisanzeige passt in die Breite der Anzeige in ihrer Schrift. `src/test/test_texte.gd` findet
   die Anrede auch in Versalien („SIE“, „IHNEN“), mit eigenem Test (Analyse, U7).
-- [ ] T017 [A] [US2] `src/scenes/title/invaders/invaders_page.tscn` und `invaders_page.gd`
+- [x] T017 [A] [US2] `src/scenes/title/invaders/invaders_page.tscn` und `invaders_page.gd`
   (`class_name InvadersPage`) laut Vertrag: `start()`, `advance()`, `autoplay`, `finished`;
   Takt mit festem Schritt, höchstens 4 Schritte je Bild (SC-003); Eingabe in `_gui_input()`
   nach der Tabelle im Vertrag, Tasten mit Cmd, Strg oder Alt und `toggle_fullscreen` gehen durch
@@ -207,29 +207,36 @@ Niederlage durchspielen, ohne Titel (Spec, Story 2); `test_invaders_page.gd` gr�
   dem Style-Guide; Kürzel mit Cmd, Strg oder Alt führen dort nicht weiter (Analyse, M4, V1). Nach
   `finished` und verborgen taktet die Seite nicht; Fokus nur zurückholen, wenn sie noch sichtbar ist
   (Analyse, U1, C5).
-- [ ] T018 [A] [US2] Töne der Seite: ein `AudioStreamPlayer` je Ton auf `Effekte`, ein gemeinsamer
+- [x] T018 [A] [US2] Töne der Seite: ein `AudioStreamPlayer` je Ton auf `Effekte`, ein gemeinsamer
   für die vier Marschtöne (CHK015); Zuordnung nach der Tabelle im Vertrag; `finished` und eine
   verborgene Seite stoppen alles (FR-044); ohne Fokus des Fensters kein Takt und `stream_paused`,
   auch die Sperre der Ergebnisanzeige steht (R11; CHK014).
-- [ ] T019 [A] [US2] Probeszene `src/test/fixtures/invaders_probe.tscn` und `.gd`: ein Communicator
+- [x] T019 [A] [US2] Probeszene `src/test/fixtures/invaders_probe.tscn` und `.gd`: ein Communicator
   mit G-03 und der Seite, die gleich startet; nach `finished` startet eine neue Partie. Ohne Titel
   und ohne `GameSession`.
-- [ ] T020 [A] [US2] `src/test/test_invaders_page.gd` laut Vertrag, „Tests“, mit `autoplay = false`
+- [x] T020 [A] [US2] `src/test/test_invaders_page.gd` laut Vertrag, „Tests“, mit `autoplay = false`
   und erfundenen Ereignissen; auch: nach Esc mitten im Spiel kein Takt und kein Marschton mehr
   (Analyse, U1).
-- [ ] T021 [A] [US2] Lernnotizen zu T016 bis T020: Fokus als Weg der Tasten, `accept_event()` und was
+- [x] T021 [A] [US2] Lernnotizen zu T016 bis T020: Fokus als Weg der Tasten, `accept_event()` und was
   durchgehen muss, Malen in `_draw()` auf dem Bildraster, Zeitspeicher mit festem Schritt,
   Benachrichtigungen der App für den Fokus des Fensters.
-- [ ] T022 [C] [US2] Prüfen: Tests zweimal, Startprobe still; Bildschirmfotos der Probeszene im
+- [x] T022 [C] [US2] Prüfen: Tests zweimal, Startprobe still; Bildschirmfotos der Probeszene im
   echten Fenster in 1920 × 925: Spiel am Anfang, mitten im Spiel mit Bomben und Explosion,
   Ergebnisanzeige gewonnen, Kanone kaputt, gelandet; Spiel und Ton halten ohne Fokus an; die Bildrate
   im echten Fenster gemessen, 60 Bilder je Sekunde (SC-003; Analyse, A2).
-- [ ] T023 [C] [US2] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`: Stil-Prüfer mit „Spiel auf der
+- [x] T023 [C] [US2] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`: Stil-Prüfer mit „Spiel auf der
   Anzeige“, Baustein Communicator, `tokens.json`; Text-Prüfer mit `Sprache.md` und den sechs
   Wortlauten; die Bildschirmfotos aus T022.
-- [ ] T024 [K] [US2] Phase 4 abnehmen nach quickstart.md, „Das Spiel allein“: spielen, Tempi und
+- [x] T024 [K] [US2] Phase 4 abnehmen nach quickstart.md, „Das Spiel allein“: spielen, Tempi und
   Pegel nach Gefühl einstellen lassen (Änderungen erst in den Style-Guide, dann in die Konstanten;
   SC-002); dass die Töne ohne hörbare Verzögerung kommen, von Hand (SC-007).
+
+Erledigt am 2026-10-27, von Klaus nach dem Spielen abgenommen, Tempi und Pegel unverändert:
+`InvadersPage` mit Szene, Probeszene, Texte in `TitleTexts`, Anrede in Versalien in `test_texte.gd`;
+im echten Fenster ein Skriptfehler durch die Fokus-Meldung vor `_ready()` gefunden und behoben.
+Zweimal 1092 von 1092 Tests grün (185 909 Prüfungen), Startprobe still, 60 Bilder je Sekunde bei
+1920 × 925. Phasenprüfung: Stil 0 Befunde, 3 Lücken; Text 0 Befunde, 2 Lücken; alle fünf nach
+Empfehlung geschlossen (Style-Guide Version 53).
 
 **Checkpoint**: Das Spiel ist spielbar, nur noch nicht im Titel zu finden.
 

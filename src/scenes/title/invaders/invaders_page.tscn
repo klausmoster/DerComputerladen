@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/title/invaders/invaders_page.gd" id="1_page"]
+[ext_resource type="AudioStream" path="res://assets/sounds/schuss.wav" id="2_schuss"]
+[ext_resource type="AudioStream" path="res://assets/sounds/treffer.wav" id="3_treffer"]
+[ext_resource type="AudioStream" path="res://assets/sounds/kanone.wav" id="4_kanone"]
+[ext_resource type="AudioStream" path="res://assets/sounds/marsch_1.wav" id="5_marsch"]
+[ext_resource type="AudioStream" path="res://assets/sounds/sieg.wav" id="6_sieg"]
+[ext_resource type="AudioStream" path="res://assets/sounds/niederlage.wav" id="7_niederlage"]
+
+[node name="InvadersPage" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 320.0
+offset_bottom = 160.0
+focus_mode = 2
+script = ExtResource("1_page")
+
+[node name="ShotSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_schuss")
+bus = &"Effekte"
+
+[node name="HitSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_treffer")
+bus = &"Effekte"
+
+[node name="CannonSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_kanone")
+bus = &"Effekte"
+
+[node name="MarchSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_marsch")
+bus = &"Effekte"
+
+[node name="WonSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_sieg")
+bus = &"Effekte"
+
+[node name="LostSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("7_niederlage")
+bus = &"Effekte"

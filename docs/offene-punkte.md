@@ -932,3 +932,24 @@ Alle in `specs/006-easter-egg-space-invaders/research.md`; Klaus kann sie bei Ch
 - **R11** Anhalten über die Fokus-Benachrichtigungen der App statt `get_tree().paused`.
 - **R13/R14** WAV 22 050 Hz aus `tools/ton/make_sounds.py`; Kanäle `Master` und `Effekte` (−10 dB),
   kein Autoload für Ton.
+
+### Feature 006, Phasenprüfung Phase 4 (2026-10-27)
+
+Lücken im Style-Guide, von den Prüfern gemeldet und von Claude nachgeprüft. Klaus hat am 2026-10-27
+alle nach Empfehlung entschieden; geschlossen im Style-Guide, Version 53 (Baustein Spiel auf der
+Anzeige, Sprache):
+- **Kopfzeile „oben bündig bei y 1“** (Stil): Gebaut ist der Zeilenkasten ab Oberflächenpixel 2 wie
+  bei einem Label; die Versalien stehen dann in den Zeilen 5 bis 11, die Leben in 4 bis 11.
+  Empfehlung: so lassen und im Baustein „Zeilenkasten ab y 1, wie ein Label“ schreiben.
+- **„Waagrecht mittig“ bei Doto mit Laufweite** (Stil): Nachgemessen liegen die drei Zeilen der
+  Ergebnisanzeige 1 bis 1,5 Oberflächenpixel links der Mitte, weil die Laufweite nach dem letzten
+  Zeichen mitzählt und nach links gerundet wird. Empfehlung: „mittig auf 1 Oberflächenpixel genau,
+  ein Rest fällt nach links“ in den Baustein.
+- **Explosion an der Kanone, halber Pixel** (Stil): 8 breit über 9; gebaut bündig links
+  (research.md, Auslegungen Phase 3). Empfehlung: so in den Baustein.
+- **Satzzeichen in Versalzeilen** (Text): Empfehlung für „Sprache“: Ein Satz endet mit Punkt
+  („ALLE ERWISCHT.“), eine Angabe nicht („640 PUNKTE“, „GAME OVER“, „HAUPTMENÜ“), eine Frage mit
+  Fragezeichen („LÖSCHEN?“).
+- **„Weiter mit …“ in zwei Bedeutungen** (Text): „Weiter mit Spiel 2 …“ im Hauptmenü und „Weiter mit
+  Taste oder Klick.“ in der Ergebnisanzeige stehen auf verschiedenen Seiten nacheinander.
+  Empfehlung: lassen; „Blatt“ in der Regel meint eine Seite.

@@ -229,3 +229,125 @@ Wo Vertrag, Datenmodell und Style-Guide nichts festlegen, gilt:
 - **In der Pause** altern die Explosionen der Außerirdischen weiter; sonst steht alles, Eingaben
   zählen nicht. Im 60. Schritt kehrt die Kanone nach x 75 zurück, ohne Ereignis, und der Schritt
   danach spielt wieder normal.
+
+## Phase 4
+
+### T016 Texte: Breiten messen statt schätzen
+
+- Die fünf Wortlaute stehen in `TitleTexts` als `INVADERS_*`, mit `%04d` und `%d` als Vorlage.
+  `%` auf einem String ist in GDScript Formatieren wie `printf`: `"PUNKTE %04d" % 380` ergibt
+  `PUNKTE 0380`.
+- `test_title_texts.gd` misst mit derselben Schrift, die das Spiel nimmt: `Theme.get_font()` und
+  `get_font_size()` für die Varianten `LcdHeader` (drucker) und `LcdRow` (menue), dann
+  `Font.get_string_size()`. Die Grenzen kommen aus den Konstanten von `Communicator`,
+  `InvadersGame` und `InvadersPage`, nicht als Zahl im Test; ändert sich ein Maß, misst der Test
+  gegen das neue.
+- `test_texte.gd` sucht die Anrede jetzt auch in Versalien. `SIE` ist kein Fehler des regulären
+  Ausdrucks, sondern eine eigene Schreibweise; deshalb stehen die Versalien als eigene Wörter in
+  `ANREDE`. Neue Treffer gab es im Projekt keine, `ERLAUBT` bleibt, wie es war.
+
+### T017 Die Seite: `InvadersPage`
+
+- **Fokus ist der Weg der Tasten.** Eine Taste geht in Godot zuerst an `_input()` aller Nodes,
+  dann an das eine Control mit dem Tastaturfokus (`_gui_input()`), dann an `_unhandled_input()`.
+  Deshalb nimmt `start()` den Fokus mit `grab_focus()`; dafür braucht die Seite `focus_mode = 2`
+  (ALL) in der Szene. Die verborgenen Seiten des Menüs bekommen nichts, weil ein verborgenes Control
+  keinen Fokus hat. So erreicht kein Pfeil das Menü des Titels (FR-017).
+- **`accept_event()` hält eine Taste auf.** Danach sieht kein `_unhandled_input()` sie mehr, auch
+  der Titel nicht. Die Seite verbraucht jede Taste ohne Cmd, Strg und Alt, auch unbekannte. Mit
+  diesen Tasten kehrt `_on_key()` vorher zurück, ohne `accept_event()`: Cmd+Q und Strg+Cmd+F
+  (`toggle_fullscreen`) kommen dann bei `GameWindow._unhandled_input()` und beim Betriebssystem an
+  wie immer. Den Fall „Aktion `toggle_fullscreen` umbelegt“ fängt `key.is_action()` ab, mit
+  `InputMap.has_action()` davor, weil `is_action()` bei einer unbekannten Aktion einen Fehler
+  meldet.
+- **Gehalten statt abgefragt.** Statt `Input.is_key_pressed()` merkt sich die Seite selbst, ob ein
+  Pfeil unten ist (`_left_held`), und setzt bei jedem neuen Druck auf die Leertaste
+  `_fire_pressed`. `echo` ist die Wiederholung, die das System schickt, solange eine Taste unten
+  bleibt; sie zählt nie. So lässt sich die Seite mit erfundenen `InputEventKey` testen.
+- **Fokus zurückholen, aber verzögert.** `focus_exited` ruft `_reclaim_focus.call_deferred()`. Der
+  Aufruf läuft am Ende des Bilds und prüft erst dann, ob die Seite noch läuft, zu sehen ist und
+  Fokus nehmen darf (`get_focus_mode_with_override()`; der Communicator sperrt beim Hinausfahren
+  mit `focus_behavior_recursive`). Sofort zurückgeholt, würde der Fokus einem Bildschirm
+  weggenommen, der die Seite gerade verbirgt (Analyse, C5).
+- **Kein Fokusrahmen, ohne Code.** Den Rahmen malen Button, LineEdit und Co. aus ihrem Theme-Stil
+  `focus`. Ein schlichtes `Control` hat keinen und malt nur, was `_draw()` malt.
+- **Malen in `_draw()` auf dem Bildraster.** `_draw()` läuft nur, wenn `queue_redraw()` es
+  verlangt, hier nach jedem Takt mit mindestens einem Schritt. Jedes gesetzte Pixel eines Musters
+  wird ein `draw_rect()` von 2 × 2 an `(pos + pixel) * PIXEL`. Weil `pos` ganze Bildpixel sind und
+  die Anzeige bei geraden Koordinaten liegt, liegt alles auf dem Bildraster; die Fotos zeigen kein
+  Pixel daneben und keine dritte Farbe. Text malt `draw_string()` mit der Schrift aus dem Theme
+  (`get_theme_font(&"font", &"LcdHeader")`). Die Lage ist die Grundlinie, nicht die Oberkante:
+  „oben bündig bei y 1“ heißt deshalb Grundlinie bei 2 + Oberlänge, wie ein Label es täte.
+- **Fester Schritt mit Zeitspeicher.** `_process(delta)` gibt die Zeit an `advance()`. Dort sammelt
+  `_time_left` sie, und jede volle 1/60 s ist ein Schritt des Kerns. Ein Bild mit 1/120 s ergibt
+  keinen Schritt, das nächste einen; 1/30 s ergibt zwei. Mehr als 4 Schritte je Aufruf gibt es
+  nicht, der Rest verfällt: Nach einem Hänger springt das Spiel nicht (R6, SC-003). Tests rufen
+  `advance()` selbst und schalten `autoplay` ab, dann zählt keine echte Zeit.
+- **Benachrichtigungen statt Signal.** `_notification(what)` bekommt, was die Engine allen Nodes
+  meldet. `NOTIFICATION_APPLICATION_FOCUS_OUT` und `…_FOCUS_IN` kommen, wenn das Fenster den Fokus
+  verliert oder bekommt; der Szenenbaum reicht sie an jeden Node weiter. Ohne Fokus steht der Takt,
+  die Pfeile gelten als losgelassen (ihr Loslassen käme nie an), und `stream_paused` hält jeden Ton
+  an der Stelle an. Mit Fokus wird der Zeitspeicher geleert, damit nichts nachgeholt wird.
+  `NOTIFICATION_VISIBILITY_CHANGED` kommt, wenn die Seite oder ein Elternteil verborgen wird; dann
+  ruht die Partie bis zum nächsten `start()`.
+
+- **Benachrichtigungen vor `_ready()`.** Nachgebessert nach Claudes Prüfung in T022: Im echten
+  Fenster kam beim Start `NOTIFICATION_APPLICATION_FOCUS_IN`, bevor `_ready()` lief. Die
+  `@onready`-Variablen der Player waren da noch null, und `_pause_sounds()` brach mit einem
+  SCRIPT ERROR ab. Headless fiel das nicht auf: Ohne Fenster gibt es keinen Fokus des Fensters, und
+  Godot schickt diese Benachrichtigungen nie; die Tests schickten sie bis dahin nur an eine fertige
+  Seite. Jetzt gibt `_players()` vor `_ready()` (`is_node_ready()`) eine leere Liste,
+  `_window_focused` wird trotzdem gesetzt, und `_ready()` hält die Player an, wenn das Fenster
+  schon keinen Fokus hatte. `test_fokus_des_fensters_vor_ready_ohne_fehler` schickt beide
+  Benachrichtigungen vor dem Einhängen; ohne die Wache meldet GUT den Fehler als „Unexpected
+  Errors“. Merksatz: `_notification()` kann vor `_ready()` laufen, `@onready` gilt erst danach.
+
+### T018 Töne: ein Player je Ton, einer für den Marsch
+
+- Jeder `AudioStreamPlayer` spielt einen Ton zugleich; `play()` auf einem, der noch klingt, beginnt
+  von vorn. Deshalb hat jeder Ton seinen Player, damit Schuss und Treffer sich nicht abschneiden,
+  und die vier Marschtöne teilen sich `MarchSound`: Ein neuer Takt setzt `stream` und ruft
+  `play()`, das schneidet den vorigen ab (CHK015). Alle sechs haben `bus = &"Effekte"` in der Szene.
+- Godot hält mit `stream_paused` nur an, was gerade spielt; ein angehaltener Player meldet
+  `playing` false, bis er weiterläuft. Ein stiller Player bleibt bei `stream_paused` false.
+- `finished` und Verbergen rufen `stop()` auf allen Playern. Das Motiv für Sieg oder Niederlage
+  klingt in der Ergebnisanzeige aus, weil dort noch niemand `stop()` ruft (FR-044).
+
+### T019 Probeszene
+
+- `invaders_probe.tscn` hängt die Seite wie ein Bildschirm direkt unter die Instanz des
+  Communicators; dessen `_ready()` stellt sie auf die Anzeige. Die Probe zeigt sie mit
+  `show_page()` und ruft erst danach `start()`, denn ein verborgenes Control kann keinen Fokus
+  nehmen (Analyse, C1). Nach `finished` beginnt gleich die nächste Partie.
+
+### T020 Tests: erfundene Eingaben über den Viewport
+
+- Die Seite steht in einem eigenen `SubViewport`. `push_input()` gibt ein `InputEventKey` dort
+  hinein wie eine echte Taste: über den Fokus an `_gui_input()` der Seite. Ein `Lauscher`, eine
+  innere Klasse mit `_unhandled_input()`, steht für den Titel und schreibt mit, was durchkommt. So
+  prüft der Test genau den Weg aus T017: Pfeile, Leertaste, Shift und unbekannte Tasten kommen nicht
+  an, Cmd+Q, Strg+Cmd+F, Alt+Pfeil und die Aktion `toggle_fullscreen` schon.
+- Für Sieg und Niederlage spielt der Test echte Partien mit Seed 1: einmal steht die Kanone, bis drei
+  Bomben sie treffen, einmal zielt ein Testspieler wie in `test_invaders_game.gd`, aber über
+  Tasten. Rund 3 000 Schritte laufen in Sekundenbruchteilen, weil nichts auf Bilder wartet.
+- Headless spielt Godot ohne Ausgabe, `playing` wird trotzdem true (R15). Geprüft wird, welcher
+  Player anläuft, nicht der Klang.
+
+### Auslegungen in T017 bis T020
+
+- **Kopfzeile senkrecht:** „Punkte oben bündig bei y 1“ habe ich wie ein Label gelesen: Die Zeile
+  der Schrift beginnt bei Oberflächenpixel 2, die Grundlinie liegt bei 2 + Oberlänge (10). Die
+  Versalien stehen dann in den Zeilen 5 bis 11, die Leben in 4 bis 11. Das entspricht der Vorschau
+  im Style-Guide (`top: 2px`, `line-height: 12px`).
+- **Ergebnisanzeige senkrecht:** je Zeile mittig wie ein Label, `floor((20 − Schrifthöhe) / 2)` über
+  der Oberlänge; waagrecht `floor((320 − Breite) / 2)`.
+- **Die Sperre zählt in Schritten** (30), nicht in Sekunden. So gilt für sie derselbe Deckel von 4
+  Schritten je Bild wie für das Spiel, und ohne Fokus steht sie mit allem anderen.
+- **Ein Schuss je Druck:** Hat ein Bild mehrere Schritte, schießt der Druck nur im ersten.
+- **Esc und Loslassen nach dem Ende:** Nach `finished` nimmt die Seite nichts mehr an. Das
+  Loslassen der Taste, die das Ende ausgelöst hat, geht deshalb durch; als Druck zählt es nirgends.
+- **Verborgen heißt Ende ohne Meldung:** Die Seite ruht dann bis zum nächsten `start()`, auch wenn
+  sie wieder gezeigt wird, und meldet kein `finished`.
+- **Zwei Hilfen über den Vertrag hinaus,** beide statisch und ohne Zustand: `result_lines()` (die
+  drei Zeilen der Ergebnisanzeige) und `life_pos()` (Lage eines Lebens). Sie machen Malen und
+  Messen in den Tests gleich.
