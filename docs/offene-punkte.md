@@ -909,9 +909,26 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 - **Der Name „Space Invaders“ erscheint nicht im Spiel:** Er ist eine Marke. Das Easter Egg
   übernimmt nur die Spielidee, keine Grafik, keinen Ton und keinen Namen aus dem Original. Klaus
   kann das im Review kippen (`specs/006-easter-egg-space-invaders/spec.md`, Assumptions).
-- **Kein Ton:** bis 2026-10-27 angenommen; Klaus kippte es am selben Tag, das Feature führt Ton
-  ein (Spec, „Ton 2026-10-27“).
 - **Regeln für Ton in den Style-Guide:** Klang, Tonhöhen und Lautstärke kommen als Abschnitt
   „Ton“ in den Style-Guide, damit es eine Quelle für alles gibt, was Look und Klang bestimmt.
 - **Das Spiel hält an, solange das Fenster keinen Fokus hat** (FR-016), damit niemand eine Partie
   verliert, während er in einem anderen Fenster ist.
+
+### Feature 006, Plan (2026-10-27)
+
+Alle in `specs/006-easter-egg-space-invaders/research.md`; Klaus kann sie bei Checkliste oder Abnahme
+ändern:
+- **R1** Die Knöpfe sind Gehäusetasten des Communicators (`case_keys`, Signal), die Folge kennt nur
+  der Titel (`KeySequence`).
+- **R2/R3** Lage der Knöpfe aus G-03 gemessen; eingedrückt aus dem eigenen Bildausschnitt eine Zeile
+  tiefer, ohne neues Bild.
+- **R4** Gezählt wird beim Loslassen über derselben Taste, der Klick ertönt beim Drücken.
+- **R5** Während das Spiel läuft, klicken die Knöpfe weiter, starten aber nichts.
+- **R6** Spiel als Kern ohne Node mit festem Schritt 1/60 s und Seed, dazu eine Seite; unter
+  `src/scenes/title/invaders/`.
+- **R7** Maße und Tempi des Levels als Vorschlag; Klaus stellt sie in Phase 4 ein.
+- **R8** Pixelmuster als Text-Daten, eigene Entwürfe statt Kopien des Originals.
+- **R10** Wortlaute der Meldung (Vorschlag), Sperre von 0,5 s vor dem Weiter.
+- **R11** Anhalten über die Fokus-Benachrichtigungen der App statt `get_tree().paused`.
+- **R13/R14** WAV 22 050 Hz aus `tools/ton/make_sounds.py`; Kanäle `Master` und `Effekte` (−10 dB),
+  kein Autoload für Ton.

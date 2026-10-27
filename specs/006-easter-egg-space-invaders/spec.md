@@ -57,8 +57,8 @@ Fragen aus `/speckit-clarify`, von Klaus einzeln als Auswahl beantwortet:
 
 ### Ton 2026-10-27
 
-Klaus kippte Claudes Annahme „kein Ton“: Das Spiel wird Ton bekommen, also führt dieses Feature
-ihn ein. Die Fragen dazu hat Klaus einzeln als Auswahl beantwortet:
+Ton ist für das Spiel geplant (`docs/game_design.md`, „Sound und Musik“); dieses Feature führt
+ihn ein (Klaus, 2026-10-27). Die Fragen dazu hat Klaus einzeln als Auswahl beantwortet:
 
 - Q: Woher kommen die Töne? → A: Ein Python-Skript im Repo erzeugt kurze Töne in Rechteckwelle, wie
   ein Taschengerät von 1991, und legt sie als Tondateien ins Projekt (Klaus, nach Empfehlung).
@@ -317,8 +317,8 @@ danach der Titel bedienbar da wie vorher.
   bleiben, wie sie sind.
 - Keine Bestenliste. Die genaue Größe des Blocks und die Tempi folgen im Plan aus dem Spielfeld
   320 × 160.
-- Bis 2026-10-27 nahm die Spec an, das Spiel bliebe stumm (Claude); Klaus kippte das am selben
-  Tag, siehe „Ton 2026-10-27“.
+- Ob Musik im MIDI-Stil oder nach AdLib und Sound Blaster klingt, lässt das GDD offen; dieses
+  Feature bringt nur Effekte und legt dafür nichts fest.
 - Wie die Töne klingen (Tonhöhe, Länge, Lautstärke), legt der Plan fest; die Regeln dafür kommen
   vor dem Bau als Abschnitt „Ton“ in den Style-Guide, wie alles, was zum Look gehört.
 - Wie bei den Seiten nach dem Ende kehrt auch Esc zu der Seite zurück, auf der der Spieler war,
