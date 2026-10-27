@@ -89,7 +89,7 @@ Vorschlag freigegeben. Die wichtigsten für die Spec:
 - Gelandet sind die Außerirdischen, sobald einer die Oberkante der Kanone erreicht (CHK010).
 - SC-002 und SC-003 sind jetzt messbar (CHK016, CHK017).
 - Wortlaute: „ALLE ERWISCHT.“, „DIE SIND GELANDET.“, „Weiter mit Taste oder Klick.“ (CHK030 bis
-  CHK032).
+  CHK032). Seit Phase 2 heißen beide Niederlagen „GAME OVER“ (unten, „Phase 2“).
 
 ### Analyse 2026-10-27
 
@@ -99,6 +99,14 @@ die Spec: Seite und Auswahl gelten „beim Start des Spiels“ (M1); während de
 Treffer steht der Block (M3); FR-044 unterscheidet Anhalten und Verlassen (U4); die Knöpfe gibt es
 nur im Titel, ein Communicator hat von sich aus keine Gehäusetasten (I2). Alle Befunde stehen in
 plan.md, „Änderungen nach der Analyse“.
+
+### Phase 2 2026-10-27
+
+- Q: Welchen Wortlaut bekommt die Niederlage? → A: „GAME OVER“ für beide Niederlagen, wie der
+  Automat von 1978, den es in Deutschland nur mit englischen Texten gab (Klaus, gegen die
+  Empfehlung „SIE SIND GELANDET.“). „Game Over“ gilt als Computerwort der Zeit und ist die einzige
+  englische Zeile; der Sieg bleibt „ALLE ERWISCHT.“. Verworfen: „DIE SIND GELANDET.“, weil es im
+  Deutschen schräg klingt; „SIE SIND GELANDET.“; „GELANDET.“.
 
 ## Begriffe
 
@@ -309,7 +317,8 @@ danach der Titel bedienbar da wie vorher.
   Bewegungsbilder, die beim Weiterrücken wechseln. Das Spiel bringt keine neue Farbe und kein Bild
   aus Leonardo. Die Darstellung „Spiel auf der Anzeige“ kommt vor dem Bau in den Style-Guide.
 - **FR-031**: Alle Texte des Spiels (etwa Punkte, Sieg, Niederlage) MÜSSEN deutsch sein und den
-  Spieler duzen.
+  Spieler duzen. Ausnahme: Die Niederlage heißt „GAME OVER“ wie beim Original, ein Computerwort der
+  Zeit (Klaus, 2026-10-27).
 
 **Ton**
 

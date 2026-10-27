@@ -220,12 +220,16 @@ Titel schon in `_selected_row` und `_selected_hint`; neu gemerkt werden nur Seit
 | Fall | Zeile 1 | Zeile 2 | Zeile 3 |
 |---|---|---|---|
 | gewonnen | `ALLE ERWISCHT.` | `640 PUNKTE` | `Weiter mit Taste oder Klick.` |
-| verloren, Kanone kaputt | `KANONE KAPUTT.` | `380 PUNKTE` | `Weiter mit Taste oder Klick.` |
-| verloren, gelandet | `DIE SIND GELANDET.` | `380 PUNKTE` | `Weiter mit Taste oder Klick.` |
+| verloren, Kanone ohne Leben getroffen | `GAME OVER` | `380 PUNKTE` | `Weiter mit Taste oder Klick.` |
+| verloren, gelandet | `GAME OVER` | `380 PUNKTE` | `Weiter mit Taste oder Klick.` |
 
 Die Kopfzeile im Spiel zeigt `PUNKTE 0380`: führende Nullen nur dort, wo die Stellenzahl fest ist;
 in der Ergebnisanzeige ohne. Zeilen 1 und 2 zählen als Meldung im Sinne des Abschnitts Sprache
 (trocken, Witz im Nachsatz erlaubt), Zeile 3 als Bedienung (ohne Witz); je Zeile ein Satz. Bis zum
+Phase 2 heißen beide Niederlagen wie beim Automaten von 1978 „GAME OVER“ (Klaus, 2026-10-27, gegen
+die Empfehlung „SIE SIND GELANDET.“): Eine deutsche Fassung des Originals gab es nicht, auch in
+Deutschland zeigte der Automat englische Texte, und „Game Over“ ist ein Computerwort der Zeit. Bis
+dahin „KANONE KAPUTT.“ und „DIE SIND GELANDET.“; „DIE“ klang schräg. Bis zum
 Review hießen sie „ALLE ERWISCHT!“, „SIE SIND GELANDET.“ und „Weiter mit einer Taste.“; das
 Ausrufezeichen war zu laut, „SIE“ las sich wie die Anrede, und der Klick fehlte. Alle Wortlaute stehen in `TitleTexts` (Feature 004, alle
 Texte des Titels an einer Stelle).

@@ -162,8 +162,8 @@ Neu, Wortlaute aus R10 nach der Checkliste:
 ```gdscript
 const INVADERS_SCORE := "PUNKTE %04d"
 const INVADERS_WON := "ALLE ERWISCHT."
-const INVADERS_LOST_HIT := "KANONE KAPUTT."
-const INVADERS_LOST_LANDED := "DIE SIND GELANDET."
+## Beide Niederlagen, wie beim Automaten von 1978 (Klaus, 2026-10-27).
+const INVADERS_LOST := "GAME OVER"
 const INVADERS_POINTS := "%d PUNKTE"
 const INVADERS_CONTINUE := "Weiter mit Taste oder Klick."
 ```

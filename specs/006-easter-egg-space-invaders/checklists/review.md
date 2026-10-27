@@ -168,6 +168,7 @@ Festlegung brauchen; die übrigen stehen in den Notes.
 - [x] CHK030 „SIE SIND GELANDET.“ liest sich in Versalien wie die Anrede „Sie“; das Spiel duzt.
   [Conflict, Plan R10; Spec §FR-031; Text B1, hoch]
   → Vorschlag, freigegeben von Klaus (2026-10-27): `DIE SIND GELANDET.` Trocken und gesprochen, und nicht als Anrede zu lesen.
+  Ersetzt in Phase 2: Beide Niederlagen heißen „GAME OVER“ (Klaus, 2026-10-27; Spec, „Phase 2“).
 - [x] CHK031 „ALLE ERWISCHT!“ ist das einzige Ausrufezeichen; der Leitsatz sagt „Trocken statt
   laut“. [Conflict, Plan R10; Text B2]
   → Vorschlag, freigegeben von Klaus (2026-10-27): `ALLE ERWISCHT.`

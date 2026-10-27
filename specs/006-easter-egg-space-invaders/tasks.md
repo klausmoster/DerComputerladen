@@ -106,28 +106,34 @@ dazu Verweise in README und Sprache. Die Bombe ist 2 × 3 statt 1 × 3 (R7).
 **Independent Test**: `python3 -I tools/ton/make_sounds.py` zweimal; `git status` zeigt danach keine
 Änderung an den Dateien; `test_ton.gd` grün; Klaus hört die Töne mit `afplay` an.
 
-- [ ] T004 [C] `tools/ton/make_sounds.py` und `tools/ton/README.md` laut contracts/ton.md, „Skript“:
+- [x] T004 [C] `tools/ton/make_sounds.py` und `tools/ton/README.md` laut contracts/ton.md, „Skript“:
   nur Standardbibliothek, Rauschen mit festem Seed, Werte aus dem Abschnitt „Ton“ des Style-Guides;
   Option `--pruefsummen` schreibt `src/test/fixtures/ton_pruefsummen.txt` (über die Rohdateien). Lauf erzeugt die zehn
   Dateien unter `src/assets/sounds/`. Zwei Läufe hintereinander ergeben dieselben Bytes.
-- [ ] T005 [A] `src/default_bus_layout.tres` mit `Master` (0 dB) und `Effekte` (Pegel aus dem
+- [x] T005 [A] `src/default_bus_layout.tres` mit `Master` (0 dB) und `Effekte` (Pegel aus dem
   Style-Guide, Ziel `Master`); einmal `Godot --headless --path src --import`, damit die WAV ihre
   `.import` bekommen, und in jeder `.import` Kompression aus (PCM), kein Trimmen, kein Normalisieren,
   keine Schleife (Analyse, U6). `project.godot` bleibt unverändert.
-- [ ] T006 [A] `src/test/test_ton.gd` laut contracts/ton.md, „Tests“: zehn Dateien als
+- [x] T006 [A] `src/test/test_ton.gd` laut contracts/ton.md, „Tests“: zehn Dateien als
   `AudioStreamWAV`, mono, 22 050 Hz; aus der Rohdatei gelesen: erste Probe nicht null (SC-007),
   letzte nahe null; Länge je
   Datei ±1 ms aus dem Style-Guide; Kanal `Effekte` mündet in `Master` mit dem Pegel aus dem
   Style-Guide; Prüfsummen gleich `ton_pruefsummen.txt`.
-- [ ] T007 [A] Lernnotizen zu T005 und T006 in `specs/006-easter-egg-space-invaders/lernnotizen.md`:
+- [x] T007 [A] Lernnotizen zu T005 und T006 in `specs/006-easter-egg-space-invaders/lernnotizen.md`:
   was ein Bus ist und warum Effekte einen eigenen haben, warum Godot `default_bus_layout.tres` von
   selbst lädt, was `.import` bei einer WAV festhält. Claude ergänzt die Lernnotiz zu T004: wie eine
   Rechteckwelle als Zahlen aussieht und warum ein fester Seed bytegleiche Dateien gibt (Analyse,
   V2).
-- [ ] T008 [C] Prüfen: Skript zweimal, Tests zweimal, Startprobe still; die Töne selbst anhören.
-- [ ] T009 [K] Phase 2 abnehmen: Töne nach quickstart.md, „Töne anhören“; dass sie ohne hörbare
+- [x] T008 [C] Prüfen: Skript zweimal, Tests zweimal, Startprobe still; die Töne selbst anhören.
+- [x] T009 [K] Phase 2 abnehmen: Töne nach quickstart.md, „Töne anhören“; dass sie ohne hörbare
   Verzögerung einsetzen (SC-007), ist eine Abnahme von Hand, kein Messwert (Analyse, A3); Tonhöhen, Längen und
   Pegel freigeben oder im Style-Guide ändern lassen (dann T004 erneut).
+
+Erledigt am 2026-10-27, von Klaus nach dem Anhören abgenommen: zehn WAV aus
+`tools/ton/make_sounds.py`, bytegleich mit `ton_pruefsummen.txt`; Kanäle `Master` (0 dB) und
+`Effekte` (−10 dB) in `src/default_bus_layout.tres`; Import als PCM ohne Trimmen, Normalisieren und
+Schleife; `test_ton.gd` mit 8 Tests; zweimal 1034 von 1034 Tests grün, Startprobe still. Dazu in
+dieser Phase: beide Niederlagen heißen „GAME OVER“ (Klaus; Spec, „Phase 2“; Style-Guide Version 51).
 
 **Checkpoint**: Ton ist da; keine Phasenprüfung, denn die Phase ändert nichts Sichtbares und keinen
 Text (plan.md, „Prüfer je Phase“).
@@ -182,7 +188,7 @@ FR-040, FR-044; R9 bis R11; contracts/invaders.md, `InvadersPage`).
 Niederlage durchspielen, ohne Titel (Spec, Story 2); `test_invaders_page.gd` grün.
 
 - [ ] T016 [A] [US2] Texte in `src/scenes/title/title_texts.gd` laut Vertrag, „Texte“:
-  `INVADERS_SCORE`, `INVADERS_WON`, `INVADERS_LOST_HIT`, `INVADERS_LOST_LANDED`, `INVADERS_POINTS`,
+  `INVADERS_SCORE`, `INVADERS_WON`, `INVADERS_LOST`, `INVADERS_POINTS`,
   `INVADERS_CONTINUE` mit den Wortlauten aus R10; `src/test/test_title_texts.gd`: jede Zeile der
   Ergebnisanzeige passt in die Breite der Anzeige in ihrer Schrift. `src/test/test_texte.gd` findet
   die Anrede auch in Versalien („SIE“, „IHNEN“), mit eigenem Test (Analyse, U7).

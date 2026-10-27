@@ -55,7 +55,7 @@ Erwartet: kurze Piepser wie ein Taschengerät, kein Knacken am Ende, nichts laut
 5. Am Ende die Ergebnisanzeige; eine gehaltene Leertaste überspringt sie nicht; danach eine Taste.
 6. Esc beendet sofort; kein Ton klingt nach.
 7. Im Spiel wirken Vollbild und Fenster-Schließen wie immer.
-8. Texte: „ALLE ERWISCHT.“, „KANONE KAPUTT.“, „DIE SIND GELANDET.“, darunter die Punkte und
+8. Texte: „ALLE ERWISCHT.“ oder „GAME OVER“, darunter die Punkte und
    „Weiter mit Taste oder Klick.“
 
 ## Im Titel (Phase 5)

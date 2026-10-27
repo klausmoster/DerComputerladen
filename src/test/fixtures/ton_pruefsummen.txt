@@ -1,0 +1,10 @@
+knopf.wav 3fdbed16927a006c328fc283ca37e5ba
+schuss.wav 6b5cbd4933018a2cb27588013755c958
+treffer.wav 3720fa40d79713ba8315f7a06d8d6940
+kanone.wav c7038eb75d9f62e4bb5ef1b451f49e2d
+marsch_1.wav 99f3d36e7a99774ec071b2a7d16d60a0
+marsch_2.wav 2449cdac433f1083568729da5ba553af
+marsch_3.wav d72b9b224706ce42911b9ff3fb7a781f
+marsch_4.wav e4c50ebc6ce62db1ce66289fc0c8e92c
+sieg.wav 6c3f0c1c7e4449358df5c52224243f36
+niederlage.wav ab1ca418f5e967bda3c695c063cc4932
