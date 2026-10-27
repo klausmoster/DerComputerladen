@@ -163,6 +163,27 @@ Kanone erreicht, vergehen ohne Treffer gut 2 Minuten, mit Treffern wird er schne
 SC-002 (1 bis 3 Minuten). Die Zahlen stehen als Konstanten an einer Stelle; Klaus stellt sie bei der
 Abnahme von Phase 4 nach Gefühl ein.
 
+### Auslegungen aus Phase 3
+
+Vom Agent in T011 festgelegt, von Claude geprüft und angenommen (2026-10-27); Begründungen in
+`lernnotizen.md`, Phase 3:
+- Reihenfolge eines Schritts: Explosionen altern, Kanone fährt, Schuss fliegt, neuer Druck schießt,
+  Treffer, Bomben fallen, Treffer an der Kanone, Takt. Endet die Partie oder trifft eine Bombe, endet
+  der Schritt dort.
+- Der Schuss startet direkt über der Spitze (x `cannon_x + 4`, y 69 bis 72) und zählt im Schritt des
+  Drucks schon als Treffer; er verschwindet, bevor er in die Kopfzeile flöge.
+- Die Bombe startet direkt unter dem Werfer, fällt ab dem zweiten Schritt und trifft, sobald sich
+  ihr Rechteck mit dem der Kanone (9 × 5) überschneidet, auch an den leeren Ecken des Musters.
+- Stirbt ein Außerirdischer, wird der laufende Takt auf den neuen, kürzeren Abstand gekürzt.
+- Die Explosion an der Kanone steht die ganze Pause von 60 Schritten, auch nach dem letzten Treffer,
+  bei `(cannon_x, 72)`.
+- Gemessen (SC-002): Der Testspieler, der zielt und ausweicht, gewinnt nach 2 854 bis 3 309
+  Schritten (47 bis 55 s); ohne Schuss landet der Block nach 9 420 Schritten (157 s), jeder Treffer an
+  der Kanone verschiebt das um 61 Schritte. Ein Mensch braucht länger; das Spielgefühl prüft Klaus
+  in Phase 4.
+- Die Unterkante des Blocks springt von 71 auf 74 und trifft die Zeile 73 nie genau; „erreicht“ heißt
+  deshalb „73 oder tiefer“.
+
 ## R8 Pixelmuster
 
 **Entscheidung:** Die Muster sind Daten: je Figur ein Array aus Strings, `#` ist `tusche`, `.` ist

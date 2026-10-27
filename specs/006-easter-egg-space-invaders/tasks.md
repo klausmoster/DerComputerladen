@@ -149,10 +149,10 @@ deterministisch mit Seed (FR-011 bis FR-015; R6 bis R8; contracts/invaders.md, `
 **Independent Test**: `test_invaders_game.gd` und `test_invaders_sprites.gd` grün; ein gezielter
 Durchlauf gewinnt, ohne Schuss landet der Block.
 
-- [ ] T010 [A] [US2] `src/scenes/title/invaders/invaders_sprites.gd` (`class_name
+- [x] T010 [A] [US2] `src/scenes/title/invaders/invaders_sprites.gd` (`class_name
   InvadersSprites`): die Muster aus dem Style-Guide Zeichen für Zeichen, `pixels()`, `size_of()`;
   `src/test/test_invaders_sprites.gd` laut Vertrag.
-- [ ] T011 [A] [US2] `src/scenes/title/invaders/invaders_game.gd` (`class_name InvadersGame`) laut
+- [x] T011 [A] [US2] `src/scenes/title/invaders/invaders_game.gd` (`class_name InvadersGame`) laut
   Vertrag und data-model.md, „Partie“: Zustände `PLAYING`, `RESPAWN`, `WON`, `LOST`; Ereignisse
   `SHOT`, `ALIEN_HIT`, `MARCH`, `CANNON_HIT`, `WON`, `LOST`; Schritt 1/60 s; alle Maße, Lagen,
   Tempi und Punkte als Konstanten an einer Stelle mit den Werten aus dem Style-Guide (R7). Regeln:
@@ -163,16 +163,21 @@ Durchlauf gewinnt, ohne Schuss landet der Block.
   erreicht, Rand nach den lebenden, „In `RESPAWN` steht der Block“, Zahl der Bomben, Dauer der
   Explosion und Lage der Kanone aus dem Style-Guide (data-model.md; CHK010 bis CHK012, CHK023;
   Analyse, I1, M2, M3, V1).
-- [ ] T012 [A] [US2] `src/test/test_invaders_game.gd` laut Vertrag, „Tests“, mit festem Seed, dazu
+- [x] T012 [A] [US2] `src/test/test_invaders_game.gd` laut Vertrag, „Tests“, mit festem Seed, dazu
   SC-002: Ein gezielter Durchlauf gewinnt in höchstens 3 Minuten Spielzeit (10 800 Schritte); ohne
   Schuss landet der Block frühestens nach 1 Minute (3 600 Schritte). Zwei Partien mit gleichem Seed
   und gleichen Eingaben ergeben gleiche Folgen von Ereignissen.
-- [ ] T013 [A] [US2] Lernnotizen zu T010 bis T012: Kern ohne Node wie `TimelineRun`, fester Schritt
+- [x] T013 [A] [US2] Lernnotizen zu T010 bis T012: Kern ohne Node wie `TimelineRun`, fester Schritt
   statt `delta`, eigener `RandomNumberGenerator` mit Seed, Muster als Daten.
-- [ ] T014 [C] [US2] Prüfen: Tests zweimal mit gleicher Zahl, Startprobe still; Fehlerprobe: in
+- [x] T014 [C] [US2] Prüfen: Tests zweimal mit gleicher Zahl, Startprobe still; Fehlerprobe: in
   einer Kopie Treffer, Landung und die Obergrenze der Bomben absichtlich brechen und zeigen, dass
   die Tests es finden.
-- [ ] T015 [K] [US2] Phase 3 abnehmen: Diff, Lernnotizen und Testergebnis.
+- [x] T015 [K] [US2] Phase 3 abnehmen: Diff, Lernnotizen und Testergebnis.
+
+Erledigt am 2026-10-27, von Klaus abgenommen: `InvadersSprites` und `InvadersGame` unter
+`src/scenes/title/invaders/`, 28 Tests; nach der Fehlerprobe ein Test für die Obergrenze der Bomben
+über 50 Seeds. Zweimal 1062 von 1062 Tests grün (185 771 Prüfungen), Startprobe still. Auslegungen in
+research.md, „Auslegungen aus Phase 3“.
 
 **Checkpoint**: Das Spiel rechnet; zu sehen ist noch nichts, deshalb keine Phasenprüfung.
 
