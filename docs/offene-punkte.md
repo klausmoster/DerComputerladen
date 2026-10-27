@@ -903,3 +903,12 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
   Grenze festhalten. Steht im Datenmodell unter „Neu abspielen“ und in R22.
 - **Vorgabe-Teilung der Tabellen (T101):** Klaus, 2026-10-21: Die Tabelle bekommt Vorrang.
   Umgesetzt in Phase 12.
+
+### Feature 006, Spec (2026-10-27)
+
+- **Der Name „Space Invaders“ erscheint nicht im Spiel:** Er ist eine Marke. Das Easter Egg
+  übernimmt nur die Spielidee, keine Grafik, keinen Ton und keinen Namen aus dem Original. Klaus
+  kann das im Review kippen (`specs/006-easter-egg-space-invaders/spec.md`, Assumptions).
+- **Kein Ton:** Das Spiel hat bisher keinen, und das Easter Egg führt keinen ein.
+- **Das Spiel hält an, solange das Fenster keinen Fokus hat** (FR-016), damit niemand eine Partie
+  verliert, während er in einem anderen Fenster ist.
