@@ -96,6 +96,10 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T016 [US1] Add validation and error handling
 - [ ] T017 [US1] Add logging for user story 1 operations
 
+- [ ] TXXX [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares oder
+  Texte ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
+  (`docs/ki_workflow/ki_pruefung.md`)
+
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
 ---
@@ -118,6 +122,10 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
 - [ ] T023 [US2] Integrate with User Story 1 components (if needed)
 
+- [ ] TXXX [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares oder
+  Texte ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
+  (`docs/ki_workflow/ki_pruefung.md`)
+
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
 ---
@@ -138,6 +146,10 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
 - [ ] T027 [US3] Implement [Service] in src/services/[service].py
 - [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+
+- [ ] TXXX [C] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares oder
+  Texte ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
+  (`docs/ki_workflow/ki_pruefung.md`)
 
 **Checkpoint**: All user stories should now be independently functional
 

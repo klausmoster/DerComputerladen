@@ -5,8 +5,8 @@ Prüf-Agents, die nur lesen. Wie [ki_dev.md](ki_dev.md) wächst die Datei mit de
 stehen mit Grund da, Erfahrungen mit ihrem Anlass, Entscheidungen mit Datum und wer sie traf. Pflege
 und Abgrenzung stehen im [Einstieg](README.md).
 
-**Stand:** in Einführung seit 2026-10-22, Schritt für Schritt nach „Stand der Einführung“ unten. Bis
-die Prüfer eingeführt sind, prüft Claude allein, wie in `ki_dev.md`, „Prüfen, bevor Klaus es sieht“.
+**Stand:** eingeführt. Begonnen am 2026-10-22, Pilot in Feature 004 am 2026-10-26; beide Prüfer
+bleiben (Klaus). Offen ist nur die Regel in der Verfassung, siehe „Stand der Einführung“ unten.
 Die Datei ist aus zwei Konzepten vom 2026-10-22 entstanden, die in ihr aufgegangen sind; die
 Git-Geschichte behält sie (`docs/konzept-pruef-agents.md`, `docs/konzept-ki-workflow.md`).
 
@@ -186,17 +186,22 @@ Spec Kit bleibt, wie es ist. Die Prüfer kommen an fünf Stellen dazu:
 | Schritt | Was dazukommt |
 |---|---|
 | `/speckit-plan` | `plan.md` legt unter „Prüfer je Phase“ fest, welche Prüfer für welche Phase gelten. |
-| `/speckit-checklist` | Checklisten für Stil und Texte prüfen, ob die Spec Sichtbares und Texte genau genug beschreibt. |
+| `/speckit-checklist` | Text- und Stil-Prüfer lesen die Wortlaute und Zustände aus Spec und Vertrag gegen den Style-Guide, bevor gebaut wird (Klaus, 2026-10-27). Checklisten für Stil und Texte prüfen, ob die Spec Sichtbares und Texte genau genug beschreibt. |
 | `/speckit-tasks` | Jede Phase mit Sichtbarem oder Texten endet mit der [C]-Aufgabe „Phasenprüfung“ vor Klaus' Abnahme. |
-| `/speckit-analyze` | Eine fehlende Phasenprüfung ist kritisch, sobald die Regel in der Verfassung steht. |
+| `/speckit-analyze` | Eine fehlende Phasenprüfung ist kritisch, denn sie verstößt gegen Grundsatz VI der Verfassung. |
 | `/speckit-converge` | Die Prüfer laufen bei der Lückensuche einmal über das ganze Feature. |
 
 - Eine neue Rolle in `tasks.md` gibt es nicht. Die Prüfer arbeiten Claude zu, und die
   Phasenprüfung ist eine [C]-Aufgabe.
-- Die Vorlagen unter `.specify/templates/` bleiben, wie Spec Kit 1.2.0 sie mitbringt, denn ein
-  Update kann sie überschreiben. Den Abschnitt „Prüfer je Phase“ und die Aufgabe schreibt Claude
-  nach dieser Datei. Nach dem Pilot kommt die Regel in die Verfassung, die alle fünf Schritte lesen
-  (Klaus, 2026-10-22, mit dem Konzept).
+- Spec Kit steht auf 1.2.3 (2026-10-27). Seine eigenen Vorlagen unter `.specify/templates/`
+  bleiben unverändert. Eigene Vorlagen liegen unter `.specify/templates/overrides/`: Die
+  Aufgaben-Vorlage dort bringt die Aufgabe „Spielbeschreibung prüfen“ mit (`ki_dev.md`, Punkt 9)
+  und ans Ende jeder Phase die Aufgabe „Phasenprüfung“ (Klaus, 2026-10-27); `/speckit-tasks` lässt
+  sie weg, wo eine Phase nichts Sichtbares und keine Texte ändert. Den Abschnitt „Prüfer je Phase“
+  schreibt Claude nach dieser Datei in den Plan. Die Regel steht in der Verfassung, Grundsatz VI,
+  die alle fünf Schritte lesen (seit 2026-10-27). Ein Update von Spec Kit lässt `overrides/` stehen; geprüft wird das
+  trotzdem (`ki_dev.md`, „Werkzeuge und Pfade“). Bis 2026-10-27 stand hier, die Vorlagen von Spec Kit 1.2.0 blieben
+  unangetastet, weil ein Update sie überschreiben kann.
 
 Beispiel, ein gedachtes Feature „Ladenansicht“ als erster echter Spielbildschirm. In `plan.md`:
 
@@ -279,8 +284,8 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 004, Lückensuche, 52 Texte (2026-10-26) | Text | 3 | 2 | 1 | 4, davon 1 verworfen | 2 |
 | Feature 004, Phase 7, 2 neue Texte (2026-10-26) | Text | 0 | 0 | 0 | 0 | 0 |
 
-„Nur er fand“ heißt hier: Die Prüfung von Feature 001 hatte es übersehen, das Feature war
-abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.
+„Nur er fand“ heißt: Claudes eigene Prüfung hatte es nicht gefunden. Bei den Probeläufen an
+Feature 001 war das Feature schon abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.
 
 **Auswertung des Pilots in Feature 004** (Phasen 2 bis 5, 2026-10-26), ohne die Lückensuche:
 
@@ -326,7 +331,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 | 7 | Tests `test_bilder.gd` und `test_texte.gd` | [A] | erledigt, 2026-10-22 |
 | 8 | Hook, wenn gewollt: Tests laufen von selbst, sobald der Godot-Agent fertig ist | [C] | entfällt vorerst (Klaus, 2026-10-22); kommt, wenn der Agent zweimal rote Tests abliefert, ohne es zu melden |
 | 9 | Pilot in einer echten Phase mit Sichtbarem oder Texten, mit Zählung | [C] | erledigt in Feature 004, Phasen 2 bis 5, 2026-10-26; die Prüfer bleiben (Klaus) |
-| 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | |
+| 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | erledigt: Grundsatz VI, Verfassung 2.2.0, Klaus, 2026-10-27 |
 
 ## Erfahrungen
 
@@ -354,7 +359,8 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 - **Verträge enthalten Stilfehler.** 3 der 13 Befunde standen so im Vertrag, den Claude geschrieben
   hatte. Wortlaute und Zustände im Vertrag schon vor dem Bau gegen den Style-Guide lesen lassen,
   etwa mit dem Text-Prüfer über den Abschnitt „Texte“ bei der Checkliste. Anlass: Pilot Feature
-  004, Phasen 2 und 5 (2026-10-26).
+  004, Phasen 2 und 5 (2026-10-26). Seit 2026-10-27 eine Regel, siehe „Anbindung an Spec Kit“
+  (Klaus).
 - **Der Auftrag nennt Umfang und Maßstab, keine eigene Einschätzung.** In Phase 2 stand „Seed
   eingeführt“ im Auftrag, und der Prüfer übernahm diese Sicht. Anlass: Pilot Feature 004, Phase 2
   (2026-10-26).
@@ -364,12 +370,9 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 - **Lücken gleich vorlegen.** 31 Lücken kamen im Pilot, fünfmal „schon bekannt“. Eine Lücke geht
   mit Empfehlung gleich an Klaus, statt bis zur Lückensuche liegen zu bleiben. Anlass: Pilot
   Feature 004 (2026-10-26).
-- **Bei jeder Frage, ob etwas gebaut wird, steht der ungefähre Aufwand dabei** (Klaus,
-  2026-10-27), etwa „Aufwand: klein, eine Aufgabe für den Agent“ oder „Aufwand: eine eigene Phase
-  mit Abnahme“. So sieht Klaus Nutzen und Arbeit zusammen. Anlass: T044 in Feature 004.
 
 ## Offen
 
 Der Pilot ist ausgewertet: Beide Prüfer bleiben, für jede Phase mit Sichtbarem oder Texten, auch
-in Werkzeugen (Klaus, 2026-10-26). Offen ist nur Schritt 10: die Regel in der Verfassung über
-`/speckit-constitution`, beschlossen von Klaus.
+in Werkzeugen (Klaus, 2026-10-26). Seit 2026-10-27 steht die Regel in der Verfassung, Grundsatz
+VI. Zur Einführung ist nichts mehr offen.

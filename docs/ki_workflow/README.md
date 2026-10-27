@@ -19,14 +19,14 @@ flowchart LR
     A -->|"Code, Lernnotiz, Testergebnis"| C
     C -->|"lässt laufen"| T
     T -->|"grün oder rot"| C
-    C -.->|"Maßstab, Diff, Bilder"| P
-    P -.->|"Befunde"| C
-    C -.->|"bestätigte Befunde"| A
+    C -->|"Maßstab, Diff, Bilder"| P
+    P -->|"Befunde"| C
+    C -->|"bestätigte Befunde"| A
     C -->|"Bitte um Abnahme"| K
 ```
 
-Gestrichelt ist, was noch eingeführt wird: die Prüfer, siehe [ki_pruefung.md](ki_pruefung.md). Die
-Rollen im Einzelnen stehen in [ki_dev.md](ki_dev.md), „Rollen“.
+Die Prüfer arbeiten Claude zu, wenn eine Phase Sichtbares oder Texte ändert; wie, steht in
+[ki_pruefung.md](ki_pruefung.md). Die Rollen im Einzelnen stehen in [ki_dev.md](ki_dev.md), „Rollen“.
 
 ## Was steht wo
 
@@ -37,6 +37,7 @@ Rollen im Einzelnen stehen in [ki_dev.md](ki_dev.md), „Rollen“.
 | `CLAUDE.md` | die verbindliche Arbeitsanweisung für Claude Code in diesem Projekt |
 | `.specify/memory/constitution.md` | die Verfassung: verbindliche Grundsätze für die Spec-Kit-Abläufe |
 | `docs/spielbeschreibung/` | der Stand im Code nach Systemen, zum gezielten Vorladen; am Ende jedes Features geprüft ([ki_dev.md](ki_dev.md), Punkt 9) |
+| `docs/tagebuch/` | das Entwicklungstagebuch: die Entscheidungen seit Projektbeginn, auf Englisch, vor jedem Merge fortgeschrieben ([ki_dev.md](ki_dev.md), Punkt 10); Token und Kosten je Feature aus `tools/tagebuch/token_bilanz.py` |
 | `docs/offene-punkte.md` | offene Fragen, Lücken und Claudes eigene Entscheidungen, bis Klaus sie entschieden oder bestätigt hat |
 | `docs/Ideensammlung.md` | lose Ideen, auch zur Arbeitsweise |
 | `.claude/agents/` | die Agents, etwa `godot-entwickler` |
@@ -68,7 +69,8 @@ eine Korrektur, die Klaus wiederholt. Eingetragen wird erst nach Klaus' OK (Klau
 
 Nichts wird in einem lokalen Memory-Verzeichnis abgelegt (Klaus, 2026-10-21). Was dauerhaft gelten
 soll, wird in eine Repo-Datei geschrieben und committet: `CLAUDE.md`, die Verfassung, die Dokumente
-dieses Ordners, die Feature-Dokumente, `docs/Ideensammlung.md` oder `docs/offene-punkte.md`. Dann
+dieses Ordners, die Specs unter `specs/`, die Spielbeschreibung, `docs/Ideensammlung.md` oder
+`docs/offene-punkte.md`. Dann
 steht es allen Sitzungen und allen Beteiligten zur Verfügung und ist versioniert. Fällt etwas an, das
 nirgends passt, gehört es nach [ki_dev.md](ki_dev.md). Bis 2026-10-21 hielt Claudes lokales Memory
 Vorlieben und Stand fest; der Inhalt ist nach `ki_dev.md` und `docs/offene-punkte.md` umgezogen.

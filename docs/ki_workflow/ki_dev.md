@@ -26,14 +26,14 @@ Claude bleibt frei für Planung und Review.
 flowchart TD
     subgraph beschreiben["Beschreiben mit Spec Kit"]
         direction LR
-        S1["specify<br/>neue Sitzung für das Feature"] --> S2["clarify"] --> S3["plan"] --> S4["checklist"] --> S5["tasks"] --> S6["analyze"]
+        S1["specify<br/>neue Sitzung für das Feature"] --> S2["clarify"] --> S3["plan"] --> S4["checklist<br/>+ Prüfer lesen den Vertrag"] --> S5["tasks"] --> S6["analyze"]
     end
     beschreiben --> F{"Klaus gibt eine<br/>Phase frei"}
     subgraph phase["Je Phase"]
         B["Godot-Agent baut"] --> CP["Claude prüft:<br/>Tests zweimal, Startprobe, Code"]
-        CP --> AB["Klaus nimmt ab"]
-        CP -.-> P["Phasenprüfung mit den Prüfern,<br/>wenn die Phase Sichtbares oder Texte ändert"]
-        P -.-> AB
+        CP -->|"ohne Sichtbares und Texte"| AB["Klaus nimmt ab"]
+        CP -->|"Sichtbares oder Texte"| P["Phasenprüfung mit<br/>Stil- und Text-Prüfer"]
+        P --> AB
         AB --> CO["Claude committet"]
     end
     F --> B
@@ -46,7 +46,7 @@ flowchart TD
     TB --> M["Merge auf Klaus' Wort,<br/>Klaus pusht"]
 ```
 
-Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
+Wann die Phasenprüfung läuft, sagt Punkt 8.
 
 1. **Ein Branch pro Feature:** `feature/NNN-kurzname`, Ordner `specs/NNN-kurzname/`.
 2. **Spec Kit vollständig, auch die optionalen Schritte:**
@@ -77,11 +77,12 @@ Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
    zusammengefasst und verliert dabei Einzelheiten; Anlass war eine Sitzung mit Feature 001,
    dem Start von 002 und der Spec von 003. Bis 2026-10-26 begann die eigene Sitzung erst mit
    dem Plan, besprochen und spezifiziert wurde dort, wo die Idee aufkam (Klaus, 2026-10-21).
-8. **Phasenprüfung vor der Abnahme** (in Einführung, Klaus, 2026-10-22): Ändert eine Phase
-   Sichtbares oder Texte, prüfen Prüf-Agents sie gegen den Style-Guide, bevor Klaus
-   abnimmt. Wie, steht in [ki_pruefung.md](ki_pruefung.md). Das gilt ab dem Pilot im nächsten
-   Feature nach 003, auch für Werkzeuge (Klaus, 2026-10-22). Bis dahin prüft
-   Claude allein.
+8. **Phasenprüfung vor der Abnahme** (Klaus, 2026-10-22, fest seit dem Pilot in Feature 004,
+   Klaus, 2026-10-26): Ändert eine Phase Sichtbares oder Texte, auch in Werkzeugen, prüfen
+   Stil- und Text-Prüfer sie gegen den Style-Guide, bevor Klaus abnimmt. Wie, steht in
+   [ki_pruefung.md](ki_pruefung.md). Schon bei `/speckit-checklist` lesen die Prüfer die Wortlaute
+   und Zustände aus Spec und Vertrag, damit ein Fehler im Vertrag gar nicht erst gebaut wird
+   (Klaus, 2026-10-27). Bis zum Pilot prüfte Claude allein.
 9. **Als letzte Aufgabe die Spielbeschreibung prüfen** (Klaus, 2026-10-27): Nach der
    Gesamtabnahme und vor dem Merge gleicht Claude `docs/spielbeschreibung/` mit dem Code ab. Claude
    legt Klaus vor, welche Dateien veralten und welche neu angelegt werden sollten, je mit Grund,
@@ -214,6 +215,10 @@ Die Bitte um Abnahme enthält, in dieser Reihenfolge:
 - Dauert etwas länger, meldet Claude kurz den Stand.
 - **Eingedeutschte Fachwörter bleiben, wie sie sind** (Klaus, 2026-10-27): „scrollen“, nicht
   „rollen“. Im Deutschen übersetzen wir solche Wörter nicht. Anlass: eine Frage mit „rollen“.
+- **Bei jeder Frage, ob etwas gebaut wird, steht der ungefähre Aufwand dabei** (Klaus,
+  2026-10-27), etwa „Aufwand: klein, eine Aufgabe für den Agent“ oder „Aufwand: eine eigene Phase
+  mit Abnahme“. So sieht Klaus Nutzen und Arbeit zusammen. Anlass: T044 in Feature 004. Bis
+  2026-10-27 stand die Regel unter den Erfahrungen in `ki_pruefung.md`.
 
 ## Werkzeuge und Pfade
 
@@ -222,6 +227,11 @@ Die Bitte um Abnahme enthält, in dieser Reihenfolge:
 - Claude darf Prozesse selbst mit `kill` beenden, etwa ein hängendes Godot oder eine offene
   Werkstatt nach einem Test (Klaus, 2026-10-27, im Spike zum Communicator). Die Erlaubnis steht als
   `Bash(kill *)` in Klaus' `~/.claude/settings.json`.
+- **Spec Kit aktualisieren** (Klaus, 2026-10-27): Eigene Vorlagen liegen unter
+  `.specify/templates/overrides/`. Spec Kit sucht dort zuerst und spielt bei einem Update nur seine
+  eigenen Vorlagen ein. Nach jedem Update prüft Claude mit `git diff`, dass `overrides/` und die
+  Verfassung unverändert sind, bevor committet wird. Anlass: Klaus' Frage, ob ein Update die
+  Aufgaben „Phasenprüfung“ und „Spielbeschreibung prüfen“ löschen kann.
 - Projekt-Root ist `src/`, also immer `--path src`. Startbefehle vom Repo-Ordner aus:
   - Spiel: `/Applications/Godot.app/Contents/MacOS/Godot --path src`
   - Werkstatt:

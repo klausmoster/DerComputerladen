@@ -57,7 +57,7 @@ Entscheidung und lernt über Lernnotizen, Review und die `[K]`-Aufgaben, die er 
   heißen danach, etwa `feature/001-hauptmenue` und `specs/001-hauptmenue/`. Branches und Commits
   verweisen auf die Nummer, deshalb wird sie nie geändert.
 - Zu welchem System (01–11 aus `docs/features/Features.md`) ein Feature gehört, steht in seiner
-  Spezifikation. Die älteren Feature-Docs in `docs/features/` behalten ihre IDs `SS-NN`.
+  Spezifikation. Die älteren Feature-Docs in `docs/features/archiv/` behalten ihre IDs `SS-NN`.
 - Entscheidungen werden mit verworfener Alternative und Grund festgehalten. Bekannte Lücken
   stehen als offene Fragen im Dokument, statt verschwiegen zu werden.
 
@@ -96,11 +96,25 @@ bedienbar.
 Begründung: Die Daten sind der Spielinhalt. Sie müssen maschinell lesbar bleiben und dürfen beim
 Regenerieren der Tabellen nicht verloren gehen.
 
+### VI. Prüfen mit eigenem Maßstab
+
+- Ändert eine Phase Sichtbares oder Texte, auch in Werkzeugen, endet sie vor Klaus' Abnahme mit
+  einer Phasenprüfung. Stil- und Text-Prüfer (`.claude/agents/`) prüfen nur lesend gegen den
+  Style-Guide, Claude prüft jeden ihrer Befunde nach.
+- In `tasks.md` steht die Phasenprüfung als `[C]`-Aufgabe. Welche Prüfer für welche Phase gelten,
+  legt `plan.md` unter „Prüfer je Phase“ fest.
+- Bei `/speckit-checklist` lesen die Prüfer die Wortlaute und Zustände aus Spec und Vertrag, bevor
+  gebaut wird.
+- Was sich messen lässt, prüfen Tests, nicht Prüfer.
+
+Begründung: Ein Prüfer mit eigenem Maßstab sieht, was der übersieht, der gebaut und geplant hat.
+Im Pilot (Feature 004) waren alle 13 bestätigten Befunde neu für Claude, keiner war falsch.
+
 ## Technische Rahmenbedingungen
 
 - Engine ist Godot 4.7 mit GDScript. Das Godot-Projekt liegt in `src/`, nicht im Repo-Root.
 - Tests laufen mit GUT 9.7.1, auch headless von der Kommandozeile.
-- `GameClock` und `Timeline` sind Autoloads.
+- `GameClock`, `Timeline`, `GameWindow` und `GameSession` sind Autoloads.
 - Die Timeline wendet Effekte nicht an. Sie meldet sie per Signal (`Timeline.effect_applied`),
   und Wirtschaft, Nachfrage und Reputation hängen sich daran.
 - Alles, was ein Ereignis auslösen kann, steht in der Timeline. So gibt es eine Quelle statt
@@ -110,11 +124,15 @@ Regenerieren der Tabellen nicht verloren gehen.
 
 - Projektsprache ist Deutsch: Dokumente und Spezifikationen werden deutsch geschrieben.
 - `docs/game_design.md` ist die Vision (*was* das Spiel ist), die Feature-Spezifikationen sind
-  der Bauplan (*wie*), und `docs/game_bible/` ist der Spielinhalt.
+  der Bauplan (*wie*), `docs/spielbeschreibung/` ist der Stand im Code, und `docs/game_bible/` ist
+  der Spielinhalt.
 - Ablauf je Feature: `/speckit-specify` legt Branch und Spezifikation an, `/speckit-clarify`
   klärt die offenen Fragen mit Klaus, danach folgen `/speckit-plan`, `/speckit-checklist`,
   `/speckit-tasks` und `/speckit-analyze`. Danach setzen Godot-Agent und Klaus die freigegebenen
-  Phasen um (Grundsatz II), und Claude prüft jede Phase gegen Spec und Vertrag.
+  Phasen um (Grundsatz II), und Claude prüft jede Phase gegen Spec und Vertrag, mit
+  Phasenprüfung nach Grundsatz VI.
+- Nach der Gesamtabnahme gleicht Claude `docs/spielbeschreibung/` mit dem Code ab. Vor jedem Merge
+  nach `main` schreibt Claude das Tagebuch in `docs/tagebuch/` fort. Beides nimmt Klaus ab.
 - Clarify, Checklist und Analyze sind in Spec Kit optional, bei uns laufen sie immer.
 - Claude committet, Klaus pusht; der Godot-Agent committet nicht. Claude versucht nie zu pushen,
   denn auf diesem Rechner liegen keine GitHub-Zugangsdaten. Code committet Claude erst, wenn Klaus
@@ -135,4 +153,4 @@ Regenerieren der Tabellen nicht verloren gehen.
   ein Grundsatz wegfällt oder neu definiert wird; MINOR, wenn ein Grundsatz oder Abschnitt
   hinzukommt oder deutlich erweitert wird; PATCH für Klarstellungen und Wortlaut.
 
-**Version**: 2.1.1 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-21
+**Version**: 2.2.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-27

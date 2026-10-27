@@ -121,3 +121,28 @@ for good, and a first look at a pocket device as the game's controls.
   [navigation-taschengeraet.md](../recherche/navigation-taschengeraet.md) (Nachtrag).
 
 ![G-01 organizer from 1991](../art/leonardo/g-01-organizer.jpg)
+
+### 2026-10-27 · The reviewers become a principle `[Workflow]`
+
+- **Decision:** The phase review is now principle VI of the constitution (version 2.2.0). Spec Kit's
+  own tasks template adds the review task to every phase, and the reviewers already read the
+  wording and states in spec and contract at `/speckit-checklist`, before anything is built.
+- **Alternatives:** keep the review only as a rule in the workflow documents; Claude writes the
+  task by hand from the plan, as in the pilot; reviewers only after building.
+- **Why:** In the pilot 3 of 13 confirmed findings were already in the contract Claude had written.
+  Every Spec Kit step reads the constitution, so `/speckit-analyze` now flags a missing review as
+  critical.
+- **Evidence:** [constitution.md](../../.specify/memory/constitution.md),
+  [tasks-template.md](../../.specify/templates/overrides/tasks-template.md),
+  [ki_pruefung.md](../ki_workflow/ki_pruefung.md).
+
+### 2026-10-27 · Own templates must survive Spec Kit updates `[Workflow]` `[Tools]`
+
+- **Decision:** Our own templates stay under `.specify/templates/overrides/`. After every Spec Kit
+  update Claude checks with a diff that they and the constitution are unchanged before committing.
+- **Alternatives:** keep our tasks out of the templates altogether.
+- **Why:** I did not want an update to remove the review and description tasks without anyone
+  noticing. Spec Kit looks in `overrides/` first and only reinstalls its own templates, so the
+  diff is a safeguard, not a repair.
+- **Evidence:** [ki_dev.md](../ki_workflow/ki_dev.md), "Werkzeuge und Pfade";
+  `.specify/scripts/bash/common.sh` (order of template lookup).

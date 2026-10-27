@@ -16,7 +16,7 @@ Written in English. A German translation comes at some point later, not during d
 | [03-feature-001-main-menu.md](03-feature-001-main-menu.md) | 2026-10-19 to 2026-10-20 | Rasters, main palette, raster tools, fonts, logo, app icon |
 | [04-feature-002-timeline-workshop.md](04-feature-002-timeline-workshop.md) | 2026-10-20 to 2026-10-21 | Schedule model, event catalog, Werkstatt |
 | [05-feature-003-difficulty.md](05-feature-003-difficulty.md) | 2026-10-21 to 2026-10-26 | Difficulty levels, reviewer agents, no local memory |
-| [06-feature-004-new-game.md](06-feature-004-new-game.md) | 2026-10-26 to 2026-10-27 | Saves, game session, Spec Kit for good, pocket device research and spike |
+| [06-feature-004-new-game.md](06-feature-004-new-game.md) | 2026-10-26 to 2026-10-27 | Saves, game session, Spec Kit for good, pocket device research and spike, reviewers as a principle |
 
 ## Entry format
 
