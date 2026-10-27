@@ -41,7 +41,8 @@ flowchart TD
     CO -->|"letzte Phase"| CV["Lückensuche mit converge"]
     CV -->|"Lücken: eine neue Phase"| F
     CV -->|"keine Lücken"| GA["Gesamtabnahme durch Klaus"]
-    GA --> M["Merge auf Klaus' Wort,<br/>Klaus pusht"]
+    GA --> SB["Claude prüft die Spielbeschreibung,<br/>Klaus gibt Änderungen frei"]
+    SB --> M["Merge auf Klaus' Wort,<br/>Klaus pusht"]
 ```
 
 Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
@@ -80,6 +81,13 @@ Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
    abnimmt. Wie, steht in [ki_pruefung.md](ki_pruefung.md). Das gilt ab dem Pilot im nächsten
    Feature nach 003, auch für Werkzeuge (Klaus, 2026-10-22). Bis dahin prüft
    Claude allein.
+9. **Als letzte Aufgabe die Spielbeschreibung prüfen** (Klaus, 2026-10-27): Nach der
+   Gesamtabnahme und vor dem Merge gleicht Claude `docs/spielbeschreibung/` mit dem Code ab. Claude
+   legt Klaus vor, welche Dateien veralten und welche neu angelegt werden sollten, je mit Grund,
+   dazu jede Abweichung zwischen Spec und Code. Geändert wird nie ungefragt, sondern erst nach
+   Klaus' OK; es ist ein Schritt wie jeder andere. In `tasks.md` steht er als `[C]`-Aufgabe, die
+   das Template unter `.specify/templates/overrides/` mitbringt. Warum: Die Spielbeschreibung ist
+   der Kontext, den jede Sitzung vorlädt. Veraltet sie still, arbeitet die KI mit falschem Wissen.
 
 ## Git
 

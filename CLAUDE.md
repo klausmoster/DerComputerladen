@@ -82,6 +82,9 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 
 ## Aufbau
 
+Vor Arbeit an einem System die passende Datei aus `docs/spielbeschreibung/` laden; welche, sagt
+deren `README.md`.
+
 | Pfad | Inhalt |
 |---|---|
 | `src/` | Godot-Projekt (Projekt-Root ist `src/`, nicht das Repo-Root) |
@@ -98,6 +101,7 @@ Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
 | `docs/game_bible/` | Obsidian-Vault mit den Spieldaten (Komponenten, Preise, Prospekte) |
 | `docs/game_design.md` | Game Design Document |
+| `docs/spielbeschreibung/` | Stand im Code, nach Systemen; Index `README.md` |
 | `docs/ki_workflow/` | Arbeitsweise mit KI: Abläufe, Prüfungen, Erfahrungen |
 | `docs/offene-punkte.md` | offene Fragen, Lücken und Claudes eigene Entscheidungen |
 | `.claude/skills/` | Projekt-Skills, Präfix `dcl-` (eigene) und `speckit-` (Spec Kit) |
