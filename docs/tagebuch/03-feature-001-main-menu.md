@@ -3,6 +3,8 @@
 The first Spec Kit feature: from launching the Mac app to a working title screen with menu. Most
 of the graphics pipeline was built here.
 
+**Tokens and cost:** 2026-10-19 to 2026-10-20 on `feature/001-hauptmenue`: 0.9 M output, 1,644 input, 6.0 M cache write, 342.0 M cache read; 412 responses from Claude, 390 from sub-agents; about $123 at API list price. The spec was written on `pilot/spec-kit` and is not included (about $3).
+
 ### 2026-10-19 · Two rasters: 320 × 180 and 640 × 360 `[Graphics]`
 
 - **Decision:** Scenes, figures and objects sit on an image raster of 320 × 180 pixels; interface

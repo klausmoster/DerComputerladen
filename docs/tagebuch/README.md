@@ -38,6 +38,18 @@ Every entry is one decision:
   record it.
 - Images are linked by relative path from `docs/art/` or `src/assets/`.
 
+## Tokens and cost
+
+Every feature section starts with a line on tokens and cost, from
+[`tools/tagebuch/token_bilanz.py`](../../tools/tagebuch/token_bilanz.py). The script reads Claude
+Code's session logs, including sub-agents, and adds up everything that ran on the feature's branch.
+
+- Work on other branches is not included, for example on `main` between features.
+- The cost is an estimate at API list price (as of 2026-10-06), not what a subscription costs.
+- Cache read dominates: every response reads the whole context again, cheaply.
+- Claude Code deletes its logs after 30 days, so the numbers are taken at the merge. There are no
+  logs from before 2026-10-19.
+
 ## Keeping it up to date
 
 With every merge to `main`, Claude writes the entries for that branch, I review them, and they go

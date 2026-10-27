@@ -3,6 +3,8 @@
 Three difficulty levels on top of the schedule. In parallel I set up reviewer agents and moved the
 workflow documents into a folder of their own. Review 38 points, analysis 41 findings.
 
+**Tokens and cost:** 2026-10-21 to 2026-10-26 on `feature/003-schwierigkeitsgrade`: 2.8 M output, 4,424 input, 21.5 M cache write, 743.9 M cache read; 638 responses from Claude, 1,546 from sub-agents; about $345 at API list price.
+
 ### 2026-10-21 · Levels shift chances, nothing else `[Game content]`
 
 - **Decision:** Easy and Hard shift only the chances of probability events, through profiles of
