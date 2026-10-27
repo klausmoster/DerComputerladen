@@ -92,8 +92,9 @@ Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
 10. **Vor jedem Merge nach `main` das Tagebuch fortschreiben** (Klaus, 2026-10-27): Claude schreibt
     in `docs/tagebuch/` die Einträge zu dem, was der Branch entschieden hat, ein Eintrag je echter
     Entscheidung, nicht je Commit, in der Form aus dem [README](../tagebuch/README.md) und auf
-    Englisch. Ein Feature bekommt eine eigene Datei, ein kleiner Branch, etwa zur Arbeitsweise,
-    Einträge in der Datei, die zeitlich passt. Bei Grafik kommt das Bild dazu. Nur Belegtes kommt
+    Englisch; übersetzt wird nicht während der Entwicklung (Klaus, 2026-10-27). Ein Feature
+    bekommt eine eigene Datei, ein kleiner Branch, etwa zur Arbeitsweise, Einträge in der Datei,
+    die zeitlich passt. Bei Grafik kommt das Bild dazu. Nur Belegtes kommt
     hinein; wo der Grund fehlt, fragt Claude Klaus. Klaus nimmt die Einträge ab, sie gehen mit in
     den Merge. Warum: Das Tagebuch hält fest, wie das Spiel mit KI entsteht, vor allem die
     Entscheidungen zu Arbeitsweise und Grafik. Nachträglich lassen sich Gründe kaum noch belegen.

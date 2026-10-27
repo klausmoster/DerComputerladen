@@ -5,7 +5,7 @@ commit on 2026-05-26 onwards. The focus is on how I work, the tools, the archite
 content and above all the graphics. Implementation details belong in `specs/`, the current state
 of the code in `docs/spielbeschreibung/`.
 
-Written in English first; a German translation follows.
+Written in English. A German translation comes at some point later, not during development.
 
 ## Sections
 
