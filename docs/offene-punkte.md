@@ -55,6 +55,20 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
   verworfen: Ein Hinweis wechselt nicht mit der Lage, „Spiel laden“ sagt immer „Zurück in einen
   deiner Läden.“ (Style-Guide Version 33).
 
+### Feature 004, Prüfung der Spielbeschreibung (2026-10-27)
+
+Beim Nachziehen von `docs/spielbeschreibung/` fand die Prüfung zwei Stellen, an denen Spec und Code
+auseinandergehen; die Spielbeschreibung folgt dem Code.
+- **Reihenfolge beim Fortsetzen:** `data-model.md` (Abschnitt „GameSession“) und `tasks.md` sagen
+  „Uhr auf `day`, dann `Timeline.resume_game()`“. `GameSession.resume()` ruft erst
+  `resume_game()` und stellt dann die Uhr, damit bei einer Ablehnung der Zeitleiste die Uhr bleibt,
+  wie sie war; begründet nur im Code-Kommentar. Bei einem fortsetzbaren Spielstand ändert das
+  nichts. Empfehlung: die Reihenfolge des Codes in `data-model.md` nachziehen.
+- **Nächste Nummer:** FR-009 in `spec.md` sagt „um eins größer als die größte Nummer unter den
+  vorhandenen Spielständen“. `SaveStore.next_number()` zählt alle Dateien nach dem Muster mit,
+  auch eine übrig gebliebene `.neu` ohne Spielstand und Ordner mit solchem Namen, wie es
+  `data-model.md` und R4 festlegen. Empfehlung: den Satz in FR-009 an R4 angleichen.
+
 ### Feature 004, Phasenprüfung Phase 5 (2026-10-26)
 
 - **Erledigt durch Klaus' Entscheidungen** (Style-Guide Version 29, Vertrag nachgezogen):
