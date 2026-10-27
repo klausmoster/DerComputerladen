@@ -432,11 +432,15 @@ Abschluss.
   stehen vollständig in `specs/004-neues-spiel/lernnotizen.md`. Gefundene Lücken werden eine
   eigene Phase mit Klaus' Freigabe, die vor T034 fertig ist; ändert sie Sichtbares oder Texte, endet
   sie mit einer eigenen Phasenprüfung (Analyse, D3).
-- [ ] T034 [K] Quickstart vollständig durchgehen, Abschnitte 1 bis 4, dazu die Quickstarts von
+- [x] T034 [K] Quickstart vollständig durchgehen, Abschnitte 1 bis 4, dazu die Quickstarts von
   Feature 001 bis 003 mit den zwei bekannten Ausnahmen (quickstart.md, Einleitung). Hängt an T033
   und an den Phasen für Lücken (7 und 8).
-- [ ] T035 [K] Feature abnehmen: Die Abnahmen T002, T011, T016, T024, T030 und T034 sind erledigt.
-  Dann entscheidet Klaus über den Merge nach `main`.
+  Erledigt 2026-10-27: Quickstart 004 ganz, dabei Phase 8 und die Kürzung des Hinweises von „Spiel
+  laden“; Feature 001 Abschnitte 3 bis 5 samt neu exportierter Mac-App. Bei 002 und 003 liefen nur
+  die automatischen Tests (937 grün) und die Startprobe; die Prüfungen von Hand hat Klaus nicht
+  wiederholt und das Feature so abgeschlossen.
+- [x] T035 [K] Feature abnehmen: Die Abnahmen T002, T011, T016, T024, T030 und T034 sind erledigt.
+  Dann entscheidet Klaus über den Merge nach `main`. Abgenommen 2026-10-27, Merge nach `main`.
 
 ---
 
