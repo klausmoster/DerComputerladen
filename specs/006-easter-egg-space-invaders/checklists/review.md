@@ -43,7 +43,8 @@ Vertrags“ stammen von Stil- und Text-Prüfer, von Claude nachgeprüft (Verfass
   Anzeige in `drucker` (Doto), der Vertrag nennt die Schrift von `LcdRow` (Ark Pixel 12).
   [Conflict, Vertrag invaders.md „Malen“]
   → Vorschlag, freigegeben von Klaus (2026-10-27): Kopfzeile `PUNKTE 0380` in `drucker` (Doto 10) wie die Kopfzeilen der Seiten;
-  Ergebnisanzeige in `menue` (Ark Pixel 12) wie Einträge. Ins Kapitel „Spiel auf der Anzeige“.
+  Ergebnisanzeige in `menue` (Ark Pixel 12) wie Einträge. Für die Ergebnisanzeige ersetzt durch CHK024
+  (Analyse, I3). Ins Kapitel „Spiel auf der Anzeige“.
 - [x] CHK006 Wirken Vollbild und Fenster-Schließen im Spiel wie immer? R9 verbraucht jede Taste mit
   `accept_event()`; der Baustein Communicator sagt „Fenster schließen und Vollbild wirken wie immer“.
   [Conflict, Plan R9; Vertrag invaders.md „Eingabe“]

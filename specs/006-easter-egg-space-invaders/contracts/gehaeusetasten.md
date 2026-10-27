@@ -33,8 +33,9 @@ Communicator
 └── … Seiten
 ```
 
-`Keys` und `KeyClick` zählen zu den eigenen Kindern; `_page_list()` nimmt sie aus wie `Case`,
-`Display` und `Hint`. Weil die Seiten danach kommen, liegen sie weiter oben; die Tasten liegen
+`Keys` zählt zu den eigenen Kindern; `_page_list()` nimmt es ausdrücklich aus wie `Case`, `Display`
+und `Hint`, sonst verbärge `show_page()` die Tasten. `KeyClick` ist kein Control und fällt ohnehin
+heraus (Analyse, C4). Weil die Seiten danach kommen, liegen sie weiter oben; die Tasten liegen
 außerhalb der Anzeige und überschneiden keine Seite.
 
 ## Communicator, neu
@@ -45,7 +46,8 @@ außerhalb der Anzeige und überschneiden keine Seite.
 signal case_key_pressed(index: int)
 
 ## Die Tasten im Gehäuse, je ein Rechteck in Bildpixeln des Gehäusebilds. Sie gehören zum Gehäuse
-## wie display_rect; Vorgabe sind die drei grauen Tasten von G-03 aus dem Style-Guide (R2).
+## wie display_rect. Vorgabe ist leer; der Titel setzt die drei grauen Tasten von G-03 in seiner
+## Szene mit den Rechtecken aus dem Style-Guide (R1, R2; Analyse, I2).
 ## Ein Gehäuse ohne Tasten setzt ein leeres Array.
 @export var case_keys: Array[Rect2i]
 

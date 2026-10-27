@@ -74,6 +74,13 @@ Kein Code.
     Anfang ohne Stille, 5 ms Ausblenden, Spitzenpegel, Tonkanäle `Master` und `Effekte` mit Pegel
     (R14), ein Player für den Marschtakt (CHK015), das Menü bleibt stumm.
   - Abschnitt **Sprache**: Verweis auf die Regeln für Texte im Spiel (CHK034).
+  - Dazu aus der Analyse: Tempo der Kanone (U2), Takt in ganzen Schritten (U3), Rand des Blocks nach
+    den lebenden (M2), der Block steht in der Pause nach einem Treffer (M3), senkrechte Lage von
+    Punkten und Leben in der Kopfzeile, welche Leben sie zeigt, Explosion an der Stelle der Kanone
+    (U5), Zählweise einschließlich mit der Kanone in den Zeilen 73 bis 77 (I1).
+
+  Danach markiert Claude die Tabellen in research.md, R7 und R13, als „übernommen in den Style-Guide
+  am …“; ab dann gilt nur noch der Style-Guide (Analyse, V1).
 
   Vorher liest Claude die betroffenen Dateien neu und ändert nur diese; danach bekommt Klaus den
   Link und eine Liste der Änderungen. Wünscht Klaus, die Pixelmuster selbst zu zeichnen (plan.md,
@@ -95,20 +102,25 @@ Kein Code.
 
 - [ ] T004 [C] `tools/ton/make_sounds.py` und `tools/ton/README.md` laut contracts/ton.md, „Skript“:
   nur Standardbibliothek, Rauschen mit festem Seed, Werte aus dem Abschnitt „Ton“ des Style-Guides;
-  Option `--pruefsummen` schreibt `src/test/fixtures/ton_pruefsummen.txt`. Lauf erzeugt die zehn
+  Option `--pruefsummen` schreibt `src/test/fixtures/ton_pruefsummen.txt` (über die Rohdateien). Lauf erzeugt die zehn
   Dateien unter `src/assets/sounds/`. Zwei Läufe hintereinander ergeben dieselben Bytes.
 - [ ] T005 [A] `src/default_bus_layout.tres` mit `Master` (0 dB) und `Effekte` (Pegel aus dem
   Style-Guide, Ziel `Master`); einmal `Godot --headless --path src --import`, damit die WAV ihre
-  `.import` bekommen. `project.godot` bleibt unverändert.
+  `.import` bekommen, und in jeder `.import` Kompression aus (PCM), kein Trimmen, kein Normalisieren,
+  keine Schleife (Analyse, U6). `project.godot` bleibt unverändert.
 - [ ] T006 [A] `src/test/test_ton.gd` laut contracts/ton.md, „Tests“: zehn Dateien als
-  `AudioStreamWAV`, mono, 22 050 Hz; erste Probe nicht null (SC-007), letzte nahe null; Länge je
+  `AudioStreamWAV`, mono, 22 050 Hz; aus der Rohdatei gelesen: erste Probe nicht null (SC-007),
+  letzte nahe null; Länge je
   Datei ±1 ms aus dem Style-Guide; Kanal `Effekte` mündet in `Master` mit dem Pegel aus dem
   Style-Guide; Prüfsummen gleich `ton_pruefsummen.txt`.
 - [ ] T007 [A] Lernnotizen zu T005 und T006 in `specs/006-easter-egg-space-invaders/lernnotizen.md`:
   was ein Bus ist und warum Effekte einen eigenen haben, warum Godot `default_bus_layout.tres` von
-  selbst lädt, was `.import` bei einer WAV festhält.
+  selbst lädt, was `.import` bei einer WAV festhält. Claude ergänzt die Lernnotiz zu T004: wie eine
+  Rechteckwelle als Zahlen aussieht und warum ein fester Seed bytegleiche Dateien gibt (Analyse,
+  V2).
 - [ ] T008 [C] Prüfen: Skript zweimal, Tests zweimal, Startprobe still; die Töne selbst anhören.
-- [ ] T009 [K] Phase 2 abnehmen: Töne nach quickstart.md, „Töne anhören“; Tonhöhen, Längen und
+- [ ] T009 [K] Phase 2 abnehmen: Töne nach quickstart.md, „Töne anhören“; dass sie ohne hörbare
+  Verzögerung einsetzen (SC-007), ist eine Abnahme von Hand, kein Messwert (Analyse, A3); Tonhöhen, Längen und
   Pegel freigeben oder im Style-Guide ändern lassen (dann T004 erneut).
 
 **Checkpoint**: Ton ist da; keine Phasenprüfung, denn die Phase ändert nichts Sichtbares und keinen
@@ -125,7 +137,7 @@ deterministisch mit Seed (FR-011 bis FR-015; R6 bis R8; contracts/invaders.md, `
 **Independent Test**: `test_invaders_game.gd` und `test_invaders_sprites.gd` grün; ein gezielter
 Durchlauf gewinnt, ohne Schuss landet der Block.
 
-- [ ] T010 [P] [A] [US2] `src/scenes/title/invaders/invaders_sprites.gd` (`class_name
+- [ ] T010 [A] [US2] `src/scenes/title/invaders/invaders_sprites.gd` (`class_name
   InvadersSprites`): die Muster aus dem Style-Guide Zeichen für Zeichen, `pixels()`, `size_of()`;
   `src/test/test_invaders_sprites.gd` laut Vertrag.
 - [ ] T011 [A] [US2] `src/scenes/title/invaders/invaders_game.gd` (`class_name InvadersGame`) laut
@@ -134,10 +146,11 @@ Durchlauf gewinnt, ohne Schuss landet der Block.
   Tempi und Punkte als Konstanten an einer Stelle mit den Werten aus dem Style-Guide (R7). Regeln:
   „Die Kanone bleibt im Feld; links und rechts zugleich heben sich auf“, „Ein neuer Schuss nur,
   wenn keiner im Feld ist. In `RESPAWN` gibt es keinen Schuss und keine Bombe“, „ein Schuss trifft
-  höchstens einen“, „Schuss und Bombe fliegen aneinander vorbei“, Explosion 0,25 s, die nichts
-  aufhält, gelandet, sobald „die Unterkante eines lebenden Außerirdischen die Oberkante der Kanone
-  erreicht“, höchstens 3 Bomben, Kanone nach einem Treffer bei x 75 (data-model.md; CHK010 bis
-  CHK012, CHK023).
+  höchstens einen“, „Schuss und Bombe fliegen aneinander vorbei“, Explosionen, die nichts aufhalten,
+  gelandet, sobald „die unterste Zeile eines lebenden Außerirdischen die oberste Zeile der Kanone“
+  erreicht, Rand nach den lebenden, „In `RESPAWN` steht der Block“, Zahl der Bomben, Dauer der
+  Explosion und Lage der Kanone aus dem Style-Guide (data-model.md; CHK010 bis CHK012, CHK023;
+  Analyse, I1, M2, M3, V1).
 - [ ] T012 [A] [US2] `src/test/test_invaders_game.gd` laut Vertrag, „Tests“, mit festem Seed, dazu
   SC-002: Ein gezielter Durchlauf gewinnt in höchstens 3 Minuten Spielzeit (10 800 Schritte); ohne
   Schuss landet der Block frühestens nach 1 Minute (3 600 Schritte). Zwei Partien mit gleichem Seed
@@ -165,14 +178,18 @@ Niederlage durchspielen, ohne Titel (Spec, Story 2); `test_invaders_page.gd` gr�
 - [ ] T016 [A] [US2] Texte in `src/scenes/title/title_texts.gd` laut Vertrag, „Texte“:
   `INVADERS_SCORE`, `INVADERS_WON`, `INVADERS_LOST_HIT`, `INVADERS_LOST_LANDED`, `INVADERS_POINTS`,
   `INVADERS_CONTINUE` mit den Wortlauten aus R10; `src/test/test_title_texts.gd`: jede Zeile der
-  Ergebnisanzeige passt in die Breite der Anzeige in ihrer Schrift.
+  Ergebnisanzeige passt in die Breite der Anzeige in ihrer Schrift. `src/test/test_texte.gd` findet
+  die Anrede auch in Versalien („SIE“, „IHNEN“), mit eigenem Test (Analyse, U7).
 - [ ] T017 [A] [US2] `src/scenes/title/invaders/invaders_page.tscn` und `invaders_page.gd`
   (`class_name InvadersPage`) laut Vertrag: `start()`, `advance()`, `autoplay`, `finished`;
   Takt mit festem Schritt, höchstens 4 Schritte je Bild (SC-003); Eingabe in `_gui_input()`
   nach der Tabelle im Vertrag, Tasten mit Cmd, Strg oder Alt und `toggle_fullscreen` gehen durch
   (CHK006), Shift, Strg, Alt, Cmd allein zählen nicht (CHK009); Fokus holen und zurückholen, kein
   Fokusrahmen, Zeiger Pfeil (CHK022, CHK025); Malen auf dem Bildraster nur in `tusche`, Kopfzeile
-  in `drucker`, Ergebnisanzeige nach R10 (CHK005, CHK024); Sperre der Ergebnisanzeige 0,5 s.
+  in `drucker`, Ergebnisanzeige nach R10 (CHK005, CHK024); Sperre der Ergebnisanzeige mit der Dauer aus
+  dem Style-Guide; Kürzel mit Cmd, Strg oder Alt führen dort nicht weiter (Analyse, M4, V1). Nach
+  `finished` und verborgen taktet die Seite nicht; Fokus nur zurückholen, wenn sie noch sichtbar ist
+  (Analyse, U1, C5).
 - [ ] T018 [A] [US2] Töne der Seite: ein `AudioStreamPlayer` je Ton auf `Effekte`, ein gemeinsamer
   für die vier Marschtöne (CHK015); Zuordnung nach der Tabelle im Vertrag; `finished` und eine
   verborgene Seite stoppen alles (FR-044); ohne Fokus des Fensters kein Takt und `stream_paused`,
@@ -181,19 +198,21 @@ Niederlage durchspielen, ohne Titel (Spec, Story 2); `test_invaders_page.gd` gr�
   mit G-03 und der Seite, die gleich startet; nach `finished` startet eine neue Partie. Ohne Titel
   und ohne `GameSession`.
 - [ ] T020 [A] [US2] `src/test/test_invaders_page.gd` laut Vertrag, „Tests“, mit `autoplay = false`
-  und erfundenen Ereignissen.
+  und erfundenen Ereignissen; auch: nach Esc mitten im Spiel kein Takt und kein Marschton mehr
+  (Analyse, U1).
 - [ ] T021 [A] [US2] Lernnotizen zu T016 bis T020: Fokus als Weg der Tasten, `accept_event()` und was
   durchgehen muss, Malen in `_draw()` auf dem Bildraster, Zeitspeicher mit festem Schritt,
   Benachrichtigungen der App für den Fokus des Fensters.
 - [ ] T022 [C] [US2] Prüfen: Tests zweimal, Startprobe still; Bildschirmfotos der Probeszene im
   echten Fenster in 1920 × 925: Spiel am Anfang, mitten im Spiel mit Bomben und Explosion,
-  Ergebnisanzeige gewonnen, Kanone kaputt, gelandet; Spiel und Ton halten ohne Fokus an.
+  Ergebnisanzeige gewonnen, Kanone kaputt, gelandet; Spiel und Ton halten ohne Fokus an; die Bildrate
+  im echten Fenster gemessen, 60 Bilder je Sekunde (SC-003; Analyse, A2).
 - [ ] T023 [C] [US2] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`: Stil-Prüfer mit „Spiel auf der
   Anzeige“, Baustein Communicator, `tokens.json`; Text-Prüfer mit `Sprache.md` und den sechs
   Wortlauten; die Bildschirmfotos aus T022.
 - [ ] T024 [K] [US2] Phase 4 abnehmen nach quickstart.md, „Das Spiel allein“: spielen, Tempi und
   Pegel nach Gefühl einstellen lassen (Änderungen erst in den Style-Guide, dann in die Konstanten;
-  SC-002).
+  SC-002); dass die Töne ohne hörbare Verzögerung kommen, von Hand (SC-007).
 
 **Checkpoint**: Das Spiel ist spielbar, nur noch nicht im Titel zu finden.
 
@@ -213,12 +232,12 @@ bisherigen Tests des Titels grün (SC-004).
 
 - [ ] T025 [A] [US1] `src/ui/communicator/case_key.gd` (`class_name CaseKey`) und die Erweiterung
   von `src/ui/communicator/communicator.gd` und `.tscn` laut contracts/gehaeusetasten.md:
-  `case_keys` mit den Rechtecken aus dem Style-Guide als Vorgabe, `case_key_pressed(index)`,
+  `case_keys` mit leerer Vorgabe (Analyse, I2), `case_key_pressed(index)`,
   `is_case_key_down()`, Knoten `Keys` und `KeyClick` (`knopf.wav` auf `Effekte`); gezählt beim
   Loslassen über derselben Taste, Klick beim Drücken, rechte und mittlere Maustaste tun nichts;
   `_set_locked(true)` ruft `cancel()` jeder Taste; Eindrücken in `Keys._draw()` nach R3 und dem
   Ergebnis von T001, im nächsten Bild (FR-001a); Zeiger Pfeil, kein Fokus (FR-001b);
-  `_page_list()` nimmt `Keys` und `KeyClick` aus.
+  `_page_list()` nimmt `Keys` aus, `KeyClick` ist kein Control (Analyse, C4).
 - [ ] T026 [A] [US1] Probeszene `src/test/fixtures/communicator_probe.tscn` und `.gd`: zeigt
   `case_key_pressed` an; Tests in `src/test/test_communicator.gd` laut contracts/gehaeusetasten.md,
   „Tests“; alle Tests aus Feature 005 bleiben unverändert grün.
@@ -230,17 +249,22 @@ bisherigen Tests des Titels grün (SC-004).
 
 ### Teil 2: Folge und Titel
 
-- [ ] T029 [P] [A] [US1] `src/scenes/title/key_sequence.gd` (`class_name KeySequence`) laut
+- [ ] T029 [A] [US1] `src/scenes/title/key_sequence.gd` (`class_name KeySequence`) laut
   contracts/titelbildschirm.md und data-model.md, „Folge“; `src/test/test_key_sequence.gd` mit den
   Beispielen aus dem Vertrag und SC-005 (20 zufällige Folgen, fester Seed).
 - [ ] T030 [A] [US1] [US3] `src/scenes/title/title_screen.tscn` und `title_screen.gd` laut
-  contracts/titelbildschirm.md: Seite `Invaders` unter dem Communicator; Druck nur, wenn der Titel
-  Eingaben annimmt und das Spiel nicht läuft; Start mit Merken von Seite, Fokus und Hinweis,
-  `hide_hint()`, `start()`, `show_page()`; Ende bei `finished` mit Seite, Fokus und Hinweis zurück,
-  eine Meldung kommt als Hinweis zurück (CHK008); Folge auf 0 bei Start und neuem Erscheinen.
+  contracts/titelbildschirm.md: `case_keys` der Instanz auf die drei Rechtecke aus dem Style-Guide
+  (Analyse, I2); Seite `Invaders` unter dem Communicator; Druck nur, wenn der Titel Eingaben annimmt
+  und das Spiel nicht läuft; Start mit Merken von Seite und Fokus (Zeile und Hinweis aus
+  `_selected_row` und `_selected_hint`; D1), `_hide_hint()` des Titels (C2), erst `show_page()`, dann
+  `start()` (C1); Esc-Wache in `_unhandled_input()`, solange `Invaders` sichtbar ist (C3); Ende bei
+  `finished` mit Seite, Fokus und Hinweis zurück, eine Meldung kommt als Hinweis zurück (CHK008);
+  Folge auf 0 bei Start und neuem Erscheinen.
 - [ ] T031 [A] [US1] [US3] Tests in `src/test/test_title_screen.gd` laut
   contracts/titelbildschirm.md, „Tests“, mit erfundenen Mausereignissen auf den Tasten, auch: kein
-  Spielstand beim Schließen des Fensters während des Spiels (CHK019).
+  Spielstand beim Schließen des Fensters während des Spiels (CHK019); Meldung, Folge, Esc ohne
+  Meldung danach (C2); Esc direkt an den Titel während des Spiels (C3); gemessen SC-001 und SC-006
+  (Analyse, A2).
 - [ ] T032 [A] [US1] [US3] Lernnotizen zu T029 bis T031: eine Folge ohne Node, Fokus merken und
   zurückgeben, warum der Titel die Folge kennt und der Communicator nicht.
 - [ ] T033 [C] [US1] [US3] Prüfen: Tests zweimal, Startprobe still; Bildschirmfotos im echten
@@ -266,7 +290,7 @@ bisherigen Tests des Titels grün (SC-004).
 - [ ] T038 [C] Doku nachziehen: `docs/features/Features.md` (006 fertig, Systeme 10 und 11; System
   11 „Sound“ nicht mehr nur Idee); `docs/offene-punkte.md`; `CLAUDE.md` (Tabelle „Aufbau“:
   `src/assets/sounds/`, `tools/ton/`, `default_bus_layout.tres`) nur mit Klaus' OK.
-- [ ] T039 [C] Spielbeschreibung prüfen (immer die letzte Aufgabe des Features, nach der
+- [ ] T039 [C] Spielbeschreibung prüfen (die letzte Aufgabe vor dem Tagebuch, nach der
   Gesamtabnahme und vor dem Merge; `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“): Claude
   gleicht `docs/spielbeschreibung/` mit dem Code ab und legt Klaus eine Liste vor, welche Dateien
   veralten und welche neu angelegt werden sollten, mit Grund, mindestens `communicator.md`,
@@ -309,9 +333,9 @@ Grundsatz II):
 
 ### Parallel Opportunities
 
-- T010 (Muster) neben T011 (Kern): andere Dateien; T011 nutzt die Muster nur über `size_of()`.
-- T029 (Folge) neben T030: eigene Datei ohne Abhängigkeit.
-- Sonst keine: T016 bis T020 teilen die Seite, T025 und T026 den Communicator.
+- Keine `[P]`-Tasks: T011 braucht die Muster aus T010 über `size_of()`, T030 die API von
+  `KeySequence` aus T029; T016 bis T020 teilen die Seite, T025 und T026 den Communicator (Analyse,
+  R2).
 
 ---
 

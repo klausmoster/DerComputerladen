@@ -91,6 +91,15 @@ Vorschlag freigegeben. Die wichtigsten für die Spec:
 - Wortlaute: „ALLE ERWISCHT.“, „DIE SIND GELANDET.“, „Weiter mit Taste oder Klick.“ (CHK030 bis
   CHK032).
 
+### Analyse 2026-10-27
+
+Aus `/speckit-analyze`, gelesen von einem unabhängigen Prüfer: 32 Befunde, keiner kritisch; Claude
+hat die wichtigen im Code nachgeprüft, Klaus hat am 2026-10-27 alle Empfehlungen freigegeben. Für
+die Spec: Seite und Auswahl gelten „beim Start des Spiels“ (M1); während der Pause nach einem
+Treffer steht der Block (M3); FR-044 unterscheidet Anhalten und Verlassen (U4); die Knöpfe gibt es
+nur im Titel, ein Communicator hat von sich aus keine Gehäusetasten (I2). Alle Befunde stehen in
+plan.md, „Änderungen nach der Analyse“.
+
 ## Begriffe
 
 - **Easter Egg:** ein verstecktes Extra, das nirgends angekündigt ist und das man nur durch
@@ -127,17 +136,17 @@ andere Reihenfolge startet nichts, und Menü, Gradwahl, Liste und Rückfrage bed
    und Knopf 3 klickt, **Then** startet Space Invaders.
 2. **Given** der Titel, **When** der Spieler Knopf 2, Knopf 1, Knopf 3 klickt, **Then** startet
    nichts, und das Menü bleibt, wie es war.
+3. **Given** der Titel mit einer beliebigen Seite auf der Anzeige (Hauptmenü, Gradwahl, Liste,
+   Rückfrage), **When** der Spieler die Folge klickt, **Then** startet Space Invaders auch dort.
+4. **Given** der Titel, **When** der Spieler irgendwo anders auf das Gehäuse klickt, **Then**
+   passiert wie heute nichts.
+
 5. **Given** der Titel, **When** der Spieler Knopf 1, Knopf 1, Knopf 2, Knopf 3 klickt, **Then**
    startet Space Invaders, weil der zweite Druck auf Knopf 1 als neuer Anfang zählt.
 6. **Given** der Spieler hat Knopf 1 geklickt, **When** er eine Zeile des Menüs wählt oder eine
    andere Seite öffnet und dann Knopf 2 und Knopf 3 klickt, **Then** startet Space Invaders.
 7. **Given** der Titel, **When** der Spieler die Maustaste auf einem der drei Knöpfe drückt,
    **Then** sitzt dieser eingedrückt, bis die Taste wieder oben ist; der Zeiger bleibt der Pfeil.
-3. **Given** der Titel mit einer beliebigen Seite auf der Anzeige (Hauptmenü, Gradwahl, Liste,
-   Rückfrage), **When** der Spieler die Folge klickt, **Then** startet Space Invaders auch dort.
-4. **Given** der Titel, **When** der Spieler irgendwo anders auf das Gehäuse klickt, **Then**
-   passiert wie heute nichts.
-
 ---
 
 ### User Story 2 - Eine Runde spielen (Priority: P1)
@@ -188,7 +197,7 @@ danach der Titel bedienbar da wie vorher.
 2. **Given** das Spiel läuft, **When** der Spieler Esc drückt, **Then** endet das Spiel sofort ohne
    Rückfrage, und der Titel steht wieder da.
 3. **Given** der Spieler ist zurück auf dem Titel, **When** er das Menü bedient, **Then** verhält
-   es sich wie vor dem Easter Egg, mit derselben Seite und Auswahl wie beim Start der Folge.
+   es sich wie vor dem Easter Egg, mit derselben Seite und Auswahl wie beim Start des Spiels.
 
 ---
 
@@ -267,7 +276,8 @@ danach der Titel bedienbar da wie vorher.
   Tasten außer Esc tun im Spiel nichts; Tastenkürzel mit Cmd, Strg oder Alt und das Kürzel für
   Vollbild wirken wie immer.
 - **FR-012a**: Der Spieler MUSS mit drei Leben beginnen. Trifft eine Bombe die Kanone, verliert er
-  eines, und die Kanone erscheint nach einer kurzen Pause wieder in der Mitte.
+  eines, und die Kanone erscheint nach einer kurzen Pause wieder in der Mitte. Während der Pause
+  steht der Block still, und es fallen keine Bomben.
 - **FR-013**: Die Außerirdischen MÜSSEN Bomben nach unten werfen; immer nur einer aus der untersten
   Reihe einer Spalte kann werfen. Schuss und Bombe fliegen aneinander vorbei.
 - **FR-014**: Das Spiel MUSS Punkte und verbleibende Leben anzeigen. Punkte werden nicht dauerhaft
@@ -288,7 +298,7 @@ danach der Titel bedienbar da wie vorher.
   Linksklick, der Zeiger bleibt der Pfeil; ein Druck, der noch aus dem Spiel stammt (etwa ein gehaltener Schuss), DARF die
   Ergebnisanzeige nicht gleich überspringen.
 - **FR-021**: Esc MUSS das laufende Spiel jederzeit sofort beenden und zum Titel zurückführen.
-- **FR-022**: Zurück auf dem Titel MÜSSEN Seite und Auswahl dieselben sein wie beim Start der Folge,
+- **FR-022**: Zurück auf dem Titel MÜSSEN Seite und Auswahl dieselben sein wie beim Start des Spiels,
   und der Hinweis der gewählten Zeile steht wieder da. Eine Meldung (Baustein Meldung), die beim
   Start stand, kommt nicht zurück: Seitdem hat der Spieler etwas ausgelöst.
 
@@ -298,6 +308,9 @@ danach der Titel bedienbar da wie vorher.
   in `tusche` auf dem Grund `lcd` der Anzeige, auf dem Bildraster; jeder Außerirdische hat zwei
   Bewegungsbilder, die beim Weiterrücken wechseln. Das Spiel bringt keine neue Farbe und kein Bild
   aus Leonardo. Die Darstellung „Spiel auf der Anzeige“ kommt vor dem Bau in den Style-Guide.
+- **FR-031**: Alle Texte des Spiels (etwa Punkte, Sieg, Niederlage) MÜSSEN deutsch sein und den
+  Spieler duzen.
+
 **Ton**
 
 - **FR-040**: Das Spiel MUSS diese Töne spielen: einen Schuss der Kanone, einen Treffer an einem
@@ -312,16 +325,13 @@ danach der Titel bedienbar da wie vorher.
 - **FR-043**: Jeder Ton MUSS über einen Kanal für Effekte laufen, der in einen Kanal für alles
   zusammen mündet. Die Lautstärke ist fest und eher leise; ein späteres Feature „Einstellungen“
   regelt sie an den Kanälen, ohne die Tonquellen zu ändern.
-- **FR-044**: Hält das Spiel an oder endet es, MÜSSEN seine Töne mit anhalten oder verstummen.
-
-**Texte**
-
-- **FR-031**: Alle Texte des Spiels (etwa Punkte, Sieg, Niederlage) MÜSSEN deutsch sein und den
-  Spieler duzen.
+- **FR-044**: Hält das Spiel an (Fenster ohne Fokus), MÜSSEN seine Töne mit anhalten. Verlässt der
+  Spieler das Spiel (Esc oder Weiter in der Ergebnisanzeige), MÜSSEN sie verstummen. Das Motiv für
+  Sieg oder Niederlage klingt in der Ergebnisanzeige aus.
 
 ### Key Entities
 
-- **Folge der Knöpfe:** wie weit der Spieler in der Folge ist (0 bis 3); setzt sich nach einem
+- **Folge der Knöpfe:** wie weit der Spieler in der Folge ist (0 bis 2); setzt sich nach einem
   falschen Druck zurück. Lebt nur, solange der Titel steht.
 - **Partie:** eine Runde Space Invaders: Lage der Kanone, verbleibende Leben, Punkte, die
   übrigen Außerirdischen mit Lage und Tempo des Blocks, die Schüsse und Bomben im Feld, und ob
@@ -355,8 +365,6 @@ danach der Titel bedienbar da wie vorher.
   Feature bringt nur Effekte und legt dafür nichts fest.
 - Wie die Töne klingen (Tonhöhe, Länge, Lautstärke), legt der Plan fest; die Regeln dafür kommen
   vor dem Bau als Abschnitt „Ton“ in den Style-Guide, wie alles, was zum Look gehört.
-- Wie bei den Seiten nach dem Ende kehrt auch Esc zu der Seite zurück, auf der der Spieler war,
-  mit ihrer Auswahl; der Hinweis der gewählten Zeile erscheint wieder.
 - Die Lage der drei Knöpfe ergibt sich aus dem Gehäusebild G-03 (`docs/art/leonardo/prompt-log.md`,
   `specs/005-communicator/`). Die eingedrückte Fassung entsteht aus dem Gehäusebild selbst, ohne
   Leonardo; das Gehäusebild bleibt unverändert.

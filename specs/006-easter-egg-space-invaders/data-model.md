@@ -62,7 +62,7 @@ Beispiele: 1-2-3 startet; 1-1-2-3 startet; 2-1-3 nicht; 1-2-2-3 nicht.
 stateDiagram-v2
     [*] --> PLAYING
     PLAYING --> RESPAWN: Bombe trifft Kanone, Leben übrig
-    RESPAWN --> PLAYING: nach 1 s
+    RESPAWN --> PLAYING: nach 1 s, der Block stand still
     PLAYING --> LOST: Bombe trifft Kanone, letztes Leben / HIT
     PLAYING --> LOST: Block erreicht Höhe der Kanone / LANDED
     PLAYING --> WON: letzter Außerirdischer getroffen
@@ -77,8 +77,10 @@ stateDiagram-v2
 - Ein neuer Schuss nur, wenn keiner im Feld ist. In `RESPAWN` gibt es keinen Schuss und keine Bombe.
 - Treffer sind Überschneidungen von Rechtecken auf Bildpixeln; ein Schuss trifft höchstens einen.
 - Schuss und Bombe fliegen aneinander vorbei.
-- Gelandet: Die Unterkante eines lebenden Außerirdischen erreicht die Oberkante der Kanone.
-- Der Takt rückt den Block; am Rand erst tiefer und Richtungswechsel, im nächsten Takt weiter.
+- Gelandet: Die unterste Zeile eines lebenden Außerirdischen erreicht die oberste Zeile der Kanone
+  (gezählt einschließlich; Analyse, I1). In `RESPAWN` steht der Block, Landen geht dort nicht (M3).
+- Der Takt rückt den Block; am Rand erst tiefer und Richtungswechsel, im nächsten Takt weiter. Rand
+  heißt die Außenkante der lebenden Außerirdischen (Analyse, M2).
 - Abstand der Takte aus der Zahl der Übrigen (R7); der Block wird schneller, je weniger übrig sind.
 
 ## Seite (`InvadersPage`)
@@ -95,10 +97,10 @@ stateDiagram-v2
 | Feld | Bedeutung |
 |---|---|
 | `_sequence` | `KeySequence` mit `[0, 1, 2]` |
-| `_return_page` | die Seite, die beim Start der Folge zu sehen war |
+| `_return_page` | die Seite, die beim Start des Spiels zu sehen war |
 | `_return_focus` | das Control mit dem Fokus beim Start |
-| `_return_row`, `_return_hint` | Zeile und Hinweis beim Start, für den Hinweis danach |
+| `_selected_row`, `_selected_hint` | schon vorhanden; Zeile und Hinweis, für den Hinweis danach (Analyse, D1) |
 
 Ablauf: `case_key_pressed(i)` → wenn der Titel Eingaben annimmt und das Spiel nicht läuft:
-`_sequence.press(i)`; bei true merken, Hinweis aus, `InvadersPage.start()`, zeigen. Bei `finished`:
+`_sequence.press(i)`; bei true Seite und Fokus merken, `_hide_hint()`, zeigen, dann `InvadersPage.start()`. Bei `finished`:
 `_return_page` zeigen, Fokus und Hinweis wiederherstellen, `_sequence.reset()`.

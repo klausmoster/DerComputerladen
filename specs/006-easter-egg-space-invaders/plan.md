@@ -94,7 +94,8 @@ specs/006-easter-egg-space-invaders/
 │   ├── invaders.md              # Kern, Muster, Seite, Texte
 │   └── titelbildschirm.md       # KeySequence, Einbau in den Titel, Rückweg
 ├── checklists/
-│   └── requirements.md          # Qualitätsprüfung der Spec
+│   ├── requirements.md          # Qualitätsprüfung der Spec
+│   └── review.md                # Review der Anforderungen, 34 Punkte, freigegeben
 ├── tasks.md                     # Aufgaben je Phase (/speckit-tasks)
 └── lernnotizen.md               # entsteht bei der Umsetzung
 ```
@@ -112,7 +113,7 @@ src/
 │   ├── invaders/                 # neu: invaders_game, invaders_sprites, invaders_page (.gd/.tscn)
 │   ├── title_screen.gd/.tscn     # geändert
 │   └── title_texts.gd            # geändert
-└── test/                         # fünf neu, drei geändert; fixtures/invaders_probe, ton_pruefsummen.txt
+└── test/                         # fünf neu, drei geändert; fixtures/invaders_probe neu, communicator_probe geändert, ton_pruefsummen.txt
 ```
 
 **Structure Decision**: Die Gehäusetasten gehören zum Baustein in `src/ui/communicator/`, weil jedes
@@ -143,7 +144,7 @@ Die Phasen laufen streng nacheinander (Grundsatz II).
 | 3 | Spielkern: `InvadersGame`, `InvadersSprites`, `test_invaders_game.gd`, `test_invaders_sprites.gd`. Nichts Sichtbares | US2 |
 | 4 | Spielseite: `InvadersPage` mit Szene, Eingabe, Malen, Tönen, Ergebnisanzeige, Anhalten; Texte in `TitleTexts`; Probeszene; `test_invaders_page.gd`. Klaus spielt in der Probeszene und stellt Tempi ein | US2, US3 (Teil) |
 | 5 | Knöpfe und Titel, in zwei Teilen (ki_dev Punkt 4): erst Gehäusetasten am Communicator mit Probeszene und `test_communicator.gd`; dann `KeySequence`, Einbau in den Titel, Rückweg, `test_key_sequence.gd`, `test_title_screen.gd` | US1, US3 |
-| 6 | Abschluss: Lückensuche mit `/speckit-converge`; Spielbeschreibung prüfen (`communicator.md`, `titel-und-hauptmenue.md`, `darstellung.md`, `build-und-tests.md`, neu wohl `ton.md`; Index) und Klaus vorlegen; `docs/features/Features.md`; `CLAUDE.md` (Tabelle „Aufbau“: `src/assets/sounds/`, `tools/ton/`) nur mit Klaus' OK; Gesamtabnahme; Tagebuch | – |
+| 6 | Abschluss: Lückensuche mit `/speckit-converge`; Gesamtabnahme; `docs/features/Features.md`; `CLAUDE.md` (Tabelle „Aufbau“: `src/assets/sounds/`, `tools/ton/`) nur mit Klaus' OK; danach Spielbeschreibung prüfen (`communicator.md`, `titel-und-hauptmenue.md`, `darstellung.md`, `build-und-tests.md`, neu wohl `ton.md`; Index) und Klaus vorlegen; zuletzt das Tagebuch | – |
 
 Phase 3 hängt an Phase 1 (Muster und Maße), Phase 4 an 2 und 3, Phase 5 an 4.
 
@@ -158,6 +159,35 @@ vollständige Ausnahme für die Gehäusetasten, Änderungen an zwei Sätzen im B
 Abschnitt „Spiel auf der Anzeige“ mit Innenrand, Lagen, Ergebnisanzeige und Textregeln, und einen
 Verweis im Abschnitt Sprache.
 
+## Änderungen nach der Analyse
+
+Aus `/speckit-analyze` am 2026-10-27 mit 32 Befunden (0 kritisch, 4 hoch, 14 mittel, 14 niedrig),
+gelesen von einem unabhängigen Prüfer; Claude hat die Befunde zum Code (C1 bis C5, D1) in
+`title_screen.gd` und `communicator.gd` nachgeprüft. Klaus hat alle Empfehlungen freigegeben. Die
+wichtigsten:
+- **I1** (hoch): Gezählt wird einschließlich; die Kanone belegt die Zeilen 73 bis 77, gelandet ist
+  der Block, wenn seine unterste Zeile 73 erreicht.
+- **V1** (hoch): Tasks und Verträge nennen keine Werte mehr, die der Style-Guide hält; R7 und R13
+  werden nach T002 als übernommen markiert.
+- **U1** (hoch): Nach `finished` und verborgen taktet die Seite nicht; sonst spielte der Kern im
+  Hintergrund weiter Marschtöne.
+- **A1** (hoch): Der Landetest (frühestens nach 1 Minute) steht jetzt auch im Vertrag.
+- **C1 bis C5**: erst zeigen, dann `start()`; `_hide_hint()` des Titels vergisst die Meldung;
+  Esc-Wache im Titel, solange das Spiel zu sehen ist; nur `Keys` aus `_page_list()` nehmen; Fokus nur
+  zurückholen, wenn die Seite noch sichtbar ist.
+- **I2**: `case_keys` ist leer, nur der Titel setzt die drei Tasten.
+- **M1 bis M4, U2 bis U7**: „beim Start des Spiels“; Rand des Blocks nach den lebenden; der Block
+  steht in der Pause nach einem Treffer; Kürzel führen nicht weiter; Tempo der Kanone; Takt in ganzen
+  Schritten; Leben in der Kopfzeile; Import der WAV als PCM; Versalien im Test der Anrede.
+- **A2, A3**: SC-001 und SC-006 gemessen in T031, die Bildrate in T022; SC-007 ist eine Abnahme von
+  Hand (T009, T024).
+- **R1, R2, I3 bis I7, D1 bis D3, V2, V3**: Reihenfolge in Phase 6, `[P]` nur, wo es stimmt,
+  Nummern und Ordnung in der Spec, Lernnotiz auch zum Tonskript, Begründung für Phase 2 ohne
+  Prüfer.
+
+Eingearbeitet in Spec (Clarifications „Analyse 2026-10-27“), research.md (R1, R3, R6, R7, R10, R13),
+Datenmodell, Verträge, hier, in tasks.md und bei CHK005 in der Checkliste.
+
 ## Prüfer je Phase
 
 Jede Phase mit Sichtbarem oder Texten endet mit der [C]-Aufgabe „Phasenprüfung“ durch
@@ -166,7 +196,7 @@ Jede Phase mit Sichtbarem oder Texten endet mit der [C]-Aufgabe „Phasenprüfun
 | Phase | Ändert | Prüfer | Maßstab für die Prüfer |
 |---|---|---|---|
 | 1 Style-Guide | den Maßstab selbst | keine; Klaus nimmt ab | – |
-| 2 Ton | Töne, nichts Sichtbares | keine; Klaus hört ab | Abschnitt „Ton“ |
+| 2 Ton | Töne, nichts Sichtbares; das Skript gibt nur Dateinamen, Längen und Größen aus, die README ist Doku für Entwickler, kein Text im Spiel (Analyse, V3) | keine; Klaus hört ab | Abschnitt „Ton“ |
 | 3 Spielkern | nichts Sichtbares | keine | – |
 | 4 Spielseite | Spiel und Ergebnisanzeige auf der Anzeige, neue Texte | Stil, Text | „Spiel auf der Anzeige“, Baustein Communicator, `tokens.json`, `Sprache.md`; Bildschirmfotos der Probeszene: Spiel läuft, Ergebnisanzeige gewonnen und verloren |
 | 5 Knöpfe und Titel | Gehäuse mit eingedrückter Taste, Titel mit Spiel | Stil | Gehäusetasten, Bewegung, Titel; Bildschirmfotos aus dem echten Fenster |

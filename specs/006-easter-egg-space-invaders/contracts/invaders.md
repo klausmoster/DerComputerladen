@@ -39,8 +39,9 @@ enum Event { SHOT, ALIEN_HIT, MARCH, CANNON_HIT, WON, LOST }
 ## Ein Schritt in Sekunden: 1/60.
 const STEP: float
 ## Größe des Felds in Bildpixeln: 160 × 80 (Style-Guide).
-const FIELD := Vector2i(160, 80)
-## Weitere Maße und Tempi aus R7 und dem Style-Guide als Konstanten an einer Stelle.
+const FIELD: Vector2i
+## Alle Maße, Lagen, Tempi und Zeiten tragen die Werte aus dem Style-Guide, als Konstanten an einer
+## Stelle; der Vertrag nennt keine Werte (Analyse, V1).
 
 ## Neue Partie mit [param seed] für die Bomben.
 func _init(seed: int) -> void
@@ -57,7 +58,8 @@ var lives: int
 var cannon_x: int
 var march_frame: int
 ## Alles, was zu malen ist, je als { "sprite": StringName, "frame": int, "pos": Vector2i }:
-## Außerirdische, Kanone (nicht in RESPAWN), Schuss, Bomben, Explosionen.
+## Außerirdische, Kanone (nicht in RESPAWN; dort die Explosion an ihrer Stelle), Schuss, Bomben,
+## Explosionen (Analyse, U5).
 func drawables() -> Array[Dictionary]
 ## Wie viele Außerirdische übrig sind.
 func aliens_left() -> int
@@ -98,7 +100,8 @@ signal finished
 ## true: Die Seite taktet sich selbst in _process(). false: Tests takten mit advance().
 var autoplay: bool = true
 
-## Beginnt eine neue Partie, nimmt den Fokus. [param seed] -1 heißt zufällig.
+## Beginnt eine neue Partie und nimmt den Fokus; der Bildschirm zeigt die Seite vorher
+## (Analyse, C1). [param seed] -1 heißt zufällig.
 func start(seed: int = -1) -> void
 ## Taktet um [param seconds] weiter, mit festem Schritt und höchstens 4 Schritten je Aufruf (R6).
 func advance(seconds: float) -> void
@@ -122,7 +125,8 @@ Alt und Cmd allein zählen in der Ergebnisanzeige nicht als Taste (CHK009).
 | Rechts- oder Mittelklick, Mausrad | nichts | – | nichts |
 
 Echo-Ereignisse zählen nie als neuer Druck. Verliert die Seite den Fokus, während sie zu sehen ist,
-holt sie ihn zurück (`focus_exited` → `grab_focus` deferred). Die Seite zeigt keinen Fokusrahmen
+holt sie ihn zurück (`focus_exited` → `grab_focus` deferred, nur wenn sie zum Zeitpunkt des Aufrufs
+noch sichtbar ist und kein `finished` kam; Analyse, C5). Die Seite zeigt keinen Fokusrahmen
 (CHK025); der Zeiger über ihr ist immer der Pfeil (CHK022).
 
 **Malen:** `_draw()` füllt nichts (der Grund ist die Anzeige in `lcd`) und malt jedes Pixel aus
@@ -143,7 +147,9 @@ Kopfzeile (CHK024).
 | `WON` / `LOST` | `sieg.wav` / `niederlage.wav` |
 
 Die vier Marschtöne teilen sich einen Player; ein neuer Takt schneidet den vorigen Ton ab (CHK015).
-`finished` und eine verborgene Seite stoppen alle Töne der Seite (FR-044).
+`finished` und eine verborgene Seite stoppen alle Töne der Seite (FR-044). Nach `finished` und
+solange sie verborgen ist, taktet die Seite nicht mehr; der Kern ruht bis zum nächsten `start()`
+(Analyse, U1).
 
 **Fokus des Fensters** (R11): Bei `NOTIFICATION_APPLICATION_FOCUS_OUT` taktet die Seite nicht mehr
 und setzt `stream_paused` auf allen Playern; bei `…_FOCUS_IN` geht es ohne Nachholen weiter. Auch
@@ -174,8 +180,13 @@ const INVADERS_CONTINUE := "Weiter mit Taste oder Klick."
 - Bomben höchstens 3; eine Bombe auf der Kanone: ein Leben weniger, `RESPAWN`, nach 1 s `PLAYING`.
 - Ende `WON`, `LOST`/`HIT`, `LOST`/`LANDED`; danach ändert `step()` nichts.
 - Zwei Partien mit gleichem Seed und gleichen Eingaben ergeben bytegleiche Folgen von Ereignissen.
-- Ein gezielter Durchlauf (Kanone fährt unter den Block und schießt) gewinnt in weniger als 3
-  Minuten Spielzeit (SC-002, unterer Teil).
+- Ein gezielter Durchlauf (Kanone fährt unter den Block und schießt) gewinnt in höchstens 3
+  Minuten Spielzeit (10 800 Schritte; SC-002, Obergrenze).
+- Ohne einen Schuss landet der Block frühestens nach 1 Minute (3 600 Schritte; SC-002, Untergrenze;
+  Analyse, A1).
+- Landung genau, wenn die unterste Zeile eines lebenden Außerirdischen die oberste Zeile der Kanone
+  erreicht; der Rand des Blocks zählt nach den lebenden Außerirdischen; in `RESPAWN` steht der
+  Block (Analyse, I1, M2, M3).
 
 `test_invaders_sprites.gd`: Jedes Muster hat gleich lange Zeilen und die Größe aus dem Style-Guide;
 nur `#` und `.`; die beiden Bilder je Außerirdischem unterscheiden sich.
@@ -186,5 +197,7 @@ nur `#` und `.`; die beiden Bilder je Außerirdischem unterscheiden sich.
 - Die Ergebnisanzeige nimmt in den ersten 0,5 s nichts außer Esc; danach einen neuen Druck, kein Echo;
   Shift allein zählt nicht.
 - Cmd+Q, Strg+Cmd+F und `toggle_fullscreen` werden nicht verbraucht.
-- Esc zu jeder Zeit `finished`; danach spielt kein Player mehr.
+- Esc zu jeder Zeit `finished`; danach spielt kein Player mehr, und auch nach weiteren Bildern
+  taktet der Kern nicht und kein Marschton erklingt (Analyse, U1).
+- In der Ergebnisanzeige führt ein Kürzel mit Cmd, Strg oder Alt nicht weiter (Analyse, M4).
 - Ohne Fokus des Fensters taktet nichts und die Player sind angehalten.

@@ -33,12 +33,14 @@ python3 -I tools/ton/make_sounds.py
 - Schreibt nach `src/assets/sounds/`, 22 050 Hz, 16 Bit, mono. Ein zweiter Lauf ergibt dieselben
   Bytes.
 - Rechteckwelle für Töne, Rauschen aus festem Seed; jeder Ton beginnt ohne Stille und endet mit
-  5 ms Ausblenden; Spitzenpegel −6 dBFS.
+  5 ms Ausblenden; Spitzenpegel aus dem Style-Guide (Analyse, V1).
+- Je WAV eine `.import` mit Kompression aus (PCM), ohne Trimmen, Normalisieren und Schleife
+  (Analyse, U6).
 - Gibt je Datei Name, Länge in ms und Größe aus.
 
 ## Tonkanäle
 
-`src/default_bus_layout.tres`: `Master` (0 dB) und `Effekte` (−10 dB, Ziel `Master`). Godot lädt die
+`src/default_bus_layout.tres`: `Master` und `Effekte` (Ziel `Master`), Pegel aus dem Style-Guide. Godot lädt die
 Datei von selbst; `project.godot` bleibt unverändert. Kein Effekt auf den Kanälen.
 
 Regel für jeden Code, der Töne spielt: `AudioStreamPlayer` mit `bus = &"Effekte"`. Musik kommt später

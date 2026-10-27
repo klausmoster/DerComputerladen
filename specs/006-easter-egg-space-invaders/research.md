@@ -20,7 +20,10 @@ Vorschläge und Messungen; gültig werden sie erst im Style-Guide (R12), wie in 
 drückbar macht, eindrückt, mit einem Klick hörbar macht und mit dem Signal
 `case_key_pressed(index)` meldet. Welche Tasten ein Gehäuse hat, ist wie `display_rect` eine
 Eigenschaft des Gehäuses (`case_keys`). Was eine Folge von Tasten bedeutet, weiß nur der Titel; dafür
-gibt es eine kleine Klasse `KeySequence` ohne Node (Claude, 2026-10-27).
+gibt es eine kleine Klasse `KeySequence` ohne Node (Claude, 2026-10-27). Die Vorgabe von `case_keys`
+ist leer; der Titel setzt die drei Tasten von G-03 in seiner Szene, mit den Rechtecken aus dem
+Style-Guide. So bleiben spätere Bildschirme mit G-03 ohne drückbare Tasten, wie die Spec annimmt
+(Analyse, I2).
 
 **Grund:** Der Communicator kennt den Titel nicht (Feature 005, FR-007); so bleibt es. Die Knöpfe
 selbst sind aber Teil des Geräts: Jeder spätere Bildschirm mit G-03 hat sie, und ein anderes Gehäuse
@@ -52,7 +55,8 @@ an einer Montage ×8 nach, bevor sie in den Style-Guide kommen; der Agent übern
 **Entscheidung:** Solange die linke Maustaste auf einer Taste unten ist, malt der Communicator über
 die Taste ihren eigenen Ausschnitt aus dem Gehäusebild, **ohne seine oberste Zeile**, um 1 Bildpixel
 tiefer; die frei werdende oberste Zeile füllt er mit der Farbe des Spalts links neben der Taste. Die
-Vorderkante wird dadurch eine Zeile schmaler. Kein neues Bild, keine neue Farbe (Spec, FR-001a;
+Vorderkante wird dadurch eine Zeile schmaler; die unterste Zeile der Taste fällt weg, der Ausschnitt
+reicht nie über das Rechteck hinaus (Analyse, I5). Kein neues Bild, keine neue Farbe (Spec, FR-001a;
 Claude, 2026-10-27). Hat die Taste auf der Montage ×8 auch eine helle linke Spalte, fällt sie
 ebenso weg und wird mit der Spaltfarbe gefüllt (Review, CHK029). Gehäusetasten sind Teil des
 Bildes und bekommen deshalb kein `relief-gedrueckt` (Review, CHK003).
@@ -113,14 +117,17 @@ gleich schnell. Der Deckel von 4 Schritten verhindert nach einem Hänger einen S
 **Verworfen:**
 - Nodes je Außerirdischem (`Sprite2D`, `Area2D`): Physik und Kollision für 32 Rechtecke sind zu viel,
   und auf dem Bildraster reicht ein Vergleich von Rechtecken.
-- `_physics_process()`: läuft auch, wenn die Seite verborgen ist, und hängt am Physiktakt des
-  Projekts.
+- `_physics_process()`: hängt am Physiktakt des Projekts, nicht an der Seite. Auch `_process()` läuft weiter,
+  wenn die Seite verborgen ist; deshalb hält sie nach `finished` und
+  verborgen ihren Takt selbst an (Analyse, U1).
 - Ein eigener Ordner `src/minigames/`: Es gibt ein einziges Spiel, und es gehört zum Titel. Braucht
   ein zweites Easter Egg denselben Rahmen, zieht beides um.
 
 ## R7 Spielfeld und Maße
 
-**Vorschlag (Claude, 2026-10-27), gültig erst mit dem Style-Guide:** Das Feld ist die Anzeige, 160 × 80
+**Vorschlag (Claude, 2026-10-27), gültig erst mit dem Style-Guide:** Nach T002 steht hier „übernommen
+in den Style-Guide am …“; danach gilt nur noch der Style-Guide, auch nach dem Feinschliff in T024
+(Analyse, V1). Gezählt wird einschließlich: x 75 bis 83 sind 9 Pixel (Analyse, I1). Das Feld ist die Anzeige, 160 × 80
 Bildpixel, gezeigt ×2 als 320 × 160 Oberflächenpixel. Alles liegt auf ganzen Bildpixeln.
 
 | Teil | Maß in Bildpixeln |
@@ -129,16 +136,19 @@ Bildpixel, gezeigt ×2 als 320 × 160 Oberflächenpixel. Alles liegt auf ganzen 
 | Kopfzeile | oben 8 hoch: Punkte ab x 2 in `drucker`, Leben rechts als Muster `life` (7 × 4, Abstand 2), das letzte endet bei x 157 |
 | Außerirdische | 8 × 6, Block 8 Spalten × 4 Reihen, Abstand 4 waagrecht, 3 senkrecht; Block 92 × 33 |
 | Start des Blocks | oben bei y 12, waagrecht mittig |
-| Kanone | 9 × 5, Unterkante bei y 77; Mitte heißt x 75 bis 83 |
+| Kanone | 9 × 5, Zeilen 73 bis 77, Mitte heißt x 75 bis 83; 1 Bildpixel je Schritt (Analyse, U2) |
 | Schuss | 1 × 4, 2 Bildpixel je Schritt |
 | Bombe | 1 × 3, 1 Bildpixel je zwei Schritte; Schuss und Bombe fliegen aneinander vorbei |
 | Explosion | Muster `explosion` 8 × 6 an der Stelle des Getroffenen, 0,25 s; hält nichts auf |
-| Gelandet | sobald die Unterkante eines lebenden Außerirdischen y 72 erreicht, die Oberkante der Kanone |
-| Takt des Blocks | ein Schritt von 2 Bildpixeln; am Rand 3 tiefer und Richtungswechsel |
-| Abstand der Takte | von 0,5 s bei 32 übrigen bis 0,05 s bei einem, linear über die Zahl der übrigen |
+| Gelandet | sobald die unterste Zeile eines lebenden Außerirdischen y 73 erreicht, die oberste Zeile der Kanone (Analyse, I1) |
+| Takt des Blocks | ein Schritt von 2 Bildpixeln; am Rand 3 tiefer und Richtungswechsel; Rand heißt die Außenkante der lebenden Außerirdischen (Analyse, M2) |
+| Abstand der Takte | in Schritten `3 + round(27 · (n − 1) / 31)` bei n übrigen: 30 Schritte (0,5 s) bei 32, 3 Schritte (0,05 s) bei einem (Analyse, U3) |
 | Bomben | höchstens 3 zugleich; je Takt mit Chance 1/4 von einer zufälligen untersten in einer Spalte |
 | Punkte | oberste Reihe 30, die beiden mittleren 20, unterste 10; höchstens 640 |
-| Leben | 3; nach einem Treffer 1 s Pause, Bomben weg, Kanone wieder in der Mitte |
+| Leben | 3; die Kopfzeile zeigt alle verbleibenden, die Kanone im Feld eingeschlossen; nach einem Treffer 1 s Pause: Explosion an der Stelle der Kanone, Bomben weg, der Block steht, dann die Kanone wieder in der Mitte (Analyse, M3, U5) |
+
+Die senkrechte Lage von Punkten und Leben in der Kopfzeile legt T002 im Style-Guide fest (Analyse,
+U5).
 
 Das Feld liegt auf dem Bildraster wie eine Szene; die Abstände `raster-2` bis `raster-16` gelten
 dort nicht (Review, CHK028). Alle Lagen sind ganze Bildpixel (Review, CHK023).
@@ -191,10 +201,14 @@ Zeile 3 in `menue` (Ark Pixel 12) wie ein Eintrag; Zeilenhöhe 20, als Block mit
 vom Feld bleibt nur die Kopfzeile. Über der Anzeige bleibt der Zeiger der Pfeil (Review, CHK022).
 Sie nimmt eine Taste oder einen Linksklick erst **0,5 s** nach dem Ende und nur als neuen Druck an
 (kein Echo, kein noch gehaltener Schuss; FR-020). Shift, Strg, Alt und Cmd allein zählen nicht
-(Review, CHK009). Dann meldet sie
+(Review, CHK009), ebenso keine Taste mit Cmd, Strg oder Alt: Ein Kürzel wie Vollbild wirkt und führt
+nicht weiter (Analyse, M4). Dann meldet sie
 `finished`; Esc meldet zu jeder Zeit `finished`. Der Titel merkt sich beim Start Seite, Fokus und
 Zeile des Hinweises und stellt alle drei beim Ende wieder her; eine Meldung von vorher kommt als
-Hinweis der Zeile zurück (FR-022; Claude, 2026-10-27; Review, CHK008).
+Hinweis der Zeile zurück (FR-022; Claude, 2026-10-27; Review, CHK008). Zeile und Hinweis führt der
+Titel schon in `_selected_row` und `_selected_hint`; neu gemerkt werden nur Seite und Fokus
+(Analyse, D1). Ausgeblendet wird mit `_hide_hint()` des Titels, das auch die Meldung vergisst
+(Analyse, C2).
 
 **Wortlaut** (nach der Checkliste mit Text-Prüfer, Review CHK030 bis CHK034):
 
@@ -268,7 +282,10 @@ die Takte kürzer werden als der Ton (Review, CHK015).
 **Grund:** Spec, Ton 2026-10-27. 22 050 Hz reicht für Rechteck und Rauschen und hält die Dateien
 klein (zusammen unter 100 KB). Ohne Stille am Anfang trifft SC-007 (höchstens 50 ms); Godots
 Ausgabe-Latenz liegt bei 15 ms (Projekteinstellung `audio/driver/output_latency`). Das Rauschen kommt
-aus einem festen Seed, damit der Lauf bytegleich ist.
+aus einem festen Seed, damit der Lauf bytegleich ist. Die `.import` jeder WAV setzt Kompression aus
+(PCM), kein Trimmen, kein Normalisieren, keine Schleife, damit Godot die Proben unverändert spielt;
+Tests lesen die Proben aus der Rohdatei (Analyse, U6). Die Werte der Tabelle gelten nach T002 nur
+noch im Style-Guide (Analyse, V1).
 
 **Verworfen:** OGG statt WAV: lohnt bei so kurzen Tönen nicht und bringt beim Start eine kleine
 Verzögerung durch das Dekodieren.

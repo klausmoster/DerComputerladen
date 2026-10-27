@@ -50,10 +50,16 @@ func progress() -> int
 - `_ready()` verbindet `Communicator.case_key_pressed` und `Invaders.finished`.
 - **Druck:** Nimmt der Titel keine Eingabe an (`_accepts_input()` false) oder steht das Spiel auf der
   Anzeige, zählt der Druck nicht. Sonst `_sequence.press(index)`.
-- **Start**, wenn `press()` true gibt: merken, was zu sehen ist (Seite, Fokus-Owner, Zeile und Text des
-  Hinweises), `hide_hint()`, `Invaders.start()`,
-  `show_page(Invaders)`. Der Communicator bewegt sich nicht (FR-010).
-- **Esc:** Steht das Spiel, nimmt die Seite Esc selbst; `_unhandled_input()` des Titels sieht es nicht.
+- **Start**, wenn `press()` true gibt: Seite und Fokus-Owner merken (Zeile und Hinweis führt der Titel
+  schon in `_selected_row` und `_selected_hint`; Analyse, D1), `_hide_hint()` des Titels, das auch
+  die Meldung vergisst (Analyse, C2), dann `show_page(Invaders)` und erst danach `Invaders.start()`,
+  damit die sichtbare Seite den Fokus nimmt (Analyse, C1). Der Communicator bewegt sich nicht
+  (FR-010).
+- **Tasten im Titel:** Die Instanz des Communicators in `title_screen.tscn` setzt `case_keys` auf die
+  drei Rechtecke aus dem Style-Guide (Analyse, I2).
+- **Esc:** Steht das Spiel, nimmt die Seite Esc selbst. Erreicht Esc trotzdem `_unhandled_input()`
+  des Titels, etwa in dem Bild, in dem die Seite ihren Fokus zurückholt, markiert der Titel es als
+  behandelt und tut nichts, solange `Invaders` sichtbar ist (Analyse, C3).
 - **Ende** bei `finished`: `show_page()` der gemerkten Seite, Fokus zurück auf das gemerkte Control
   (deferred, wenn es zu der Zeit noch nicht sichtbar ist), Hinweis zur gemerkten Zeile wieder zeigen
   (eine Meldung, die beim Start stand, kommt als Hinweis der Zeile zurück, nicht als Meldung;
@@ -79,6 +85,11 @@ Seed).
 - Esc im Spiel und `finished` nach dem Ende: dieselbe Seite, derselbe Fokus, derselbe Hinweis wie
   vorher; danach bedienen sich die Seiten wie zuvor.
 - Fährt das Gerät hinaus (Spielstart), zählt kein Druck.
+- Meldung „Löschen ging nicht“ steht, dann die Folge, dann Esc: Die Meldung kommt nicht zurück, der
+  Hinweis der Zeile steht da (Analyse, C2).
+- Esc direkt an den Titel, während `Invaders` sichtbar ist: keine Seite wechselt (Analyse, C3).
+- Gemessen: Vom dritten Druck bis die Seite den Fokus hat, höchstens 0,5 s (SC-001); von `finished`
+  bis der Titel wieder Eingaben annimmt, höchstens 1 s (SC-006; Analyse, A2).
 - Kein Spielstand im Testordner wird angelegt oder geändert, auch nicht beim Schließen des Fensters
   während des Spiels (Review, CHK019).
 - Alle bisherigen Tests des Titels laufen unverändert (SC-004).
