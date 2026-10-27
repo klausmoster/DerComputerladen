@@ -229,9 +229,9 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
   jedes Gehäuse gleich groß, damit jede Seite in jedes spätere Gehäuse passt.
 - **FR-001a**: Der Grund der Anzeige muss eine eigene, neue Farbrolle `lcd` haben, ein
   graugrünes LCD-Grau, als 16. Farbe der Oberfläche im Style-Guide. Text steht darauf in `tusche`;
-  Wert, Textpaare und Kontrast legt der Style-Guide fest (FR-008). Ob die eingefrorene
-  Hauptpalette die Farbe aufnimmt und welche Bilder dann neu gerastert werden, entscheidet Klaus
-  mit dem Plan.
+  Wert, Textpaare und Kontrast legt der Style-Guide fest (FR-008). `lcd` gibt es nur in der
+  Oberfläche, nie in einem Bild; die eingefrorene Hauptpalette bleibt, wie sie ist (Klaus,
+  2026-10-27, im Plan, research.md R1).
 - **FR-002**: Der Communicator muss erscheinen, indem er von unten ins Bild gleitet, und
   verschwinden, indem er nach unten hinausgleitet; überall gleich, in ganzen Oberflächenpixeln,
   ohne zu federn. Dauer und Verlauf regelt der Style-Guide (heute: Übergänge 150–250 ms, nichts
@@ -352,7 +352,7 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 - „Beenden“ schließt sofort, ohne dass der Communicator hinausfährt, denn danach ist nichts mehr
   zu sehen (Claudes Festlegung zu FR-013a).
 - Die Texte des Titels bleiben, wie sie sind; neue Texte entstehen in diesem Feature nicht.
-- Gehäuse und T-02 werden auf die Hauptpalette gerastert, in der Fassung, die der Plan nach
-  FR-001a festlegt. T-01 bleibt im Repo als Original, das Cover C-01 bleibt unberührt.
+- Gehäuse und T-02 werden auf die unveränderte Hauptpalette gerastert (FR-001a). T-01 bleibt
+  im Repo als Original, das Cover C-01 bleibt unberührt.
 - Jede Phase mit Sichtbarem oder Texten endet mit der Phasenprüfung durch Stil- und Text-Prüfer
   vor Klaus' Abnahme (`docs/ki_workflow/ki_pruefung.md`).

@@ -12,6 +12,23 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 005, Plan (2026-10-27)
+
+Eigene Festlegungen von Claude in `specs/005-communicator/research.md`. Klaus bestätigt sie oder
+ändert sie, spätestens mit der Checkliste:
+- **Gewählt und nicht verfügbar** (R3): Balken `tusche`, Schrift und Pfeil `gehaeuse-dunkel`
+  (3,08 : 1), wie auf dem Papier gedämpft auch gewählt.
+- **Papier bleibt in Menü und Liste** (R5): Schalter `look` mit `PAPER` als Vorgabe; der Titel nutzt
+  nur `LCD`. Die Seiten nehmen auf der Anzeige die volle Breite ein.
+- **Zeitschritt auf 1/30 s gedeckelt** (R6), statt 1/60 s wie im Spike, damit die Fahrt auch bei 30
+  Bildern je Sekunde 200 ms dauert.
+- **Der Hinweis gehört zum Communicator** (R7) und fährt als Kind mit, statt wie im Spike per
+  Differenz nachgeführt zu werden.
+- **Platzhalter-Gehäuse** (R11): Kern und Seiten entstehen vor G-02 mit einem Rechteck in
+  `gehaeuse`; nur der Titel wartet auf die Bilder.
+- **Vorschlag `lcd` = #b8c4a8** (R2) und **Lage im Titel** (R9): entscheidet Klaus mit dem
+  Style-Guide in Phase 1.
+
 ### Feature 005, Spec (2026-10-27)
 
 Eigene Festlegungen von Claude in `specs/005-communicator/spec.md`, die nicht aus Klaus' Antworten
