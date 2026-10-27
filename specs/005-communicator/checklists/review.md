@@ -167,5 +167,7 @@ steht dabei. Eingearbeitet wird erst nach Klaus' Freigabe; sie kam am 2026-10-27
   (Clarifications „Review 2026-10-27“, FR-001, FR-001a, FR-002, FR-003, FR-008, FR-011, FR-013a,
   FR-015, SC-002, SC-005, SC-006, SC-007, Edge Cases, Annahmen), research.md (R3, R10, R12, R13),
   Datenmodell, Verträge, Quickstart und Plan („Änderungen nach der Checkliste“).
+- Nach der Analyse (2026-10-27) haben sich die Phasen verschoben: Die Grafik, in CHK005 und CHK024
+  „Phase 2“, ist jetzt Phase 4 (plan.md, „Änderungen nach der Analyse“, A1).
 - `/speckit-implement` wird nicht verwendet (Verfassung, Grundsatz II); die Markierungen setzt
   Klaus.

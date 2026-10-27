@@ -47,18 +47,27 @@ der Seiten bleiben, damit Signalverbindungen und Tests wiedererkennbar sind.
 ## Verhalten
 
 - **Erscheinen:** In `_ready()` stellt der Titelbildschirm den Communicator nach draußen
-  (`place_hidden()`) und lässt ihn hereinfahren, sobald das Hauptmenü seine Einträge hat. Das
-  geschieht bei jedem Erscheinen, auch nach „Zum Hauptmenü“ (FR-010).
+  (`place_hidden()`, ohne Sperre). Im zeitversetzten `_build_sheets()` setzt er erst Einträge und
+  Auswahl des Hauptmenüs, dann ruft er `slide_in()` (Analyse, C5). Das geschieht bei jedem
+  Erscheinen, auch nach „Zum Hauptmenü“ (FR-010).
+- **Wache vor den Einträgen:** Eine eigene Variable `_ready_for_input`, erst nach den Einträgen
+  `true`, fängt bis dahin jede Eingabe ab, auch Esc in `_unhandled_input()`. Die Sichtbarkeit des
+  Hauptmenüs taugt dafür nicht mehr: `add_page()` verbirgt alle Seiten schon vorher, und
+  `_main_menu.visible` wäre in dieser Lücke `false` (Analyse, C4).
 - **Seiten:** `_show_only(sheet)` wird zu `Communicator.show_page(sheet)`; der Communicator fährt
   dabei nicht (FR-005).
 - **Hinweis und Meldung:** Wo der Titelbildschirm bisher `_menu_hint.show_for()`, `show_text()`,
   `show_warning()` und `hide_hint()` rief, ruft er `Communicator.show_hint()`, `show_warning()` und
-  `hide_hint()` mit derselben Zeile. `_selected_row` bleibt die gewählte Zeile, global.
+  `hide_hint()` mit derselben Zeile. `_selected_row` hält die gewählte Zeile relativ zum
+  Communicator und wird beim Anzeigen in die jetzige Lage umgerechnet; so steht eine Meldung nach
+  einer Wahl während der Fahrt neben der Zeile, wo sie jetzt ist (Analyse, C3).
 - **Spielstart:** `_start_new()`, `_continue()` und das Fortsetzen über die Liste rufen erst die
   Session. Bei `OK` ruft der Titelbildschirm `Communicator.slide_out()` und wechselt die Szene im
   Signal `slide_finished(false)` über `_change_scene(GAME_SCENE)`; mit `animate = false` sofort.
-  Ab `slide_out()` tut `_unhandled_input()` nichts mehr (R8). Scheitert das Anlegen, bleibt alles
-  wie in Feature 004.
+  Vor `slide_out()` setzt er `_leaving = true`; ab dann fangen alle Handler der Seiten
+  (`_on_*_entry_activated`, `_on_save_list_*`) und `_unhandled_input()` jede Eingabe ab (R8;
+  Analyse, B2), zusätzlich zur Sperre im Communicator. Scheitert das Anlegen, bleibt alles wie in
+  Feature 004.
 - **Beenden:** `get_tree().quit()` sofort, ohne Fahrt.
 - **Esc während der Fahrt herein:** wirkt wie im Stand (FR-003); im Hauptmenü also nichts.
 - **Vor der Fahrt:** Bis das Hauptmenü seine Einträge hat, tut eine Eingabe nichts.
@@ -77,9 +86,12 @@ Bestehende Tests: Pfade auf `Communicator/<Seite>`, Hinweis über den Communicat
   in Endlage und für jede Zeile jeder Seite, auch als Meldung (SC-006).
 - „Weiterspielen“ mit Enter während der Fahrt herein setzt fort (SC-001); danach fährt der
   Communicator hinaus, und erst `slide_finished` ruft `scene_callback`.
-- Ein zweites Enter oder Esc während der Fahrt hinaus legt kein zweites Spiel an und ruft
-  `scene_callback` nur einmal.
+- Ein zweites Enter, Esc oder „Maus über eine Zeile bewegen, dann Enter“ während der Fahrt hinaus
+  legt kein zweites Spiel an und ruft `scene_callback` nur einmal (Analyse, B2).
 - Scheitert das Anlegen, fährt nichts, und die Meldung steht neben dem Gehäuse auf Höhe der Zeile.
 - Scheitert das Fortsetzen, fährt nichts, und der Titel liest neu.
-- Eine Eingabe, bevor das Hauptmenü seine Einträge hat, tut nichts.
+- Eine Eingabe, bevor das Hauptmenü seine Einträge hat, tut nichts, auch Esc direkt nach dem
+  Einhängen in den Baum (Analyse, C4).
+- Eine Zeile während der Fahrt herein wählen, dann scheitert das Anlegen: Die Meldung steht neben
+  der Zeile in ihrer jetzigen Lage (Analyse, C3).
 - Auf dem Titel kommt kein `look = PAPER` mehr vor.

@@ -83,6 +83,15 @@ SC-002, SC-005, SC-006 und SC-007; dazu Edge Cases und Annahmen. Die wichtigsten
 - Q: Gilt `lcd` für jedes Gehäuse? → A: Nein, die Farbe der Anzeige gehört zum Gehäuse; der
   Organizer hat `lcd` (CHK014).
 
+### Analyse 2026-10-27
+
+Aus `/speckit-analyze` mit 26 Befunden; Klaus hat am 2026-10-27 alle Empfehlungen freigegeben,
+A1 mit einer neuen Reihenfolge der Phasen. An der Spec geändert: FR-002 verweist nur noch auf den
+Style-Guide (A2), eine Annahme nennt keine Datei mehr (A2), SC-002 misst das Hinausfahren ab dem
+Beginn der Fahrt (C1), der Edge Case „Langes erstes Bild“ hat eine Zahl (C2), FR-011 nennt alle
+geänderten Anforderungen von Feature 001 (C18). Alles Übrige betraf Plan, research.md,
+Datenmodell, Verträge, Quickstart und Tasks (plan.md, „Änderungen nach der Analyse“).
+
 ## Überblick
 
 Bisher bedient der Spieler den Titel über Blätter aus Endlospapier: Hauptmenü, Gradwahl, Liste
@@ -209,8 +218,8 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 ### Edge Cases
 
 - **Langes erstes Bild**: Das erste Bild nach dem Start dauert wegen Laden länger. Der
-  Communicator springt dadurch nicht gleich halb herein, sondern gleitet sichtbar (Falle aus dem
-  Spike).
+  Communicator springt dadurch nicht gleich halb herein, sondern legt im ersten Bild höchstens ein
+  Viertel seines Wegs zurück und gleitet sichtbar weiter (Falle aus dem Spike; Analyse, C2).
 - **Eingaben vor der Fahrt**: Bis das Hauptmenü seine Einträge hat, tut eine Eingabe nichts; mit
   den Einträgen beginnt die Fahrt (CHK018).
 - **Eingaben während der Fahrt herein**: Tastatur und Linksklick wirken sofort. Die Maus wählt nur,
@@ -258,8 +267,8 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 - **FR-002**: Der Communicator muss erscheinen, indem er von unten ins Bild gleitet, und
   verschwinden, indem er nach unten hinausgleitet; überall gleich, in ganzen Oberflächenpixeln,
   ohne zu federn. Seine Endlage liegt auf ganzen Bildpixeln, damit das Gehäuse im Stand auf dem
-  Raster des Hintergrunds steht (CHK015). Dauer und Verlauf regelt der Style-Guide (heute:
-  Übergänge 150–250 ms, nichts federt).
+  Raster des Hintergrunds steht (CHK015). Dauer und Verlauf regelt der Style-Guide, Abschnitt
+  Bewegung (A2).
 - **FR-003**: Der Communicator muss bedienbar sein, sobald er hereinzugleiten beginnt. Eine Eingabe
   mit Maus oder Tastatur während der Fahrt herein wirkt wie im Stand (CHK008).
 - **FR-004**: Auf der Anzeige muss immer genau eine Seite stehen, ein Menü oder eine Liste mit
@@ -299,7 +308,9 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
   stehen: Hauptmenü, Gradwahl (SCHWIERIGKEIT), Liste der Spielstände (SPIELSTÄNDE, im Löschmodus
   WELCHES LÖSCHEN?) und Rückfrage (LÖSCHEN?). Endlospapier kommt im Titel nicht mehr vor. Das
   ändert FR-023 von Feature 004, das für diese Blätter Endlospapier verlangt, und FR-005 von
-  Feature 001, nach dem das Menü als Papier rechts steht (CHK025).
+  Feature 001, nach dem das Menü als Papier rechts auf T-01 steht (CHK025), dazu FR-011 von
+  Feature 001 (Auswahl in `signalgelb` mit Pfeil) und SC-006 von Feature 001 (Vergleich mit dem
+  Titelscreen-Entwurf) (Analyse, C18).
 - **FR-012**: Im Titel muss der Communicator fest das Gehäuse des Organizers von 1991 haben,
   unabhängig von Spielständen und Datum. Der Titel steht außerhalb der Spielzeit.
 - **FR-013**: Wege, Einträge, Texte, Hinweise, Vorwahl und Esc im Titel müssen bleiben, wie
@@ -346,9 +357,10 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
   hereingleitet; ein neues Spiel mit Vorgabe Mittel höchstens 3.
 - **SC-002**: Der Communicator steht spätestens 250 ms nach dem ersten Bild, in dem er unterwegs
   ist, in seiner Endlage, gezählt über die Zeitschritte der Bilder; ein langes erstes Bild zählt
-  als ein gedeckelter Schritt (CHK010); der Titel ist wie in Feature 001 nach höchstens 3 s bedienbar. Beim Spielstart ist er
-  spätestens 250 ms nach der auslösenden Eingabe hinausgefahren, und der Spielbildschirm folgt
-  ohne weitere Wartezeit.
+  als ein gedeckelter Schritt (CHK010); der Titel ist wie in Feature 001 nach höchstens 3 s
+  bedienbar (geprüft von Hand). Beim Spielstart ist er spätestens 250 ms nach dem Beginn der Fahrt
+  hinaus draußen, und der Spielbildschirm folgt ohne weitere Wartezeit; Anlegen und Fortsetzen
+  davor dauern so lange wie in Feature 004 (Analyse, C1).
 - **SC-003**: In jedem Bild der Fahrt steht der Communicator auf ganzen Oberflächenpixeln, und er
   kommt nie über die Endlage hinaus; ein automatischer Test belegt das Bild für Bild.
 - **SC-004**: Jede Seite des Titels passt auf die Anzeige, geprüft mit der längsten Kopfzeile,
@@ -387,7 +399,7 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 - Die Texte des Titels bleiben, wie sie sind; neue Texte entstehen in diesem Feature nicht.
 - Gehäuse und T-02 werden auf die unveränderte Hauptpalette gerastert (FR-001a). T-01 bleibt
   im Repo als Original, das Cover C-01 bleibt unberührt.
-- Ein fehlendes oder kaputtes Bild bekommt keine eigene Regel zur Laufzeit: `test_bilder.gd` prüft
-  jedes Bild im Ordner, und die Startprobe meldet einen Ladefehler (CHK021).
+- Ein fehlendes oder kaputtes Bild bekommt keine eigene Regel zur Laufzeit: Ein automatischer Test
+  prüft jedes Bild des Spiels, und die Startprobe meldet einen Ladefehler (CHK021; Analyse, A2).
 - Jede Phase mit Sichtbarem oder Texten endet mit der Phasenprüfung durch Stil- und Text-Prüfer
   vor Klaus' Abnahme (`docs/ki_workflow/ki_pruefung.md`).

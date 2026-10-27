@@ -20,8 +20,15 @@ Eigene Festlegungen von Claude in `specs/005-communicator/research.md`. Klaus be
   (3,08 : 1), wie auf dem Papier gedämpft auch gewählt.
 - **Papier bleibt in Menü und Liste** (R5): Schalter `look` mit `PAPER` als Vorgabe; der Titel nutzt
   nur `LCD`. Die Seiten nehmen auf der Anzeige die volle Breite ein.
-- **Zeitschritt auf 1/30 s gedeckelt** (R6), statt 1/60 s wie im Spike, damit die Fahrt auch bei 30
-  Bildern je Sekunde 200 ms dauert.
+- **Zeitschritt gedeckelt** (R6): im ersten Bild jeder Fahrt auf 1/60 s, danach auf 1/30 s. So
+  springt das Gerät im langen ersten Bild höchstens ein Viertel des Wegs (23 %), und die Fahrt
+  dauert auch bei 30 Bildern je Sekunde gut 233 ms. Bis zur Analyse (C2) stand hier 1/30 s für
+  jeden Schritt, was im ersten Bild 42 % ergab.
+- **Erst anlegen, dann hinausfahren** (R8): Scheitert das Anlegen, fährt nichts, und die Meldung
+  kommt sofort. Dazu sperren Communicator und ein Flag `_leaving` im Titel jede Eingabe während der
+  Fahrt hinaus (Analyse, B2, C20).
+- **Helle Schrift der gewählten Zeile aus dem Code** (R15), weil ein Button unter der Maus die
+  Hover-Farbe nimmt und das Theme allein eine Zeile unsichtbar machte (Analyse, B1).
 - **Der Hinweis gehört zum Communicator** (R7) und fährt als Kind mit, statt wie im Spike per
   Differenz nachgeführt zu werden.
 - **Platzhalter-Gehäuse** (R11): Kern und Seiten entstehen vor G-02 mit einem Rechteck in

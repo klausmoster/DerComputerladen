@@ -28,6 +28,9 @@ src/
     ├── test_communicator.gd             # neu
     ├── test_main_menu.gd                # geändert: look = LCD
     ├── test_save_list.gd                # geändert: look = LCD
+    ├── test_lcd_theme.gd                # neu: LcdRow, LcdHeader gleich UiPalette
+    ├── test_menu_hint.gd                # geändert, falls MenuHint eine Funktion bekommt
+    ├── fixtures/communicator_probe.tscn # neu: Probeszene
     ├── test_ui_palette.gd               # geändert: 16 Farben
     └── test_bilder.gd                   # geändert: lcd nicht in der Hauptpalette (R1)
 ```
@@ -65,8 +68,14 @@ signal slide_finished(arrived_in: bool)
 const SLIDE_SECONDS: float
 ## Größter Zeitschritt je Bild (R6): 1.0 / 30.0.
 const MAX_STEP: float
-## Lage und Größe der Anzeige im Gehäuse, aus dem Style-Guide.
-const DISPLAY_RECT: Rect2i
+## Größter Zeitschritt im ersten Bild jeder Fahrt (R6; Analyse, C2): 1.0 / 60.0.
+const MAX_FIRST_STEP: float
+
+## Lage und Größe der Anzeige im Gehäuse; Vorgabe die Werte des Organizers aus dem Style-Guide.
+## Sie gehören zum Gehäuse, ein späteres Gehäuse setzt eigene (FR-001a; Analyse, C11).
+@export var display_rect: Rect2i
+## Farbe der Anzeige; Vorgabe UiPalette.LCD.
+@export var display_color: Color
 
 ## false: Fahrten springen sofort ans Ziel (Tests, später „Bewegung reduzieren“).
 var animate: bool = true
@@ -74,7 +83,7 @@ var animate: bool = true
 ## Lage in y, beim Setzen auf ganze Oberflächenpixel gerundet; der Tween schreibt hierhin.
 var slide_y: float
 
-## Stellt [param page] auf die Anzeige: Kind des Communicators, auf DISPLAY_RECT gestellt, unsichtbar.
+## Stellt [param page] auf die Anzeige: Kind des Communicators, auf display_rect gestellt, unsichtbar.
 func add_page(page: Control) -> void
 ## Zeigt [param page] und verbirgt jede andere Seite; erst verbergen, dann zeigen (Fokus).
 ## Der Communicator bewegt sich dabei nicht (FR-005).
@@ -105,16 +114,26 @@ func hide_hint() -> void
   verbirgt sie. `add_page()` hängt eine Seite, die noch kein Kind ist, als letztes Kind an.
 - **Endlage** ist die Lage, die der Bildschirm dem Communicator in seiner Szene gibt; „draußen“ heißt
   Oberkante bei y 360.
-- **Fahrt:** Tween auf `slide_y`, angehalten, in `_process()` mit `custom_step(minf(delta,
-  MAX_STEP))` getaktet; herein `EASE_OUT`, hinaus `EASE_IN`, `TRANS_CUBIC` (R6). Eine neue Fahrt
-  beendet die laufende und startet aus der aktuellen Lage.
+- **Fahrt:** Tween auf `slide_y`, angehalten, in `_process()` mit `custom_step()` getaktet: im
+  ersten Bild einer Fahrt `minf(delta, MAX_FIRST_STEP)`, danach `minf(delta, MAX_STEP)`; herein
+  `EASE_OUT`, hinaus `EASE_IN`, `TRANS_CUBIC` (R6). Eine neue Fahrt beendet die laufende und startet
+  aus der aktuellen Lage.
+- **Seiten behalten ihre Größe:** Eine Seite auf der Anzeige ist so groß wie `display_rect`; was sie
+  selbst an Größe setzt, etwa `MainMenu._update_size()` mit `paper_width`, gilt nur für `PAPER`
+  (Analyse, C6).
 - **Maus während der Fahrt herein:** Gewählt wird nur auf Bewegung oder Klick der Maus; eine Zeile,
   die unter dem ruhenden Zeiger durchfährt, wird nicht gewählt. Der Agent prüft, ob Godot dabei
   `mouse_entered` auslöst, und sperrt es sonst bis zur nächsten Bewegung.
 - **Endlage** liegt auf ganzen Bildpixeln, also gerader Lage in x und y; unterwegs ganze
   Oberflächenpixel.
 - **Eingabe während der Fahrt hinaus:** Der Fokus geht von der Seite weg, und keine Seite nimmt
-  Maus oder Tastatur an, bis `slide_in()` kommt. Danach wählt der Bildschirm die Zeile neu.
+  Maus oder Tastatur an, bis `slide_in()` kommt, auch nicht über `mouse_entered` (`MainMenu`) oder
+  Mausbewegung (`SaveList`). Der Agent prüft in der Doku von Godot 4.7, ob `Control` dafür eine
+  rekursive Sperre für Maus und Fokus hat; sonst legt der Communicator eine deckende Sperrfläche
+  über die Seiten. Er nennt die Lösung im Bericht (Analyse, B2). Danach wählt der Bildschirm die
+  Zeile neu.
+- **Nach `place_hidden()`** ist nichts gesperrt; der Bildschirm kann Einträge setzen und wählen,
+  bevor die Fahrt beginnt (Analyse, C5).
 - **Hinweis:** `show_hint()` rechnet aus `row_rect` nur die Oberkante; die rechte Kante des Hinweises
   liegt 4 vor der linken Kante des Gehäuses (R7). `MenuHint` braucht dafür eine Funktion, die an
   eine Lage statt neben eine Zeile stellt, oder der Communicator reicht ein umgerechnetes Rechteck;
@@ -134,8 +153,12 @@ enum Look { PAPER, LCD }
   `MenuPaper.draw_lcd_selection()` (Balken `tusche`, Pfeil `lcd`, gedämpft `gehaeuse-dunkel`, R3);
   eine Rollmarke in der gewählten Zeile in `lcd`;
   Zeilen-Buttons mit Theme-Variante `LcdRow`, Kopfzeile mit `LcdHeader`; die Breite ist die Breite
-  der Anzeige (`paper_width` bzw. `PAPER_WIDTH` gilt nur für `PAPER`). Die Spalten der Liste in
-  ihren Labels nehmen die Farben der Zeile mit, auch invertiert.
+  der Anzeige (`paper_width` bzw. `PAPER_WIDTH` gilt nur für `PAPER`). Auf `LCD` kommen die Offsets
+  von `Rows` (`ROW_INSET`), `TEXT_INSET`, die Spalten und `ARROW_X` aus dem Style-Guide, nicht aus
+  den Konstanten für Papier (Analyse, C6). Die Spalten der Liste in ihren Labels nehmen die Farben
+  der Zeile mit, auch invertiert (R15).
+- `look` gilt beim Bau der Zeilen; wird es danach gesetzt, baut die Seite ihre Zeilen neu (Analyse,
+  C23).
 - Bedienung, Signale, Rollen, Löschmodus und Rollmarken sind in beiden Fassungen gleich.
 
 ## UiPalette
@@ -146,23 +169,33 @@ enum Look { PAPER, LCD }
 
 ## Theme
 
-- `LcdRow` (Basis `Button`): Ark Pixel 12, `font_color` `tusche`, `font_focus_color`,
-  `font_hover_color` und die gedrückten Farben `lcd`, `font_disabled_color` `gehaeuse-dunkel`,
-  Styles leer wie `MenuRow`, Innenabstand links nach dem Style-Guide.
+- `LcdRow` (Basis `Button`): Ark Pixel 12, alle Schriftfarben `tusche` (normal, Fokus, Hover,
+  gedrückt), `font_disabled_color` `gehaeuse-dunkel`, Styles leer wie `MenuRow`, Innenabstand links
+  nach dem Style-Guide. Die helle Schrift `lcd` der gewählten Zeile setzt die Seite per Override
+  beim Wählen und nimmt ihn beim Abwählen weg, in der Liste auch für die Labels der Spalten (R15):
+  Unter der Maus nimmt ein Button `font_hover_color`, ob er den Fokus hat oder nicht, und das Theme
+  allein machte eine der Zeilen unsichtbar (Analyse, B1).
 - `LcdHeader` (Basis `Label`): wie `MenuHeader`, Farbe `tusche`.
-- Farben im Theme als Werte, gleich den Konstanten in `UiPalette`; ein Test vergleicht sie.
+- Farben im Theme als Werte, gleich den Konstanten in `UiPalette`; `test_lcd_theme.gd` vergleicht
+  sie (Analyse, C15).
 
 ## Tests (`test_communicator.gd`)
 
+Die Fahrt wird ohne `await` getaktet: Der Test setzt `set_process(false)` und ruft `_process()` selbst
+mit festen Zeitschritten, damit die Engine den Tween nicht zusätzlich mit echter Zeit treibt
+(Analyse, C22).
+
 - Fahrt Bild für Bild mit `_process()` und festen Zeitschritten: jede Lage ganzzahlig, keine über der
   Endlage, Endlage nach höchstens 250 ms bei 1/60 und 1/30 s je Bild und mit einem ersten Bild von
-  0,5 s (SC-002, SC-003).
+  0,5 s, gezählt ab dem ersten fahrenden Bild (SC-002, SC-003); im ersten Bild höchstens ein Viertel
+  des Wegs (C2).
 - Umkehr mitten in der Fahrt herein und hinaus, ohne Sprung.
 - `slide_finished` einmal je Fahrt mit dem richtigen Wert; mit `animate = false` sofort.
 - Probeseite: ein `MainMenu` mit drei `MenuEntry`, `look = LCD`, außerhalb des Titels in einer
   Testszene; Pfeil runter, Enter meldet den zweiten Eintrag. Der Test lädt nichts aus
   `res://scenes/title/title_screen.tscn` und keine `TitleTexts` (SC-005).
-- Während der Fahrt hinaus lösen Enter, Leertaste und Linksklick nichts aus.
+- Während der Fahrt hinaus lösen Enter, Leertaste, Linksklick und „Maus über eine Zeile bewegen,
+  dann Enter“ nichts aus (B2).
 - Eine Zeile, die unter dem ruhenden Mauszeiger durchfährt, wird nicht gewählt; ein Klick auf das
   Gehäuse tut nichts.
 - Der Hinweis steht links neben dem Gehäuse auf Höhe der Zeile und hat sich nach einer Fahrt um
