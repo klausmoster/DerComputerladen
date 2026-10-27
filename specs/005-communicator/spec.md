@@ -69,6 +69,20 @@ Fragen aus `/speckit-clarify`, von Klaus einzeln als Auswahl beantwortet:
   Spielbildschirm beginnen; Titel und Spielbildschirm zugleich, weil das Feature dann deutlich
   größer würde.
 
+### Review 2026-10-27
+
+Aus der Checkliste [review.md](checklists/review.md) mit 26 Punkten; Klaus hat am 2026-10-27 alle
+Vorschläge freigegeben. Präzisiert sind FR-001, FR-001a, FR-003, FR-008, FR-011, FR-013a, FR-015,
+SC-002, SC-005, SC-006 und SC-007; dazu Edge Cases und Annahmen. Die wichtigsten:
+- Q: Widerspricht SC-005 dem Plan, weil Menü und Liste in `scenes/title/` liegen? → A: Ja; SC-005
+  verlangt jetzt nur, dass der Test ohne den Titelbildschirm und seine Texte auskommt (CHK013).
+- Q: Wie fährt ein Bild vom Bildraster in Oberflächenpixeln? → A: Der Communicator ist Oberfläche:
+  Er fährt in ganzen Oberflächenpixeln, seine Endlage liegt auf ganzen Bildpixeln (CHK015).
+- Q: Ab wann zählt SC-002, wenn das erste Bild lange dauert? → A: ab dem ersten Bild, in dem der
+  Communicator unterwegs ist; ein langes Bild zählt als ein gedeckelter Schritt (CHK010).
+- Q: Gilt `lcd` für jedes Gehäuse? → A: Nein, die Farbe der Anzeige gehört zum Gehäuse; der
+  Organizer hat `lcd` (CHK014).
+
 ## Überblick
 
 Bisher bedient der Spieler den Titel über Blätter aus Endlospapier: Hauptmenü, Gradwahl, Liste
@@ -197,8 +211,12 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 - **Langes erstes Bild**: Das erste Bild nach dem Start dauert wegen Laden länger. Der
   Communicator springt dadurch nicht gleich halb herein, sondern gleitet sichtbar (Falle aus dem
   Spike).
-- **Eingaben während der Fahrt**: Tastatur wirkt sofort. Die Maus wählt die Zeile, die gerade
-  unter ihr liegt; der Hinweis fährt mit seiner Zeile mit.
+- **Eingaben vor der Fahrt**: Bis das Hauptmenü seine Einträge hat, tut eine Eingabe nichts; mit
+  den Einträgen beginnt die Fahrt (CHK018).
+- **Eingaben während der Fahrt herein**: Tastatur und Linksklick wirken sofort. Die Maus wählt nur,
+  wenn sie bewegt oder geklickt wird; eine Zeile, die unter dem ruhenden Zeiger durchfährt, wird
+  nicht gewählt (CHK007, CHK008). Der Hinweis fährt mit seiner Zeile herein und ist zu sehen,
+  sobald sie es ist (CHK019).
 - **Eingaben während der Fahrt hinaus**: Drückt der Spieler nach „Weiterspielen“ noch einmal
   Enter oder Esc, während der Communicator hinausfährt, passiert nichts; es beginnt kein zweites
   Spiel (FR-013a). Schließt er in dieser Zeit das Fenster, läuft das Spiel schon und wird beim
@@ -215,8 +233,10 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
   passen auf die Anzeige; Namen werden nur nach den Regeln des Bausteins Liste gekürzt.
 - **Fehler auf dem Titel** (Anlegen oder Löschen scheitert): Die Meldung steht wie in Feature 004
   an der Stelle des Hinweises; der Communicator bewegt sich nicht.
-- **Kleinstes Fenster** (640 × 360): Communicator, Hinweis, Logo und Versionszeile passen ohne
-  Überschneidung, die die Lesbarkeit stört.
+- **Kleinstes Fenster**: Bei Faktor 1 ist jede Zeile lesbar; die Anordnung ist dieselbe wie bei
+  jedem anderen Faktor, denn das Bild wird nur ganzzahlig skaliert (CHK011).
+- **Fortsetzen scheitert**: Wie in Feature 004 liest der Titel Hauptmenü oder Liste neu, ohne
+  Meldung; der Communicator fährt nicht (CHK016).
 
 ## Requirements *(mandatory)*
 
@@ -226,18 +246,22 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 
 - **FR-001**: Der Communicator muss aus einem Gehäuse und einer Anzeige bestehen. Das Gehäuse ist
   ein gemaltes Bild auf dem Bildraster; die Anzeige liegt auf dem Oberflächenraster und ist für
-  jedes Gehäuse gleich groß, damit jede Seite in jedes spätere Gehäuse passt.
-- **FR-001a**: Der Grund der Anzeige muss eine eigene, neue Farbrolle `lcd` haben, ein
+  jedes Gehäuse gleich groß, damit jede Seite in jedes spätere Gehäuse passt. Das Gehäuse ist
+  reine Grafik: Ein Klick darauf tut nichts, und der Mauszeiger bleibt der Pfeil; bedienbar sind
+  nur die Seiten auf der Anzeige (CHK002).
+- **FR-001a**: Beim Organizer muss der Grund der Anzeige eine eigene, neue Farbrolle `lcd` haben, ein
   graugrünes LCD-Grau, als 16. Farbe der Oberfläche im Style-Guide. Text steht darauf in `tusche`;
   Wert, Textpaare und Kontrast legt der Style-Guide fest (FR-008). `lcd` gibt es nur in der
   Oberfläche, nie in einem Bild; die eingefrorene Hauptpalette bleibt, wie sie ist (Klaus,
-  2026-10-27, im Plan, research.md R1).
+  2026-10-27, im Plan, research.md R1). Die Farbe der Anzeige gehört zum Gehäuse; ein späteres
+  Gehäuse wie der Zeitplaner darf eine andere Farbe des Style-Guides haben (CHK014).
 - **FR-002**: Der Communicator muss erscheinen, indem er von unten ins Bild gleitet, und
   verschwinden, indem er nach unten hinausgleitet; überall gleich, in ganzen Oberflächenpixeln,
-  ohne zu federn. Dauer und Verlauf regelt der Style-Guide (heute: Übergänge 150–250 ms, nichts
-  federt).
-- **FR-003**: Der Communicator muss bedienbar sein, sobald er zu gleiten beginnt. Eine Eingabe mit
-  der Tastatur während der Fahrt wirkt wie im Stand.
+  ohne zu federn. Seine Endlage liegt auf ganzen Bildpixeln, damit das Gehäuse im Stand auf dem
+  Raster des Hintergrunds steht (CHK015). Dauer und Verlauf regelt der Style-Guide (heute:
+  Übergänge 150–250 ms, nichts federt).
+- **FR-003**: Der Communicator muss bedienbar sein, sobald er hereinzugleiten beginnt. Eine Eingabe
+  mit Maus oder Tastatur während der Fahrt herein wirkt wie im Stand (CHK008).
 - **FR-004**: Auf der Anzeige muss immer genau eine Seite stehen, ein Menü oder eine Liste mit
   Kopfzeile. Bedient wird sie wie die Blätter aus Feature 001 und 004: eine gemeinsame Auswahl
   für Maus und Tastatur, Pfeiltasten und Tab, Enter, Leertaste und Linksklick lösen aus,
@@ -258,8 +282,9 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
   Bildschirm muss ihn mit eigenen Seiten zeigen können, ohne dass sich der Titel ändert.
 - **FR-008**: Vor dem Bauen muss der Style-Guide den Baustein **Communicator** enthalten: Gehäuse,
   Größe und Lage der Anzeige, die Farbe `lcd` mit ihren Textpaaren (FR-001a), Auswahl auf der
-  Anzeige, Lage von Hinweis und Meldung, Bewegung. Die Bausteine Menü, Liste und Hinweis und der Abschnitt
-  Bewegung werden dazu passend angeglichen (Verfassung, Grundsatz IV).
+  Anzeige, Lage von Hinweis und Meldung, Bewegung, auch mit „Bewegung reduzieren“. Die Bausteine
+  Menü, Liste, Hinweis und Meldung und die Abschnitte Schrift und Bewegung werden dazu passend
+  angeglichen (Verfassung, Grundsatz IV; CHK003, CHK004, CHK017).
 
 **Titelbildschirm**
 
@@ -273,7 +298,8 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 - **FR-011**: Alle vier Blätter des Titels müssen als Seiten auf der Anzeige des Communicators
   stehen: Hauptmenü, Gradwahl (SCHWIERIGKEIT), Liste der Spielstände (SPIELSTÄNDE, im Löschmodus
   WELCHES LÖSCHEN?) und Rückfrage (LÖSCHEN?). Endlospapier kommt im Titel nicht mehr vor. Das
-  ändert FR-023 von Feature 004, das für diese Blätter Endlospapier verlangt.
+  ändert FR-023 von Feature 004, das für diese Blätter Endlospapier verlangt, und FR-005 von
+  Feature 001, nach dem das Menü als Papier rechts steht (CHK025).
 - **FR-012**: Im Titel muss der Communicator fest das Gehäuse des Organizers von 1991 haben,
   unabhängig von Spielständen und Datum. Der Titel steht außerhalb der Spielzeit.
 - **FR-013**: Wege, Einträge, Texte, Hinweise, Vorwahl und Esc im Titel müssen bleiben, wie
@@ -281,15 +307,19 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
   sich nur, worauf die Seiten stehen.
 - **FR-013a**: Beginnt der Spieler ein neues Spiel oder setzt er eines fort, muss der
   Communicator erst nach unten hinausgleiten; danach erscheint der Spielbildschirm. Das Spiel wird
-  vorher angelegt oder fortgesetzt wie in Feature 004: Scheitert das, fährt nichts hinaus, und die
-  Meldung steht an ihrer Zeile. Während der Fahrt hinaus löst keine Eingabe etwas aus, auch Esc
-  nicht. „Beenden“ schließt dagegen sofort, ohne Fahrt.
+  vorher angelegt oder fortgesetzt wie in Feature 004: Scheitert das, fährt nichts hinaus; beim
+  Anlegen steht die Meldung an ihrer Zeile, beim Fortsetzen liest der Titel neu (CHK016). Während
+  der Fahrt hinaus nehmen Communicator und Titel keine Eingabe an, auch Esc nicht; Schließen des
+  Fensters, Cmd+Q und Vollbild wirken wie immer (CHK009). „Beenden“ schließt dagegen sofort, ohne
+  Fahrt.
 - **FR-014**: Jede Seite des Titels muss ganz auf die Anzeige passen, auch mit der längsten
   Kopfzeile, dem längsten Eintrag und „Spiel 9999“. Die Liste der Spielstände scrollt, wenn nicht
   alle Spielstände zu sehen sind, wie in Feature 004.
 - **FR-015**: Der Titel muss ein neues Titelbild **T-02** bekommen, das T-01 ersetzt. Es zeigt
   dieselbe Welt wie T-01, lässt aber rechts unten, wo der Communicator steht, eine ruhige Fläche,
   so dass er nichts Wichtiges des Bilds verdeckt. Logo und Untertitel stehen weiter frei darauf.
+  Ob nichts Wichtiges verdeckt ist, entscheidet Klaus am Bildschirmfoto bei der Freigabe von T-02
+  und bei der Abnahme des Titels (CHK024).
 
 **Grafik**
 
@@ -314,8 +344,9 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 - **SC-001**: Der Spieler braucht für jeden Weg des Titels so viele Eingaben wie in Feature 004:
   mit „Weiterspielen“ 1 Eingabe bis zum Spielbildschirm, auch während der Communicator noch
   hereingleitet; ein neues Spiel mit Vorgabe Mittel höchstens 3.
-- **SC-002**: Der Communicator steht spätestens 250 ms nach dem ersten Bild des Titels in seiner
-  Endlage; der Titel ist wie in Feature 001 nach höchstens 3 s bedienbar. Beim Spielstart ist er
+- **SC-002**: Der Communicator steht spätestens 250 ms nach dem ersten Bild, in dem er unterwegs
+  ist, in seiner Endlage, gezählt über die Zeitschritte der Bilder; ein langes erstes Bild zählt
+  als ein gedeckelter Schritt (CHK010); der Titel ist wie in Feature 001 nach höchstens 3 s bedienbar. Beim Spielstart ist er
   spätestens 250 ms nach der auslösenden Eingabe hinausgefahren, und der Spielbildschirm folgt
   ohne weitere Wartezeit.
 - **SC-003**: In jedem Bild der Fahrt steht der Communicator auf ganzen Oberflächenpixeln, und er
@@ -324,11 +355,13 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
   dem längsten Eintrag, „Spiel 9999“ und sechs sichtbaren Spielständen; alle Hinweise und
   Meldungen passen weiter in zwei Zeilen.
 - **SC-005**: Ein automatischer Test zeigt den Communicator außerhalb des Titels mit einer
-  Probeseite und bedient sie, ohne eine Datei des Titels zu benutzen.
+  Probeseite und bedient sie, ohne den Titelbildschirm und seine Texte zu benutzen. Menü und
+  Liste darf er nutzen, auch wenn sie noch unter dem Titel liegen (CHK013).
 - **SC-006**: Logo, Untertitel und Versionszeile überschneiden sich in keiner Lage des
-  Communicators und in keinem Zustand des Titels mit Communicator, Hinweis oder Meldung.
+  Communicators und in keinem Zustand des Titels mit Communicator, Hinweis oder Meldung; geprüft
+  in der Endlage für jede Zeile jeder Seite mit ihrem längsten Hinweis, auch als Meldung (CHK022).
 - **SC-007**: Alle Tests aus Feature 001 und 004 zum Verhalten des Titels bleiben grün, angepasst
-  nur, wo sie das Papier selbst prüfen; die Startprobe bleibt still, und die Phasenprüfung endet
+  nur, wo sie Papier, Lage der Blätter oder Lage des Hinweises prüfen (CHK012); die Startprobe bleibt still, und die Phasenprüfung endet
   ohne offene Befunde.
 
 ## Assumptions
@@ -346,13 +379,15 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
   - ob die Spieluhr anhält, solange er offen ist;
   - der Wechsel des Gehäuses mit den Jahren, der Kauf als Ware, Pager und Handy;
   - Speichern und „Zum Hauptmenü“ als Seite Ablage.
-- Die Einstellung „Bewegung reduzieren“ gibt es noch nicht. Kommt sie, erscheint der Communicator
-  ohne Gleiten (Style-Guide, Bewegung).
+- Die Einstellung „Bewegung reduzieren“ gibt es noch nicht. Die Fahrt zählt als Deko-Animation;
+  kommt die Einstellung, erscheint der Communicator ohne Gleiten (Style-Guide, Bewegung; CHK017).
 - Der Spielbildschirm bleibt wie in Feature 004: der Knopf „Zum Hauptmenü“ auf `nacht`.
 - „Beenden“ schließt sofort, ohne dass der Communicator hinausfährt, denn danach ist nichts mehr
   zu sehen (Claudes Festlegung zu FR-013a).
 - Die Texte des Titels bleiben, wie sie sind; neue Texte entstehen in diesem Feature nicht.
 - Gehäuse und T-02 werden auf die unveränderte Hauptpalette gerastert (FR-001a). T-01 bleibt
   im Repo als Original, das Cover C-01 bleibt unberührt.
+- Ein fehlendes oder kaputtes Bild bekommt keine eigene Regel zur Laufzeit: `test_bilder.gd` prüft
+  jedes Bild im Ordner, und die Startprobe meldet einen Ladefehler (CHK021).
 - Jede Phase mit Sichtbarem oder Texten endet mit der Phasenprüfung durch Stil- und Text-Prüfer
   vor Klaus' Abnahme (`docs/ki_workflow/ki_pruefung.md`).

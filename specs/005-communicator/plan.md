@@ -138,15 +138,21 @@ Jede Phase mit Sichtbarem oder Texten hat vor der Abnahme die [C]-Aufgabe „Pha
 | Phase | Inhalt | Story |
 |---|---|---|
 | 1 | Style-Guide nach R12 mit dem Wert von `lcd`; Prompts G-02 und T-02 in die Prompt-Bibliothek. Kein Code | Vorarbeit |
-| 2 | Grafik: Klaus erzeugt G-02 und T-02 `[K]`; Claude rastert, räumt auf, misst die Anzeige im Gehäuse nach und trägt beide ins Prompt-Log `[C]`; Klaus gibt frei. Darf parallel zu Phase 3 und 4 laufen, weil sie keine Datei teilt | Vorarbeit |
+| 2 | Grafik, erst G-02, dann T-02 (CHK005): Klaus erzeugt G-02 `[K]`; Claude rastert, räumt auf und misst die Anzeige im Gehäuse nach `[C]`; danach Prompt T-02 mit der freien Fläche, Klaus erzeugt T-02 `[K]`, Claude rastert; beide ins Prompt-Log; Klaus gibt frei. Darf parallel zu Phase 3 und 4 laufen, weil sie keine Datei teilt | Vorarbeit |
 | 3 | Kern Communicator: `UiPalette.LCD`, `test_bilder.gd`, `Communicator` mit Platzhalter-Gehäuse, Fahrt, Seiten, Hinweis, gesperrter Eingabe; Probeszene; `test_communicator.gd` (SC-002, SC-003, SC-005) | US3 |
 | 4 | Seiten auf der Anzeige: `look` an `MainMenu` und `SaveList`, `MenuPaper.draw_lcd_selection()`, Theme `LcdRow`, `LcdHeader`; Tests mit `LCD` neben den bisherigen | US1, US2 (Teil) |
 | 5 | Titel: G-02 ins Gehäuse, T-02, vier Seiten im Communicator, Hinweis über ihn, Erscheinen, Hinausfahren vor dem Spielstart; `test_title_screen.gd` (SC-001, SC-004, SC-006, SC-007). Braucht Phase 2, 3 und 4 | US1, US2 |
-| 6 | Abschluss: `docs/features/Features.md`; `CLAUDE.md` (Tabelle „Aufbau“: `src/ui/communicator/`) nur mit Klaus' OK; Ideensammlung und Recherche mit Verweis auf 005; Lückensuche mit `/speckit-converge`; Spielbeschreibung prüfen (`titel-und-hauptmenue.md`, `darstellung.md`, `bilder.md`) und Klaus vorlegen; Gesamtabnahme | – |
+| 6 | Abschluss: `docs/features/Features.md`; `CLAUDE.md` (Tabelle „Aufbau“: `src/ui/communicator/`) nur mit Klaus' OK; Ideensammlung und Recherche mit Verweis auf 005; Lückensuche mit `/speckit-converge`; Spielbeschreibung prüfen (`titel-und-hauptmenue.md`, `darstellung.md`, `bilder.md`, `glossar.md` mit Communicator, Gehäuse, Anzeige und Seite, `architektur.md` mit `src/ui/communicator/`; CHK006) und Klaus vorlegen; Gesamtabnahme | – |
 
 Phase 3 und 4 sind voneinander unabhängig im Code, laufen aber nacheinander, weil Klaus jede Phase
 einzeln freigibt (Grundsatz II). Phase 2 ist Klaus' und Claudes Grafikarbeit und blockiert nur
 Phase 5.
+
+## Änderungen nach der Checkliste
+
+Aus [checklists/review.md](checklists/review.md), 26 Punkte, von Klaus am 2026-10-27 alle
+freigegeben. Eingearbeitet in Spec (Clarifications „Review 2026-10-27“), research.md (R3, R10, R12,
+R13), Datenmodell, beide Verträge, Quickstart und hier in Phase 2 und 6.
 
 ## Prüfer je Phase
 

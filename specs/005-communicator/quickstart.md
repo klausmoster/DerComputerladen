@@ -47,9 +47,13 @@ Startprobe, erwartet: Exit 0 und keine Ausgabe:
    zweites Enter während der Fahrt tut nichts; in der Liste der Spielstände steht danach nur ein
    neues Spiel.
 6. **Rückkehr**: „Zum Hauptmenü“ im Spiel; der Titel erscheint, das Gerät fährt wieder herein.
+   Sofort Esc drücken: Im Hauptmenü tut Esc nichts, auch während der Fahrt.
 7. **Beenden**: schließt sofort, ohne Fahrt.
 8. **Vollbild** mit Ctrl+Cmd+F während der Fahrt herein: Das Gerät kommt sauber in seiner Endlage an.
-9. **Kleinstes Fenster**: Fenster auf 640 × 360 ziehen; nichts überschneidet sich.
+9. **Kleinstes Fenster**: Fenster auf 640 × 360 ziehen (Faktor 1); jede Zeile lesbar, die Anordnung
+   wie bei jedem anderen Faktor.
+10. **Liste mit Rollmarke**: mehr als sechs Spielstände, „Löschen …“ wählen; die Rollmarke nach
+    unten ist im dunklen Balken hell zu sehen.
 
 ## Zuordnung zu den Phasen
 

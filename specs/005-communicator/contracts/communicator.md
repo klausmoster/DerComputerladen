@@ -108,6 +108,11 @@ func hide_hint() -> void
 - **Fahrt:** Tween auf `slide_y`, angehalten, in `_process()` mit `custom_step(minf(delta,
   MAX_STEP))` getaktet; herein `EASE_OUT`, hinaus `EASE_IN`, `TRANS_CUBIC` (R6). Eine neue Fahrt
   beendet die laufende und startet aus der aktuellen Lage.
+- **Maus während der Fahrt herein:** Gewählt wird nur auf Bewegung oder Klick der Maus; eine Zeile,
+  die unter dem ruhenden Zeiger durchfährt, wird nicht gewählt. Der Agent prüft, ob Godot dabei
+  `mouse_entered` auslöst, und sperrt es sonst bis zur nächsten Bewegung.
+- **Endlage** liegt auf ganzen Bildpixeln, also gerader Lage in x und y; unterwegs ganze
+  Oberflächenpixel.
 - **Eingabe während der Fahrt hinaus:** Der Fokus geht von der Seite weg, und keine Seite nimmt
   Maus oder Tastatur an, bis `slide_in()` kommt. Danach wählt der Bildschirm die Zeile neu.
 - **Hinweis:** `show_hint()` rechnet aus `row_rect` nur die Oberkante; die rechte Kante des Hinweises
@@ -127,6 +132,7 @@ enum Look { PAPER, LCD }
 - `PAPER`: unverändert gegenüber Feature 004; alle bisherigen Tests bleiben.
 - `LCD`: kein Papier, keine Lochränder, kein Zebra, kein Schatten; Auswahl über
   `MenuPaper.draw_lcd_selection()` (Balken `tusche`, Pfeil `lcd`, gedämpft `gehaeuse-dunkel`, R3);
+  eine Rollmarke in der gewählten Zeile in `lcd`;
   Zeilen-Buttons mit Theme-Variante `LcdRow`, Kopfzeile mit `LcdHeader`; die Breite ist die Breite
   der Anzeige (`paper_width` bzw. `PAPER_WIDTH` gilt nur für `PAPER`). Die Spalten der Liste in
   ihren Labels nehmen die Farben der Zeile mit, auch invertiert.
@@ -157,5 +163,7 @@ enum Look { PAPER, LCD }
   Testszene; Pfeil runter, Enter meldet den zweiten Eintrag. Der Test lädt nichts aus
   `res://scenes/title/title_screen.tscn` und keine `TitleTexts` (SC-005).
 - Während der Fahrt hinaus lösen Enter, Leertaste und Linksklick nichts aus.
+- Eine Zeile, die unter dem ruhenden Mauszeiger durchfährt, wird nicht gewählt; ein Klick auf das
+  Gehäuse tut nichts.
 - Der Hinweis steht links neben dem Gehäuse auf Höhe der Zeile und hat sich nach einer Fahrt um
   genau so viel bewegt wie der Communicator.

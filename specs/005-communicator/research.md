@@ -61,7 +61,8 @@ Gemessen nach WCAG:
 **Entscheidung:** Auf der Anzeige liegt unter der gewählten Zeile ein Balken in `tusche`; Schrift
 und Pfeil darin sind `lcd` (FR-004a). Ist die gewählte Zeile nicht verfügbar, bleibt der Balken
 `tusche`, und Schrift und Pfeil sind `gehaeuse-dunkel` (3,08 : 1, R2). So bleibt gedämpft gedämpft,
-auch gewählt, wie auf dem Papier (Claude, 2026-10-27).
+auch gewählt, wie auf dem Papier (Claude, 2026-10-27). Eine Rollmarke in der gewählten Zeile, etwa
+auf „Löschen …“, ist ebenfalls `lcd`; in `tusche` verschwände sie im Balken (Checkliste CHK001).
 
 **Grund:** Ein echtes LCD hat eine Farbe und invertiert (Klaus' Antwort in clarify). In Godot nimmt
 ein gesperrter Button immer `font_disabled_color`, auch mit Fokus (Kommentar in `main_menu.gd`); der
@@ -198,11 +199,14 @@ Prompts mit dem Stilblock des Style-Guides, Klaus erzeugt die Bilder; Claude ras
    („wide LCD, exactly twice as wide as high“, Lehre aus dem Spike). Gerastert mit einem Faktor, der
    das LCD auf 192 × 96 Bildpixel bringt; danach wird die LCD-Fläche von Hand auf genau diese Größe
    gebracht und die Sprenkel über dem LCD aus G-01 vermieden oder entfernt. Datei
-   `src/assets/images/organizer_1991.png`.
+   `src/assets/images/organizer_1991.png`. G-02 kommt zuerst: Erst wenn das Gehäuse gerastert und
+   die Anzeige darin nachgemessen ist, schreibt Claude den Prompt für T-02 mit der Fläche, die es
+   frei lassen muss (CHK005).
 2. **T-02 Titelbild**: dieselbe Welt wie T-01, mit einer ruhigen, dunklen Fläche rechts unten, wo das
    Gerät steht (FR-015). In Leonardo mit T-01 als Bildvorlage und C2 als Style Reference, wenn
    Leonardo das zu dem Zeitpunkt anbietet; die Modellliste ändert sich, also vorher prüfen
-   (`ki_dev.md`, Grafik). Datei `src/assets/images/title_t02.png`, 320 × 180. T-01 bleibt im Repo.
+   (`ki_dev.md`, Grafik). Bietet Leonardo keine Bildvorlage, beschreibt der Prompt T-01 in Worten,
+   mit C2 als Style Reference, und Klaus entscheidet am Ergebnis (CHK026). Datei `src/assets/images/title_t02.png`, 320 × 180. T-01 bleibt im Repo.
 
 Beide Prompts kommen ins Prompt-Log und in die Prompt-Bibliothek des Style-Guides. Die Hauptpalette
 bleibt (R1); die Farben von T-02 liegen nah an T-01, aus dem die Palette mit entstand.
@@ -226,17 +230,22 @@ prüfbar. Die Lage der Anzeige im Gehäuse ist eine Konstante, die mit G-02 nur 
 
 **Entscheidung:** Vor jedem Code ergänzt Claude den Style-Guide, Klaus gibt frei (FR-008, Grundsatz
 IV):
-1. **Baustein Communicator** (neu, mit Vorschau): Gehäuse, Anzeige 384 × 192 für jedes Gehäuse,
-   Lage im Titel (R9), Fahrt herein und hinaus, Seitenwechsel ohne Übergang, keine Eingabe während
-   der Fahrt hinaus, Hinweis neben dem Gehäuse.
-2. **Token `lcd`** in `tokens.json` und im README unter Farben: Wert (R2), „nur Oberfläche, nie im
+1. **Baustein Communicator** (neu, mit Vorschau): Gehäuse als reine Grafik ohne Klick (CHK002),
+   Anzeige 384 × 192 für jedes Gehäuse, ihre Farbe je Gehäuse, beim Organizer `lcd` (CHK014), Lage
+   im Titel (R9), Fahrt herein und hinaus in ganzen Oberflächenpixeln mit der Endlage auf ganzen
+   Bildpixeln (CHK015), die Fahrt als Deko-Animation, die „Bewegung reduzieren“ abschaltet
+   (CHK017), Seitenwechsel ohne Übergang, keine Eingabe während der Fahrt hinaus, Hinweis und
+   Meldung neben dem Gehäuse, die mit ihrer Zeile hereinfahren (CHK019).
+2. **Token `lcd`** in `tokens.json` und im README unter Farben: Wert mit den Kontrasten aus R2, „nur Oberfläche, nie im
    Bild“ (R1), neue Textpaare `tusche` auf `lcd`, `lcd` auf `tusche`, gedämpft `gehaeuse-dunkel` auf
    `lcd` und auf `tusche`.
-3. **Baustein Menü und Liste**: Abschnitt „Auf der Anzeige“ mit invertierter Auswahl (R3), ohne
+3. **Baustein Menü und Liste**: Abschnitt „Auf der Anzeige“ mit invertierter Auswahl und
+   Rollmarke `lcd` in der gewählten Zeile (R3), ohne
    Papier, Lochränder und Zebra, mit den Abständen; „Blätter im Titel“ wird zu „Seiten im Titel“ und
    verweist auf den Communicator.
-4. **Baustein Hinweis**: Lage neben dem Gehäuse (R7).
-5. **README**: `signalgelb` heißt „hier bist du gerade“, auf der Anzeige zeigt das der invertierte
+4. **Baustein Hinweis und Baustein Meldung**: Lage neben dem Gehäuse (R7; CHK003).
+5. **README**: Schrift: Doto auch für Kopfzeilen auf der Anzeige des Communicators, denn ein LCD
+   ist ebenfalls eine Punktmatrix (CHK004); `signalgelb` heißt „hier bist du gerade“, auf der Anzeige zeigt das der invertierte
    Balken; Bildaufbau Titel mit T-02 und Gerät; Bewegung mit der Fahrt des Communicators; der Satz
    zu den Blättern im Titel, die ohne Übergang wechseln, gilt nun für Seiten.
 6. **Prompt-Bibliothek**: G-02 und T-02 (R10).
@@ -256,7 +265,12 @@ IV):
   sich in keiner Lage mit Gehäuse, Anzeige oder Hinweis (SC-006); Hinausfahren vor dem Szenenwechsel,
   kein zweites Spiel bei Enter während der Fahrt; jedes Erscheinen fährt herein. Mit
   `animate = false`, wo nur das Ergebnis zählt.
-- `test_ui_palette.gd`: 16 Farben, `lcd` als Token; `CATEGORY_TOKENS` unverändert.
+- `test_ui_palette.gd`: 16 Farben, `lcd` als Token; `CATEGORY_TOKENS` unverändert; die vier
+  Kontraste aus R2 gegen 4,5 : 1 und 3 : 1 (CHK023).
+- In `test_communicator.gd` außerdem: Eine Zeile, die unter dem ruhenden Mauszeiger durchfährt,
+  wird nicht gewählt (CHK007); ein Klick auf das Gehäuse tut nichts (CHK002).
+- In `test_title_screen.gd` außerdem: Eine Eingabe, bevor das Hauptmenü seine Einträge hat, tut
+  nichts (CHK018); scheitert das Fortsetzen, fährt nichts (CHK016).
 - Bildschirmfotos aus dem echten Fenster in Klaus' Größe (1920 × 925 logisch, Faktor 2) bei jeder
   Phase mit Sichtbarem.
 

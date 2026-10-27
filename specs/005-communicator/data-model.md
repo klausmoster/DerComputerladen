@@ -37,7 +37,7 @@ stateDiagram-v2
 | Zustand | Lage | Eingabe |
 |---|---|---|
 | Draußen | Oberkante des Gehäuses bei y 360, nichts zu sehen | keine |
-| Herein | unterwegs nach oben | ja: Tastatur wirkt, die Maus wählt, was unter ihr liegt (FR-003) |
+| Herein | unterwegs nach oben | ja: Tastatur und Klick wirken; die Maus wählt nur, wenn sie bewegt oder geklickt wird (FR-003) |
 | Drin | Endlage | ja |
 | Hinaus | unterwegs nach unten | keine: kein Fokus auf den Seiten, keine Maus (FR-013a, R8) |
 
@@ -61,7 +61,7 @@ flowchart LR
     H -->|"Weiterspielen"| X
     L -->|"fortsetzbare Zeile"| X
     X -->|"ja: fährt hinaus"| S(["Spielbildschirm"])
-    X -->|"nein"| M["Meldung an der Zeile,<br/>Communicator bleibt"]
+    X -->|"nein"| M["Anlegen: Meldung an der Zeile<br/>Fortsetzen: Titel liest neu<br/>Communicator bleibt"]
     H -->|"Beenden: sofort"| E(["App zu"])
 ```
 
@@ -69,8 +69,10 @@ flowchart LR
   alte ohne Übergang (FR-005).
 - Bei jedem Erscheinen des Titels, auch nach „Zum Hauptmenü“ aus dem Spiel, beginnt er draußen und
   fährt herein (FR-010).
-- Scheitert das Fortsetzen über die Liste oder „Weiterspielen“, gilt Feature 004: Die Meldung steht
-  an der Zeile, nichts fährt.
+- Scheitert das Fortsetzen über die Liste oder „Weiterspielen“, gilt Feature 004: Der Titel liest
+  Hauptmenü oder Liste neu, ohne Meldung; nichts fährt. Eine Meldung gibt es nur, wenn das Anlegen
+  eines neuen Spiels scheitert.
+- Bis das Hauptmenü seine Einträge hat, tut eine Eingabe nichts; mit ihnen beginnt die Fahrt.
 
 ## Seiten auf der Anzeige (`look = LCD`)
 
@@ -79,6 +81,7 @@ flowchart LR
 | Grund | Zebra `papier` / `endlos-gruen`, Lochränder, `pixelschatten` | nichts; die Anzeige darunter ist `lcd` |
 | gewählte Zeile | `signalgelb`, Pfeil `tusche` | Balken `tusche`, Schrift und Pfeil `lcd` (R3) |
 | gewählt, nicht verfügbar | `signalgelb`, Schrift und Pfeil `gehaeuse-dunkel` | Balken `tusche`, Schrift und Pfeil `gehaeuse-dunkel` |
+| Rollmarke in der gewählten Zeile | `tusche` | `lcd` (CHK001) |
 | nicht verfügbar | `gehaeuse-dunkel` | `gehaeuse-dunkel` auf `lcd` |
 | Breite | Menü 144, Liste 304 | volle Breite der Anzeige |
 | Kopfzeile, Rollmarken, Zeilenhöhe 20, Bedienung | wie Feature 004 | gleich, Farben `tusche` auf `lcd` |

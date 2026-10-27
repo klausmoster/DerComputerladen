@@ -60,7 +60,9 @@ der Seiten bleiben, damit Signalverbindungen und Tests wiedererkennbar sind.
   Ab `slide_out()` tut `_unhandled_input()` nichts mehr (R8). Scheitert das Anlegen, bleibt alles
   wie in Feature 004.
 - **Beenden:** `get_tree().quit()` sofort, ohne Fahrt.
-- **Esc während der Fahrt herein:** wirkt wie im Stand (FR-003).
+- **Esc während der Fahrt herein:** wirkt wie im Stand (FR-003); im Hauptmenü also nichts.
+- **Vor der Fahrt:** Bis das Hauptmenü seine Einträge hat, tut eine Eingabe nichts.
+- **Fortsetzen scheitert:** wie Feature 004 neu lesen, ohne Meldung; der Communicator fährt nicht.
 
 ## Tests (`test_title_screen.gd`)
 
@@ -78,4 +80,6 @@ Bestehende Tests: Pfade auf `Communicator/<Seite>`, Hinweis über den Communicat
 - Ein zweites Enter oder Esc während der Fahrt hinaus legt kein zweites Spiel an und ruft
   `scene_callback` nur einmal.
 - Scheitert das Anlegen, fährt nichts, und die Meldung steht neben dem Gehäuse auf Höhe der Zeile.
+- Scheitert das Fortsetzen, fährt nichts, und der Titel liest neu.
+- Eine Eingabe, bevor das Hauptmenü seine Einträge hat, tut nichts.
 - Auf dem Titel kommt kein `look = PAPER` mehr vor.
