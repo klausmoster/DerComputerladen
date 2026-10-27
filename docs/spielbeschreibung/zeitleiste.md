@@ -7,7 +7,7 @@
   wird.
 - **Code:** `src/core/timeline.gd` (Autoload `Timeline`), `src/core/timeline/` (Kern ohne Node)
 - **Herkunft:** `specs/002-zeitleisten-werkstatt/`, ergänzt durch `specs/003-schwierigkeitsgrade/`
-- **Stand:** Feature 003, 2026-10-27
+- **Stand:** Feature 004, 2026-10-27
 - **Nachbarn:** Dateiformat und Prüfregeln in [ereigniskatalog.md](ereigniskatalog.md), Grade in
   [schwierigkeitsgrade.md](schwierigkeitsgrade.md), Datum und Uhr in [spielzeit.md](spielzeit.md)
 
@@ -49,14 +49,19 @@ der Statistik und in den Tests.
 **Beim Programmstart** liest `Timeline` den Katalog `res://data/event_catalog.json`, prüft ihn
 und behält ihn ohne fehlerhafte Ereignisse und Start-Modifikatoren. Jeden Fehler meldet sie mit
 `push_error()`; ein fehlerfreier Katalog erzeugt keine Ausgabe. Fehlt die Datei, bleibt die
-Zeitleiste leer und das Spiel startet trotzdem. Am Ende des ersten Bilds startet sie selbst ein
-Spiel: Mittel, gewürfelter Seed.
+Zeitleiste leer und das Spiel startet trotzdem. Ein Spiel beginnt sie nicht von selbst (bis
+Feature 004 startete sie am Ende des ersten Bilds eins mit Mittel); das tut `GameSession` (siehe
+[spielablauf.md](spielablauf.md)). Ohne Spiel sendet sie nichts.
 
-`start_game(seed = -1, difficulty = Difficulty.DEFAULT) -> Error` legt einen neuen Lauf an und
-ersetzt einen laufenden. `seed < 0` heißt würfeln aus 0 bis 2.147.483.647 (`MAX_SEED`). Ein zu
-großer Seed oder ein unbekannter Grad ergibt `ERR_INVALID_PARAMETER`, das laufende Spiel bleibt.
-Abfragen: `get_seed()`, `get_difficulty()` (−1 ohne Spiel), `get_event(id)`,
-`running_entries()`.
+| Methode | Wirkung |
+|---|---|
+| `start_game(seed = -1, difficulty = Difficulty.DEFAULT) -> Error` | neuer Lauf auf dem Katalog der Zeitleiste, ersetzt einen laufenden; spielt den 01.01.1985 und sendet dessen Meldungen. `seed < 0` heißt würfeln aus 0 bis 2.147.483.647 (`MAX_SEED`) |
+| `resume_game(catalog, seed, difficulty, interventions, day) -> Error` | setzt ein gespeichertes Spiel fort: prüft den mitgegebenen Katalog wie den eigenen, legt den Lauf an und spielt die Eingriffe mit `TimelineRun.replay()` bis `day` nach, **ohne Signale**. Das erste Signal kommt für den Tag danach. Abgelehnte Eingriffe kommen als Warnung, der Rest gilt |
+| `stop_game()` | beendet das laufende Spiel; danach kein Signal mehr |
+| `is_running()`, `get_seed()`, `get_difficulty()`, `get_event(id)`, `running_entries()` | Abfragen; Seed und Grad −1 ohne Spiel |
+
+Ein Seed außerhalb, ein unbekannter Grad oder ein Tag außerhalb des Spiels ergibt
+`ERR_INVALID_PARAMETER`, das laufende Spiel bleibt.
 
 ## Signale
 
@@ -213,14 +218,18 @@ reicht sie an den Lauf durch:
 Regeln: Eingriffe wirken erst nach dem heutigen Tag, vor Spielbeginn ab dem 01.01.1985. Fixe und
 jährliche Termine lassen sich weder absagen, verschieben noch einplanen. Setzen, Absagen,
 Verschieben und Einplanen brauchen einen Grund; beim Entfernen steht der Grund des entfernten
-Modifikators im Protokoll. Rückgabe ist `OK` oder ein `Error`, der Grund steht in `run.last_refusal`; ohne
-laufendes Spiel gibt `Timeline` `ERR_UNCONFIGURED`.
+Modifikators im Protokoll. Rückgabe ist `OK` oder ein `Error`, der Grund steht in
+`run.last_refusal`; ohne laufendes Spiel gibt `Timeline` `ERR_UNCONFIGURED`.
 
 Jeder angenommene Eingriff steht mit seinem Tag (`at_day`) im **Eingriffsprotokoll**
 `run.interventions`. Absagen und Verschiebungen merken sich Ereignis und Tag statt der Nummer,
 denn Nummern ändern sich mit dem Katalog. Ein neuer Lauf mit demselben Seed, der das Protokoll
-nach `at_day` geordnet nachspielt (`in_replay_order()`, `apply_intervention()`), ergibt denselben
-Fahrplan. Darauf bauen die Proben der Werkstatt, und darauf können Spielstände bauen.
+nach `at_day` geordnet nachspielt, ergibt denselben Fahrplan. Das macht
+`run.replay(records, until_day)`: je Eintrag bis zu seinem Tag vorspielen
+(`in_replay_order()`), dort `apply_intervention()`, danach bis `until_day`; zurück kommen die
+abgelehnten Einträge mit Grund. Darauf bauen die Proben der Werkstatt und die Spielstände (siehe
+[spielstaende.md](spielstaende.md)). In Dateien schreibt `InterventionFile` die Tage als
+`"JJJJ-MM-TT"`.
 
 ## Weitere Klassen im Kern
 

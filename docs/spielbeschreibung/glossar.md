@@ -3,7 +3,7 @@
 - **Worum es geht:** die Begriffe des Spiels und der Doku und wie sie im Code heißen.
 - **Laden, wenn:** ein Begriff unklar ist oder Spec, Doku und Code gegeneinander übersetzt
   werden.
-- **Stand:** Feature 003, 2026-10-27
+- **Stand:** Feature 004, 2026-10-27
 
 Doku und Oberfläche sind deutsch, der Code englisch. Werte in Dateien sind deutsch, wo sie
 Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
@@ -15,6 +15,7 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Ausnehmen | `without_faulty()` | Fehlerhaftes aus einer Kopie des Katalogs entfernen, bevor gerechnet wird | [ereigniskatalog.md](ereigniskatalog.md) |
 | Bedingung | `EventCondition` | „X ist schon / noch nicht eingetreten“ als Voraussetzung eines Termins | [zeitleiste.md](zeitleiste.md) |
 | Bildraster | — | 320 × 180, Raster der Szenen und Bilder | [darstellung.md](darstellung.md) |
+| Blatt | `MainMenu`, `SaveList` auf dem Titelbildschirm | ein Stück Endlospapier an der Stelle des Hauptmenüs: Hauptmenü, Gradwahl, Spielstände, Rückfrage | [titel-und-hauptmenue.md](titel-und-hauptmenue.md) |
 | Chance, Grundchance | `monthly_chance` | Wahrscheinlichkeit pro Monat aus dem Katalog | [zeitleiste.md](zeitleiste.md) |
 | Chance, wirksame | `chance_info()["effective"]` | Grundchance plus Modifikatoren, begrenzt auf 0–1 | [zeitleiste.md](zeitleiste.md) |
 | Eingriff | `add_modifier()`, `cancel_entry()`, `move_entry()`, `schedule_event()` | Änderung am laufenden Spiel von außen, mit Grund | [zeitleiste.md](zeitleiste.md) |
@@ -23,19 +24,28 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Ereigniskatalog, Katalog | `EventCatalog`, `event_catalog.json` | alle Ereignisse, Kategorien und Profile | [ereigniskatalog.md](ereigniskatalog.md) |
 | Fahrplan | `TimelineRun.entries` | alle Termine eines Spiels, zugleich seine Geschichte | [zeitleiste.md](zeitleiste.md) |
 | Folgeereignis | `FollowUp` | Ereignis, das mit einer Wahrscheinlichkeit nach einem anderen kommt | [zeitleiste.md](zeitleiste.md) |
+| Fortsetzen | `GameSession.resume()`, `Timeline.resume_game()` | ein gespeichertes Spiel neu aufbauen und still bis zum Spieldatum vorspielen | [spielablauf.md](spielablauf.md) |
 | Grad, Schwierigkeitsgrad | `Difficulty.Level` | Leicht, Mittel, Schwer | [schwierigkeitsgrade.md](schwierigkeitsgrade.md) |
 | Herkunft | `ScheduleEntry.Origin` | warum ein Termin im Fahrplan steht | [zeitleiste.md](zeitleiste.md) |
 | Kategorie | `EventCategory` | Gruppe von Ereignissen mit Farbe, eine Zeile im Zeitstrahl | [ereigniskatalog.md](ereigniskatalog.md) |
 | Kettenbremse | `TimelineRun.MAX_CHAIN` | höchstens 16 Glieder einer Folgekette am selben Tag, der Auslöser mitgezählt | [zeitleiste.md](zeitleiste.md) |
+| Knopf | `Knopf`, `src/ui/knopf.gd` | Baustein Knopf aus dem Style-Guide | [darstellung.md](darstellung.md) |
 | Lauf | `TimelineRun` | ein Spiel der Zeitleiste aus Katalog, Seed und Grad | [zeitleiste.md](zeitleiste.md) |
+| Laufendes Spiel | `GameSession.current` | das Spiel, das gerade gespielt wird; auf dem Titelbildschirm keins | [spielablauf.md](spielablauf.md) |
+| Löschmodus | `SaveList.set_delete_mode()` | Zustand der Liste, in dem eine Zeile zur Rückfrage „Löschen?“ führt | [titel-und-hauptmenue.md](titel-und-hauptmenue.md) |
 | Meldung | `TimelineMessage` | was an einem Tag geschah; wird im Spiel zum Signal | [zeitleiste.md](zeitleiste.md) |
+| Meldung (Oberfläche) | `MenuHint.show_warning()`, Variante `WarningPanel` | Hinweis mit roter Kontur, wenn etwas scheiterte, etwa das Speichern | [spielablauf.md](spielablauf.md) |
 | Modifikator | `ChanceModifier` | verschiebt die Chance eines Ereignisses in einem Zeitraum um Prozentpunkte | [zeitleiste.md](zeitleiste.md) |
 | Oberflächenraster | — | 640 × 360, Raster der Bedienung | [darstellung.md](darstellung.md) |
 | Probe | `WhatIfProbe` | gespeicherte Was-wäre-wenn-Rechnung des Simulators: Seed, Grad, Eingriffe | [werkstatt.md](werkstatt.md) |
 | Profil | `DifficultyProfile` | Liste der Start-Modifikatoren eines Grads | [schwierigkeitsgrade.md](schwierigkeitsgrade.md) |
-| Prüfmeldung | `CatalogIssue` | Fehler oder Warnung zu einer Regel V01–V31 | [ereigniskatalog.md](ereigniskatalog.md) |
 | Protokoll | `TimelineRun.protocol` | alle Meldungen eines Laufs | [zeitleiste.md](zeitleiste.md) |
+| Prüfmeldung | `CatalogIssue` | Fehler oder Warnung zu einer Regel V01–V31 | [ereigniskatalog.md](ereigniskatalog.md) |
 | Seed | `TimelineRun.seed` | Zahl 0–2.147.483.647, aus der alle Zufallsentscheidungen eines Spiels folgen | [zeitleiste.md](zeitleiste.md) |
+| Spielbildschirm | `scenes/game/game_screen.tscn` | Ziel nach Beginnen oder Fortsetzen; heute nur „Zum Hauptmenü“ | [spielablauf.md](spielablauf.md) |
+| Spieldatum | `SaveGame.day` | Tag, an dem ein Spielstand steht | [spielstaende.md](spielstaende.md) |
+| Spielstand | `SaveGame`, `spiel_<N>.json` | gespeichertes Spiel: Seed, Grad, Katalogkopie, Eingriffe, Spieldatum | [spielstaende.md](spielstaende.md) |
+| Spielstand, Eintrag der Liste | `SaveSlot` | ein Spielstand mit Zustand fortsetzbar, beschädigt oder neuere Version | [spielstaende.md](spielstaende.md) |
 | Spieluhr | `GameClock` | treibt die Spielzeit voran | [spielzeit.md](spielzeit.md) |
 | Start-Modifikator | `ChanceModifier` im Profil, `TimelineRun.start_modifiers` | Modifikator, den ein Grad beim Spielstart setzt | [schwierigkeitsgrade.md](schwierigkeitsgrade.md) |
 | Stichtag | — | Tag, an dem der Lauf etwas zu tun hat; dazwischen springt er | [zeitleiste.md](zeitleiste.md) |
@@ -45,9 +55,11 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Textausgabe | `fahrplan_ausgabe.gd`, `ScheduleText` | Fahrplan oder Protokoll auf der Konsole | [werkstatt.md](werkstatt.md) |
 | Token | `StringName` wie `&"petrol"` | Name einer Farbe aus dem Style-Guide | [darstellung.md](darstellung.md) |
 | Unterschiede | `ScheduleDiff` | Vergleich zweier Läufe | [werkstatt.md](werkstatt.md) |
+| Weiterspielen | Eintrag `continue` im Hauptmenü | setzt den zuletzt gespielten Spielstand fort | [titel-und-hauptmenue.md](titel-und-hauptmenue.md) |
 | Werkstatt | `Werkstatt`, `src/tools/werkstatt/` | Entwicklungswerkzeug für Katalog, Simulator, Statistik | [werkstatt.md](werkstatt.md) |
 | Wirkung | `EventEffect` | was ein Ereignis meldet: Preis, Nachfrage, Ruf, Kundenstrom, Presse | [zeitleiste.md](zeitleiste.md) |
 | Würfel | `EventDice` | eigener Zufallsgenerator je Zweck und Ereignis | [zeitleiste.md](zeitleiste.md) |
 | Würfelrunde | `_roll_month()` | am Monatsersten würfeln alle Ereignisse über Wahrscheinlichkeit | [zeitleiste.md](zeitleiste.md) |
 | Zeitstrahl | `TimelineView` | grafische Ansicht des Katalogs in der Werkstatt | [werkstatt.md](werkstatt.md) |
 | Zustand | `ScheduleEntry.State` | geplant, läuft, eingetreten, beendet, entfallen, abgesagt | [zeitleiste.md](zeitleiste.md) |
+| Zwischendatei | `spiel_<N>.json.neu`, `.alt` | Datei beim sicheren Schreiben; gilt nach einem Abbruch | [spielstaende.md](spielstaende.md) |

@@ -6,25 +6,27 @@
 - **Code:** `src/project.godot`, `src/core/`, `src/scenes/`, `src/ui/`, `src/tools/`
 - **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/003-schwierigkeitsgrade/`,
   Verfassung `.specify/memory/constitution.md`
-- **Stand:** Feature 003, 2026-10-27
+- **Stand:** Feature 004, 2026-10-27
 
 ## Das Spiel in einem Absatz
 
 „Der Computerladen“ ist eine Wirtschaftssimulation mit Point-and-Click-Adventure: Der Spieler
 betreibt von 1985 bis 1999 einen Computerladen in Deutschland. Die Vision steht in
 `docs/game_design.md`. Gebaut sind bisher der Start bis zum Hauptmenü (Feature 001), die
-Zeitleiste mit ihrer Werkstatt (002) und die Schwierigkeitsgrade der Zeitleiste (003). Spielen
-lässt sich noch nichts: „Neues Spiel“ ist gesperrt, Wirtschaft und Laden gibt es noch nicht.
+Zeitleiste mit ihrer Werkstatt (002), die Schwierigkeitsgrade der Zeitleiste (003) und das
+Beginnen, Speichern und Fortsetzen von Spielen (004). Der Spielbildschirm ist noch leer: Die Uhr
+steht, Wirtschaft und Laden gibt es noch nicht.
 
 ## Ordner
 
 | Pfad | Inhalt |
 |---|---|
 | `src/` | Godot-Projekt; Projekt-Root ist `src/`, nicht das Repo-Root |
-| `src/core/` | Systeme mit Autoloads: `game_date`, `game_clock`, `timeline`, `game_window` |
+| `src/core/` | Systeme mit Autoloads: `game_date`, `game_clock`, `timeline`, `game_window`, `game_session` |
+| `src/core/save/` | Spielstände ohne Node: `SaveGame`, `SaveSlot`, `SaveStore` |
 | `src/core/timeline/` | Kern der Zeitleiste ohne Node: Datenklassen, Katalog, Prüfung, Lauf, Vergleich, Statistik, Grade |
 | `src/data/` | Spieldaten: `event_catalog.json` |
-| `src/scenes/` | Szenen des Spiels, bisher `title/` |
+| `src/scenes/` | Szenen des Spiels: `title/` (Titelbildschirm, Blätter), `game/` (Spielbildschirm) |
 | `src/ui/` | Theme und Farben, für alle Szenen |
 | `src/assets/` | Schriften, gerasterte Bilder, App-Symbol |
 | `src/tools/werkstatt/` | Zeitleisten-Werkstatt; nicht im Export |
@@ -39,11 +41,16 @@ lässt sich noch nichts: „Neues Spiel“ ist gesperrt, Wirtschaft und Laden gi
 flowchart TB
     subgraph spiel["Spiel"]
         TS["TitleScreen<br/>scenes/title"]
+        GS["GameScreen<br/>scenes/game"]
     end
     subgraph autoloads["Autoloads"]
         GC["GameClock"]
         TL["Timeline"]
         GW["GameWindow"]
+        SE["GameSession"]
+    end
+    subgraph save["Spielstände ohne Node, core/save"]
+        ST["SaveStore, SaveSlot,<br/>SaveGame"]
     end
     subgraph kern["Kern ohne Node, core/timeline"]
         RUN["TimelineRun"]
@@ -55,7 +62,16 @@ flowchart TB
         TA["Textausgabe"]
     end
     DATA[("data/event_catalog.json")]
+    SAVES[("user://spielstaende/")]
     UI["ui: Theme, UiPalette"]
+    TS -->|"start_new, resume"| SE
+    GS -->|"leave"| SE
+    TS -->|"Liste, Löschen"| ST
+    SE -->|"set_date"| GC
+    SE -->|"start_game, resume_game,<br/>stop_game"| TL
+    SE --> ST
+    ST --> SAVES
+    ST --> CAT
     GC -->|"day_passed"| TL
     TL --> RUN
     TL --> CAT
@@ -71,7 +87,8 @@ flowchart TB
     TL -.->|"Signale, später"| ABN["Abnehmer:<br/>Wirtschaft, Nachfrage, Ruf"]
 ```
 
-Autoloads in `project.godot`, in dieser Reihenfolge: `GameClock`, `Timeline`, `GameWindow`.
+Autoloads in `project.godot`, in dieser Reihenfolge: `GameClock`, `Timeline`, `GameWindow`,
+`GameSession`.
 Hauptszene ist `res://scenes/title/title_screen.tscn`.
 
 ## Grundsätze
@@ -83,9 +100,10 @@ Hauptszene ist `res://scenes/title/title_screen.tscn`.
   entscheidet das System, das zuhört. Systeme sind über Signale entkoppelt, nicht über direkte
   Aufrufe.
 - **Wiederholbar.** Katalog, Seed, Grad und Eingriffe legen ein Spiel vollständig fest. Spielstände
-  können darauf bauen, statt den ganzen Zustand zu speichern.
+  bauen darauf, statt den ganzen Zustand zu speichern (siehe [spielstaende.md](spielstaende.md)).
 - **Daten statt Code.** Ereignisse und Profile stehen in der Katalogdatei und werden in der
-  Werkstatt gepflegt; Menüeinträge sind Resources in der Szene; Farben heißen über Tokens.
+  Werkstatt gepflegt; Menüeinträge sind `MenuEntry`-Resources; Texte des Titels stehen an einer
+  Stelle (`TitleTexts`); Farben heißen über Tokens.
 - **Ein Look.** Der Style-Guide ist die einzige Quelle für Farben, Raster, Schriften und Sprache.
   Texte duzen den Spieler.
 - **Nur Desktop.** Maus und Tastatur, Forward+.
@@ -100,5 +118,7 @@ sein, deshalb stehen nötige `@warning_ignore` mit Grund im Code.
 ## Was als Nächstes andockt
 
 Feature-Ideen, die auf diesem Stand aufsetzen, stehen in `docs/features/Feature_Ideas.md`: etwa
-die Produktdatenbank (System 02), die Wirtschaft (03) als erster Abnehmer der Zeitleiste und
-Spielstände (11-01), die Seed, Grad und Eingriffe speichern.
+die Produktdatenbank (System 02) und die Wirtschaft (03) als erster Abnehmer der Zeitleiste. Was
+ein neues System im Spiel hält, muss in den Spielstand (siehe [spielstaende.md](spielstaende.md)),
+und es muss beim Fortsetzen aus Seed, Grad und Eingriffen wieder entstehen oder eigene Daten
+mitspeichern.

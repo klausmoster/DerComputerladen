@@ -10,7 +10,7 @@
   `test_fahrplan_ausgabe.gd`
 - **Herkunft:** `specs/002-zeitleisten-werkstatt/contracts/werkstatt.md`, ergänzt durch
   `specs/003-schwierigkeitsgrade/contracts/werkstatt.md`
-- **Stand:** Feature 003, 2026-10-27
+- **Stand:** Feature 004, 2026-10-27
 - **Nachbarn:** Modell in [zeitleiste.md](zeitleiste.md), Dateiformat in
   [ereigniskatalog.md](ereigniskatalog.md), Grade in [schwierigkeitsgrade.md](schwierigkeitsgrade.md)
 
@@ -136,7 +136,8 @@ ohne den Katalog zu ändern.
 
 **Proben:** Seed, Grad, Endtag und Eingriffsprotokoll lassen sich als Probe speichern, als JSON
 unter `src/tools/werkstatt/proben/<kennung>.json` (heute leer). Laden spielt das Protokoll mit
-`WhatIfProbe.build_run()` nach und ergibt denselben Fahrplan. Eingriffe, deren Ereignis oder
+`WhatIfProbe.build_run()` über `TimelineRun.replay()` nach und ergibt denselben Fahrplan. Tage
+schreibt `InterventionFile` wie im Spielstand. Eingriffe, deren Ereignis oder
 Termin fehlt, nennt ein Hinweis.
 
 ## Statistik

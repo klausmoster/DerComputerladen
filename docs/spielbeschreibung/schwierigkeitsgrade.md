@@ -7,7 +7,7 @@
 - **Code:** `src/core/timeline/difficulty.gd`, `difficulty_profile.gd`, `chance_modifier.gd`;
   Grad im Lauf `timeline_run.gd`; Reiter der Werkstatt `src/tools/werkstatt/difficulty_panel.gd`
 - **Herkunft:** `specs/003-schwierigkeitsgrade/`
-- **Stand:** Feature 003, 2026-10-27
+- **Stand:** Feature 004, 2026-10-27
 - **Nachbarn:** Mechanik der Chancen und Modifikatoren in [zeitleiste.md](zeitleiste.md), Format
   und Prüfregeln V25–V31 in [ereigniskatalog.md](ereigniskatalog.md)
 
@@ -52,6 +52,12 @@ Würfelrunde, deren Tag in seinem Zeitraum liegt. Beginnt er am 15.03.1990, wirk
 01.04.1990; deshalb warnt V31 bei Tagen mitten im Monat.
 
 ## Im Spiel
+
+Der Spieler wählt den Grad bei „Neues Spiel“, vorgewählt ist Mittel. Die Hinweise versprechen nur,
+was ein Grad tut: „Das Glück ist eher auf deiner Seite.“ (Leicht), „Das Glück hält sich raus.“
+(Mittel), „Das Glück ist eher auf der Seite der anderen.“ (Schwer). Der Grad steht im Spielstand;
+fortgesetzt wird mit demselben Grad und dem Profil aus der Katalogkopie des Spielstands (siehe
+[spielstaende.md](spielstaende.md)).
 
 `Timeline.start_game(seed, difficulty)` → `TimelineRun.new(catalog, seed, difficulty)`:
 1. Fahrplan und Würfel anlegen wie immer; der Grad ändert daran nichts.
