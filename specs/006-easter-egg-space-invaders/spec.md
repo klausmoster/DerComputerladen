@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/006-easter-egg-space-invaders`
 
-**System**: 10 Präsentation & UI
+**System**: 10 Präsentation & UI; mit dem Ton auch 11 Infrastruktur
 
 **Created**: 2026-10-27
 
@@ -54,6 +54,26 @@ Fragen aus `/speckit-clarify`, von Klaus einzeln als Auswahl beantwortet:
   Deckungen und ohne Ufo (Klaus, nach Empfehlung). Verworfen: Deckungen, mit oder ohne Ufo, weil sie
   pixelgenaue Treffer brauchen und eine oder zwei Phasen mehr kosten; ein Leben, weil es zu hart
   ist.
+
+### Ton 2026-10-27
+
+Klaus kippte Claudes Annahme „kein Ton“: Das Spiel wird Ton bekommen, also führt dieses Feature
+ihn ein. Die Fragen dazu hat Klaus einzeln als Auswahl beantwortet:
+
+- Q: Woher kommen die Töne? → A: Ein Python-Skript im Repo erzeugt kurze Töne in Rechteckwelle, wie
+  ein Taschengerät von 1991, und legt sie als Tondateien ins Projekt (Klaus, nach Empfehlung).
+  Verworfen: Töne zur Laufzeit errechnen, weil sie schwerer zu testen und vorab anzuhören sind;
+  eine freie Soundbibliothek, weil sie Downloads, Auswahl und eine Lizenzliste braucht.
+- Q: Welche Töne gibt es? → A: im Spiel Schuss, Treffer, Kanone getroffen, der Marschtakt der
+  Außerirdischen sowie je ein kurzes Motiv für Sieg und Niederlage; dazu ein Klick für jeden der
+  drei grauen Knöpfe. Das Menü des Titels bleibt stumm (Klaus, nach Empfehlung). Verworfen: nur im
+  Spiel, weil ein Druck ohne Klick tot wirkt; auch das Menü, weil es den abgenommenen Titel aus
+  Feature 005 berührt.
+- Q: Wie wird die Lautstärke geregelt, solange es keine Einstellungen gibt? → A: Das Spiel bekommt
+  getrennte Tonkanäle für alles zusammen und für Effekte, Musik kommt später dazu; die Lautstärke
+  ist fest und eher leise, einstellbar wird sie mit dem Menüeintrag „Einstellungen“ (Klaus, nach
+  Empfehlung). Verworfen: eine Taste zum Stummschalten, weil sie nirgends erklärt ist; ohne
+  getrennte Kanäle, weil „Einstellungen“ sonst jede Tonquelle anfassen müsste.
 
 ## Begriffe
 
@@ -170,8 +190,11 @@ danach der Titel bedienbar da wie vorher.
 - Der Spieler klickt die Folge mehrmals schnell hintereinander: Es startet genau ein Spiel.
 - Während Space Invaders läuft, drückt der Spieler Enter, Leertaste oder Pfeile: Nur das Spiel
   reagiert; das Menü dahinter löst nichts aus und wechselt keine Auswahl.
-- Das Fenster verliert den Fokus, während das Spiel läuft: Das Spiel hält an, bis das Fenster
-  wieder den Fokus hat.
+- Das Fenster verliert den Fokus, während das Spiel läuft: Das Spiel und sein Ton halten an, bis
+  das Fenster wieder den Fokus hat.
+- Der Spieler drückt Esc, während ein Ton klingt: Der Ton des Spiels verstummt sofort.
+- Auf dem Rechner ist kein Tonausgang da oder er ist stumm: Das Spiel läuft ohne Ton weiter, ohne
+  Meldung.
 - Der Spieler schließt das Fenster während des Spiels: Die App beendet sich wie vom Titel aus; es
   gibt nichts zu speichern.
 - Es gibt keinen Spielstand oder einen beschädigten: Das Easter Egg geht trotzdem, es braucht
@@ -243,6 +266,24 @@ danach der Titel bedienbar da wie vorher.
   in `tusche` auf dem Grund `lcd` der Anzeige, auf dem Bildraster; jeder Außerirdische hat zwei
   Bewegungsbilder, die beim Weiterrücken wechseln. Das Spiel bringt keine neue Farbe und kein Bild
   aus Leonardo. Die Darstellung „Spiel auf der Anzeige“ kommt vor dem Bau in den Style-Guide.
+**Ton**
+
+- **FR-040**: Das Spiel MUSS diese Töne spielen: einen Schuss der Kanone, einen Treffer an einem
+  Außerirdischen, einen Treffer an der Kanone, den Marschtakt der Außerirdischen (vier tiefe Töne im
+  Wechsel, einer je Schritt des Blocks, also schneller, je weniger übrig sind) und je ein kurzes
+  Motiv für Sieg und Niederlage.
+- **FR-041**: Jeder Druck auf einen der drei grauen Knöpfe MUSS einen kurzen, trockenen Klick
+  spielen, auch ein falscher. Sonst bleibt der Titel stumm.
+- **FR-042**: Alle Töne MÜSSEN im Klang eines Taschengeräts von 1991 sein, Rechteckwelle, und von
+  einem Werkzeug im Repo erzeugt werden, sodass sie sich jederzeit gleich neu erzeugen lassen. Es
+  gibt keine Töne aus fremden Quellen.
+- **FR-043**: Jeder Ton MUSS über einen Kanal für Effekte laufen, der in einen Kanal für alles
+  zusammen mündet. Die Lautstärke ist fest und eher leise; ein späteres Feature „Einstellungen“
+  regelt sie an den Kanälen, ohne die Tonquellen zu ändern.
+- **FR-044**: Hält das Spiel an oder endet es, MÜSSEN seine Töne mit anhalten oder verstummen.
+
+**Texte**
+
 - **FR-031**: Alle Texte des Spiels (etwa Punkte, Sieg, Niederlage) MÜSSEN deutsch sein und den
   Spieler duzen.
 
@@ -267,6 +308,8 @@ danach der Titel bedienbar da wie vorher.
   Spiel.
 - **SC-006**: Nach Sieg, Niederlage und Esc ist der Titel jedes Mal in höchstens 1 s wieder
   bedienbar.
+- **SC-007**: Jeder Ton setzt hörbar ohne Verzögerung zum Ereignis ein, höchstens 50 ms nach
+  Schuss, Treffer oder Klick.
 
 ## Assumptions
 
@@ -274,7 +317,10 @@ danach der Titel bedienbar da wie vorher.
   bleiben, wie sie sind.
 - Keine Bestenliste. Die genaue Größe des Blocks und die Tempi folgen im Plan aus dem Spielfeld
   320 × 160.
-- Kein Ton: Das Spiel hat bisher keinen Ton, und dieses Feature führt keinen ein.
+- Bis 2026-10-27 nahm die Spec an, das Spiel bliebe stumm (Claude); Klaus kippte das am selben
+  Tag, siehe „Ton 2026-10-27“.
+- Wie die Töne klingen (Tonhöhe, Länge, Lautstärke), legt der Plan fest; die Regeln dafür kommen
+  vor dem Bau als Abschnitt „Ton“ in den Style-Guide, wie alles, was zum Look gehört.
 - Wie bei den Seiten nach dem Ende kehrt auch Esc zu der Seite zurück, auf der der Spieler war,
   mit ihrer Auswahl; der Hinweis der gewählten Zeile erscheint wieder.
 - Die Lage der drei Knöpfe ergibt sich aus dem Gehäusebild G-03 (`docs/art/leonardo/prompt-log.md`,
