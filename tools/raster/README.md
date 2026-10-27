@@ -20,7 +20,8 @@ Python 3 mit Standardbibliothek; JPEG liest `sips` (macOS). Aufruf immer vom Rep
    python3 -I tools/raster/make_palette.py
    ```
 
-   Index 0 ist die Transparenz, 1–15 sind die Oberflächenfarben des Style-Guides, 16–255 die
+   Index 0 ist die Transparenz, 1–15 sind die Oberflächenfarben des Style-Guides (ohne `lcd`, die
+   es nur in der Oberfläche gibt), 16–255 die
    Szenenfarben per Median-Cut aus Stilanker C2, Titelbild T-01 und Cover C-01. Jedes Bild wird
    dafür erst auf seine Endgröße verkleinert und zählt gleich viel. Eine vorhandene Palette
    überschreibt das Skript nur mit `--neu`; danach müssten alle gerasterten Bilder neu gerechnet

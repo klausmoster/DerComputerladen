@@ -17,6 +17,7 @@ Written in English. A German translation comes at some point later, not during d
 | [04-feature-002-timeline-workshop.md](04-feature-002-timeline-workshop.md) | 2026-10-20 to 2026-10-21 | Schedule model, event catalog, Werkstatt |
 | [05-feature-003-difficulty.md](05-feature-003-difficulty.md) | 2026-10-21 to 2026-10-26 | Difficulty levels, reviewer agents, no local memory |
 | [06-feature-004-new-game.md](06-feature-004-new-game.md) | 2026-10-26 to 2026-10-27 | Saves, game session, Spec Kit for good, pocket device research and spike, reviewers as a principle |
+| [07-feature-005-communicator.md](07-feature-005-communicator.md) | 2026-10-27 | Title screen on the device, LCD colour, T-02, G-03, Claude in Leonardo |
 
 ## Entry format
 
@@ -71,3 +72,9 @@ into the merge. One entry per real decision, not per commit. Rule:
 - [2026-10-20 · Rule-based cleanup](03-feature-001-main-menu.md#2026-10-20--rule-based-cleanup-graphics)
 - [2026-10-20 · The Werkstatt gets its own, plainer style](04-feature-002-timeline-workshop.md#2026-10-20--the-werkstatt-gets-its-own-plainer-style-graphics)
 - [2026-10-27 · Spike: an organizer on the title screen](06-feature-004-new-game.md#2026-10-27--spike-an-organizer-on-the-title-screen-graphics)
+- [2026-10-27 · A selected line like on a real LCD](07-feature-005-communicator.md#2026-10-27--a-selected-line-like-on-a-real-lcd-graphics)
+- [2026-10-27 · A 16th colour, `lcd`, only for the interface](07-feature-005-communicator.md#2026-10-27--a-16th-colour-lcd-only-for-the-interface-graphics)
+- [2026-10-27 · Claude generates the images in Leonardo, I choose](07-feature-005-communicator.md#2026-10-27--claude-generates-the-images-in-leonardo-i-choose-graphics-workflow)
+- [2026-10-27 · A new title image with room for the device](07-feature-005-communicator.md#2026-10-27--a-new-title-image-with-room-for-the-device-graphics)
+- [2026-10-27 · Smaller display, new case after the Olivetti D2000](07-feature-005-communicator.md#2026-10-27--smaller-display-new-case-after-the-olivetti-d2000-graphics)
+- [2026-10-27 · The version line moves to the sky](07-feature-005-communicator.md#2026-10-27--the-version-line-moves-to-the-sky-graphics)

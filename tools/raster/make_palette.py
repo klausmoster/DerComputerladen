@@ -16,7 +16,9 @@ from collections import Counter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pngio  # noqa: E402
 
-# Die 15 Oberflächenfarben aus tokens.json des Style-Guides, in dessen Reihenfolge.
+# Die 15 Oberflächenfarben aus tokens.json des Style-Guides, in dessen Reihenfolge. Die 16. Farbe
+# `lcd` (Feature 005) gehört nicht hinein: Sie kommt in keinem Bild vor, die Oberfläche malt sie
+# über das Gehäuse des Communicators.
 UI_COLORS = [
     ("tusche", "#1d1916"),
     ("nacht", "#18233b"),

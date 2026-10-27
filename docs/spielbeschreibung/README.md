@@ -9,7 +9,7 @@ Arbeit an einem System lädt sie die passende Datei, statt Specs und Code zu dur
 Backlog und das Archiv. `docs/game_bible/` ist der Spielinhalt. Dieser Ordner beschreibt den
 **Stand im Code**. Wo Spec und Code auseinandergehen, gilt hier der Code.
 
-**Stand:** Features 001 bis 004, 2026-10-27.
+**Stand:** Features 001 bis 005, 2026-10-27.
 
 ## Dateien
 
@@ -23,7 +23,8 @@ Backlog und das Archiv. `docs/game_bible/` ist der Spielinhalt. Dieser Ordner be
 | [spielablauf.md](spielablauf.md) | `GameSession`: neues Spiel, Fortsetzen, Speichern, Verlassen, Speichern beim Schließen; der Spielbildschirm | ein Spiel beginnt, fortgesetzt oder verlassen wird; ein System beim Spielstart mitmachen muss |
 | [spielstaende.md](spielstaende.md) | Inhalt und Datei eines Spielstands, sicheres Schreiben, Lesen und Zustand, Liste, Löschen | Speichern, Laden oder das Format betroffen sind; ein System mitgespeichert werden muss |
 | [werkstatt.md](werkstatt.md) | Zeitleisten-Werkstatt: Editor, Zeitstrahl, Simulator, Proben, Statistik, Textausgabe | die Werkstatt benutzt oder geändert wird |
-| [titel-und-hauptmenue.md](titel-und-hauptmenue.md) | App-Start, Titelbildschirm, Hauptmenü, Gradwahl, Liste der Spielstände mit Löschen, Rückfrage, Hinweis | Titel, Menü oder ein Blatt geändert werden |
+| [titel-und-hauptmenue.md](titel-und-hauptmenue.md) | App-Start, Titelbildschirm, Hauptmenü, Gradwahl, Liste der Spielstände mit Löschen, Rückfrage, Hinweis, Fahrt vor dem Spielstart | Titel, Menü oder eine Seite geändert werden |
+| [communicator.md](communicator.md) | Baustein Communicator: Gehäuse, Anzeige, Seiten, Fahrt, Hinweis; Menü und Liste auf der Anzeige | ein Bildschirm den Communicator braucht, eine Seite oder ein Gehäuse dazukommt |
 | [darstellung.md](darstellung.md) | Fenster, Raster, Skalierung, Theme, Farben, Schriften | Oberfläche gebaut wird, Farben oder Schriften gebraucht werden |
 | [bilder.md](bilder.md) | Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol | ein Bild ins Spiel kommt |
 | [build-und-tests.md](build-und-tests.md) | Starten, Export, Versionierung, Tests und Fixtures | exportiert oder getestet wird |
@@ -37,7 +38,7 @@ Die Systeme 01–11 aus `docs/features/Features.md`:
 |---|---|
 | 01 Zeitleiste | gebaut: Spieluhr, Fahrplan-Modell, Werkstatt, Schwierigkeitsgrade |
 | 02–09 | noch nichts: Produktdatenbank, Wirtschaft, Information, Standort, Marketing, Handel, Qualität, Adventure |
-| 10 Präsentation & UI | Titelbildschirm mit Blättern, leerer Spielbildschirm, Fenster, Theme, Baustein Knopf |
+| 10 Präsentation & UI | Titelbildschirm auf dem Communicator, leerer Spielbildschirm, Fenster, Theme, Bausteine Knopf und Communicator |
 | 11 Infrastruktur | Spielstände, Export für macOS, Tests |
 
 ## Pflege

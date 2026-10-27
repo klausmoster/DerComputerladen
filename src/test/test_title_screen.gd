@@ -20,6 +20,20 @@ extends GutTest
 ## Ordner ORDNER; den Szenenwechsel fängt ein eigener scene_callback ab, der nur mitschreibt. Nach
 ## user://spielstaende/ schreibt und liest kein Test; after_each() räumt WURZEL ab.
 ##
+## Seit Feature 005 (T028) stehen die Blätter als Seiten auf der Anzeige des Communicators; die
+## Pfade gehen über Communicator/<Seite>, jede Seite ist so groß wie die Anzeige und steht an ihrer
+## Stelle, und der Hinweis steht links neben dem Gehäuse. Sonst prüfen die Tests dasselbe wie vorher
+## (SC-007). Dafür fährt der Communicator in diesen Tests nicht (animate = false): Er steht sofort
+## in der Endlage, und ein begonnenes Spiel wechselt sofort die Szene.
+##
+## Die Fahrt prüfen eigene Tests (T030): Erscheinen draußen und herein, Wache vor den Einträgen,
+## Hinausfahren vor dem Spielbildschirm ohne zweites Spiel, die Meldung neben der Zeile, wo sie
+## jetzt ist, und die Dauer. Dort taktet der Test die Fahrt selbst wie in test_communicator.gd:
+## set_process(false) am Communicator und _process() mit festen Zeitschritten.
+##
+## „Beenden“ schließt sofort, ohne Fahrt hinaus (T041; FR-013a). get_tree().quit() beendete den
+## ganzen Testlauf; deshalb fängt ein eigener quit_callback den Aufruf ab und zählt nur mit.
+##
 ## Der Titel steht in einem eigenen Viewport von 640 × 360 wie die Menüs in test_main_menu.gd:
 ## eigene Eingabe, eigener Fokus, und GUTs Oberfläche fängt keine Klicks ab. Tasten und Klicks gehen
 ## über push_input wie echte Eingaben.
@@ -37,6 +51,15 @@ const SPIELBILDSCHIRM := "res://scenes/game/game_screen.tscn"
 const ANGELEGT := 1793047212
 const WUERFEL_SEED := 20261026
 const ZEILE := MainMenu.ROW_HEIGHT
+## Die Anzeige des Communicators im Titel (Style-Guide, Baustein Communicator, Lage im Titel): das
+## Gehäuse bei (244, 92), die Anzeige darin bei (36, 28), 320 × 160. Jede Seite liegt genau darauf.
+const ANZEIGE := Rect2(280, 120, 320, 160)
+## Linke Kante des Gehäuses im Titel; der Hinweis steht 4 davor.
+const GEHAEUSE_LINKS := 244.0
+## Oberkante des Gehäuses in der Endlage, 9 unter dem Logoblock (Style-Guide: mindestens raster-8).
+const GEHAEUSE_OBEN := 92.0
+## Kleinster Abstand zwischen Logoblock und Gehäuse (Style-Guide, Token raster-8).
+const RASTER_8 := 8.0
 
 ## Die Sätze für den Spieler, hier ausgeschrieben statt als Konstanten aus dem Code: So fällt jede
 ## Änderung hier auf.
@@ -54,6 +77,8 @@ var _titel: TitleScreen
 var _sitzung: SITZUNG
 ## Die Pfade, mit denen der Titel scene_callback aufgerufen hat.
 var _wechsel: Array = []
+## So oft hat der Titel quit_callback aufgerufen.
+var _beendet := 0
 var _auto_accept_quit_vorher := true
 
 
@@ -61,6 +86,7 @@ func before_each() -> void:
 	_raeume_auf(WURZEL)
 	DirAccess.make_dir_recursive_absolute(ORDNER)
 	_wechsel.clear()
+	_beendet = 0
 	_titel = null
 	_sitzung = null
 	_auto_accept_quit_vorher = get_tree().auto_accept_quit
@@ -91,6 +117,428 @@ func test_ohne_version_steht_nur_das_kennzeichen_da() -> void:
 
 	# Assert
 	assert_eq(text, "PROTOTYP", "Ohne Nummer darf kein „V“ ohne Zahl erscheinen.")
+
+
+# --- Szenenaufbau und pixelschatten (Feature 005, T028) -------------------------------------------
+
+func test_szenenaufbau_mit_t02_und_dem_communicator() -> void:
+	# Arrange
+	await _zeige_titel()
+	var communicator := _titel.get_node(^"Communicator") as Communicator
+
+	# Assert (contracts/titelbildschirm.md, „Szenenaufbau“)
+	assert_eq((_titel.get_node(^"Background") as TextureRect).texture.resource_path,
+		"res://assets/images/title_t02.png", "Titelbild T-02.")
+	assert_eq(communicator.global_position, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN),
+		"Endlage im Titel.")
+	assert_eq(communicator.get_global_rect().end, Vector2(636, 360),
+		"Das Gehäuse reicht bis x 636 und y 360, unten an den Bildrand.")
+	for seite: Node in [_hauptmenue(), _gradwahl(), _rueckfrage()]:
+		assert_eq((seite as MainMenu).look, MainMenu.Look.LCD, "%s auf der Anzeige." % seite.name)
+	assert_eq(_liste().look, SaveList.Look.LCD, "Die Liste auf der Anzeige.")
+	assert_false(_titel.has_node(^"MenuHint"), "Der eigene Hinweis des Titels entfällt.")
+
+
+func test_zwischen_logoblock_und_gehaeuse_bleibt_mindestens_raster_8_frei() -> void:
+	# Arrange: der Titel mit dem Communicator in der Endlage.
+	await _zeige_titel()
+
+	# Act: gemessen an den echten Rechtecken, nicht an Konstanten.
+	var logoblock := (_titel.get_node(^"LogoBlock") as Control).get_global_rect()
+	var gehaeuse := (_communicator().get_node(^"Case") as Control).get_global_rect()
+
+	# Assert (Style-Guide, Baustein Communicator, „Lage im Titel“, und Logo: „Rundherum bleibt
+	# mindestens raster-8 frei“). Gemessen wird ab dem Kasten des Logoblocks ohne Schatten, wie der
+	# Style-Guide den freien Bereich festlegt (x 14 bis 296, y 12 bis 83). Der Schatten des
+	# Untertitels liegt darin: Die Schrift hat Ascent 10, ihre Grundlinie liegt also bei
+	# 70 + 10 = 80, und der Text hat keine Unterlängen. Die Schrift endet bei 80, ihr Schatten
+	# 2 tiefer bei 82, noch im Kasten bis 83.
+	assert_eq(_communicator().position, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN),
+		"Voraussetzung: in der Endlage.")
+	assert_lt(gehaeuse.position.x, logoblock.end.x,
+		"Voraussetzung: Gehäuse und Logoblock liegen übereinander, es zählt der Abstand in y.")
+	assert_gte(gehaeuse.position.y - logoblock.end.y, RASTER_8,
+		"Vom Logoblock (bis y %s) zum Gehäuse (ab y %s) bleiben mindestens %s frei." % [
+		logoblock.end.y, gehaeuse.position.y, RASTER_8])
+
+
+func test_logo_untertitel_und_versionszeile_mit_pixelschatten() -> void:
+	# Arrange
+	await _zeige_titel()
+	var logo := _titel.get_node(^"LogoBlock/Logo") as TextureRect
+	var schatten := logo.get_node(^"Shadow") as TextureRect
+
+	# Act: das Logo und sein Schatten Pixel für Pixel.
+	var bild := logo.texture.get_image()
+	bild.convert(Image.FORMAT_RGBA8)
+	var form := schatten.texture.get_image()
+	form.convert(Image.FORMAT_RGBA8)
+	var falsch := 0
+	for y in bild.get_height():
+		for x in bild.get_width():
+			var deckend := bild.get_pixel(x, y).a > 0.0
+			var pixel := form.get_pixel(x, y)
+			if deckend and pixel != UiPalette.TUSCHE or not deckend and pixel.a != 0.0:
+				falsch += 1
+
+	# Assert: harter Versatz 2 nach rechts unten in tusche, hinter dem Logo, ohne Unschärfe.
+	assert_eq(form.get_size(), bild.get_size(), "Der Schatten hat die Form des Logos.")
+	assert_eq(falsch, 0, "Jedes deckende Pixel tusche, jedes andere ganz durchsichtig.")
+	assert_eq(schatten.position, Vector2(2, 2), "2 nach rechts unten.")
+	assert_eq(schatten.size, logo.size, "So groß wie das Logo, also ebenfalls ×2.")
+	assert_true(schatten.show_behind_parent, "Hinter dem Logo.")
+	for label: Label in [_titel.get_node(^"LogoBlock/Subtitle"), _titel.get_node(^"VersionLine")]:
+		assert_eq(label.get_theme_color(&"font_shadow_color"), UiPalette.TUSCHE, label.name)
+		assert_eq([label.get_theme_constant(&"shadow_offset_x"),
+			label.get_theme_constant(&"shadow_offset_y")], [2, 2], "%s: 2 nach rechts unten." %
+			label.name)
+		assert_eq(label.get_theme_constant(&"shadow_outline_size"), 0, "%s: ohne Unschärfe." %
+			label.name)
+
+
+func test_versionszeile_oben_rechts_im_himmel() -> void:
+	# Arrange
+	await _zeige_titel()
+	var zeile := _titel.get_node(^"VersionLine") as Label
+
+	# Assert: rechtsbündig, raster-16 vom oberen und vom rechten Bildrand (Style-Guide, Baustein
+	# Communicator); sie wächst nach links.
+	assert_eq(zeile.get_global_rect().end.x, 640.0 - 16.0, "Rechte Kante bei x 624.")
+	assert_eq(zeile.get_global_rect().position.y, 16.0, "Oberkante bei y 16.")
+	assert_eq(zeile.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT, "Rechtsbündig.")
+	assert_eq(zeile.grow_horizontal, Control.GROW_DIRECTION_BEGIN, "Sie wächst nach links.")
+	assert_gt(zeile.size.x, 0.0, "Voraussetzung: Sie hat Text.")
+	assert_false(zeile.get_global_rect().intersects(_communicator().get_global_rect()),
+		"Sie steht über dem Gerät, nicht darauf.")
+
+
+func test_im_titel_kein_look_paper() -> void:
+	# Arrange: die Szene als Text, wie sie auf der Platte liegt.
+	var szene := FileAccess.get_file_as_string("res://scenes/title/title_screen.tscn")
+
+	# Assert: Endlospapier kommt im Titel nicht mehr vor (FR-011).
+	assert_eq(szene.count("look = 1"), 4, "Alle vier Seiten auf der Anzeige.")
+	assert_false(szene.contains("look = 0"), "Keine Seite auf Papier.")
+
+
+# --- Erscheinen und Wache (Feature 005, T029) -----------------------------------------------------
+
+func test_erscheinen_draussen_dann_herein_auch_nach_der_rueckkehr() -> void:
+	# Arrange: ohne Spielstand, dann wie nach „Zum Hauptmenü“ mit einem.
+	_sitzung = await _neue_sitzung()
+	for durchgang in 2:
+		if durchgang == 1:
+			_lege_an(1, Difficulty.Level.MITTEL, 0, ANGELEGT)
+
+		# Act: einhängen, noch ohne Bild.
+		_baue_titel_ohne_warten(true)
+
+		# Assert: draußen, das Hauptmenü noch ohne Einträge.
+		assert_eq(_communicator().position.y, Communicator.HIDDEN_Y, "Erst steht er draußen.")
+		assert_eq(_hauptmenue().entries.size(), 0, "Noch keine Einträge.")
+
+		# Act: ein Bild, dann Einträge und Auswahl, dann die Fahrt.
+		await wait_process_frames(1)
+
+		# Assert
+		assert_eq(_hauptmenue().entries.size(), 5, "Erst die Einträge …")
+		assert_true(_communicator().is_in(), "… dann fährt er herein.")
+		_assert_nur_sichtbar(_hauptmenue())
+		assert_eq(_hauptmenue().selected_index(), 1 - durchgang,
+			"Vorwahl wie in Feature 004: Neues Spiel, mit Spielstand Weiterspielen.")
+		_fahre(1.0 / 60.0, 1.0 / 60.0)
+		assert_eq(_communicator().position, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN),
+			"In der Endlage.")
+		assert_eq(_wechsel, [])
+
+
+func test_esc_und_enter_vor_den_eintraegen_tun_nichts() -> void:
+	# Arrange: eingehängt, die Blätter entstehen erst am Ende des Bilds.
+	_sitzung = await _neue_sitzung()
+	_baue_titel_ohne_warten()
+
+	# Act
+	_druecke(KEY_ESCAPE)
+	_druecke(KEY_ENTER)
+
+	# Assert: Ohne Wache hätte Esc das Hauptmenü schon jetzt gebaut (_go_back()).
+	assert_eq(_hauptmenue().entries.size(), 0, "Esc hat nichts ausgelöst.")
+	await wait_process_frames(2)
+	_assert_nur_sichtbar(_hauptmenue())
+	assert_eq(_hauptmenue().selected_index(), 1, "Neues Spiel vorgewählt wie sonst.")
+	assert_eq(_hinweis_text(), "Einen neuen Laden aufmachen. Los geht es am 01.01.1985.")
+	assert_eq(_wechsel, [])
+	assert_false(_sitzung.is_running())
+
+
+func test_seitenwechsel_bewegt_den_communicator_nicht() -> void:
+	# Arrange
+	_drei_spiele()
+	await _zeige_titel()
+	var lage := _communicator().position
+	var lagen := []
+
+	# Act: Gradwahl, zurück, Liste, Löschmodus, Rückfrage, Abbrechen, zurück.
+	_hauptmenue().select(1)
+	await _taste(KEY_ENTER)
+	lagen.append(_communicator().position)
+	await _taste(KEY_ESCAPE)
+	lagen.append(_communicator().position)
+	await _oeffne_liste()
+	lagen.append(_communicator().position)
+	await _frage_nach(0)
+	lagen.append(_communicator().position)
+	await _taste(KEY_ESCAPE)
+	await _taste(KEY_ESCAPE)
+	lagen.append(_communicator().position)
+
+	# Assert
+	assert_eq(lage, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN))
+	assert_eq(lagen, [lage, lage, lage, lage, lage], "Keine Seite bewegt den Communicator.")
+
+
+# --- Platz auf der Anzeige und um das Gerät (SC-004, SC-006) --------------------------------------
+
+func test_jede_seite_passt_auf_die_anzeige() -> void:
+	# Arrange: sieben Spielstände, darunter Spiel 9999; fünf sind in der Liste zu sehen.
+	_sechs_und_spiel_9999()
+	await _zeige_titel()
+
+	# Act und Assert: Hauptmenü, Gradwahl, Liste, Löschmodus, Rückfrage zu Spiel 9999.
+	_assert_passt(_hauptmenue())
+	_hauptmenue().select(1)
+	await _taste(KEY_ENTER)
+	_assert_passt(_gradwahl())
+	await _taste(KEY_ESCAPE)
+	await _oeffne_liste()
+	assert_eq(_namen()[0], "Spiel 9999", "Voraussetzung: Spiel 9999 steht oben.")
+	_assert_passt(_liste())
+	await _frage_nach(0)
+	assert_eq(_texte(_rueckfrage())[1], "Spiel 9999 löschen")
+	_assert_passt(_rueckfrage())
+	await _taste(KEY_ESCAPE)
+	_liste().set_delete_mode(true)
+	assert_eq(_kopfzeile_der_liste(), "WELCHES LÖSCHEN?")
+	_assert_passt(_liste())
+
+
+func test_logo_untertitel_und_versionszeile_bleiben_frei() -> void:
+	# Arrange
+	_sechs_und_spiel_9999()
+	await _zeige_titel()
+	var frei := _freie_flaechen()
+
+	# Act und Assert: das Gerät selbst.
+	_assert_frei(_communicator().get_global_rect(), frei, "Gehäuse und Anzeige")
+
+	# Act und Assert: Hinweis und Meldung zu jeder Zeile jeder Seite.
+	await _pruefe_jede_zeile(_hauptmenue(), frei)
+	_hauptmenue().select(1)
+	await _taste(KEY_ENTER)
+	await _pruefe_jede_zeile(_gradwahl(), frei)
+	await _taste(KEY_ESCAPE)
+	await _oeffne_liste()
+	await _pruefe_jede_zeile(_liste(), frei)
+	_liste().set_delete_mode(true)
+	await _pruefe_jede_zeile(_liste(), frei)
+	_liste().set_delete_mode(false)
+	await _frage_nach(0)
+	await _pruefe_jede_zeile(_rueckfrage(), frei)
+
+
+func test_logo_untertitel_und_versionszeile_bleiben_frei_in_jeder_lage_der_fahrt() -> void:
+	# Arrange: ein Spielstand, damit „Weiterspielen“ die oberste Zeile ist; ihr Hinweis kommt dem
+	# Logo am nächsten. Der Communicator fährt im Takt des Tests.
+	_lege_an(1, Difficulty.Level.MITTEL, 0, ANGELEGT)
+	await _zeige_titel(ORDNER, true)
+	var frei := _freie_flaechen()
+	var pruefe := func(was: String) -> void:
+		_assert_frei(_communicator().get_global_rect(), frei, "%s, Gehäuse" % was)
+		_assert_frei(_hinweis_flaeche(), frei, "%s, %s" % [was, _hinweis().theme_type_variation])
+
+	for meldung: bool in [false, true]:
+		# Arrange: draußen, die oberste Zeile gewählt, ihr Hinweis oder eine Meldung daneben.
+		_communicator().place_hidden()
+		_hauptmenue().select(0)
+		if meldung:
+			_communicator().show_warning(NICHT_ANGELEGT, _titel._current_row())
+		var was := "Meldung" if meldung else "Hinweis"
+
+		# Act und Assert: herein und hinaus, nach jedem Bild (SC-006, „in keiner Lage“).
+		pruefe.call("%s draußen" % was)
+		_communicator().slide_in()
+		_fahre(1.0 / 60.0, 1.0 / 60.0, pruefe.bind("%s herein" % was))
+		_communicator().slide_out()
+		_fahre(1.0 / 60.0, 1.0 / 60.0, pruefe.bind("%s hinaus" % was))
+		assert_true(_hinweis().visible, "Voraussetzung: %s war die ganze Fahrt zu sehen." % was)
+
+
+# --- Hinausfahren (Feature 005, T029; R8) ---------------------------------------------------------
+
+func test_weiterspielen_waehrend_der_fahrt_herein_dann_hinaus_dann_spielbildschirm() -> void:
+	# Arrange: ein Spielstand; der Communicator fährt gerade herein.
+	_lege_an(1, Difficulty.Level.MITTEL, 0, ANGELEGT)
+	await _zeige_titel(ORDNER, true)
+	for _bild in 3:
+		_communicator()._process(1.0 / 60.0)
+	assert_gt(_communicator().position.y, GEHAEUSE_OBEN, "Voraussetzung: noch unterwegs.")
+
+	# Act: eine Eingabe (SC-001).
+	await _taste(KEY_ENTER)
+
+	# Assert: Das Spiel läuft, aber der Spielbildschirm kommt erst nach der Fahrt hinaus.
+	assert_true(_sitzung.is_running(), "Weiterspielen hat fortgesetzt.")
+	assert_false(_communicator().is_in(), "Er fährt hinaus.")
+	assert_eq(_wechsel, [], "Noch kein Szenenwechsel.")
+	assert_true(_hinweis().visible, "Der Hinweis fährt mit hinaus.")
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+	assert_eq(_communicator().position.y, Communicator.HIDDEN_Y)
+	assert_eq(_wechsel, [SPIELBILDSCHIRM], "Erst jetzt der Spielbildschirm, genau einmal.")
+
+
+func test_waehrend_der_fahrt_hinaus_kein_zweites_spiel() -> void:
+	# Arrange: ohne Spielstand, in der Endlage; Neues Spiel, Mittel bestätigt.
+	await _zeige_titel(ORDNER, true)
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+	await _taste(KEY_ENTER)
+	await _taste(KEY_ENTER)
+	_communicator()._process(1.0 / 60.0)
+	assert_true(_sitzung.is_running(), "Voraussetzung: Spiel 1 ist angelegt.")
+
+	# Act: während der Fahrt hinaus Enter, Esc, Maus über eine Zeile bewegen und Enter (B2).
+	await _taste(KEY_ENTER)
+	await _taste(KEY_ESCAPE)
+	var leicht := _mitte(_gradwahl(), 0)
+	await _maus_nach(leicht + Vector2(0, 2))
+	await _maus_nach(leicht)
+	await _taste(KEY_ENTER)
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+
+	# Assert
+	assert_eq(_wechsel, [SPIELBILDSCHIRM], "scene_callback genau einmal.")
+	assert_eq(_dateien(), ["spiel_1.json"], "Kein zweites Spiel.")
+	assert_eq(_sitzung.current.difficulty, Difficulty.Level.MITTEL, "Es bleibt Mittel.")
+	assert_eq(_gradwahl().selected_index(), 1, "Die Maus hat nichts gewählt.")
+
+
+func test_hinaus_spaetestens_250_ms_nach_beginn_der_fahrt() -> void:
+	# Arrange: ein Spielstand zum Weiterspielen.
+	_lege_an(1, Difficulty.Level.MITTEL, 0, ANGELEGT)
+	for schritt: float in [1.0 / 60.0, 1.0 / 30.0]:
+		_wechsel.clear()
+		_sitzung = await _neue_sitzung()
+		await _baue_titel(true)
+		_fahre(schritt, schritt)
+
+		# Act
+		await _taste(KEY_ENTER)
+		var bilder := _fahre(schritt, schritt)
+
+		# Assert: gezählt über die Zeitschritte der Bilder wie in test_communicator.gd (SC-002).
+		var dauer := minf(schritt, Communicator.MAX_STEP) + (bilder - 1) * schritt
+		assert_lte(dauer, 0.25, "Bilder zu %.3f s: %d Bilder, %.3f s." % [schritt, bilder, dauer])
+		assert_eq(_wechsel, [SPIELBILDSCHIRM], "Danach ohne weitere Wartezeit der Spielbildschirm.")
+
+
+func test_meldung_neben_der_zeile_in_ihrer_jetzigen_lage() -> void:
+	# Arrange: Anlegen scheitert, denn der Ordner liegt unter einer Datei. Der Communicator fährt
+	# herein, und während der Fahrt wird Mittel gewählt (Analyse, C3).
+	_schreibe(WURZEL.path_join("datei"), "keine Ordner hier")
+	await _zeige_titel(WURZEL.path_join("datei/spielstaende/"), true)
+	_communicator()._process(1.0 / 60.0)
+	await _taste(KEY_ENTER)
+	var beim_waehlen := _communicator().position.y
+	for _bild in 4:
+		_communicator()._process(1.0 / 60.0)
+
+	# Act: Mittel bestätigen; das Anlegen scheitert.
+	await _taste(KEY_ENTER)
+
+	# Assert: Die Meldung steht neben der Zeile, wo sie jetzt ist, und nichts fährt hinaus.
+	assert_lt(_communicator().position.y, beim_waehlen, "Voraussetzung: Er ist weitergefahren.")
+	assert_eq(_hinweis_text(), NICHT_ANGELEGT)
+	assert_eq(_hinweis().theme_type_variation, &"WarningPanel")
+	_assert_neben_zeile(_gradwahl(), 1)
+	assert_true(_communicator().is_in(), "Er fährt weiter herein, nicht hinaus.")
+	assert_true(_communicator().accepts_input())
+	assert_eq(_wechsel, [])
+	assert_push_warning("Es ist kein Spiel angelegt.")
+	assert_engine_error("Method/function failed")
+
+
+func test_fortsetzen_scheitert_ohne_fahrt() -> void:
+	# Arrange: die Liste ist offen; gemeldet wird ein Spielstand, der sich nicht fortsetzen lässt.
+	_drei_spiele()
+	await _zeige_titel()
+	await _oeffne_liste()
+	var kaputt := SaveSlot.new()
+	kaputt.number = 7
+	kaputt.state = SaveSlot.State.DAMAGED
+
+	# Act
+	_titel._on_save_list_resume_requested(kaputt)
+
+	# Assert: wie in Feature 004 neu gelesen, ohne Meldung und ohne Fahrt (CHK016).
+	assert_eq(_communicator().position, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN), "Er bleibt stehen.")
+	assert_true(_communicator().is_in())
+	assert_true(_communicator().accepts_input(), "Nichts ist gesperrt.")
+	_assert_nur_sichtbar(_liste())
+	assert_eq(_wechsel, [])
+	assert_false(_sitzung.is_running())
+	assert_push_warning("ließ sich nicht fortsetzen")
+
+
+# --- Beenden: sofort, ohne Fahrt (Feature 005, T041; FR-013a) -------------------------------------
+
+func test_beenden_schliesst_sofort_ohne_fahrt() -> void:
+	# Arrange: in der Endlage, „Beenden“ gewählt. Der Communicator fährt im Takt des Tests; eine
+	# Fahrt hinaus wäre also zu sehen und käme nicht sofort zu Ende wie mit animate = false.
+	await _zeige_titel(ORDNER, true)
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+	_hauptmenue().select(4)
+	assert_eq(_hauptmenue().entries[4].id, &"quit", "Voraussetzung: Zeile 4 ist „Beenden“.")
+	var fahrten := []
+	_communicator().slide_finished.connect(func(drin: bool) -> void: fahrten.append(drin))
+
+	# Act: mit der Tastatur auslösen, dann laufen noch Bilder der Fahrt, falls eine begonnen hätte.
+	await _taste(KEY_ENTER)
+	for _bild in 20:
+		_communicator()._process(1.0 / 60.0)
+
+	# Assert
+	assert_eq(_beendet, 1, "quit_callback genau einmal, sofort.")
+	assert_true(_communicator().is_in(), "Er fährt nicht hinaus.")
+	assert_true(_communicator().accepts_input(), "Nichts ist gesperrt wie beim Hinausfahren.")
+	assert_eq(_communicator().position, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN), "Er bleibt stehen.")
+	assert_eq(fahrten, [], "Keine Fahrt, also kein slide_finished.")
+	assert_eq(_wechsel, [], "Kein Szenenwechsel.")
+	assert_false(_sitzung.is_running(), "Es beginnt kein Spiel.")
+	assert_eq(_dateien(), [], "Es entsteht keine Datei.")
+
+
+func test_beenden_waehrend_der_fahrt_herein_wirkt_ebenso_sofort() -> void:
+	# Arrange: Der Communicator fährt gerade herein (FR-003: herein ist alles bedienbar).
+	await _zeige_titel(ORDNER, true)
+	for _bild in 3:
+		_communicator()._process(1.0 / 60.0)
+	assert_gt(_communicator().position.y, GEHAEUSE_OBEN, "Voraussetzung: noch unterwegs.")
+	_hauptmenue().select(4)
+	var fahrten := []
+	_communicator().slide_finished.connect(func(drin: bool) -> void: fahrten.append(drin))
+
+	# Act
+	await _taste(KEY_ENTER)
+
+	# Assert: sofort beendet, und die Fahrt herein dreht nicht um.
+	assert_eq(_beendet, 1, "quit_callback genau einmal, ohne das Ende der Fahrt abzuwarten.")
+	assert_true(_communicator().is_in(), "Er fährt weiter herein, nicht hinaus.")
+	assert_true(_communicator().accepts_input())
+	assert_eq(fahrten, [], "Bis hierher keine Fahrt zu Ende.")
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+	assert_eq(fahrten, [true], "Die Fahrt herein endet in der Endlage, keine Fahrt hinaus.")
+	assert_eq(_communicator().position, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN))
+	assert_eq(_beendet, 1, "Nicht noch einmal.")
+	assert_eq(_wechsel, [], "Kein Szenenwechsel.")
 
 
 # --- Ohne Spiel läuft nichts (FR-003) -------------------------------------------------------------
@@ -136,8 +584,7 @@ func test_fuenf_eintraege_in_der_reihenfolge_von_fr_001() -> void:
 	assert_eq(_texte(_hauptmenue()),
 		["Weiterspielen", "Neues Spiel", "Spiel laden", "Einstellungen", "Beenden"])
 	assert_eq(_hauptmenue().header_text, "HAUPTMENÜ")
-	assert_eq(_hauptmenue().size, Vector2(144, 6 * ZEILE), "Kopfzeile und fünf Zeilen.")
-	assert_eq(_hauptmenue().global_position, Vector2(472, 150), "Lage wie in Feature 001.")
+	assert_eq(_hauptmenue().get_global_rect(), ANZEIGE, "Auf der Anzeige des Communicators.")
 
 
 func test_ohne_spielstaende_ist_neues_spiel_gewaehlt_und_weiterspielen_und_laden_gesperrt() -> void:
@@ -253,8 +700,7 @@ func test_neues_spiel_zeigt_die_gradwahl_mit_mittel_und_seinem_satz() -> void:
 	assert_true(_hat_fokus(_gradwahl()), "Die Gradwahl hat den Fokus.")
 	assert_false(_hat_fokus(_hauptmenue()), "Das unsichtbare Hauptmenü hat keinen.")
 	assert_eq(_hinweis_text(), "Das Glück hält sich raus.", "Sein Satz steht sofort da (R13).")
-	assert_eq(_gradwahl().global_position, Vector2(472, 150), "An der Stelle des Hauptmenüs.")
-	assert_eq(_gradwahl().size, Vector2(144, 5 * ZEILE), "144 breit wie das Hauptmenü.")
+	assert_eq(_gradwahl().get_global_rect(), ANZEIGE, "Auf der Anzeige, wie das Hauptmenü.")
 	_assert_neben_zeile(_gradwahl(), 1)
 
 
@@ -547,9 +993,7 @@ func test_spiel_laden_oeffnet_die_liste_mit_der_obersten_zeile() -> void:
 	assert_true(_hat_fokus(_liste()), "Die Liste hat den Fokus.")
 	assert_false(_hat_fokus(_hauptmenue()), "Das unsichtbare Hauptmenü hat keinen.")
 	assert_eq(_hinweis_text(), _zeilenhinweis("14.03.1986", ANGELEGT + 180))
-	assert_eq(_liste().global_position, Vector2(312, 150), "Oben bei y 150, rechts bis x 616.")
-	assert_eq(_liste().size, Vector2(304, 6 * ZEILE),
-		"Kopfzeile, drei Spielstände, „Löschen …“ und „Zurück“.")
+	assert_eq(_liste().get_global_rect(), ANZEIGE, "Auf der Anzeige, wie das Hauptmenü.")
 	_assert_neben_zeile(_liste(), 0)
 	assert_eq(_wechsel, [])
 
@@ -735,7 +1179,7 @@ func test_sc_002_liste_mit_zwanzig_spielstaenden_in_hoechstens_einer_sekunde() -
 		await _taste(KEY_ENTER)
 		zeiten.append((Time.get_ticks_usec() - beginn) / 1000.0)
 		assert_true(_liste().visible, "Lauf %d: Die Liste ist zu sehen." % lauf)
-		assert_eq(_namen().size(), SaveList.VISIBLE_ROWS)
+		assert_eq(_namen().size(), SaveList.LCD_VISIBLE_ROWS)
 		await _taste(KEY_ESCAPE)
 
 	# Assert
@@ -798,8 +1242,7 @@ func test_loeschen_und_eine_zeile_zeigen_die_rueckfrage_mit_abbrechen_vorgewaehl
 	assert_eq(hinweis_abbrechen, "Spiel 1 bleibt: Leicht, 01.01.1985. Esc geht auch.")
 	assert_eq(_hinweis_text(), "Spiel 1 ist danach weg: Leicht, 01.01.1985. Für immer.")
 	_assert_neben_zeile(_rueckfrage(), 1)
-	assert_eq(_rueckfrage().global_position, Vector2(472, 150), "An der Stelle des Hauptmenüs.")
-	assert_eq(_rueckfrage().size, Vector2(144, 3 * ZEILE), "144 breit wie das Hauptmenü.")
+	assert_eq(_rueckfrage().get_global_rect(), ANZEIGE, "Auf der Anzeige, wie das Hauptmenü.")
 	assert_eq(_inhalte(), vorher, "Noch ist nichts gelöscht.")
 
 
@@ -1163,7 +1606,8 @@ func test_meldung_dann_pfeil_runter_am_unteren_rand_zeigt_den_neuen_hinweis() ->
 	await _oeffne_liste()
 	await _scheitere_beim_loeschen(5)
 	var vorher := [_hinweis_text(), _liste()._more_below()]
-	_assert_neben_zeile(_liste(), 5)
+	var unterste := _liste().visible_rows() - 1
+	_assert_neben_zeile(_liste(), unterste)
 
 	# Act
 	await _taste(KEY_DOWN)
@@ -1173,7 +1617,7 @@ func test_meldung_dann_pfeil_runter_am_unteren_rand_zeigt_den_neuen_hinweis() ->
 	assert_eq(_liste().selected_slot().display_name(), "Spiel 2")
 	assert_eq(_hinweis_text(), _zeilenhinweis("02.01.1985", ANGELEGT + 2 * 60))
 	assert_eq(_hinweis().theme_type_variation, &"HintPanel", "Keine Meldung mehr.")
-	_assert_neben_zeile(_liste(), 5)
+	_assert_neben_zeile(_liste(), unterste)
 	assert_push_warning("ließ sich nicht löschen")
 
 
@@ -1277,27 +1721,42 @@ func test_ist_die_datei_schon_weg_und_keiner_mehr_da_geht_es_ins_hauptmenue() ->
 
 ## Baut eine Session mit eigener Uhr, eigener Zeitleiste und dem Ordner [param ordner], dann den
 ## Titel in einem eigenen Viewport, und wartet, bis er seine Blätter gebaut hat.
-func _zeige_titel(ordner: String = ORDNER) -> void:
+func _zeige_titel(ordner: String = ORDNER, faehrt := false) -> void:
 	_sitzung = await _neue_sitzung(ordner)
-	await _baue_titel()
+	await _baue_titel(faehrt)
 
 
 ## Baut den Titel mit der Session _sitzung in einem eigenen Viewport, wie beim Erscheinen nach dem
 ## Verlassen eines Spiels, und wartet, bis er seine Blätter gebaut hat.
-func _baue_titel() -> void:
+##
+## [param faehrt] false: Der Communicator fährt nicht und steht gleich in der Endlage. true: Er
+## fährt, aber nur im Takt des Tests (_fahre()); die Engine treibt ihn nicht.
+func _baue_titel(faehrt := false) -> void:
+	_baue_titel_ohne_warten(faehrt)
+	# Die Blätter entstehen zeitversetzt, die Zeilen ordnet der VBoxContainer im nächsten Bild.
+	await wait_process_frames(2)
+
+
+## Wie _baue_titel(), aber ohne zu warten: Danach ist der Titel im Baum, hat seine Blätter aber
+## noch nicht gebaut, denn _build_sheets() kommt zeitversetzt am Ende des Bilds.
+func _baue_titel_ohne_warten(faehrt := false) -> void:
 	var eigener_viewport := SubViewport.new()
 	eigener_viewport.size = Vector2i(640, 360)
 	add_child_autofree(eigener_viewport)
 	_titel = TITEL.instantiate() as TitleScreen
 	_titel.session = _sitzung
 	_titel.scene_callback = _merke_wechsel
+	_titel.quit_callback = _merke_beenden
 	eigener_viewport.add_child(_titel)
+	# Nach dem Einhängen: _ready() hat _process() eingeschaltet; die Fahrt herein beginnt erst
+	# zeitversetzt in _build_sheets(), mit dem Wert von animate von jetzt.
+	_communicator().animate = faehrt
+	if faehrt:
+		_communicator().set_process(false)
 	# Die Maus steht im Viewport. Im Fenster meldet das das Betriebssystem; ohne diese Meldung gibt
 	# ein Viewport Mausbewegungen nicht an gui_input weiter, und die Liste wählt ihre Zeilen über
 	# gui_input (wie in test_save_list.gd).
 	eigener_viewport.notification(Node.NOTIFICATION_VP_MOUSE_ENTER)
-	# Die Blätter entstehen zeitversetzt, die Zeilen ordnet der VBoxContainer im nächsten Bild.
-	await wait_process_frames(2)
 
 
 func _neue_sitzung(ordner: String = ORDNER) -> SITZUNG:
@@ -1324,6 +1783,10 @@ func _merke_wechsel(pfad: String) -> void:
 	_wechsel.append(pfad)
 
 
+func _merke_beenden() -> void:
+	_beendet += 1
+
+
 func _uhr() -> UHR:
 	return _sitzung.clock as UHR
 
@@ -1332,24 +1795,29 @@ func _zeitleiste() -> ZEITLEISTE:
 	return _sitzung.timeline as ZEITLEISTE
 
 
+func _communicator() -> Communicator:
+	return _titel.get_node(^"Communicator") as Communicator
+
+
 func _hauptmenue() -> MainMenu:
-	return _titel.get_node(^"MainMenu") as MainMenu
+	return _titel.get_node(^"Communicator/MainMenu") as MainMenu
 
 
 func _gradwahl() -> MainMenu:
-	return _titel.get_node(^"DifficultySheet") as MainMenu
+	return _titel.get_node(^"Communicator/DifficultySheet") as MainMenu
 
 
 func _liste() -> SaveList:
-	return _titel.get_node(^"SaveList") as SaveList
+	return _titel.get_node(^"Communicator/SaveList") as SaveList
 
 
 func _rueckfrage() -> MainMenu:
-	return _titel.get_node(^"ConfirmSheet") as MainMenu
+	return _titel.get_node(^"Communicator/ConfirmSheet") as MainMenu
 
 
+## Der Hinweis gehört seit Feature 005 zum Communicator.
 func _hinweis() -> MenuHint:
-	return _titel.get_node(^"MenuHint") as MenuHint
+	return _titel.get_node(^"Communicator/Hint") as MenuHint
 
 
 func _hinweis_text() -> String:
@@ -1382,13 +1850,14 @@ func _assert_nur_sichtbar(blatt: Control) -> void:
 			"%s sichtbar: %s" % [anderes.name, anderes == blatt])
 
 
-## Der Hinweis steht 4 Pixel links neben Zeile [param index] von [param blatt], oben bündig. Bei der
-## Liste ist [param index] die Zeile auf dem Papier unter der Kopfzeile.
+## Der Hinweis steht oben bündig mit Zeile [param index] von [param blatt] und seit Feature 005 4
+## Pixel links neben dem Gehäuse des Communicators (R7). Bei der Liste ist [param index] die Zeile
+## auf der Anzeige unter der Kopfzeile.
 func _assert_neben_zeile(blatt: Control, index: int) -> void:
 	var oben := blatt.global_position.y + ZEILE * (index + 1)
 	assert_eq(_hinweis().global_position.y, oben, "Oben bündig mit Zeile %d." % index)
 	assert_eq(_hinweis().global_position.x + _hinweis().size.x,
-		blatt.global_position.x - MenuHint.GAP, "4 Pixel links neben der Zeile.")
+		GEHAEUSE_LINKS - MenuHint.GAP, "4 Pixel links neben dem Gehäuse.")
 
 
 ## Öffnet die Liste über „Spiel laden“ mit Enter.
@@ -1417,7 +1886,7 @@ func _scheitere_beim_loeschen(zeile: int) -> void:
 ## Die Namen in den sichtbaren Zeilen der Liste, von oben nach unten.
 func _namen() -> Array:
 	var namen := []
-	for zeile in SaveList.VISIBLE_ROWS:
+	for zeile in _liste().visible_rows():
 		var knopf := _liste().get_node("Rows/Slot%d" % zeile) as Button
 		if knopf.visible:
 			namen.append((knopf.get_node(^"Name") as Label).text)
@@ -1481,6 +1950,38 @@ func _taste(taste: Key) -> void:
 		ereignis.pressed = gedrueckt
 		_titel.get_viewport().push_input(ereignis)
 	await wait_process_frames(1)
+
+
+## Drückt [param taste] und lässt sie los wie _taste(), aber ohne ein Bild zu warten: für Eingaben,
+## bevor der Titel seine Blätter zeitversetzt baut.
+func _druecke(taste: Key) -> void:
+	for gedrueckt: bool in [true, false]:
+		var ereignis := InputEventKey.new()
+		ereignis.keycode = taste
+		ereignis.physical_keycode = taste
+		ereignis.pressed = gedrueckt
+		_titel.get_viewport().push_input(ereignis)
+
+
+## Taktet die laufende Fahrt des Communicators: [param erstes] im ersten Bild, [param danach] in
+## jedem weiteren, bis slide_finished kommt. Gibt die Zahl der Bilder zurück. Fährt er hinaus,
+## wechselt der Titel dabei die Szene über scene_callback. [param nach_jedem_bild] läuft, wenn
+## gesetzt, nach jedem Bild der Fahrt.
+func _fahre(erstes: float, danach: float, nach_jedem_bild := Callable()) -> int:
+	var fertig := [false]
+	var ende := func(_drin: bool) -> void: fertig[0] = true
+	_communicator().slide_finished.connect(ende)
+	var bilder := 0
+	var schritt := erstes
+	while not fertig[0] and bilder < 200:
+		_communicator()._process(schritt)
+		if nach_jedem_bild.is_valid():
+			nach_jedem_bild.call()
+		bilder += 1
+		schritt = danach
+	_communicator().slide_finished.disconnect(ende)
+	assert_true(fertig[0], "Die Fahrt endet.")
+	return bilder
 
 
 ## Fährt mit der Maus nach [param ziel] und wartet ein Bild; true heißt: Koordinaten des Viewports.
@@ -1604,3 +2105,78 @@ func _raeume_auf(pfad: String) -> void:
 
 func _tag(jahr: int, monat: int, tag: int) -> int:
 	return GameDate.new(jahr, monat, tag).to_day_index()
+
+
+## Sechs Spielstände, Spiel 1 bis 6, und Spiel 9999, das zuletzt gespielte: Die Liste zeigt es oben.
+func _sechs_und_spiel_9999() -> void:
+	for nummer in range(1, 7):
+		_lege_an(nummer, Difficulty.Level.LEICHT, nummer, ANGELEGT + nummer * 60)
+	_lege_an(9999, Difficulty.Level.SCHWER, _tag(1999, 12, 31), ANGELEGT + 3000)
+
+
+## [param seite] passt auf die Anzeige (SC-004): Sie liegt genau auf ihr, ihre Zeilen passen in die
+## Höhe, jede Zeile und die Kopfzeile in die Breite, und kein Text einer Spalte wird gekürzt.
+func _assert_passt(seite: Control) -> void:
+	assert_eq(seite.get_global_rect(), ANZEIGE, "%s liegt auf der Anzeige." % seite.name)
+	var zeilen := seite.get_node(^"Rows") as VBoxContainer
+	assert_lte(zeilen.get_combined_minimum_size().y, ANZEIGE.size.y,
+		"%s: Alle Zeilen passen in die Höhe." % seite.name)
+	for kind in zeilen.get_children():
+		var zeile := kind as Control
+		if not zeile.visible:
+			continue
+		assert_lte(zeile.get_combined_minimum_size().x, zeilen.size.x,
+			"%s/%s passt in die Breite." % [seite.name, zeile.name])
+		for knoten in zeile.find_children("*", "Label", false, false):
+			var spalte := knoten as Label
+			if not spalte.visible or spalte.text.is_empty():
+				continue
+			var schrift := spalte.get_theme_font(&"font")
+			var breite := schrift.get_string_size(spalte.text, HORIZONTAL_ALIGNMENT_LEFT, -1,
+				spalte.get_theme_font_size(&"font_size")).x
+			assert_lte(breite, spalte.size.x, "%s/%s „%s“ wird nicht gekürzt." % [seite.name,
+				zeile.name, spalte.text])
+
+
+## Was frei bleiben muss (SC-006): Logo samt pixelschatten, Untertitel und Versionszeile, je mit den
+## 2 Pixeln Schatten nach rechts unten.
+func _freie_flaechen() -> Dictionary:
+	var schatten := Vector2(2, 2)
+	var flaechen := {}
+	for pfad: String in ["LogoBlock/Logo", "LogoBlock/Subtitle", "VersionLine"]:
+		var teil := _titel.get_node(pfad) as Control
+		flaechen[pfad] = Rect2(teil.global_position, teil.size + schatten)
+	return flaechen
+
+
+## [param flaeche] überschneidet keine der freien Flächen [param frei].
+func _assert_frei(flaeche: Rect2, frei: Dictionary, was: String) -> void:
+	for pfad: String in frei:
+		assert_false(flaeche.intersects(frei[pfad]), "%s überschneidet %s: %s und %s." % [was,
+			pfad, flaeche, frei[pfad]])
+
+
+## Wählt jede Zeile von [param seite] und prüft Hinweis und Meldung daneben gegen [param frei], die
+## Meldung mit beiden Sätzen des Titels. Der Hinweiskasten zählt mit seinem Schatten.
+func _pruefe_jede_zeile(seite: Control, frei: Dictionary) -> void:
+	var anzahl := 0
+	if seite is MainMenu:
+		anzahl = (seite as MainMenu).entries.size()
+	else:
+		anzahl = (seite as SaveList)._slots.size() + 2
+	for zeile in anzahl:
+		if seite is MainMenu:
+			(seite as MainMenu).select(zeile)
+		else:
+			(seite as SaveList).select(zeile)
+		await wait_process_frames(1)
+		_assert_frei(_hinweis_flaeche(), frei, "%s, Zeile %d, Hinweis" % [seite.name, zeile])
+		for satz: String in [NICHT_ANGELEGT, LOESCHEN_GING_NICHT]:
+			_communicator().show_warning(satz, _titel._current_row())
+			_assert_frei(_hinweis_flaeche(), frei, "%s, Zeile %d, Meldung" % [seite.name, zeile])
+		_communicator().hide_hint()
+
+
+func _hinweis_flaeche() -> Rect2:
+	var schatten := Vector2(MenuHint.SHADOW_OFFSET, MenuHint.SHADOW_OFFSET)
+	return Rect2(_hinweis().global_position, _hinweis().size + schatten)

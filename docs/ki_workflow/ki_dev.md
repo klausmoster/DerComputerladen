@@ -253,14 +253,23 @@ Die Bitte um Abnahme enthält, in dieser Reihenfolge:
   C2 aus der Leonardo-Stilprobe vom 2026-10-19 (Ladenbesitzer hinter der Theke). Zwei Raster:
   Szenen 320 × 180 Bildpixel, Oberfläche 640 × 360, ganzzahlig skaliert. „Cooler Retro-Style, der
   trotzdem als modernes Spiel durchgeht“; Konsistenz ist oberstes Ziel.
-- Klaus erzeugt die Bilder selbst in Leonardo.ai. Claude liefert dafür jedes Mal den fertigen
-  Prompt auf Englisch mit dem Stilblock aus dem Style-Guide, das Modell und das Seitenverhältnis
-  und trägt den Prompt in die Prompt-Bibliothek ein (Klaus, 2026-10-19). Bisher: Lucid Origin mit
+- Die Bilder erzeugt Claude selbst in Leonardo.ai, über Claude in Chrome im Konto des Projekts;
+  Klaus wählt nur das Bild aus und gibt es frei. Claude fragt nicht, ob Klaus erzeugen will, und
+  liefert keine Anleitung zum Selbermachen (Klaus, 2026-10-27; bis dahin erzeugte Klaus selbst).
+  Den Prompt schreibt Claude auf Englisch mit dem Stilblock aus dem Style-Guide und trägt ihn
+  vorher in die Prompt-Bibliothek ein. Ist Claude in Chrome nicht erreichbar, sagt Claude das
+  sofort und nennt den Grund, statt auf einen anderen Weg auszuweichen. Den ganzen Ablauf vom
+  Prompt bis zum Prompt-Log beschreibt der Skill `dcl-grafik`
+  (`.claude/skills/dcl-grafik/SKILL.md`); er wird bei jeder Grafikaufgabe geladen. Anlass: Die
+  Regeln lagen auf drei Dateien verteilt, und Claude bat Klaus zweimal, selbst in Leonardo zu
+  erzeugen (2026-10-27). Bisher: Lucid Origin mit
   C2 als Style Reference (Stärke High), Prompt Enhance aus, Style None. Die Modellliste von
   Leonardo ändert sich, also vorher prüfen.
 - Leonardo bedient Claude über Claude in Chrome. Chrome startet auf Klaus' Rechner nur mit
   `--user-data-dir="$HOME/Library/Application Support/Google/Chrome-Profil"`, weil macOS den
-  Standard-Profilordner sperrt.
+  Standard-Profilordner sperrt; ohne das schließt Chrome sich sofort wieder. Claude startet es
+  selbst mit `open -na "Google Chrome" --args --user-data-dir="$HOME/Library/Application
+  Support/Google/Chrome-Profil"`, wenn Claude in Chrome nicht erreichbar ist (2026-10-27).
 - Die Grafikstil-Zeile im GDD ändert Claude nur mit Klaus' OK.
 
 ## Offen

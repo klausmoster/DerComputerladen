@@ -88,8 +88,8 @@ deren `README.md`.
 | `src/core/timeline/` | Kern der Zeitleiste ohne Node: Datenklassen, Katalog, Prüfregeln, Fahrplan (`TimelineRun`), Vergleich, Statistik, Schwierigkeitsgrade (`Difficulty`, `DifficultyProfile`) |
 | `src/core/save/` | Spielstände: `SaveGame` (Inhalt, Formatversion), `SaveSlot` (eine Datei und ihr Zustand), `SaveStore` (Ordner `user://spielstaende/`, sicheres Schreiben, Löschen) |
 | `src/data/` | Ereigniskatalog `event_catalog.json`, gepflegt mit der Zeitleisten-Werkstatt |
-| `src/ui/` | Theme des ganzen Spiels (`computerladen_theme.tres`) und Farben (`ui_palette.gd`) |
-| `src/scenes/title/` | Titelbildschirm mit seinen Blättern: Hauptmenü, Gradwahl, Liste der Spielstände, Rückfrage; Hinweis und Meldung; alle Texte in `title_texts.gd` |
+| `src/ui/` | Theme des ganzen Spiels (`computerladen_theme.tres`), Farben (`ui_palette.gd`) und der Communicator (`communicator/`) |
+| `src/scenes/title/` | Titelbildschirm mit seinen Seiten auf dem Communicator: Hauptmenü, Gradwahl, Liste der Spielstände, Rückfrage; Hinweis und Meldung; alle Texte in `title_texts.gd` |
 | `src/scenes/game/` | Spielbildschirm, bisher leer bis auf „Zum Hauptmenü“ |
 | `src/assets/` | Schriften (`fonts/`), gerasterte Bilder (`images/`), App-Symbol (`icon/`) |
 | `src/tools/werkstatt/` | Zeitleisten-Werkstatt (Editor, Zeitstrahl, Simulator, Statistik), Textausgabe `fahrplan_ausgabe.gd`, Proben unter `proben/`; vom Export ausgeschlossen |

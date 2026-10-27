@@ -83,6 +83,9 @@ ein Palm Pilot. Ein lustiges Detail, das die Zeit spürbar macht.
   Idee von Klaus in clarify zu Feature 004.
 - Offen: Was verwaltet er (Menü, Termine, Nachrichten, Speichern)? Wechselt das Gerät von selbst
   mit dem Jahr oder kauft der Spieler ein neues? Echte Gerätenamen oder leicht verfremdet?
+- Umgesetzt in Teilen: [Feature 005](../specs/005-communicator/spec.md) baut den Communicator als
+  Steuerelement und stellt den ganzen Titel darauf um, fest mit dem Organizer von 1991. Welche
+  Gehäuse es im Spiel gibt und wie sie wechseln, ist weiter offen.
 
 ## 2026-10-26 · Navigation über ein Taschengerät, das mit den Jahren wechselt
 

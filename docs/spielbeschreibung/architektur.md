@@ -4,17 +4,18 @@
 - **Laden, wenn:** eine Arbeit mehrere Systeme berührt, neue Dateien, Autoloads oder Systeme
   dazukommen, oder ein System an ein anderes angebunden wird.
 - **Code:** `src/project.godot`, `src/core/`, `src/scenes/`, `src/ui/`, `src/tools/`
-- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/003-schwierigkeitsgrade/`,
+- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/005-communicator/`,
   Verfassung `.specify/memory/constitution.md`
-- **Stand:** Feature 004, 2026-10-27
+- **Stand:** Feature 005, 2026-10-27
 
 ## Das Spiel in einem Absatz
 
 „Der Computerladen“ ist eine Wirtschaftssimulation mit Point-and-Click-Adventure: Der Spieler
 betreibt von 1985 bis 1999 einen Computerladen in Deutschland. Die Vision steht in
 `docs/game_design.md`. Gebaut sind bisher der Start bis zum Hauptmenü (Feature 001), die
-Zeitleiste mit ihrer Werkstatt (002), die Schwierigkeitsgrade der Zeitleiste (003) und das
-Beginnen, Speichern und Fortsetzen von Spielen (004). Der Spielbildschirm ist noch leer: Die Uhr
+Zeitleiste mit ihrer Werkstatt (002), die Schwierigkeitsgrade der Zeitleiste (003), das
+Beginnen, Speichern und Fortsetzen von Spielen (004) und der Communicator, ein Taschengerät als
+Steuerelement, auf dem heute das Menü des Titels läuft (005). Der Spielbildschirm ist noch leer: Die Uhr
 steht, Wirtschaft und Laden gibt es noch nicht.
 
 ## Ordner
@@ -26,8 +27,8 @@ steht, Wirtschaft und Laden gibt es noch nicht.
 | `src/core/save/` | Spielstände ohne Node: `SaveGame`, `SaveSlot`, `SaveStore` |
 | `src/core/timeline/` | Kern der Zeitleiste ohne Node: Datenklassen, Katalog, Prüfung, Lauf, Vergleich, Statistik, Grade |
 | `src/data/` | Spieldaten: `event_catalog.json` |
-| `src/scenes/` | Szenen des Spiels: `title/` (Titelbildschirm, Blätter), `game/` (Spielbildschirm) |
-| `src/ui/` | Theme und Farben, für alle Szenen |
+| `src/scenes/` | Szenen des Spiels: `title/` (Titelbildschirm und seine Seiten), `game/` (Spielbildschirm) |
+| `src/ui/` | für alle Szenen: Theme, Farben, Baustein Knopf, Baustein Communicator (`communicator/`) |
 | `src/assets/` | Schriften, gerasterte Bilder, App-Symbol |
 | `src/tools/werkstatt/` | Zeitleisten-Werkstatt; nicht im Export |
 | `src/test/` | GUT-Tests und `fixtures/` |
@@ -64,6 +65,9 @@ flowchart TB
     DATA[("data/event_catalog.json")]
     SAVES[("user://spielstaende/")]
     UI["ui: Theme, UiPalette"]
+    CO["Communicator<br/>ui/communicator"]
+    TS -->|"Seiten, Fahrt, Hinweis"| CO
+    CO --> UI
     TS -->|"start_new, resume"| SE
     GS -->|"leave"| SE
     TS -->|"Liste, Löschen"| ST

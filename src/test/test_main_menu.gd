@@ -8,6 +8,10 @@ extends GutTest
 ## Seit Feature 004 (T017) dazu: Kopfzeile und Breite als Eigenschaften, neue Einträge zur
 ## Laufzeit mit Vorwahl, und ein unsichtbares Menü nimmt keinen Fokus.
 ##
+## Seit Feature 005 (T014) dazu: das Menü auf der Anzeige des Communicators (look = LCD). Die Tests
+## dazu bauen ein eigenes Menü in einem eigenen Viewport, so groß wie die Anzeige, wie der
+## Communicator es hinstellt; alle Tests davor laufen unverändert auf Papier.
+##
 ## Die vier Einträge entstehen hier im Code, mit den Werten aus dem Datenmodell
 ## (specs/001-hauptmenue/data-model.md). Geprüft wird also das Menü, nicht die Daten,
 ## die später im Titelbildschirm stehen.
@@ -20,6 +24,8 @@ extends GutTest
 ## ui_up, ui_focus_next und so weiter und den Weg des Fokus.
 
 const MENU_SCENE := preload("res://scenes/title/main_menu.tscn")
+## Größe der Anzeige des Communicators (Style-Guide, Baustein Communicator).
+const ANZEIGE := Vector2(320, 160)
 
 var _menu: MainMenu
 
@@ -439,6 +445,170 @@ func test_unsichtbares_menue_nimmt_keinen_fokus() -> void:
 		"Unsichtbar meldet es keine Auswahl, sonst stünde ein Hinweis neben nichts.")
 
 
+# --- Auf der Anzeige (Feature 005, T014) ---------------------------------
+
+func test_papier_ohne_override_der_schrift() -> void:
+	# Act: die verfügbare Zeile wählen, auf Papier.
+	_menu.select(3)
+
+	# Assert: Auf Papier kommt jede Farbe aus MenuRow; der Titel bleibt, wie er ist.
+	assert_true(_menu._draws_paper(), "Auf Papier malt das Menü Papier.")
+	for zeile: Button in _zeilen():
+		for farbe in MainMenu.LIT_FONT_COLORS:
+			assert_false(zeile.has_theme_color_override(farbe),
+				"„%s“ hat auf Papier keinen Override %s." % [zeile.text, farbe])
+	assert_eq(_menu.size, Vector2(MainMenu.PAPER_WIDTH, 5 * MainMenu.ROW_HEIGHT))
+
+
+func test_lcd_ohne_papier_mit_den_varianten_der_anzeige() -> void:
+	# Arrange und Act
+	await _auf_der_anzeige()
+
+	# Assert
+	assert_false(_menu._draws_paper(), "Auf der Anzeige kein Papier, keine Lochränder.")
+	assert_eq((_menu.get_node(^"Rows/Header") as Label).theme_type_variation, &"LcdHeader")
+	for zeile: Button in _zeilen():
+		assert_eq(zeile.theme_type_variation, &"LcdRow", "„%s“ ist eine LcdRow." % zeile.text)
+	var zeilen := _menu.get_node(^"Rows") as Control
+	assert_eq([zeilen.offset_left, zeilen.offset_right],
+		[float(MenuPaper.LCD_ROW_INSET), -float(MenuPaper.LCD_ROW_INSET)],
+		"Der Innenbereich beginnt 4 vom Rand und endet 4 davor.")
+	assert_eq((_zeilen()[0] as Button).global_position.x
+		+ (_zeilen()[0] as Button).get_theme_stylebox(&"normal").content_margin_left,
+		float(MenuPaper.LCD_TEXT_INSET), "Der Text beginnt bei x 16.")
+
+
+func test_lcd_groesse_kommt_von_aussen() -> void:
+	# Arrange
+	await _auf_der_anzeige()
+
+	# Act: Was auf Papier die Größe setzt, darf sie auf der Anzeige nicht ändern.
+	var neu := _lcd_eintraege()
+	neu.append(_eintrag(&"vier", "Vier", true, "Vier."))
+	_menu.set_entries(neu, 0)
+	_menu.paper_width = 144
+
+	# Assert
+	assert_eq(_menu.size, ANZEIGE, "Die Seite bleibt so groß wie die Anzeige.")
+	assert_eq(_menu.custom_minimum_size, Vector2.ZERO, "Keine Mindestgröße überstimmt sie.")
+
+
+func test_lcd_auswahl_ist_invertiert() -> void:
+	# Arrange
+	await _auf_der_anzeige()
+
+	# Act: Pfeil runter auf „Zwei“.
+	_taste(KEY_DOWN)
+
+	# Assert: Schrift der gewählten Zeile lcd, die übrigen tusche.
+	assert_eq(_menu.selected_index(), 1)
+	assert_eq(_schriftfarben(), [UiPalette.TUSCHE, UiPalette.LCD, UiPalette.GEHAEUSE_DUNKEL])
+	# Balken und Pfeil, wie _draw() sie malt.
+	var ebenen := MenuPaper.lcd_selection_layers(_menu.size.x, 2, true)
+	assert_eq(ebenen[0], {"rect": Rect2(4, 40, ANZEIGE.x - 8, 20), "color": UiPalette.TUSCHE},
+		"Balken in tusche über den Innenbereich, ganze Zeilenhöhe.")
+	for spalte: Dictionary in ebenen.slice(1):
+		assert_eq(spalte["color"], UiPalette.LCD, "Der Pfeil ist lcd.")
+	assert_eq((ebenen[1]["rect"] as Rect2).position, Vector2(MenuPaper.LCD_ARROW_X, 46),
+		"Pfeil bei x 8, in der Zeile wie auf Papier.")
+	assert_eq(ebenen.size(), 1 + MenuPaper.ARROW_WIDTH, "Balken und vier Spalten Pfeil.")
+
+
+func test_lcd_maus_auf_a_pfeil_auf_b() -> void:
+	# Arrange: Die Maus steht auf „Eins“ und wählt sie.
+	await _auf_der_anzeige()
+	_maus_nach(_mitte(0))
+
+	# Act: Pfeil runter wählt „Zwei“; die Maus bleibt auf „Eins“.
+	_taste(KEY_DOWN)
+
+	# Assert: „Eins“ ist unter der Maus, aber nicht gewählt, und bleibt tusche (Analyse, B1).
+	var eins := _zeilen()[0] as Button
+	assert_eq(eins.get_draw_mode(), BaseButton.DRAW_HOVER, "Voraussetzung: „Eins“ unter der Maus.")
+	assert_eq(_menu.selected_index(), 1)
+	assert_eq(_schriftfarben(), [UiPalette.TUSCHE, UiPalette.LCD, UiPalette.GEHAEUSE_DUNKEL],
+		"A unter der Maus tusche, B gewählt lcd.")
+
+
+func test_lcd_gewaehlt_unter_der_maus_bleibt_hell() -> void:
+	# Arrange
+	await _auf_der_anzeige()
+
+	# Act: Die Maus fährt auf „Zwei“ und wählt sie.
+	_maus_nach(_mitte(1))
+
+	# Assert
+	assert_eq((_zeilen()[1] as Button).get_draw_mode(), BaseButton.DRAW_HOVER)
+	assert_eq(_schriftfarben(), [UiPalette.TUSCHE, UiPalette.LCD, UiPalette.GEHAEUSE_DUNKEL])
+
+
+func test_lcd_gewaehlt_und_nicht_verfuegbar_bleibt_gedaempft() -> void:
+	# Arrange
+	await _auf_der_anzeige()
+
+	# Act: „Drei“ ist nicht verfügbar.
+	_menu.select(2)
+
+	# Assert
+	assert_eq(_schriftfarben(), [UiPalette.TUSCHE, UiPalette.TUSCHE, UiPalette.GEHAEUSE_DUNKEL],
+		"Gewählt und nicht verfügbar: gehaeuse-dunkel, die vorige Zeile wieder tusche.")
+	var ebenen := MenuPaper.lcd_selection_layers(_menu.size.x, 3, false)
+	assert_eq(ebenen[0]["color"], UiPalette.TUSCHE, "Der Balken bleibt tusche.")
+	for spalte: Dictionary in ebenen.slice(1):
+		assert_eq(spalte["color"], UiPalette.GEHAEUSE_DUNKEL, "Der Pfeil ist gedämpft.")
+
+
+func test_lcd_bedienung_und_signale_wie_auf_papier() -> void:
+	# Arrange
+	await _auf_der_anzeige()
+	watch_signals(_menu)
+
+	# Act und Assert: Pfeile laufen um, Enter löst nur Verfügbares aus, Rechtsklick wählt nur.
+	assert_eq(_auswahl_nach_jedem_druck(KEY_DOWN), [1, 2, 0], "Pfeil runter läuft reihum.")
+	assert_eq(_auswahl_nach_jedem_druck(KEY_UP), [2, 1, 0], "Pfeil hoch läuft reihum.")
+	_taste(KEY_ENTER)
+	assert_signal_emitted_with_parameters(_menu, "entry_activated", [&"eins"])
+	_menu.select(2)
+	_taste(KEY_ENTER)
+	assert_signal_emit_count(_menu, "entry_activated", 1, "„Drei“ ist nicht verfügbar.")
+	_maus_nach(_mitte(0))
+	_menu.select(1)
+	_klick(_mitte(0), MOUSE_BUTTON_RIGHT)
+	assert_eq(_menu.selected_index(), 0, "Der Rechtsklick wählt.")
+	assert_signal_emit_count(_menu, "entry_activated", 1, "Der Rechtsklick löst nichts aus.")
+	_maus_nach(_mitte(1))
+	_klick(_mitte(1), MOUSE_BUTTON_LEFT)
+	assert_signal_emitted_with_parameters(_menu, "entry_activated", [&"zwei"])
+	var parameter: Array = get_signal_parameters(_menu, "selection_changed")
+	assert_eq(parameter[1], Rect2(Vector2(0, 2 * MainMenu.ROW_HEIGHT),
+		Vector2(ANZEIGE.x, MainMenu.ROW_HEIGHT)), "Die gemeldete Zeile reicht über die Anzeige.")
+
+
+func test_look_spaeter_setzen_baut_die_zeilen_neu() -> void:
+	# Arrange: das Papiermenü aus before_each, gewählt „Beenden“.
+	_menu.select(3)
+
+	# Act: auf die Anzeige …
+	_menu.look = MainMenu.Look.LCD
+
+	# Assert
+	assert_eq(_zeilen().map(func(zeile: Button) -> StringName: return zeile.theme_type_variation),
+		[&"LcdRow", &"LcdRow", &"LcdRow", &"LcdRow"], "Die Zeilen sind neu gebaut.")
+	assert_eq(_menu.selected_index(), 3, "Die Auswahl bleibt auf ihrer Zeile.")
+	assert_eq((_zeilen()[3] as Button).get_theme_color(&"font_focus_color"), UiPalette.LCD)
+
+	# Act: … und zurück aufs Papier.
+	_menu.look = MainMenu.Look.PAPER
+
+	# Assert
+	assert_eq((_menu.get_node(^"Rows/Header") as Label).theme_type_variation, &"MenuHeader")
+	assert_eq((_zeilen()[3] as Button).theme_type_variation, &"MenuRow")
+	assert_false((_zeilen()[3] as Button).has_theme_color_override(&"font_focus_color"))
+	assert_eq(_menu.size, Vector2(MainMenu.PAPER_WIDTH, 5 * MainMenu.ROW_HEIGHT),
+		"Auf Papier setzt das Menü seine Größe wieder selbst.")
+	assert_eq(_menu.selected_index(), 3)
+
+
 # --- Helfer ---------------------------------------------------------------
 
 ## Die Buttons des Menüs, in der Reihenfolge, in der sie im Baum stehen. Sie entstehen
@@ -517,3 +687,49 @@ func _eintrag(id: StringName, label: String, available: bool, hint: String) -> M
 	entry.available = available
 	entry.hint = hint
 	return entry
+
+
+## Ersetzt das Menü dieses Tests durch eines auf der Anzeige: look = LCD, drei Einträge („Drei“
+## nicht verfügbar), so groß wie die Anzeige des Communicators, in einem eigenen Viewport. Die
+## Helfer oben gelten dann für dieses Menü. Wartet ein Bild für Startauswahl und Anordnung.
+func _auf_der_anzeige() -> void:
+	var eigener_viewport := SubViewport.new()
+	eigener_viewport.size = Vector2i(640, 360)
+	add_child_autofree(eigener_viewport)
+	_menu = MENU_SCENE.instantiate() as MainMenu
+	_menu.look = MainMenu.Look.LCD
+	_menu.entries = _lcd_eintraege()
+	eigener_viewport.add_child(_menu)
+	# Das täte der Communicator in add_page().
+	_menu.size = ANZEIGE
+	await wait_process_frames(1)
+
+
+func _lcd_eintraege() -> Array[MenuEntry]:
+	return [
+		_eintrag(&"eins", "Eins", true, "Eins."),
+		_eintrag(&"zwei", "Zwei", true, "Zwei."),
+		_eintrag(&"drei", "Drei", false, "Geht noch nicht."),
+	]
+
+
+## Die Schriftfarbe jeder Zeile, wie Godots Button sie für seinen Zustand wählt: gesperrt
+## font_disabled_color, unter der Maus font_hover_color, gedrückt font_pressed_color, sonst mit
+## Fokus font_focus_color und ohne font_color. Headless entsteht kein Bild; so sieht der Test, was
+## die Zeile zeigen würde.
+func _schriftfarben() -> Array[Color]:
+	var farben: Array[Color] = []
+	for knoten in _zeilen():
+		var zeile := knoten as Button
+		var farbname: StringName = &"font_focus_color" if zeile.has_focus() else &"font_color"
+		match zeile.get_draw_mode():
+			BaseButton.DRAW_DISABLED:
+				farbname = &"font_disabled_color"
+			BaseButton.DRAW_HOVER:
+				farbname = &"font_hover_color"
+			BaseButton.DRAW_PRESSED:
+				farbname = &"font_pressed_color"
+			BaseButton.DRAW_HOVER_PRESSED:
+				farbname = &"font_hover_pressed_color"
+		farben.append(zeile.get_theme_color(farbname))
+	return farben

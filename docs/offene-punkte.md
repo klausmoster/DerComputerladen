@@ -12,6 +12,138 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 005, Phase 5 (2026-10-27)
+
+Aus der Phasenprüfung (Stil- und Text-Prüfer, von Claude nachgeprüft):
+- **Entschieden:** Der Hinweis glitt beim Fahren kurz über die Versionszeile unten links. Klaus:
+  Die Versionszeile steht oben rechts im freien Himmel (T031a, Style-Guide Version 41).
+- **Lücken ohne Eile**, Empfehlung jeweils in Klammern:
+  - Woran `raster-16` und `raster-8` gemessen werden, am Kasten, an der sichtbaren Schrift oder
+    mit Schatten (am Kasten, so prüfen es die Tests).
+  - Ob die Versionszeile auf dem dunklen Himmel den Schatten braucht (behalten: gleiche Ausstattung
+    wie der Untertitel, kaum sichtbar, schadet nicht).
+  - Die Beschreibung des Tokens `pixelschatten` nennt Text auf einem Bild noch nicht. **Erledigt
+    in Phase 6 (T035):** Style-Guide Version 47 nennt ihn.
+  - Was „Bewegung reduzieren“ an den Communicator anschließt, regelt das Feature der Einstellungen
+    (`animate` ist vorbereitet).
+- **Beobachtung:** In Doto 10 sieht der Punkt in „V0.1“ mit Schatten fast wie ein „₊“ aus; lesbar.
+- **Entschieden bei der Abnahme:** Anzeige 320 × 160 statt 384 × 192 und neues Gehäuse G-03 nach
+  dem Olivetti D2000 (spec.md, Abnahme Phase 5). Damit ist die Tastatur oben doch im Bild; der
+  Punkt „Tastatur nicht im Bild“ aus Phase 4 gilt nicht mehr.
+- **Lücken aus der Nachprüfung von G-03, ohne Eile** (Empfehlung in Klammern):
+  - Neben der Anzeige bleibt ein schmaler Streifen vom Glas des Bildes sichtbar, links und oben
+    dunkler, rechts und unten heller (so lassen: wirkt wie ein vertieftes LCD, Licht von oben
+    links; im Baustein festhalten, wenn es ein zweites Gehäuse gibt).
+  - Ob das Gehäuse einen `pixelschatten` auf das Titelbild wirft (nein: es ist Grafik im Bild,
+    kein Fenster über der Szene).
+- **Eigene Entscheidungen von Claude:**
+  - Die Liste wählt ihre sichtbaren Zeilen nach `look` (auf Papier 6, auf der Anzeige 5) statt
+    nach der Höhe der Seite, weil die Größe erst nach dem Bau der Zeilen kommt (Agent, T031c).
+  - Der Abstand zwischen Logo und Gehäuse wird am Kasten des Logoblocks gemessen, ohne Schatten,
+    so wie der Style-Guide den freien Bereich bis y 83 festlegt; der gezeichnete Schatten des
+    Untertitels endet bei 82 und liegt darin (Test seit T031e).
+  - Menü, Liste, Papier, Hinweis und `TitleScreen.silhouette()` liegen noch unter
+    `src/scenes/title/`, obwohl der Communicator sie als Bausteine nutzt. Sie ziehen nach
+    `src/ui/` um, wenn das erste Feature sie außerhalb des Titels braucht, etwa der
+    Spielbildschirm (T035).
+
+### Feature 005, Phase 4 (2026-10-27)
+
+Aus der Phasenprüfung (Stil-Prüfer, 7 Befunde, alle von Claude bestätigt) und Klaus'
+Entscheidungen vom 2026-10-27, alle nach Empfehlung:
+- **Tastatur nicht im Bild:** Der Baustein Communicator sagt jetzt „Deckel, Scharnier und der
+  Ansatz des Unterteils; die Tastatur liegt unter dem Bildrand“.
+- **Logo und Untertitel auf der Fassade:** bekommen den `pixelschatten`; neue Regel im README,
+  Abschnitt Logo: Text direkt auf einem Bild trägt auf unruhigem oder hellem Grund den Schatten.
+  Umgesetzt in Phase 5 (T028).
+- **Gehäuse zu braun:** aufgehellt auf Cremebeige wie die Geräte in C2.
+- **Schaufenster unter dem Gerät angeschnitten:** Klaus hatte T-02 nach einer Montage gewählt; so
+  bleibt es.
+- Offene Lücken aus derselben Prüfung, ohne Eile: ab wann ein Grund „unruhig“ ist; ob „Licht von
+  oben links“ in Nachtszenen mit eigener Lichtquelle für das Umgebungslicht gilt; die Grenze
+  zwischen Textur mit Dithering und Rauschen. Empfehlung: bei der nächsten Szene klären, nicht
+  jetzt.
+
+### Feature 005, Phase 3 (2026-10-27)
+
+Lücken im Style-Guide aus der Phasenprüfung (Stil-Prüfer, von Claude nachgeprüft). Von Klaus am
+2026-10-27 mit der Abnahme von Phase 3 nach Empfehlung entschieden und eingetragen (Style-Guide,
+Version 38, Bausteine Liste und Menü):
+- **Rollmarke in einer gewählten, gedämpften Zeile:** Im Löschmodus ist „Löschen …“ gedämpft. Ist
+  es gewählt und steht unten mehr, ist die Rollmarke `lcd`, Schrift und Pfeil aber
+  `gehaeuse-dunkel`. Der Baustein Liste sagt „`lcd` wie die Schrift“. Empfehlung: so lassen, denn die
+  Rollmarke gehört zur Liste, nicht zum Eintrag; im Baustein „wie die Schrift“ ersetzen durch „auch
+  wenn die Zeile gedämpft ist“.
+- **Gedrückte Zeile:** Das README verlangt für alles Bedienbare `relief-gedrueckt` beim Drücken;
+  Menü und Liste regeln weder auf Papier noch auf der Anzeige, ob eine Zeile gedrückt anders
+  aussieht. Gebaut ist seit Feature 001: kein eigener Zustand. Empfehlung: im Baustein Menü
+  festhalten „Eine Zeile hat keinen eigenen Zustand ‚gedrückt‘; die Auswahl ist die Rückmeldung.“
+
+### Feature 005, Phase 2 (2026-10-27)
+
+Auslegungen des Agents beim Baustein Communicator, von Claude übernommen. Klaus bestätigt sie oder
+ändert sie mit der Abnahme von Phase 2 (T012):
+- **Ungerade Endlage meldet eine Warnung:** Steht der Communicator in seiner Szene nicht auf ganzen
+  Bildpixeln, meldet `_ready()` das per `push_warning`; jeder Bildschirm fällt so beim Start auf.
+- **Fahrt ohne Weg meldet sofort:** Steht der Communicator schon am Ziel, kommt `slide_finished`
+  gleich, damit ein Bildschirm, der darauf wartet, nie hängen bleibt. Ein zweites `slide_in()`
+  während der Fahrt ändert nichts; `place_hidden()` meldet nichts, es ist keine Fahrt.
+- **Ende der Fahrt aus dem Tween:** Das Ende meldet das Signal `finished` des Tweens, nicht der
+  Rückgabewert von `custom_step()`, der erst ein Bild später `false` wird (Fehler im Spike, bei 30
+  Bildern je Sekunde 267 statt 233 ms).
+- **Sperre über Godots rekursive Sperre:** `focus_behavior_recursive` und
+  `mouse_behavior_recursive` sperren beim Hinausfahren den ganzen Teilbaum, auch Zeilen, die ein
+  Menü erst zur Laufzeit baut; keine Sperrfläche (sie hielte die Tastatur nicht ab).
+- **Ruhender Zeiger:** Godot 4.7 meldet `mouse_entered` nur bei echter Mausbewegung; eine eigene
+  Sperre für die Fahrt herein ist nicht nötig. Im echten Fenster prüft Klaus es mit der Probeszene.
+- **Hinweis ohne neue Funktion:** Der Communicator reicht `MenuHint` ein Rechteck mit der linken
+  Kante des Gehäuses; `MenuHint` bleibt unverändert.
+- **Lücken aus der Phasenprüfung:** rechter Rand und Hinweis beim Hinausfahren; von Klaus am
+  2026-10-27 nach Empfehlung entschieden und im Baustein Communicator eingetragen (Style-Guide,
+  Version 37): Der Rand bis 616 gilt für Anzeige und Seiten, das Gehäuse darf bis an den Bildrand;
+  der Hinweis fährt mit hinaus. Die Auslegungen oben hat Klaus mit der Abnahme bestätigt.
+- **Für Phase 5 merken:** Ruft der Titel während der Sperre `select()` an Menü oder Liste, druckt
+  Godot „can't grab focus“, und die Startprobe würde laut. Das Flag `_leaving` muss deshalb auch vor
+  jedem `select()` greifen (T029).
+
+### Feature 005, Plan (2026-10-27)
+
+Eigene Festlegungen von Claude in `specs/005-communicator/research.md`. Klaus bestätigt sie oder
+ändert sie, spätestens mit der Checkliste:
+- **Gewählt und nicht verfügbar** (R3): Balken `tusche`, Schrift und Pfeil `gehaeuse-dunkel`
+  (3,08 : 1), wie auf dem Papier gedämpft auch gewählt.
+- **Papier bleibt in Menü und Liste** (R5): Schalter `look` mit `PAPER` als Vorgabe; der Titel nutzt
+  nur `LCD`. Die Seiten nehmen auf der Anzeige die volle Breite ein.
+- **Zeitschritt gedeckelt** (R6): im ersten Bild jeder Fahrt auf 1/60 s, danach auf 1/30 s. So
+  springt das Gerät im langen ersten Bild höchstens ein Viertel des Wegs (23 %), und die Fahrt
+  dauert auch bei 30 Bildern je Sekunde gut 233 ms. Bis zur Analyse (C2) stand hier 1/30 s für
+  jeden Schritt, was im ersten Bild 42 % ergab.
+- **Erst anlegen, dann hinausfahren** (R8): Scheitert das Anlegen, fährt nichts, und die Meldung
+  kommt sofort. Dazu sperren Communicator und ein Flag `_leaving` im Titel jede Eingabe während der
+  Fahrt hinaus (Analyse, B2, C20).
+- **Helle Schrift der gewählten Zeile aus dem Code** (R15), weil ein Button unter der Maus die
+  Hover-Farbe nimmt und das Theme allein eine Zeile unsichtbar machte (Analyse, B1).
+- **Der Hinweis gehört zum Communicator** (R7) und fährt als Kind mit, statt wie im Spike per
+  Differenz nachgeführt zu werden.
+- **Platzhalter-Gehäuse** (R11): Kern und Seiten entstehen vor G-02 mit einem Rechteck in
+  `gehaeuse`; nur der Titel wartet auf die Bilder.
+- **Vorschlag `lcd` = #b8c4a8** (R2) und **Lage im Titel** (R9): von Klaus mit Phase 1 freigegeben
+  (2026-10-27); stehen im Style-Guide, Version 36.
+
+### Feature 005, Spec (2026-10-27)
+
+Eigene Festlegungen von Claude in `specs/005-communicator/spec.md`, die nicht aus Klaus' Antworten
+folgen. Klaus bestätigt sie oder ändert sie, spätestens mit dem Plan:
+- **„Beenden“ ohne Fahrt** (FR-013a, Annahmen): Nur Spielstart und Fortsetzen lassen den
+  Communicator erst hinausfahren; „Beenden“ schließt sofort, weil danach nichts mehr zu sehen ist.
+- **Seitenwechsel ohne Übergang** (FR-005): Die neue Seite ersetzt die vorige sofort, das Gerät
+  bleibt stehen, wie bei den Blättern aus dem Drucker.
+- **Bedienbar schon während der Fahrt herein** (FR-003): Enter auf „Weiterspielen“ wirkt, bevor
+  das Gerät steht; während der Fahrt hinaus wirkt dagegen keine Eingabe (FR-013a).
+- **Jedes Mal hereinfahren** (FR-010): auch nach der Rückkehr aus dem Spiel, nicht nur beim Start
+  der App.
+- **Der Hinweis fährt mit** (FR-006), statt erst zu erscheinen, wenn das Gerät steht.
+
 ### Feature 004, Phasenprüfung Phase 2 (2026-10-26)
 
 Lücken im Abschnitt „Sprache“, die der Text-Prüfer gemeldet und Claude bestätigt hat. Zwei hat
@@ -190,14 +322,19 @@ in einem eigenen Schritt. Zahlen in `docs/ki_workflow/ki_pruefung.md`, „Nachme
 - **Bestätigt:**
   - **Logo ohne `pixelschatten` (mittel):** Das Logo steht halb auf Himmel, halb auf der
     Fassade, also auf unruhigem Grund. Der Style-Guide verlangt dort `pixelschatten` (Logo). Das
-    PNG hat keinen, die Szene auch nicht. Empfehlung: Schatten ergänzen, wie beim Hinweis.
+    PNG hat keinen, die Szene auch nicht. Empfehlung: Schatten ergänzen, wie beim Hinweis. **Erledigt mit Feature 005, Phase 5:** Das
+    Logo hat auf T-02 eine Silhouette in `tusche` als `pixelschatten`.
   - **Ränder nicht aus dem Raster (mittel):** Logo bei x 14 und y 12, Menü 24 vom rechten Rand,
     Versionszeile 6 vom unteren. `raster-16` ist laut Style-Guide der „Rand zum Bildschirmrand im
     Titel“. Die Werte kommen aus dem Titelscreen-Entwurf und stehen so im Vertrag von Feature 001.
-    Empfehlung: auf 16 ziehen; der Entwurf ist älter als die Raster-Regel.
+    Empfehlung: auf 16 ziehen; der Entwurf ist älter als die Raster-Regel. **Teils erledigt mit
+    Feature 005:** Das Menü ist ersetzt, die Versionszeile steht oben rechts mit 16 Rand (Klaus,
+    2026-10-27); offen bleibt das Logo bei 14/12.
   - **Textschatten von 1 px (niedrig):** Untertitel und Versionszeile haben einen harten Schatten
     in `tusche` um (1, 1). Er steht im Vertrag von Feature 001, im Style-Guide gibt es ihn nicht.
     Empfehlung: als Token in den Style-Guide, denn er hält die Schrift auf dem Bild lesbar.
+    **Erledigt mit Feature 005:** Der Style-Guide regelt Text auf einem Bild mit `pixelschatten`
+    (2 px), Untertitel und Versionszeile haben ihn.
 - **Verworfen:** `papier`-Text auf dem Titelbild sei kein erlaubtes Farbpaar. Der Abschnitt Logo
   verlangt den Untertitel aber ausdrücklich in `papier`. Das ist eine Lücke, kein Fehler (unten).
 - **Lücken im Style-Guide:**

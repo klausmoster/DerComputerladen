@@ -5,9 +5,10 @@
   oder das Fensterverhalten betroffen ist.
 - **Code:** `src/core/game_window.gd` (Autoload `GameWindow`), `src/ui/ui_palette.gd`,
   `src/ui/computerladen_theme.tres`, `src/assets/fonts/`, Einstellungen in `src/project.godot`;
-  Tests `src/test/test_game_window.gd`, `test_ui_palette.gd`
-- **Herkunft:** `specs/001-hauptmenue/` (Vertrag `contracts/titelbildschirm.md`, `research.md`)
-- **Stand:** Feature 004, 2026-10-27
+  Tests `src/test/test_game_window.gd`, `test_ui_palette.gd`, `test_lcd_theme.gd`
+- **Herkunft:** `specs/001-hauptmenue/` (Vertrag `contracts/titelbildschirm.md`, `research.md`),
+  `specs/005-communicator/` (`lcd`, Theme für die Anzeige, `research.md` R1 bis R3)
+- **Stand:** Feature 005, 2026-10-27
 - **Maßstab:** der [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX). Er ist die
   einzige Quelle für Farben, Raster, Schriften und Bausteine. Was man sieht, kommt zuerst dort
   hinein, dann in den Code.
@@ -54,7 +55,7 @@ Kürzel für Windows und Linux kommen mit dem Export für diese Systeme (Feature
 
 ## Farben: UiPalette
 
-Die 15 Oberflächenfarben des Style-Guides als Konstanten, mit Token-Namen:
+Die 16 Oberflächenfarben des Style-Guides als Konstanten, mit Token-Namen:
 
 | Token | Wert | Token | Wert |
 |---|---|---|---|
@@ -65,11 +66,14 @@ Die 15 Oberflächenfarben des Style-Guides als Konstanten, mit Token-Namen:
 | `gehaeuse` | #bdb39a | `signalgelb` | #f2bf2f |
 | `gehaeuse-hell` | #e4dcc6 | `petrol` | #1f6f75 |
 | `papier` | #f5f0e2 | `holz` / `holz-dunkel` | #8b5a34 / #57351d |
+| `lcd` | #b8c4a8 | | |
 
 - Daten nennen Farben über Tokens, nicht über Werte; `UiPalette.by_token(&"petrol")` gibt die
   Farbe, ein unbekanntes Token gibt Magenta, damit es auffällt.
 - `CATEGORY_TOKENS`: die sieben Farben, die Kategorien der Zeitleiste haben dürfen.
-- Bilder nutzen die Hauptpalette: Transparenz, diese 15 Farben und 240 Szenenfarben, siehe
+- `lcd` ist die Anzeige des Communicators und nur für die Oberfläche. Sie steht nicht in der
+  Hauptpalette, die eingefroren ist; so kann kein Bild sie nutzen, das prüft `test_bilder.gd`.
+- Bilder nutzen die Hauptpalette: Transparenz, die ersten 15 Farben und 240 Szenenfarben, siehe
   [bilder.md](bilder.md).
 
 ## Theme und Schriften
@@ -85,15 +89,24 @@ Die 15 Oberflächenfarben des Style-Guides als Konstanten, mit Token-Namen:
 Ark Pixel ist je Größe pixelgenau gezeichnet und nur in seiner Entwurfsgröße zu benutzen. Doto
 nicht unter 10. Beide Schriften stehen unter SIL OFL 1.1, die Lizenzen liegen daneben.
 
-Theme-Varianten heute: `MenuRow`, `MenuHeader`, `HintPanel`, `HintLabel`, `WarningPanel` (die
-Meldung: `papier` mit Kontur in `kassenrot`), `Knopf`, `Subtitle`, `VersionLine`. Der harte `pixelschatten` (2 px nach rechts unten in `tusche`) wird von Hand in
-`_draw()` gemalt, weil der Schatten einer `StyleBoxFlat` weich ist.
+Theme-Varianten heute: `MenuRow`, `MenuHeader`, `LcdRow` und `LcdHeader` (Menü und Liste auf der
+Anzeige, Schrift `tusche`, gedämpft `gehaeuse-dunkel`), `HintPanel`, `HintLabel`, `WarningPanel`
+(die Meldung: `papier` mit Kontur in `kassenrot`), `Knopf`, `Subtitle`, `VersionLine`. Die Farben
+von `LcdRow` und `LcdHeader` stehen im Theme als Werte; `test_lcd_theme.gd` prüft, dass sie
+`UiPalette` gleichen.
+
+Der harte `pixelschatten` (2 px nach rechts unten in `tusche`) wird von Hand in `_draw()` gemalt,
+weil der Schatten einer `StyleBoxFlat` weich ist. Text auf einem Bild bekommt ihn auch: Logo,
+Untertitel und Versionszeile auf dem Titelbild.
 
 **Baustein Knopf** (`src/ui/knopf.gd`, `class_name Knopf`): Fläche `gehaeuse`, Kontur `tusche`,
 Schrift `menue`; erhabenes Relief, gedrückt vertieft, beim Überfahren `signalgelb`. Relief und
 Fokuslinie malt `_draw()`, denn eine `StyleBoxFlat` kennt kein Relief in zwei Farben. Mit
 `on_dark` ist die Fokuslinie `papier` statt `tusche`, für dunklen Grund wie den Spielbildschirm.
 Steht ein Knopf allein auf einem Bildschirm, zeigt der Bildschirm seinen Hinweis wie im Menü.
+
+**Baustein Communicator** (`src/ui/communicator/`): Taschengerät mit Anzeige, das von unten ins
+Bild fährt und Seiten zeigt; eigene Datei [communicator.md](communicator.md).
 
 Die Werkstatt hat ein eigenes Theme und läuft nicht im Pixelraster (siehe
 [werkstatt.md](werkstatt.md)).
