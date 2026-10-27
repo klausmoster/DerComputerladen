@@ -41,6 +41,7 @@ unter „Offene Fragen", sind aber eigene Systeme.
 | 002 | [Zeitleisten-Werkstatt](../../specs/002-zeitleisten-werkstatt/spec.md), System 01 | fertig | tasks |
 | 003 | [Schwierigkeitsgrade der Zeitleiste](../../specs/003-schwierigkeitsgrade/spec.md), System 01 | fertig | tasks |
 | 004 | [Neues Spiel starten](../../specs/004-neues-spiel/spec.md), System 11 und 01, Pilot der Prüf-Agents | fertig | tasks |
+| 005 | [Communicator als Steuerelement](../../specs/005-communicator/spec.md), System 10, Titel auf dem Communicator | spezifiziert | spec |
 
 Diese Tabelle wird derzeit von Hand gepflegt. Ab etwa zehn Features lohnt ein
 Generator, der sie aus dem Frontmatter baut — gleiches Prinzip wie

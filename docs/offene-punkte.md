@@ -12,6 +12,20 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 005, Spec (2026-10-27)
+
+Eigene Festlegungen von Claude in `specs/005-communicator/spec.md`, die nicht aus Klaus' Antworten
+folgen. Klaus bestätigt sie oder ändert sie, spätestens mit dem Plan:
+- **„Beenden“ ohne Fahrt** (FR-013a, Annahmen): Nur Spielstart und Fortsetzen lassen den
+  Communicator erst hinausfahren; „Beenden“ schließt sofort, weil danach nichts mehr zu sehen ist.
+- **Seitenwechsel ohne Übergang** (FR-005): Die neue Seite ersetzt die vorige sofort, das Gerät
+  bleibt stehen, wie bei den Blättern aus dem Drucker.
+- **Bedienbar schon während der Fahrt herein** (FR-003): Enter auf „Weiterspielen“ wirkt, bevor
+  das Gerät steht; während der Fahrt hinaus wirkt dagegen keine Eingabe (FR-013a).
+- **Jedes Mal hereinfahren** (FR-010): auch nach der Rückkehr aus dem Spiel, nicht nur beim Start
+  der App.
+- **Der Hinweis fährt mit** (FR-006), statt erst zu erscheinen, wenn das Gerät steht.
+
 ### Feature 004, Phasenprüfung Phase 2 (2026-10-26)
 
 Lücken im Abschnitt „Sprache“, die der Text-Prüfer gemeldet und Claude bestätigt hat. Zwei hat
