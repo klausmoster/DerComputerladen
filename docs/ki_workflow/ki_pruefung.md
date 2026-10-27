@@ -279,6 +279,7 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 005, Phase 5, 43 Texte des Titels (2026-10-27) | Text | 0 | 0 | 0 | 0, 1 schon bekannt | 0 |
 | Feature 005, Phase 5, Nachprüfung Versionszeile oben rechts (2026-10-27) | Stil | 0 | 0 | 0 | 3 | 0 |
 | Feature 005, Phase 5, Nachprüfung Anzeige 320 × 160 und Gehäuse G-03 (2026-10-27) | Stil | 2 | 2 (Funktionstasten oliv statt mint, Tastensplitter an der Naht) | 0 | 4, davon 2 behoben (Rahmen ums LCD ungleich, Kontur in der Vorschau) | 2 |
+| Feature 005, Abschluss T036 über das ganze Feature (2026-10-27) | Stil | 0 | 0 | 0 | 2, davon 1 verworfen (Lage des Hinweises in der Vorschau stimmt, 1 px Rahmen), 1 behoben | 0 |
 | Pilot Feature 004, Phase 5, 23 Texte der Liste und Rückfrage (2026-10-26) | Text | 1 | 1 als Widerspruch zum Vertrag | 0 | 3, davon 1 verworfen, 1 schon bekannt | 1 |
 | Pilot Feature 004, Phase 5, Nachprüfung nach der Reparatur (2026-10-26) | Stil | 0 | 0 | 0 | 1 | 0 |
 | Pilot Feature 004, Phase 5, Nachprüfung der 6 geänderten Vorlagen (2026-10-26) | Text | 0 | 0 | 0 | 1, verworfen | 0 |

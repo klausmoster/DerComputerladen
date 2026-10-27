@@ -360,7 +360,8 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
   entstehen, auf die Hauptpalette gebracht und von Hand aufgeräumt sein, mit Prompt, Modell und
   Seed im Prompt-Log und als freigegeben vermerkt. Die Anzeige im Gehäuse hat das
   Seitenverhältnis der festen Anzeige aus FR-001. Kein echter Markenname und kein Logo auf dem
-  Gehäuse. Die Prompts liefert Claude, die Bilder erzeugt Klaus.
+  Gehäuse. Claude schreibt die Prompts und erzeugt die Bilder in Leonardo, Klaus wählt aus und
+  gibt frei (Klaus, 2026-10-27; bis dahin erzeugte Klaus selbst).
 
 ### Key Entities *(include if feature involves data)*
 

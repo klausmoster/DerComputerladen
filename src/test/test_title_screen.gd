@@ -31,6 +31,9 @@ extends GutTest
 ## jetzt ist, und die Dauer. Dort taktet der Test die Fahrt selbst wie in test_communicator.gd:
 ## set_process(false) am Communicator und _process() mit festen Zeitschritten.
 ##
+## „Beenden“ schließt sofort, ohne Fahrt hinaus (T041; FR-013a). get_tree().quit() beendete den
+## ganzen Testlauf; deshalb fängt ein eigener quit_callback den Aufruf ab und zählt nur mit.
+##
 ## Der Titel steht in einem eigenen Viewport von 640 × 360 wie die Menüs in test_main_menu.gd:
 ## eigene Eingabe, eigener Fokus, und GUTs Oberfläche fängt keine Klicks ab. Tasten und Klicks gehen
 ## über push_input wie echte Eingaben.
@@ -74,6 +77,8 @@ var _titel: TitleScreen
 var _sitzung: SITZUNG
 ## Die Pfade, mit denen der Titel scene_callback aufgerufen hat.
 var _wechsel: Array = []
+## So oft hat der Titel quit_callback aufgerufen.
+var _beendet := 0
 var _auto_accept_quit_vorher := true
 
 
@@ -81,6 +86,7 @@ func before_each() -> void:
 	_raeume_auf(WURZEL)
 	DirAccess.make_dir_recursive_absolute(ORDNER)
 	_wechsel.clear()
+	_beendet = 0
 	_titel = null
 	_sitzung = null
 	_auto_accept_quit_vorher = get_tree().auto_accept_quit
@@ -480,6 +486,59 @@ func test_fortsetzen_scheitert_ohne_fahrt() -> void:
 	assert_eq(_wechsel, [])
 	assert_false(_sitzung.is_running())
 	assert_push_warning("ließ sich nicht fortsetzen")
+
+
+# --- Beenden: sofort, ohne Fahrt (Feature 005, T041; FR-013a) -------------------------------------
+
+func test_beenden_schliesst_sofort_ohne_fahrt() -> void:
+	# Arrange: in der Endlage, „Beenden“ gewählt. Der Communicator fährt im Takt des Tests; eine
+	# Fahrt hinaus wäre also zu sehen und käme nicht sofort zu Ende wie mit animate = false.
+	await _zeige_titel(ORDNER, true)
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+	_hauptmenue().select(4)
+	assert_eq(_hauptmenue().entries[4].id, &"quit", "Voraussetzung: Zeile 4 ist „Beenden“.")
+	var fahrten := []
+	_communicator().slide_finished.connect(func(drin: bool) -> void: fahrten.append(drin))
+
+	# Act: mit der Tastatur auslösen, dann laufen noch Bilder der Fahrt, falls eine begonnen hätte.
+	await _taste(KEY_ENTER)
+	for _bild in 20:
+		_communicator()._process(1.0 / 60.0)
+
+	# Assert
+	assert_eq(_beendet, 1, "quit_callback genau einmal, sofort.")
+	assert_true(_communicator().is_in(), "Er fährt nicht hinaus.")
+	assert_true(_communicator().accepts_input(), "Nichts ist gesperrt wie beim Hinausfahren.")
+	assert_eq(_communicator().position, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN), "Er bleibt stehen.")
+	assert_eq(fahrten, [], "Keine Fahrt, also kein slide_finished.")
+	assert_eq(_wechsel, [], "Kein Szenenwechsel.")
+	assert_false(_sitzung.is_running(), "Es beginnt kein Spiel.")
+	assert_eq(_dateien(), [], "Es entsteht keine Datei.")
+
+
+func test_beenden_waehrend_der_fahrt_herein_wirkt_ebenso_sofort() -> void:
+	# Arrange: Der Communicator fährt gerade herein (FR-003: herein ist alles bedienbar).
+	await _zeige_titel(ORDNER, true)
+	for _bild in 3:
+		_communicator()._process(1.0 / 60.0)
+	assert_gt(_communicator().position.y, GEHAEUSE_OBEN, "Voraussetzung: noch unterwegs.")
+	_hauptmenue().select(4)
+	var fahrten := []
+	_communicator().slide_finished.connect(func(drin: bool) -> void: fahrten.append(drin))
+
+	# Act
+	await _taste(KEY_ENTER)
+
+	# Assert: sofort beendet, und die Fahrt herein dreht nicht um.
+	assert_eq(_beendet, 1, "quit_callback genau einmal, ohne das Ende der Fahrt abzuwarten.")
+	assert_true(_communicator().is_in(), "Er fährt weiter herein, nicht hinaus.")
+	assert_true(_communicator().accepts_input())
+	assert_eq(fahrten, [], "Bis hierher keine Fahrt zu Ende.")
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+	assert_eq(fahrten, [true], "Die Fahrt herein endet in der Endlage, keine Fahrt hinaus.")
+	assert_eq(_communicator().position, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN))
+	assert_eq(_beendet, 1, "Nicht noch einmal.")
+	assert_eq(_wechsel, [], "Kein Szenenwechsel.")
 
 
 # --- Ohne Spiel läuft nichts (FR-003) -------------------------------------------------------------
@@ -1687,6 +1746,7 @@ func _baue_titel_ohne_warten(faehrt := false) -> void:
 	_titel = TITEL.instantiate() as TitleScreen
 	_titel.session = _sitzung
 	_titel.scene_callback = _merke_wechsel
+	_titel.quit_callback = _merke_beenden
 	eigener_viewport.add_child(_titel)
 	# Nach dem Einhängen: _ready() hat _process() eingeschaltet; die Fahrt herein beginnt erst
 	# zeitversetzt in _build_sheets(), mit dem Wert von animate von jetzt.
@@ -1721,6 +1781,10 @@ func _neue_sitzung(ordner: String = ORDNER) -> SITZUNG:
 
 func _merke_wechsel(pfad: String) -> void:
 	_wechsel.append(pfad)
+
+
+func _merke_beenden() -> void:
+	_beendet += 1
 
 
 func _uhr() -> UHR:

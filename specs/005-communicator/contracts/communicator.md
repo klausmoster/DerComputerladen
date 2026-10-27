@@ -43,7 +43,7 @@ den Spielbildschirm).
 
 ```text
 Communicator (Control, Größe des Gehäuses)       communicator.gd
-├── Case (TextureRect)                           Gehäuse ×2, Texture-Filter Nearest; bis G-02 der Platzhalter (R11)
+├── Case (TextureRect)                           Gehäuse ×2, Texture-Filter Nearest; heute G-03; ohne Bild malt _draw() den Platzhalter (R11)
 ├── Display (ColorRect)                          Anzeige in lcd, Lage und Größe aus dem Style-Guide
 ├── Hint (menu_hint.tscn)                        links neben dem Gehäuse, außerhalb der Anzeige
 └── … Seiten                                     vom Bildschirm unter die Instanz gehängt, auf die Anzeige gestellt

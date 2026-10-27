@@ -22,11 +22,30 @@ Aus der Phasenprüfung (Stil- und Text-Prüfer, von Claude nachgeprüft):
     mit Schatten (am Kasten, so prüfen es die Tests).
   - Ob die Versionszeile auf dem dunklen Himmel den Schatten braucht (behalten: gleiche Ausstattung
     wie der Untertitel, kaum sichtbar, schadet nicht).
-  - Die Beschreibung des Tokens `pixelschatten` nennt Text auf einem Bild noch nicht (in Phase 6 im
-    Style-Guide nachtragen).
+  - Die Beschreibung des Tokens `pixelschatten` nennt Text auf einem Bild noch nicht. **Erledigt
+    in Phase 6 (T035):** Style-Guide Version 47 nennt ihn.
   - Was „Bewegung reduzieren“ an den Communicator anschließt, regelt das Feature der Einstellungen
     (`animate` ist vorbereitet).
 - **Beobachtung:** In Doto 10 sieht der Punkt in „V0.1“ mit Schatten fast wie ein „₊“ aus; lesbar.
+- **Entschieden bei der Abnahme:** Anzeige 320 × 160 statt 384 × 192 und neues Gehäuse G-03 nach
+  dem Olivetti D2000 (spec.md, Abnahme Phase 5). Damit ist die Tastatur oben doch im Bild; der
+  Punkt „Tastatur nicht im Bild“ aus Phase 4 gilt nicht mehr.
+- **Lücken aus der Nachprüfung von G-03, ohne Eile** (Empfehlung in Klammern):
+  - Neben der Anzeige bleibt ein schmaler Streifen vom Glas des Bildes sichtbar, links und oben
+    dunkler, rechts und unten heller (so lassen: wirkt wie ein vertieftes LCD, Licht von oben
+    links; im Baustein festhalten, wenn es ein zweites Gehäuse gibt).
+  - Ob das Gehäuse einen `pixelschatten` auf das Titelbild wirft (nein: es ist Grafik im Bild,
+    kein Fenster über der Szene).
+- **Eigene Entscheidungen von Claude:**
+  - Die Liste wählt ihre sichtbaren Zeilen nach `look` (auf Papier 6, auf der Anzeige 5) statt
+    nach der Höhe der Seite, weil die Größe erst nach dem Bau der Zeilen kommt (Agent, T031c).
+  - Der Abstand zwischen Logo und Gehäuse wird am Kasten des Logoblocks gemessen, ohne Schatten,
+    so wie der Style-Guide den freien Bereich bis y 83 festlegt; der gezeichnete Schatten des
+    Untertitels endet bei 82 und liegt darin (Test seit T031e).
+  - Menü, Liste, Papier, Hinweis und `TitleScreen.silhouette()` liegen noch unter
+    `src/scenes/title/`, obwohl der Communicator sie als Bausteine nutzt. Sie ziehen nach
+    `src/ui/` um, wenn das erste Feature sie außerhalb des Titels braucht, etwa der
+    Spielbildschirm (T035).
 
 ### Feature 005, Phase 4 (2026-10-27)
 

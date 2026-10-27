@@ -133,6 +133,8 @@ Keine Einträge, die Prüfung der Verfassung zeigt keine Verstöße.
 1. **Style-Guide** (R12), Phase 1: Claude schreibt Baustein, Token und Ergänzungen, Klaus gibt sie
    frei, auch den Wert von `lcd` (R2).
 2. **Prompt G-02** (R10): Claude schreibt ihn in Phase 1; Klaus erzeugt das Bild, wann es ihm passt.
+   Stand des Plans; tatsächlich erzeugte Claude G-02, T-02 und G-03 in Leonardo, Klaus wählte aus
+   (2026-10-27, `ki_dev.md`, Grafik). G-03 ersetzte G-02 bei der Abnahme von Phase 5.
    Der Prompt für T-02 entsteht erst in Phase 4 nach dem Nachmessen von G-02 (CHK005; Analyse, C8).
    Gebraucht werden beide erst in Phase 5 (R11).
 

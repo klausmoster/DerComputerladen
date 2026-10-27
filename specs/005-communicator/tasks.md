@@ -348,17 +348,20 @@ Olivetti D2000 (T031d, T031e), Versionszeile oben rechts (T031a).
 
 **Purpose**: Doku, Lückensuche, Gesamtabnahme.
 
-- [ ] T035 [C] Doku nachziehen: `docs/features/Features.md` (005 fertig, System 10);
+- [x] T035 [C] Doku nachziehen: `docs/features/Features.md` (005 fertig, System 10);
   `docs/Ideensammlung.md` und `docs/recherche/navigation-taschengeraet.md` mit Verweis auf 005;
   der Kommentar in `tools/raster/make_palette.py` („Die 15 Oberflächenfarben aus tokens.json“) und
   `tools/raster/README.md` mit dem Hinweis, dass `lcd` nicht in die Hauptpalette gehört (C14); in
   `docs/offene-punkte.md` der Umzug von Menü, Liste, Papier und Hinweis nach `src/ui/` als offener
   Punkt für das Feature, das sie als Erstes außerhalb des Titels braucht; `CLAUDE.md` (Tabelle
   „Aufbau“: `src/ui/communicator/`) nur mit Klaus' OK.
-- [ ] T036 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
+  Erledigt 2026-10-27; dazu der Token `pixelschatten` im Style-Guide (Version 47). CLAUDE.md mit
+  Klaus' OK vom 2026-10-27.
+- [x] T036 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
   Feature“), dazu der Stil-Prüfer einmal über alles. Lücken werden eine eigene Phase mit Klaus'
   Freigabe; hat sie Sichtbares, endet sie mit eigener Phasenprüfung.
-- [ ] T037 [K] Gesamtabnahme nach dem ganzen Quickstart.
+- [x] T037 [K] Gesamtabnahme nach dem ganzen Quickstart.
+  Abgenommen von Klaus am 2026-10-27, nach Phase 7.
 - [ ] T038 [C] Spielbeschreibung prüfen (immer die letzte Aufgabe des Features, nach der
   Gesamtabnahme und vor dem Merge; `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“): Claude
   gleicht `docs/spielbeschreibung/` mit dem Code ab und legt Klaus eine Liste vor, welche Dateien
@@ -448,3 +451,24 @@ Papier wäre der Zustand, den der Spike verworfen hat.
 - Der Spike wird nie gemergt; der Agent liest ihn mit `git show 481c7e0:<pfad>` (R14).
 - Die Nummern T001 bis T038 gelten seit der Analyse vom 2026-10-27; die Fassung davor (T001 bis
   T036, Grafik als Phase 2) steht im Commit `02efacf`.
+
+---
+
+## Phase 7: Convergence
+
+Aus T036 (`/speckit-converge` und Stil-Prüfer über das ganze Feature, 2026-10-27). Der Code erfüllt
+Spec und Plan; der Stil-Prüfer fand keine Befunde. Übrig sind Doku, die dem Ablauf nachhinkt, und ein
+fehlender Test. Umgesetzt wird nur nach Klaus' Freigabe.
+
+- [x] T039 [C] FR-020 in `specs/005-communicator/spec.md` an den gelebten Ablauf anpassen: Claude
+  erzeugt die Bilder in Leonardo, Klaus wählt aus (Klaus, 2026-10-27; `ki_dev.md`, Grafik); dazu
+  in `plan.md` Phase 4 und Schritt 2 „Klaus erzeugt“ als damaligen Stand kennzeichnen. Ändert die
+  Spec, also nur mit Klaus' OK, per FR-020 (contradicts)
+- [x] T040 [C] Verträge und Quickstart auf G-03 nachziehen: `contracts/communicator.md` (`Case`
+  zeigt das Bild; der Platzhalter aus `_draw()` bleibt als Rückfall für ein Gehäuse ohne Bild),
+  `contracts/titelbildschirm.md` (G-02 → G-03, Lage 244/92), `quickstart.md` Zeile „4 Grafik“,
+  per plan: Grafik (partial)
+- [x] T041 [A] Test für „Beenden schließt sofort, ohne Fahrt“ in `src/test/test_title_screen.gd`:
+  „Beenden“ ruft das Beenden auf, ohne dass der Communicator hinausfährt; dafür das Beenden in
+  `src/scenes/title/title_screen.gd` austauschbar machen wie `scene_callback`, per FR-013a
+  (partial)

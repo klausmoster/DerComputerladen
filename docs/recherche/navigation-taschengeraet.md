@@ -439,3 +439,25 @@ Zeitplaner von 1985 wäre wieder Papier.
     Muster für das Pausenmenü im Gerät.
 - Will Klaus das Gerät trotzdem im Titel, dann kleiner (Faktor 6) mit Zeilen zu 16, und die
   Spielstände als Seite des Geräts statt als Papier. Das wäre ein eigenes kleines Feature.
+
+---
+
+## Nachtrag: Feature 005 „Communicator als Steuerelement“ (2026-10-27)
+
+Klaus hat den Spike mit [Feature 005](../../specs/005-communicator/spec.md) aufgegriffen und den
+Titel ganz auf das Gerät umgestellt. Was davon für die Gehäuse im Spiel gilt:
+
+- **Baustein:** Der Communicator ist ein Steuerelement unter `src/ui/communicator/`: Gehäuse als
+  Bild, Anzeige als feste Fläche darin, Seiten aus Menü und Liste, Fahrt von unten, Hinweis
+  links daneben. Wie er auf dem Spielbildschirm geöffnet wird, regelt das Feature des
+  Spielbildschirms.
+- **Anzeige 320 × 160** für jedes Gehäuse, also 8 Zeilen zu 20, nicht 384 × 192 wie oben
+  vorgeschlagen. Die Seiten füllten die größere Anzeige kaum, und vom Gerät war nur der Rahmen um
+  das LCD zu sehen (Klaus, Abnahme Phase 5). Für Lager und Buchhaltung heißt das: noch mehr
+  Blättern, oder ein Gehäuse mit größerer Anzeige bekommt eigene Seiten.
+- **Gehäuse im Titel:** der Organizer von 1991, gezeichnet nach dem Vorbild eines elektronischen
+  Notizbuchs wie dem Olivetti D2000 (1990) mit Schreibmaschinentastatur, mintgrünen
+  Funktionstasten und roter Taste (G-03). Das Vorbild steht nur in Worten im Prompt; das Gehäuse
+  ist hell statt dunkelgrau und trägt keine Marke.
+- **LCD-Farbe:** `lcd` #b8c4a8 als 16. Oberflächenfarbe, nicht `endlos-gruen` wie im Spike; die
+  Auswahl ist ein Balken in `tusche`, denn ein LCD hat nur eine Farbe.

@@ -51,6 +51,9 @@ var session: Node = null
 ## get_tree().change_scene_to_file(). Tests setzen eine eigene Funktion und prüfen den Aufruf statt
 ## des echten Wechsels (wie GameSession.quit_callback; Analyse, C1).
 var scene_callback: Callable
+## Wird bei „Beenden“ aufgerufen; ungültig heißt get_tree().quit(). Tests setzen eine eigene
+## Funktion, denn quit() beendete ihren ganzen Lauf (wie GameSession.quit_callback).
+var quit_callback: Callable
 
 ## Die Spielstände, aus denen das Hauptmenü zuletzt gebaut wurde. „Weiterspielen“ setzt den ersten
 ## fortsetzbaren davon fort, den Stand, den das Menü gelesen hat (CHK001).
@@ -178,9 +181,9 @@ func _on_main_menu_entry_activated(id: StringName) -> void:
 		&"load_game":
 			_open_save_list()
 		&"quit":
-			# Ohne Rückfrage (Feature 001, FR-008); es läuft kein Spiel. quit() beendet nicht
-			# sofort, sondern am Ende des laufenden Bilds.
-			get_tree().quit()
+			# Ohne Rückfrage (Feature 001, FR-008) und ohne Fahrt hinaus (FR-013a); es läuft kein
+			# Spiel.
+			_quit()
 
 
 ## Führt den ausgelösten Eintrag der Gradwahl aus. Verbunden in title_screen.tscn.
@@ -484,6 +487,15 @@ func _change_scene(path: String) -> void:
 		scene_callback.call(path)
 	else:
 		get_tree().change_scene_to_file(path)
+
+
+## Beendet die App: über quit_callback, ohne ihn mit get_tree().quit().
+func _quit() -> void:
+	if quit_callback.is_valid():
+		quit_callback.call()
+	else:
+		# quit() beendet nicht sofort, sondern am Ende des laufenden Bilds.
+		get_tree().quit()
 
 
 ## Die fünf Einträge des Hauptmenüs nach FR-001 und FR-002: „Weiterspielen“ nur mit einem

@@ -313,3 +313,22 @@ nichts und haben deshalb keine Notiz.
   Das reicht, weil der Schatten des Untertitels im Kasten liegt: Die Grundlinie liegt bei 80, der
   Text hat keine Unterlängen, der Schatten endet bei 82. `get_global_rect()` rechnet die `scale`
   von `Case` mit ein; das Rechteck ist also das auf der Oberfläche, 392 × 268.
+
+## Phase 7
+
+### T041 „Beenden“ ohne Fahrt testen
+
+- `get_tree().quit()` ist nicht testbar: Es beendet den ganzen Testlauf. Deshalb hat der Titel jetzt
+  `quit_callback: Callable`, nach demselben Muster wie `scene_callback` im Titel und
+  `quit_callback` in `GameSession` und in der Werkstatt. Ein `Callable` ist eine Funktion als Wert;
+  ungültig (der Vorgabewert) heißt „das Echte tun“. `_quit()` entscheidet das an einer Stelle, so
+  wie `_change_scene()` für den Szenenwechsel.
+- Eine eigene Eigenschaft statt `GameSession.quit_callback`: Jener gehört zum Schließen des Fensters
+  mit Speichern. Der Titel würde sonst in einen fremden Node greifen, um zu entscheiden, wie er
+  selbst beendet.
+- Der Helfer `_baue_titel_ohne_warten()` setzt `quit_callback` für jeden Test. So kann kein Test, der
+  „Beenden“ zufällig trifft, den Lauf abbrechen.
+- Die zwei Tests fahren im Takt des Tests (`faehrt = true`). Mit `animate = false` käme eine Fahrt
+  hinaus sofort zu Ende und wäre kaum zu sehen. So bemerken `is_in()`, `accepts_input()`, die Lage
+  und ein mitgeschriebenes `slide_finished` jede Fahrt. Gegenprobe: Mit `slide_out()` vor dem
+  Beenden schlagen beide Tests fehl.

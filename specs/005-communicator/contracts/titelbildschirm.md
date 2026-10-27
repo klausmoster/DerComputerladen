@@ -7,7 +7,8 @@ Einträge, Texte, Hinweise, Vorwahl, Esc und die Wege bleiben (FR-013). Rümpfe 
 nicht (Verfassung, Grundsatz II).
 
 **Vorbedingung:** Der Baustein Communicator aus [communicator.md](communicator.md) ist gebaut und
-abgenommen. G-02 und T-02 sind gerastert, aufgeräumt und von Klaus freigegeben (R10). Lagen und Maße
+abgenommen. Das Gehäuse und T-02 sind gerastert, aufgeräumt und von Klaus freigegeben (R10); seit
+der Abnahme von Phase 5 ist das Gehäuse G-03, im Titel bei 244/92. Lagen und Maße
 kommen aus dem Style-Guide.
 
 ## Dateien
@@ -15,17 +16,17 @@ kommen aus dem Style-Guide.
 ```text
 src/
 ├── assets/images/
-│   ├── organizer_1991.png / .import     # neu: Gehäuse G-02
+│   ├── organizer_1991.png / .import     # neu: Gehäuse G-03 (bis zur Abnahme von Phase 5 G-02)
 │   └── title_t02.png / .import          # neu: Titelbild T-02; title_t01.png bleibt
-├── ui/communicator/communicator.tscn    # geändert: Case zeigt G-02 statt des Platzhalters
+├── ui/communicator/communicator.tscn    # geändert: Case zeigt das Gehäuse statt des Platzhalters
 ├── scenes/title/
 │   ├── title_screen.tscn / .gd          # geändert: Communicator mit vier Seiten, T-02, Fahrt
 │   └── … übrige Dateien                 # unverändert bis auf look (communicator.md)
 └── test/
     └── test_title_screen.gd             # geändert
 docs/art/leonardo/
-├── g-02-organizer.*, t-02-titelbild.*   # neu: Originale
-└── prompt-log.md                        # geändert: G-02, T-02
+├── g-02-organizer.*, g-03-notizbuch.*, t-02-titelbild.*   # neu: Originale
+└── prompt-log.md                        # geändert: G-02, G-03, T-02
 ```
 
 ## Szenenaufbau
@@ -91,6 +92,10 @@ Bestehende Tests: Pfade auf `Communicator/<Seite>`, Hinweis über den Communicat
   legt kein zweites Spiel an und ruft `scene_callback` nur einmal (Analyse, B2).
 - Scheitert das Anlegen, fährt nichts, und die Meldung steht neben dem Gehäuse auf Höhe der Zeile.
 - Scheitert das Fortsetzen, fährt nichts, und der Titel liest neu.
+- „Beenden“ schließt sofort, ohne Fahrt hinaus, auch während der Fahrt herein (FR-013a). Dafür hat
+  der Titel seit T041 neben `scene_callback` die Eigenschaft
+  `var quit_callback: Callable`; ungültig heißt `get_tree().quit()`. Tests setzen eine eigene
+  Funktion, wie bei `GameSession.quit_callback`.
 - Eine Eingabe, bevor das Hauptmenü seine Einträge hat, tut nichts, auch Esc direkt nach dem
   Einhängen in den Baum (Analyse, C4).
 - Eine Zeile während der Fahrt herein wählen, dann scheitert das Anlegen: Die Meldung steht neben

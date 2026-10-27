@@ -66,6 +66,6 @@ Startprobe, erwartet: Exit 0 und keine Ausgabe:
 | 1 Style-Guide | Abnahme des Style-Guides durch Klaus, kein Quickstart |
 | 2 Baustein Communicator | Automatisch: `test_communicator.gd`; Bildschirmfoto der Probeszene |
 | 3 Seiten auf der Anzeige | Automatisch: `test_main_menu.gd`, `test_save_list.gd`, `test_lcd_theme.gd`; Bildschirmfotos, auch mit der Maus auf einer anderen Zeile als der gewählten |
-| 4 Grafik | G-02 und T-02 als Bild ansehen, gerastert ×4 zum Prüfen; Montage G-02 auf T-02 |
+| 4 Grafik | Gehäuse und T-02 als Bild ansehen, gerastert ×4 zum Prüfen; Montage des Gehäuses auf T-02 (heute G-03, bis zur Abnahme von Phase 5 G-02) |
 | 5 Titel | alles unter „Von Hand“, dazu alle Tests |
 | 6 Abschluss | alles noch einmal, Gesamtabnahme |
