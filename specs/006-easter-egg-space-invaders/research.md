@@ -36,19 +36,24 @@ hat andere. Die Folge ohne Node lässt sich wie `TimelineRun` ohne Szene testen.
 
 ## R2 Lage der drei Knöpfe in G-03
 
-**Messung (Claude, 2026-10-27, an `organizer_1991.png`):** Die drei grauen Tasten liegen ganz rechts
-in der Reihe der Funktionstasten, Bildpixel:
+**Messung (Claude, 2026-10-27, an `organizer_1991.png`; nachgemessen in T001 an Leuchtwerten je
+Bildpixel und einer Montage ×8):** Die drei grauen Tasten liegen ganz rechts in der Reihe der
+Funktionstasten. Gezählt wird einschließlich:
 
-| Knopf | x | y | Größe |
-|---|---|---|---|
-| 1 (links) | 140 bis 150 | 114 bis 120 | 11 × 7 |
-| 2 | 154 bis 165 | 114 bis 120 | 12 × 7 |
-| 3 (rechts) | 169 bis 179 | 114 bis 120 | 11 × 7 |
+| Knopf | x | y | Größe | Oberflächenpixel im Gehäuse | im Titel |
+|---|---|---|---|---|---|
+| 1 (links) | 140 bis 150 | 114 bis 121 | 11 × 8 | ab 280/228, 22 × 16 | ab 524/320 |
+| 2 (Mitte) | 154 bis 165 | 114 bis 121 | 12 × 8 | ab 308/228, 24 × 16 | ab 552/320 |
+| 3 (rechts) | 169 bis 180 | 114 bis 121 | 12 × 8 | ab 338/228, 24 × 16 | ab 582/320 |
 
-Oben (Zeilen 114 bis 117) ist die helle Fläche des Knopfs, darunter (118 bis 120) seine dunklere
-Vorderkante und der Schatten. Im Communicator mit `scale 2` sind das Oberflächenpixel ab (280, 228),
-(308, 228) und (338, 228), also unterhalb der Anzeige (die endet bei y 188). Phase 1 misst die Kanten
-an einer Montage ×8 nach, bevor sie in den Style-Guide kommen; der Agent übernimmt sie von dort.
+Zur Taste gehören die helle Oberseite (Zeilen 114 bis 117), die Vorderkante (118, 119) und ihr
+Schatten (120, 121); unter ihr beginnt in Zeile 122 die dunkle Fläche (Leuchtwert 64 gegen 82 bis 99
+im Schatten). Die Zeile 113 läuft hell über die ganze Reihe, auch über die Spalte zwischen den
+Tasten; sie ist der Rand der Fläche, nicht die Taste. Eine eigene helle Lichtkante haben die Tasten
+nicht: Die linke Spalte ist dunkler als die Oberseite (136 gegen 176), nicht heller. Rechts ist die
+Spalte 150, 165 bzw. 180 die Schattenkante. Bis T001 standen hier y 114 bis 120 und Taste 3 bis x
+179; der Schatten in Zeile 121 und die Kante bei x 180 gehören aber zur Taste. Seit Style-Guide
+Version 49 gelten die Werte aus dem Baustein Communicator, „Gehäusetasten“.
 
 ## R3 Eingedrückt: Ausschnitt aus dem Gehäusebild, eine Zeile tiefer
 
@@ -57,8 +62,8 @@ die Taste ihren eigenen Ausschnitt aus dem Gehäusebild, **ohne seine oberste Ze
 tiefer; die frei werdende oberste Zeile füllt er mit der Farbe des Spalts links neben der Taste. Die
 Vorderkante wird dadurch eine Zeile schmaler; die unterste Zeile der Taste fällt weg, der Ausschnitt
 reicht nie über das Rechteck hinaus (Analyse, I5). Kein neues Bild, keine neue Farbe (Spec, FR-001a;
-Claude, 2026-10-27). Hat die Taste auf der Montage ×8 auch eine helle linke Spalte, fällt sie
-ebenso weg und wird mit der Spaltfarbe gefüllt (Review, CHK029). Gehäusetasten sind Teil des
+Claude, 2026-10-27). Eine helle linke Spalte haben die Tasten nicht (T001, R2); es fällt also nur die
+oberste Zeile weg (Review, CHK029). Gehäusetasten sind Teil des
 Bildes und bekommen deshalb kein `relief-gedrueckt` (Review, CHK003).
 
 **Grund:** Ein Ausschnitt mit `AtlasTexture` aus der vorhandenen Textur hält Farben und Raster des
@@ -125,8 +130,8 @@ gleich schnell. Der Deckel von 4 Schritten verhindert nach einem Hänger einen S
 
 ## R7 Spielfeld und Maße
 
-**Vorschlag (Claude, 2026-10-27), gültig erst mit dem Style-Guide:** Nach T002 steht hier „übernommen
-in den Style-Guide am …“; danach gilt nur noch der Style-Guide, auch nach dem Feinschliff in T024
+**Übernommen in den Style-Guide am 2026-10-27 (Version 49, Baustein Spiel auf der Anzeige).** Bis dahin
+ein Vorschlag von Claude; seitdem gilt nur noch der Style-Guide, auch nach dem Feinschliff in T024
 (Analyse, V1). Gezählt wird einschließlich: x 75 bis 83 sind 9 Pixel (Analyse, I1). Das Feld ist die Anzeige, 160 × 80
 Bildpixel, gezeigt ×2 als 320 × 160 Oberflächenpixel. Alles liegt auf ganzen Bildpixeln.
 
@@ -138,7 +143,7 @@ Bildpixel, gezeigt ×2 als 320 × 160 Oberflächenpixel. Alles liegt auf ganzen 
 | Start des Blocks | oben bei y 12, waagrecht mittig |
 | Kanone | 9 × 5, Zeilen 73 bis 77, Mitte heißt x 75 bis 83; 1 Bildpixel je Schritt (Analyse, U2) |
 | Schuss | 1 × 4, 2 Bildpixel je Schritt |
-| Bombe | 1 × 3, 1 Bildpixel je zwei Schritte; Schuss und Bombe fliegen aneinander vorbei |
+| Bombe | 2 × 3 im Zickzack, damit sie sich vom Schuss unterscheidet (T002; bis dahin 1 × 3), 1 Bildpixel je zwei Schritte; Schuss und Bombe fliegen aneinander vorbei |
 | Explosion | Muster `explosion` 8 × 6 an der Stelle des Getroffenen, 0,25 s; hält nichts auf |
 | Gelandet | sobald die unterste Zeile eines lebenden Außerirdischen y 73 erreicht, die oberste Zeile der Kanone (Analyse, I1) |
 | Takt des Blocks | ein Schritt von 2 Bildpixeln; am Rand 3 tiefer und Richtungswechsel; Rand heißt die Außenkante der lebenden Außerirdischen (Analyse, M2) |
@@ -259,6 +264,9 @@ frei):
    R14), und dass das Menü stumm bleibt.
 
 ## R13 Töne: Rechteckwelle aus einem Skript
+
+**Übernommen in den Style-Guide am 2026-10-27 (Version 49, Abschnitt Ton); seitdem gilt die Tabelle
+dort.**
 
 **Entscheidung:** `tools/ton/make_sounds.py` (Python 3, Standardbibliothek, `wave` und `struct`)
 erzeugt alle Töne als WAV, 22 050 Hz, 16 Bit, mono, nach `src/assets/sounds/`. Es braucht keine

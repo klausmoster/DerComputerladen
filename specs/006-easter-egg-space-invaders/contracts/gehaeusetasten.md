@@ -93,8 +93,8 @@ Für jede Taste, die `is_down` ist, malt der Communicator in `_draw()` über das
 2. den Ausschnitt der Taste ohne ihre oberste Zeile, eine Bildpixelzeile tiefer, aus der Textur von
    `Case` (`draw_texture_rect_region`), ×2 wie das Gehäuse.
 
-Zeigt die Montage ×8 eine helle linke Spalte, fällt auch sie weg und wird mit der Spaltfarbe gefüllt
-(R3; Review, CHK029). Kein `relief-gedrueckt`, kein `signalgelb`, kein Tooltip (FR-001b). Die Taste
+Eine helle linke Spalte haben die Tasten von G-03 nicht (T001, R2); es fällt nur die oberste Zeile
+weg (R3; Review, CHK029). Kein `relief-gedrueckt`, kein `signalgelb`, kein Tooltip (FR-001b). Die Taste
 ist im nächsten Bild nach dem Drücken eingedrückt (FR-001a). Die unterste Zeile der Taste fällt dabei weg; der Ausschnitt reicht nie über das Rechteck hinaus.
 Gemalt wird in `Keys._draw()`, nicht im Communicator: Dessen `_draw()` läge unter dem Kind `Case`.
 `Keys` liegt über dem Gehäuse und unter den Seiten und malt neu bei jedem `down_changed`.

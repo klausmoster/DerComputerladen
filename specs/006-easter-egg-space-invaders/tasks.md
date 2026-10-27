@@ -51,11 +51,11 @@ Phase endet mit Klaus' Abnahme; jede Phase mit Sichtbarem oder Texten hat davor 
 **Purpose**: Was Phase 2 bis 5 zeigen und spielen, steht vorher im Style-Guide (research.md, R12).
 Kein Code.
 
-- [ ] T001 [C] Die drei grauen Knöpfe in `src/assets/images/organizer_1991.png` vermessen: Montage
+- [x] T001 [C] Die drei grauen Knöpfe in `src/assets/images/organizer_1991.png` vermessen: Montage
   ×8 mit Raster und Koordinaten in den Scratchpad, je Knopf Rechteck, Fläche, Vorderkante, Spalt
   links und darüber, ob es eine helle linke Spalte gibt (R2, R3; CHK020, CHK029). Ergebnis als
   Tabelle in research.md, R2, mit Verweis auf die Montage; die Montage selbst kommt nicht ins Repo.
-- [ ] T002 [C] Style-Guide ergänzen, https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Dateien
+- [x] T002 [C] Style-Guide ergänzen, https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Dateien
   unter `project/`, nach research.md, R12:
   - Baustein **Communicator**: Abschnitt „Gehäusetasten“ mit den Rechtecken aus T001, Eindrücken
     (R3), Klick; die Ausnahme von allen Regeln für anklickbare Stellen mit Grund (kein
@@ -85,8 +85,14 @@ Kein Code.
   Vorher liest Claude die betroffenen Dateien neu und ändert nur diese; danach bekommt Klaus den
   Link und eine Liste der Änderungen. Wünscht Klaus, die Pixelmuster selbst zu zeichnen (plan.md,
   „Vorarbeiten“), wird daraus vorher eine `[K]`-Aufgabe, und Claude übernimmt seine Muster.
-- [ ] T003 [K] Phase 1 abnehmen: Montage und Rechtecke, die Ausnahme für die Gehäusetasten, die
+- [x] T003 [K] Phase 1 abnehmen: Montage und Rechtecke, die Ausnahme für die Gehäusetasten, die
   Pixelmuster, Maße und Tempi und die Töne auf dem Papier freigeben oder ändern lassen.
+
+Erledigt am 2026-10-27, von Klaus abgenommen: Style-Guide Version 50. Neu sind im Baustein
+Communicator der Abschnitt „Gehäusetasten“ mit den vermessenen Rechtecken (11 × 8, 12 × 8, 12 × 8
+Bildpixel, keine eigene Lichtkante) und der vollständigen Ausnahme, der Baustein „Spiel auf der
+Anzeige“ mit Raster, Maßen, Tempi, Pixelmustern, Ergebnisanzeige und Vorschau, der Abschnitt „Ton“,
+dazu Verweise in README und Sprache. Die Bombe ist 2 × 3 statt 1 × 3 (R7).
 
 **Checkpoint**: Der Style-Guide regelt alles, was Knöpfe, Spiel und Ton brauchen.
 
