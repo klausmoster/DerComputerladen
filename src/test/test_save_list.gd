@@ -25,7 +25,7 @@ const ZULETZT := 1793047212
 const STUNDE := 3600
 const ZEILE := SaveList.ROW_HEIGHT
 ## Größe der Anzeige des Communicators (Style-Guide, Baustein Communicator).
-const ANZEIGE := Vector2(384, 192)
+const ANZEIGE := Vector2(320, 160)
 ## Die Spalten einer fortsetzbaren Zeile.
 const SPALTEN: Array[StringName] = [&"Name", &"Difficulty", &"Day", &"Played"]
 
@@ -64,7 +64,9 @@ func before_each() -> void:
 
 func test_werte_aus_dem_style_guide() -> void:
 	# Assert: Style-Guide, Baustein Liste.
-	assert_eq(SaveList.VISIBLE_ROWS, 6, "Höchstens 6 Zeilen mit Spielständen.")
+	assert_eq(SaveList.VISIBLE_ROWS, 6, "Auf Papier höchstens 6 Zeilen mit Spielständen.")
+	assert_eq(SaveList.LCD_VISIBLE_ROWS, 5, "Auf der Anzeige höchstens 5.")
+	assert_eq(_liste.visible_rows(), 6, "Diese Liste steht auf Papier.")
 	assert_eq(Array(SaveList.COLUMNS), [0, 64, 108, 172], "Spalten ab dem Text der Zeile.")
 	assert_eq(SaveList.PAPER_WIDTH, 304, "Das Papier ist 304 breit.")
 
@@ -870,6 +872,26 @@ func test_lcd_spalten_so_breit_wie_auf_papier() -> void:
 		"Die letzte Spalte endet vor dem Innenrand.")
 
 
+func test_lcd_fuenf_spielstaende_fuellen_die_anzeige() -> void:
+	# Arrange und Act: sieben Spielstände auf der Anzeige.
+	await _auf_der_anzeige(_viele(7))
+
+	# Assert: fünf zu sehen statt sechs wie auf Papier; Kopfzeile, fünf, „Löschen …“ und „Zurück“
+	# sind 8 Zeilen zu 20, genau die Höhe der Anzeige (Style-Guide, Baustein Liste).
+	assert_eq(_liste.visible_rows(), SaveList.LCD_VISIBLE_ROWS)
+	assert_eq(_sichtbare_namen(), ["Spiel 7", "Spiel 6", "Spiel 5", "Spiel 4", "Spiel 3"])
+	assert_false(_liste.has_node(^"Rows/Slot5"), "Nur fünf Zeilen für Spielstände.")
+	assert_eq((_liste.get_node(^"Rows") as Control).get_combined_minimum_size().y, ANZEIGE.y,
+		"8 Zeilen zu 20 füllen die Anzeige, 160.")
+	assert_eq(_liste.size, ANZEIGE)
+	assert_true(_liste._more_below(), "Unten stehen noch zwei.")
+
+	# Act und Assert: zum siebten gerollt.
+	_liste.select(6)
+	assert_eq(_sichtbare_namen(), ["Spiel 5", "Spiel 4", "Spiel 3", "Spiel 2", "Spiel 1"])
+	assert_true(_liste._more_above() and not _liste._more_below())
+
+
 func test_lcd_groesse_kommt_von_aussen() -> void:
 	# Arrange
 	await _auf_der_anzeige(_drei())
@@ -958,14 +980,17 @@ func test_lcd_gewaehlt_und_nicht_verfuegbar_bleibt_gedaempft() -> void:
 
 
 func test_lcd_rollmarke_8_vom_rand_in_der_gewaehlten_zeile_lcd() -> void:
-	# Arrange: sieben Spielstände, unten steht mehr; gewählt ist der oberste.
+	# Arrange: sieben Spielstände, fünf zu sehen, unten steht mehr; gewählt ist der oberste.
 	await _auf_der_anzeige(_viele(7))
 
-	# Act und Assert: nicht gewählt tusche.
+	# Act und Assert: nicht gewählt tusche. „Löschen …“ ist Zeile 6 der Anzeige: Kopfzeile und fünf
+	# Spielstände darüber.
 	var marke := _liste._scroll_mark_layers()
 	assert_true(_liste._more_below() and not _liste._more_above())
-	assert_eq(_liste._scroll_mark_rect(7), Rect2(ANZEIGE.x - 8 - 7, 7 * ZEILE + 8, 7, 4),
+	assert_eq(_liste._scroll_mark_rect(6), Rect2(ANZEIGE.x - 8 - 7, 6 * ZEILE + 8, 7, 4),
 		"In „Löschen …“, 8 vom rechten Rand der Anzeige.")
+	assert_eq((marke[0]["rect"] as Rect2).position.y, 6 * ZEILE + 8.0,
+		"Gemalt wird sie in der Zeile „Löschen …“.")
 	assert_eq(_farben(marke), [UiPalette.TUSCHE], "Nicht gewählt: tusche.")
 
 	# Act und Assert: „Löschen …“ gewählt, die Marke im Balken lcd.
@@ -1043,7 +1068,7 @@ func test_look_spaeter_setzen_baut_die_zeilen_neu() -> void:
 	# Assert
 	for button in _alle_knoepfe():
 		assert_eq(button.theme_type_variation, &"LcdRow", "%s ist neu gebaut." % button.name)
-	assert_eq(_liste.get_node(^"Rows").get_child_count(), 1 + SaveList.VISIBLE_ROWS + 2,
+	assert_eq(_liste.get_node(^"Rows").get_child_count(), 1 + SaveList.LCD_VISIBLE_ROWS + 2,
 		"Keine alte Zeile bleibt stehen.")
 	assert_eq(_liste.selected_index(), 1, "Die Auswahl bleibt auf ihrer Zeile.")
 	assert_eq(_spaltenfarben(1)[0], UiPalette.LCD)
@@ -1102,7 +1127,7 @@ func _zellen(zeile: int) -> Array[String]:
 ## Die Namen in den sichtbaren Zeilen des Fensters.
 func _sichtbare_namen() -> Array[String]:
 	var namen: Array[String] = []
-	for zeile in SaveList.VISIBLE_ROWS:
+	for zeile in _liste.visible_rows():
 		if _zeile(zeile).visible:
 			namen.append(_zelle(zeile, &"Name").text)
 	return namen
@@ -1137,7 +1162,7 @@ func _gespielt(zuletzt: int) -> String:
 ## Mauszeiger der Spielstandzeilen, dann von „Löschen …“ und „Zurück“.
 func _zeiger() -> Array:
 	var zeiger := []
-	for zeile in SaveList.VISIBLE_ROWS:
+	for zeile in _liste.visible_rows():
 		if _zeile(zeile).visible:
 			zeiger.append(_zeile(zeile).mouse_default_cursor_shape)
 	zeiger.append(_knopf("DeleteMode").mouse_default_cursor_shape)
@@ -1257,7 +1282,7 @@ func _auf_der_anzeige(spielstaende: Array[SaveSlot], index := 0) -> void:
 ## Alle Buttons der Liste: die Zeilen des Fensters, „Löschen …“ und „Zurück“.
 func _alle_knoepfe() -> Array[Button]:
 	var knoepfe: Array[Button] = []
-	for zeile in SaveList.VISIBLE_ROWS:
+	for zeile in _liste.visible_rows():
 		knoepfe.append(_zeile(zeile))
 	knoepfe.append_array([_knopf("DeleteMode"), _knopf("Back")])
 	return knoepfe

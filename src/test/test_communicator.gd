@@ -18,7 +18,7 @@ extends GutTest
 ##
 ## Probeseite (T008): die Probeszene mit drei Einträgen, bedient ohne Titelbildschirm (SC-005).
 ##
-## Der Communicator steht wie später im Titel bei (200, 96) in einem eigenen Viewport von 640 × 360,
+## Der Communicator steht wie im Titel bei (244, 92) in einem eigenen Viewport von 640 × 360,
 ## so groß wie das Oberflächenraster. Die Seiten hängt der Test vor dem Einhängen unter die Instanz,
 ## wie es ein Bildschirm in seiner Szene tut: Dann sind sie schon Kinder, wenn _ready() läuft.
 
@@ -30,11 +30,13 @@ const PROBE_SCRIPT_PATH := "res://test/fixtures/communicator_probe.gd"
 ## Ein Bild bei 60 Bildern je Sekunde.
 const BILD := 1.0 / 60.0
 ## Endlage wie im Titel (Style-Guide, Baustein Communicator, Lage im Titel).
-const ENDLAGE := Vector2(200, 96)
+const ENDLAGE := Vector2(244, 92)
 ## Anzeige des Organizers im Gehäuse (Style-Guide, Baustein Communicator).
-const ANZEIGE := Rect2i(24, 24, 384, 192)
-## Größe des Platzhalter-Gehäuses bis G-02 (Style-Guide, Baustein Communicator; research.md, R11).
-const GEHAEUSE := Vector2(432, 264)
+const ANZEIGE := Rect2i(36, 28, 320, 160)
+## Größe des Gehäuses G-03 auf der Oberfläche: 196 × 134 Bildpixel, genau ×2 (Style-Guide, Baustein
+## Communicator).
+const GEHAEUSE := Vector2(392, 268)
+const GEHAEUSE_BILD := "res://assets/images/organizer_1991.png"
 ## Höchstens so lange nach dem ersten fahrenden Bild steht der Communicator am Ziel (SC-002).
 const HOECHSTENS := 0.25
 ## Bildfolgen, mit denen die Fahrt laufen muss: erstes Bild, jedes weitere Bild, in Sekunden.
@@ -123,18 +125,32 @@ func test_lage_und_farbe_der_anzeige_sind_je_gehaeuse_einstellbar() -> void:
 	assert_eq(Rect2i(_seite_b.get_rect()), anderswo)
 
 
-func test_platzhalter_gehaeuse_in_gehaeuse_mit_kontur_tusche() -> void:
+func test_gehaeuse_ist_g03_genau_doppelt() -> void:
 	# Arrange
 	var gehaeuse := _communicator.get_node(^"Case") as TextureRect
+	var bild := gehaeuse.texture
 
-	# Act: Headless entsteht kein Bild; geprüft wird die Liste der Rechtecke, die _draw() malt.
-	var ebenen := Communicator._placeholder_layers(gehaeuse.get_rect())
+	# Act: die Fläche, die das Gehäuse auf der Oberfläche bedeckt, mit Skalierung.
+	var flaeche := gehaeuse.get_transform() * Rect2(Vector2.ZERO, gehaeuse.size)
+
+	# Assert: genau ×2, nicht auf eine feste Größe gezogen (Phasenprüfung Phase 2, Befund 2).
+	assert_eq(bild.resource_path, GEHAEUSE_BILD, "Das Gehäuse ist G-03.")
+	assert_eq(bild.get_size(), Vector2(196, 134), "196 × 134 Bildpixel.")
+	assert_eq(gehaeuse.stretch_mode, TextureRect.STRETCH_KEEP, "Das Bild wird nicht gezogen.")
+	assert_eq(gehaeuse.size, bild.get_size(), "Case ist so groß wie das Bild.")
+	assert_eq(gehaeuse.scale, Vector2(2, 2), "Genau ×2 auf das Oberflächenraster.")
+	assert_eq(flaeche, Rect2(Vector2.ZERO, bild.get_size() * 2), "Es bedeckt 392 × 268.")
+	assert_eq(_communicator.size, GEHAEUSE, "Der Communicator ist so groß wie das Gehäuse.")
+	assert_eq(flaeche.size, _communicator.size)
+	assert_eq(gehaeuse.texture_filter, CanvasItem.TEXTURE_FILTER_NEAREST, "Pixel bleiben scharf.")
+
+
+func test_platzhalter_ohne_bild_in_gehaeuse_mit_kontur_tusche() -> void:
+	# Act: Ein Gehäuse ohne Bild bekäme den Platzhalter. Headless entsteht kein Bild; geprüft wird
+	# die Liste der Rechtecke, die _draw() dann malt.
+	var ebenen := Communicator._placeholder_layers(Rect2(Vector2.ZERO, GEHAEUSE))
 
 	# Assert
-	assert_null(gehaeuse.texture, "Bis G-02 hat das Gehäuse kein Bild, der Platzhalter steht da.")
-	assert_eq(_communicator.size, GEHAEUSE, "Der Communicator ist so groß wie das Gehäuse.")
-	assert_eq(gehaeuse.get_rect(), Rect2(Vector2.ZERO, GEHAEUSE))
-	assert_eq(gehaeuse.texture_filter, CanvasItem.TEXTURE_FILTER_NEAREST, "Pixel bleiben scharf.")
 	assert_eq(ebenen.size(), 5, "Fläche und vier Kanten.")
 	assert_eq(ebenen[0], {"rect": Rect2(Vector2.ZERO, GEHAEUSE), "color": UiPalette.GEHAEUSE},
 		"Die Fläche ist gehaeuse.")
@@ -314,9 +330,9 @@ func test_ungerade_endlage_meldet_eine_warnung() -> void:
 
 	# Assert: Die Endlage muss auf ganzen Bildpixeln liegen, also auf geraden Lagen.
 	assert_push_warning("nicht auf ganzen Bildpixeln")
-	assert_true(Communicator._on_image_grid(ENDLAGE), "(200, 96) liegt auf dem Bildraster.")
-	assert_false(Communicator._on_image_grid(Vector2(200, 97)), "y 97 ist ungerade.")
-	assert_false(Communicator._on_image_grid(Vector2(201, 96)), "x 201 ist ungerade.")
+	assert_true(Communicator._on_image_grid(ENDLAGE), "(244, 92) liegt auf dem Bildraster.")
+	assert_false(Communicator._on_image_grid(Vector2(244, 93)), "y 93 ist ungerade.")
+	assert_false(Communicator._on_image_grid(Vector2(201, 92)), "x 201 ist ungerade.")
 	schief.queue_free()
 
 

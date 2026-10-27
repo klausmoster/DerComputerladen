@@ -25,7 +25,7 @@ extends GutTest
 
 const MENU_SCENE := preload("res://scenes/title/main_menu.tscn")
 ## Größe der Anzeige des Communicators (Style-Guide, Baustein Communicator).
-const ANZEIGE := Vector2(384, 192)
+const ANZEIGE := Vector2(320, 160)
 
 var _menu: MainMenu
 

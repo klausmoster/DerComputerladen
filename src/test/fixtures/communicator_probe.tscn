@@ -21,9 +21,9 @@ mouse_filter = 2
 
 [node name="Communicator" parent="." instance=ExtResource("2_communicator")]
 layout_mode = 0
-offset_left = 200.0
-offset_top = 96.0
-offset_right = 632.0
+offset_left = 244.0
+offset_top = 92.0
+offset_right = 636.0
 offset_bottom = 360.0
 
 [node name="MainMenu" parent="Communicator" instance=ExtResource("3_main_menu")]

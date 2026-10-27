@@ -15,8 +15,10 @@ extends Control
 ## Seiten nicht; er stellt sie nur hin, zeigt sie und fährt.
 ##
 ## Das Gehäuse ist reine Grafik: Communicator, Gehäuse, Anzeige und Hinweis lassen die Maus durch
-## (`mouse_filter` IGNORE in der Szene), bedienbar sind nur die Seiten. Bis das Bild G-02 da ist,
-## malt `_draw()` an seiner Stelle einen Platzhalter (research.md, R11).
+## (`mouse_filter` IGNORE in der Szene), bedienbar sind nur die Seiten. Das Gehäuse ist ein Bild auf
+## dem Bildraster, genau ×2 gezeigt: `Case` hat die Größe der Textur, STRETCH_KEEP und scale 2.
+## Beim Organizer ist das G-03 (`organizer_1991.png`). Hat `Case` kein Bild, etwa bei einem
+## Gehäuse in Arbeit, malt `_draw()` an seiner Stelle einen Platzhalter (research.md, R11).
 ##
 ## Eingabe: Ab `slide_out()` nimmt keine Seite Fokus, Maus oder Tastatur an, bis `slide_in()` oder
 ## `place_hidden()` kommt. Das regeln zwei Eigenschaften von Control für den ganzen Teilbaum,
@@ -40,15 +42,15 @@ const MAX_STEP := 1.0 / 30.0
 const MAX_FIRST_STEP := 1.0 / 60.0
 ## Größe der Anzeige, für jedes Gehäuse gleich, damit jede Seite in jedes Gehäuse passt
 ## (Style-Guide, Baustein Communicator).
-const DISPLAY_SIZE := Vector2i(384, 192)
+const DISPLAY_SIZE := Vector2i(320, 160)
 ## „Draußen“: Die Oberkante des Communicators liegt an der Unterkante des Bilds, 640 × 360
 ## (Style-Guide, Baustein Communicator).
 const HIDDEN_Y := 360.0
 
 ## Lage und Größe der Anzeige im Gehäuse. Sie gehören zum Gehäuse; ein späteres Gehäuse setzt eigene
-## (FR-001a). Vorgabe ist der Organizer: bei (24, 24), DISPLAY_SIZE groß (Style-Guide, Baustein
+## (FR-001a). Vorgabe ist der Organizer: bei (36, 28), DISPLAY_SIZE groß (Style-Guide, Baustein
 ## Communicator).
-@export var display_rect: Rect2i = Rect2i(Vector2i(24, 24), DISPLAY_SIZE):
+@export var display_rect: Rect2i = Rect2i(Vector2i(36, 28), DISPLAY_SIZE):
 	set(value):
 		display_rect = value
 		if is_node_ready():
@@ -104,7 +106,7 @@ func _ready() -> void:
 
 
 func _draw() -> void:
-	# Ohne Bild im Gehäuse der Platzhalter; mit G-02 entfällt er von selbst.
+	# Ohne Bild im Gehäuse der Platzhalter; mit einem Bild entfällt er von selbst.
 	if _case.texture != null:
 		return
 	for layer in _placeholder_layers(_case.get_rect()):

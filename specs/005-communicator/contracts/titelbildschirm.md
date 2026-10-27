@@ -33,7 +33,8 @@ docs/art/leonardo/
 ```text
 TitleScreen (Control, 640 × 360)                 title_screen.gd
 ├── Background (TextureRect)                     T-02 statt T-01, sonst wie bisher
-├── LogoBlock, VersionLine                       unverändert
+├── LogoBlock                                    unverändert bis auf den pixelschatten
+├── VersionLine                                  oben rechts, rechtsbündig (Abnahme Phase 5)
 └── Communicator (communicator.tscn)             Endlage nach dem Style-Guide, rechts unten
     ├── MainMenu (main_menu.tscn)                look = LCD, HAUPTMENÜ
     ├── DifficultySheet (main_menu.tscn)         look = LCD, SCHWIERIGKEIT
@@ -81,7 +82,7 @@ Bestehende Tests: Pfade auf `Communicator/<Seite>`, Hinweis über den Communicat
   sichtbare Seite. Nach einer Rückkehr aus dem Spiel ebenso.
 - Jeder Seitenwechsel lässt die Lage des Communicators gleich.
 - Jede Seite passt auf die Anzeige: Hauptmenü, Gradwahl, Rückfrage mit „Spiel 9999 löschen“, Liste
-  mit sechs sichtbaren Spielständen, „Spiel 9999“ und Kopfzeile WELCHES LÖSCHEN? (SC-004).
+  mit fünf sichtbaren Spielständen, „Spiel 9999“ und Kopfzeile WELCHES LÖSCHEN? (SC-004).
 - Logo, Untertitel und Versionszeile überschneiden sich weder mit Gehäuse noch Anzeige noch Hinweis,
   in Endlage und für jede Zeile jeder Seite, auch als Meldung (SC-006).
 - „Weiterspielen“ mit Enter während der Fahrt herein setzt fort (SC-001); danach fährt der

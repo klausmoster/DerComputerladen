@@ -92,6 +92,26 @@ Beginn der Fahrt (C1), der Edge Case „Langes erstes Bild“ hat eine Zahl (C2)
 geänderten Anforderungen von Feature 001 (C18). Alles Übrige betraf Plan, research.md,
 Datenmodell, Verträge, Quickstart und Tasks (plan.md, „Änderungen nach der Analyse“).
 
+### Abnahme Phase 5, 2026-10-27
+
+- Q: Der Hinweis fährt mit dem Gerät und gleitet beim Herein- und Hinausfahren kurz über die
+  Versionszeile unten links; SC-006 verlangt „in keiner Lage“. Wie lösen? → A: Die Versionszeile
+  kommt oben rechts in den freien Himmel über dem Gerät (Klaus, 2026-10-27, eigener Vorschlag,
+  „inklusive aller Anpassungen der Specs“). Verworfen: Versionszeile über dem Communicator,
+  SC-006 nur für die Endlage, Hinweis erst in der Endlage. Nebenbei erledigt: Unten hielt die
+  Zeile nur 6 statt `raster-16` Rand (Probelauf Feature 001).
+- Q: Die Seiten füllen die Anzeige von 384 × 192 kaum, das Gerät ist fast nur Rahmen um das LCD.
+  Kleiner, damit etwas von der Tastatur zu sehen ist? → A: Anzeige 320 × 160, also 8 Zeilen zu 20;
+  die Liste zeigt auf der Anzeige 5 statt 6 Spielstände (Klaus, 2026-10-27, nach Empfehlung). G-02
+  wird aus demselben Original neu gerastert, mit LCD 160 × 80 Bildpixeln, Scharnier,
+  Funktionstasten und oberster Tastenreihe. Verworfen: 352 × 176 (wenig gewonnen) und 288 × 144
+  (die Liste bräuchte schmalere Spalten).
+- Q: Die Tastatur von G-02 wirkt nach dem Zuschneiden seltsam; passt ein elektronisches Notizbuch
+  wie der Olivetti D2000 (1990) besser als Vorlage? → A: Ja, neues Gehäuse G-03 nach dem D2000,
+  nur in Worten beschrieben, hell statt dunkelgrau, ohne Marke (Klaus, 2026-10-27); aus vier
+  Bildern wählte Klaus Bild 2. Es ersetzt G-02; FR-012 bleibt, der Arbeitsname bleibt „Organizer
+  von 1991“.
+
 ## Überblick
 
 Bisher bedient der Spieler den Titel über Blätter aus Endlospapier: Hauptmenü, Gradwahl, Liste
@@ -303,14 +323,16 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 - **FR-010a**: Im Titel muss der Communicator rechts unten stehen, das Logo bleibt links oben. Die
   Anzeige ist ganz zu sehen; vom Gehäuse darf unten ein Teil, etwa die Tastatur, aus dem Bild
   ragen, als halte man das Gerät hoch. Der Hinweis steht als Zettel links neben dem Gerät auf Höhe
-  der gewählten Zeile. Die genauen Maße legt der Style-Guide fest (FR-008).
+  der gewählten Zeile. Die Versionszeile steht oben rechts im freien Himmel, rechtsbündig (Abnahme
+  Phase 5). Die genauen Maße legt der Style-Guide fest (FR-008).
 - **FR-011**: Alle vier Blätter des Titels müssen als Seiten auf der Anzeige des Communicators
   stehen: Hauptmenü, Gradwahl (SCHWIERIGKEIT), Liste der Spielstände (SPIELSTÄNDE, im Löschmodus
   WELCHES LÖSCHEN?) und Rückfrage (LÖSCHEN?). Endlospapier kommt im Titel nicht mehr vor. Das
   ändert FR-023 von Feature 004, das für diese Blätter Endlospapier verlangt, und FR-005 von
   Feature 001, nach dem das Menü als Papier rechts auf T-01 steht (CHK025), dazu FR-011 von
   Feature 001 (Auswahl in `signalgelb` mit Pfeil) und SC-006 von Feature 001 (Vergleich mit dem
-  Titelscreen-Entwurf) (Analyse, C18).
+  Titelscreen-Entwurf) (Analyse, C18), dazu die Lage der Versionszeile aus Feature 001, die von unten
+  links nach oben rechts wandert (Abnahme Phase 5).
 - **FR-012**: Im Titel muss der Communicator fest das Gehäuse des Organizers von 1991 haben,
   unabhängig von Spielständen und Datum. Der Titel steht außerhalb der Spielzeit.
 - **FR-013**: Wege, Einträge, Texte, Hinweise, Vorwahl und Esc im Titel müssen bleiben, wie
@@ -364,7 +386,7 @@ einen Eintrag und prüft, dass der Eintrag gemeldet wird. Am Titel ändert sich 
 - **SC-003**: In jedem Bild der Fahrt steht der Communicator auf ganzen Oberflächenpixeln, und er
   kommt nie über die Endlage hinaus; ein automatischer Test belegt das Bild für Bild.
 - **SC-004**: Jede Seite des Titels passt auf die Anzeige, geprüft mit der längsten Kopfzeile,
-  dem längsten Eintrag, „Spiel 9999“ und sechs sichtbaren Spielständen; alle Hinweise und
+  dem längsten Eintrag, „Spiel 9999“ und fünf sichtbaren Spielständen (Abnahme Phase 5); alle Hinweise und
   Meldungen passen weiter in zwei Zeilen.
 - **SC-005**: Ein automatischer Test zeigt den Communicator außerhalb des Titels mit einer
   Probeseite und bedient sie, ohne den Titelbildschirm und seine Texte zu benutzen. Menü und

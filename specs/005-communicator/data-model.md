@@ -10,8 +10,8 @@ und [contracts/titelbildschirm.md](contracts/titelbildschirm.md).
 | Teil | Was | Herkunft der Werte |
 |---|---|---|
 | **Communicator** | das Steuerelement: Gehäuse, Anzeige, Seiten, Hinweis, Lage | Style-Guide, Baustein Communicator |
-| **Gehäuse** | ein Bild auf dem Bildraster, ×2 gezeigt; heute der Organizer von 1991 (G-02), bis dahin ein Platzhalter (R11) | `src/assets/images/organizer_1991.png` |
-| **Anzeige** | Rechteck fester Größe im Gehäuse, für jedes Gehäuse gleich groß (FR-001); Lage im Gehäuse und Farbe gehören zum Gehäuse, beim Organizer `lcd` (Analyse, C11) | Style-Guide; Vorschlag 384 × 192 (R9) |
+| **Gehäuse** | ein Bild auf dem Bildraster, ×2 gezeigt; heute der Organizer von 1991 (G-03, bis zur Abnahme von Phase 5 G-02), davor ein Platzhalter (R11) | `src/assets/images/organizer_1991.png` |
+| **Anzeige** | Rechteck fester Größe im Gehäuse, für jedes Gehäuse gleich groß (FR-001); Lage im Gehäuse und Farbe gehören zum Gehäuse, beim Organizer `lcd` (Analyse, C11) | Style-Guide; 320 × 160, bis zur Abnahme von Phase 5 384 × 192 (R9) |
 | **Seite** | ein Control auf der Anzeige: `MainMenu` oder `SaveList` mit `look = LCD`; genau eine ist zu sehen | die Bildschirme, die den Communicator zeigen |
 | **Hinweis** | `MenuHint` als Kind des Communicators, links neben dem Gehäuse auf Höhe der gewählten Zeile, auch als Meldung | Style-Guide, Baustein Hinweis |
 | **Farbe `lcd`** | 16. Farbe der Oberfläche, nur Oberfläche (R1, R2) | `UiPalette.LCD`, Token `&"lcd"` |

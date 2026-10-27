@@ -45,7 +45,7 @@ Startprobe, erwartet: Exit 0 und keine Ausgabe:
    wählen. Beide Zeilen bleiben lesbar: „Neues Spiel“ dunkel auf hellem LCD, „Spiel laden“ hell im
    dunklen Balken.
 5. **Wege** (US2): „Neues Spiel“ → SCHWIERIGKEIT auf demselben LCD, das Gerät steht still; Esc
-   zurück. „Spiel laden“ → SPIELSTÄNDE mit vier Spalten; mit mehr als sechs Spielständen scrollen
+   zurück. „Spiel laden“ → SPIELSTÄNDE mit vier Spalten; mit mehr als fünf Spielständen scrollen
    mit Mausrad und Pfeilen; „Löschen …“ → WELCHES LÖSCHEN?; eine Zeile → LÖSCHEN?; „Abbrechen“.
 6. **Spiel beginnen**: einen Grad wählen. Das Gerät fährt hinaus, dann der Spielbildschirm. Ein
    zweites Enter während der Fahrt tut nichts, auch nicht, wenn du dabei die Maus über eine Zeile
@@ -56,7 +56,7 @@ Startprobe, erwartet: Exit 0 und keine Ausgabe:
 9. **Vollbild** mit Ctrl+Cmd+F während der Fahrt herein: Das Gerät kommt sauber in seiner Endlage an.
 10. **Kleinstes Fenster**: Fenster auf 640 × 360 ziehen (Faktor 1); jede Zeile lesbar, die Anordnung
    wie bei jedem anderen Faktor.
-11. **Liste mit Rollmarke**: mehr als sechs Spielstände, „Löschen …“ wählen; die Rollmarke nach
+11. **Liste mit Rollmarke**: mehr als fünf Spielstände, „Löschen …“ wählen; die Rollmarke nach
     unten ist im dunklen Balken hell zu sehen.
 
 ## Zuordnung zu den Phasen

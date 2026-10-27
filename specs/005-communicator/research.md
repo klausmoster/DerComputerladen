@@ -189,24 +189,27 @@ selbst (`main_menu.gd`, `_make_row()`), `SaveList` wählt bei jeder Mausbewegung
 - Mit `await` im Titelbildschirm statt Signal: gleichwertig; das Signal lässt sich im Test ohne
   Warten auslösen, wenn `animate` aus ist.
 
-## R9 Lage im Titel: Anzeige rechts unten, Gehäuse ragt unten hinaus
+## R9 Lage im Titel: Anzeige rechts unten, Gehäuse bis an den unteren Bildrand
 
 **Vorschlag von Claude, von Klaus in Phase 1 freigegeben (2026-10-27), steht im Style-Guide:**
 
 | Teil | Lage |
 |---|---|
-| Anzeige | 384 × 192, x 224 bis 608, y 120 bis 312 (Endlage) |
-| Gehäuse | rund 432 breit, Oberkante y 96, Unterkante unter dem Bild (Tastatur halb zu sehen) |
-| Hinweis | rechte Kante x 196, also höchstens von x 36 an; oben bündig mit der Zeile |
-| Logo und Untertitel | unverändert x 14 bis 296, y 12 bis 83; 13 frei bis zum Gehäuse |
-| Versionszeile | unverändert unten links |
+| Anzeige | 320 × 160, x 280 bis 600, y 120 bis 280 (Endlage); bis zur Abnahme von Phase 5 384 × 192, x 224 bis 608, y 120 bis 312 |
+| Gehäuse | G-03, 392 × 268, x 244 bis 636, Oberkante y 92 (9 unter dem Logo), Unterkante am Bildrand (360); Anzeige darin bei 36/28; zu sehen sind Scharnier, Funktionstasten und oberste Tastenreihe |
+| Hinweis | rechte Kante x 240; oben bündig mit der Zeile |
+| Logo und Untertitel | unverändert x 14 bis 296, y 12 bis 83; 9 frei bis zum Gehäuse (bis zur Abnahme von Phase 5: 13) |
+| Versionszeile | oben rechts, rechtsbündig, 16 vom oberen und rechten Rand (Klaus, Abnahme Phase 5); bis dahin unten links |
 
-Die Anzeige von 384 × 192 schlägt die Recherche vor (Abschnitt 4, „Maße auf 640 × 360“). Sie fasst
-die längste Seite: SPIELSTÄNDE mit Kopfzeile, sechs Spielständen, „Löschen …“ und „Zurück“ sind
-9 Zeilen zu 20, also 180 von 192; die Liste ist 304 breit, die Anzeige 384. Das Hauptmenü mit fünf
-Einträgen belegt 120 der 192; der Rest bleibt leeres LCD (FR-014, SC-004).
+Die Anzeige von 384 × 192 schlug die Recherche vor (Abschnitt 4, „Maße auf 640 × 360“). In
+Phase 5 zeigte sich, dass die Seiten sie kaum füllen und vom Gerät fast nur der Rahmen um das LCD
+zu sehen war; Klaus wählte bei der Abnahme 320 × 160 (spec.md, Abnahme Phase 5). Sie fasst die
+längste Seite: SPIELSTÄNDE mit Kopfzeile, fünf Spielständen, „Löschen …“ und „Zurück“ sind
+8 Zeilen zu 20, genau 160. Die Spalten der Liste reichen ab dem Text bei x 16 bis 278, die
+Rollmarke steht 8 vom rechten Rand. Das Hauptmenü mit fünf Einträgen belegt 120 der 160; der Rest
+bleibt leeres LCD (FR-014, SC-004). Auf Papier bleiben es 6 Spielstände.
 
-Auf dem Bildraster ist die Anzeige 192 × 96 Bildpixel, das Gehäuse beginnt auf geraden Lagen. Der
+Auf dem Bildraster ist die Anzeige 160 × 80 Bildpixel, das Gehäuse beginnt auf geraden Lagen. Der
 Logo-Abstand von mindestens `raster-8` (Style-Guide, Logo) ist eingehalten.
 
 **Verworfen:**

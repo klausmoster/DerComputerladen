@@ -12,6 +12,22 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 005, Phase 5 (2026-10-27)
+
+Aus der Phasenprüfung (Stil- und Text-Prüfer, von Claude nachgeprüft):
+- **Entschieden:** Der Hinweis glitt beim Fahren kurz über die Versionszeile unten links. Klaus:
+  Die Versionszeile steht oben rechts im freien Himmel (T031a, Style-Guide Version 41).
+- **Lücken ohne Eile**, Empfehlung jeweils in Klammern:
+  - Woran `raster-16` und `raster-8` gemessen werden, am Kasten, an der sichtbaren Schrift oder
+    mit Schatten (am Kasten, so prüfen es die Tests).
+  - Ob die Versionszeile auf dem dunklen Himmel den Schatten braucht (behalten: gleiche Ausstattung
+    wie der Untertitel, kaum sichtbar, schadet nicht).
+  - Die Beschreibung des Tokens `pixelschatten` nennt Text auf einem Bild noch nicht (in Phase 6 im
+    Style-Guide nachtragen).
+  - Was „Bewegung reduzieren“ an den Communicator anschließt, regelt das Feature der Einstellungen
+    (`animate` ist vorbereitet).
+- **Beobachtung:** In Doto 10 sieht der Punkt in „V0.1“ mit Schatten fast wie ein „₊“ aus; lesbar.
+
 ### Feature 005, Phase 4 (2026-10-27)
 
 Aus der Phasenprüfung (Stil-Prüfer, 7 Befunde, alle von Claude bestätigt) und Klaus'
@@ -290,14 +306,19 @@ in einem eigenen Schritt. Zahlen in `docs/ki_workflow/ki_pruefung.md`, „Nachme
 - **Bestätigt:**
   - **Logo ohne `pixelschatten` (mittel):** Das Logo steht halb auf Himmel, halb auf der
     Fassade, also auf unruhigem Grund. Der Style-Guide verlangt dort `pixelschatten` (Logo). Das
-    PNG hat keinen, die Szene auch nicht. Empfehlung: Schatten ergänzen, wie beim Hinweis.
+    PNG hat keinen, die Szene auch nicht. Empfehlung: Schatten ergänzen, wie beim Hinweis. **Erledigt mit Feature 005, Phase 5:** Das
+    Logo hat auf T-02 eine Silhouette in `tusche` als `pixelschatten`.
   - **Ränder nicht aus dem Raster (mittel):** Logo bei x 14 und y 12, Menü 24 vom rechten Rand,
     Versionszeile 6 vom unteren. `raster-16` ist laut Style-Guide der „Rand zum Bildschirmrand im
     Titel“. Die Werte kommen aus dem Titelscreen-Entwurf und stehen so im Vertrag von Feature 001.
-    Empfehlung: auf 16 ziehen; der Entwurf ist älter als die Raster-Regel.
+    Empfehlung: auf 16 ziehen; der Entwurf ist älter als die Raster-Regel. **Teils erledigt mit
+    Feature 005:** Das Menü ist ersetzt, die Versionszeile steht oben rechts mit 16 Rand (Klaus,
+    2026-10-27); offen bleibt das Logo bei 14/12.
   - **Textschatten von 1 px (niedrig):** Untertitel und Versionszeile haben einen harten Schatten
     in `tusche` um (1, 1). Er steht im Vertrag von Feature 001, im Style-Guide gibt es ihn nicht.
     Empfehlung: als Token in den Style-Guide, denn er hält die Schrift auf dem Bild lesbar.
+    **Erledigt mit Feature 005:** Der Style-Guide regelt Text auf einem Bild mit `pixelschatten`
+    (2 px), Untertitel und Versionszeile haben ihn.
 - **Verworfen:** `papier`-Text auf dem Titelbild sei kein erlaubtes Farbpaar. Der Abschnitt Logo
   verlangt den Untertitel aber ausdrücklich in `papier`. Das ist eine Lücke, kein Fehler (unten).
 - **Lücken im Style-Guide:**

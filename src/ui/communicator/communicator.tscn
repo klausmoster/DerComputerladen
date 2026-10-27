@@ -2,29 +2,32 @@
 
 [ext_resource type="Script" path="res://ui/communicator/communicator.gd" id="1_communicator"]
 [ext_resource type="PackedScene" path="res://scenes/title/menu_hint.tscn" id="2_menu_hint"]
+[ext_resource type="Texture2D" path="res://assets/images/organizer_1991.png" id="3_case"]
 
 [node name="Communicator" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 432.0
-offset_bottom = 264.0
+offset_right = 392.0
+offset_bottom = 268.0
 mouse_filter = 2
 script = ExtResource("1_communicator")
 
 [node name="Case" type="TextureRect" parent="."]
 layout_mode = 0
-offset_right = 432.0
-offset_bottom = 264.0
+offset_right = 196.0
+offset_bottom = 134.0
+scale = Vector2(2, 2)
 mouse_filter = 2
 texture_filter = 1
-expand_mode = 1
+texture = ExtResource("3_case")
+stretch_mode = 2
 
 [node name="Display" type="ColorRect" parent="."]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 408.0
-offset_bottom = 216.0
+offset_left = 36.0
+offset_top = 28.0
+offset_right = 356.0
+offset_bottom = 188.0
 mouse_filter = 2
 
 [node name="Hint" parent="." instance=ExtResource("2_menu_hint")]

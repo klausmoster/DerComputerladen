@@ -10,7 +10,7 @@ extends Control
 ## Auswahl ist Godots Fokus, Maus und Tastatur teilen sich also eine.
 ##
 ## Anders als im Menü gibt es nicht je Eintrag einen Button, sondern ein Fenster aus
-## [constant VISIBLE_ROWS] Zeilen, die beim Rollen ihren Inhalt wechseln. Ein `ScrollContainer`
+## [method visible_rows] Zeilen, die beim Rollen ihren Inhalt wechseln. Ein `ScrollContainer`
 ## schöbe die Zeilen pixelweise und zeigte halbe Zeilen und einen Rollbalken; hier rollt die Liste
 ## immer um eine ganze Zeile, und das Zebra bleibt an seiner Zeile (R12). Weil eine Zeile beim
 ## Rollen einen anderen Spielstand zeigt, steuert die Liste die Pfeiltasten und Tab selbst, statt
@@ -39,8 +39,12 @@ signal back_requested
 ## die ganze Zeile in globalen Koordinaten.
 signal selection_changed(hint: String, row_rect: Rect2)
 
-## Höchstens so viele Spielstände sind zu sehen (Style-Guide, Baustein Liste).
+## Höchstens so viele Spielstände sind auf Papier zu sehen (Style-Guide, Baustein Liste).
 const VISIBLE_ROWS: int = 6
+## Höchstens so viele Spielstände sind auf der Anzeige zu sehen: Kopfzeile, fünf Spielstände,
+## „Löschen …“ und „Zurück“ sind 8 Zeilen zu 20, genau die Höhe der Anzeige, 160 (Style-Guide,
+## Baustein Liste, „Auf der Anzeige“).
+const LCD_VISIBLE_ROWS: int = 5
 ## Anfänge der Spalten ab dem Text der Zeile: Name, Grad, Spieldatum, zuletzt gespielt (Style-Guide,
 ## Baustein Liste).
 const COLUMNS: Array[int] = [0, 64, 108, 172]
@@ -209,10 +213,10 @@ func selected_index() -> int:
 
 # --- Aufbau ---------------------------------------------------------------------------------------
 
-## Legt die Buttons an: VISIBLE_ROWS Zeilen für Spielstände, dann „Löschen …“ und „Zurück“. Es
-## bleiben immer dieselben; rollen und show_slots() ändern nur ihren Inhalt.
+## Legt die Buttons an: visible_rows() Zeilen für Spielstände, dann „Löschen …“ und „Zurück“. Es
+## bleiben dieselben, bis sich look ändert; rollen und show_slots() ändern nur ihren Inhalt.
 func _build_rows() -> void:
-	for row in VISIBLE_ROWS:
+	for row in visible_rows():
 		var button := _make_row("Slot%d" % row, "")
 		for cell in CELL_NAMES:
 			button.add_child(_make_cell(button, cell))
@@ -267,7 +271,13 @@ func _text_inset() -> int:
 func _update_row_colors() -> void:
 	if _delete_button == null:
 		return
-	var lit_button: Button = _button_for(_selected_index) if look == Look.LCD else null
+	var lit_button: Button = null
+	# Nach einem Wechsel von look kann die gewählte Zeile kurz außerhalb des kleineren Fensters
+	# liegen; select() rollt sie danach hinein und ruft diese Funktion wieder.
+	var row := _selected_index - _first_visible
+	if look == Look.LCD and (_selected_index >= _slots.size()
+			or row >= 0 and row < _slot_buttons.size()):
+		lit_button = _button_for(_selected_index)
 	var buttons: Array[Button] = _slot_buttons.duplicate()
 	buttons.append_array([_delete_button, _back_button])
 	for button in buttons:
@@ -369,7 +379,14 @@ func _row_count() -> int:
 
 ## Wie viele Zeilen des Fensters einen Spielstand zeigen.
 func _shown_slot_rows() -> int:
-	return mini(_slots.size(), VISIBLE_ROWS)
+	return mini(_slots.size(), visible_rows())
+
+
+## Höchstens so viele Spielstände zeigt das Fenster: VISIBLE_ROWS auf Papier, LCD_VISIBLE_ROWS auf
+## der Anzeige. Die Zahl hängt an look und nicht an der Größe, die der Communicator der Seite gibt:
+## Die Größe kommt erst nach dem Bau der Zeilen, und so steht die Regel im Style-Guide.
+func visible_rows() -> int:
+	return LCD_VISIBLE_ROWS if look == Look.LCD else VISIBLE_ROWS
 
 
 # --- Inhalt ---------------------------------------------------------------------------------------
@@ -377,7 +394,7 @@ func _shown_slot_rows() -> int:
 ## Füllt jede Zeile des Fensters mit dem Spielstand, den sie gerade zeigt, versteckt die übrigen und
 ## stellt „Löschen …“ auf den Modus ein.
 func _refresh_rows() -> void:
-	for row in VISIBLE_ROWS:
+	for row in _slot_buttons.size():
 		var button := _slot_buttons[row]
 		var index := _first_visible + row
 		button.visible = index < _slots.size()
@@ -463,13 +480,13 @@ func _scroll_to(index: int) -> void:
 		return
 	if index < _first_visible:
 		_first_visible = index
-	elif index >= _first_visible + VISIBLE_ROWS:
-		_first_visible = index - VISIBLE_ROWS + 1
+	elif index >= _first_visible + visible_rows():
+		_first_visible = index - visible_rows() + 1
 
 
 ## Der größte Wert für _first_visible: Dann zeigt die unterste Zeile den letzten Spielstand.
 func _last_first() -> int:
-	return maxi(_slots.size() - VISIBLE_ROWS, 0)
+	return maxi(_slots.size() - visible_rows(), 0)
 
 
 ## Rollt das Fenster um [param step] Zeilen, ohne die Auswahl zu verschieben. Fällt der gewählte
@@ -482,7 +499,7 @@ func _scroll_by(step: int) -> void:
 	_first_visible = first
 	var index := _selected_index
 	if index < _slots.size():
-		index = clampi(index, first, first + VISIBLE_ROWS - 1)
+		index = clampi(index, first, first + visible_rows() - 1)
 	select(index)
 
 
@@ -508,7 +525,7 @@ func _more_above() -> bool:
 
 
 func _more_below() -> bool:
-	return _first_visible + VISIBLE_ROWS < _slots.size()
+	return _first_visible + visible_rows() < _slots.size()
 
 
 ## Wo die Rollmarke in Zeile [param row] steht (0 ist die Kopfzeile), in Koordinaten des Blatts:

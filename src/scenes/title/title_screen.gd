@@ -1,26 +1,36 @@
 class_name TitleScreen
 extends Control
 
-## Der Titelbildschirm: Titelbild T-01, Logo mit Untertitel, ein Blatt Endlospapier und die
-## Versionszeile, angeordnet nach dem Titelscreen-Entwurf (Feature 001, FR-005).
+## Der Titelbildschirm: Titelbild T-02, Logo mit Untertitel, die Versionszeile oben rechts im freien
+## Himmel und rechts unten der Communicator mit dem Gehäuse des Organizers (Feature 005,
+## contracts/titelbildschirm.md; Style-Guide, Baustein Communicator). Logo, Untertitel und
+## Versionszeile stehen direkt auf dem Bild und tragen deshalb den pixelschatten (Style-Guide,
+## README, Logo).
 ##
 ## Er setzt die Teile nur zusammen und verbindet sie. Ein Blatt meldet die gewählte Zeile per
-## Signal, der Titelbildschirm reicht sie an den Hinweis weiter. Blätter und Hinweis kennen
-## einander nicht. Ebenso meldet ein Blatt einen ausgelösten Eintrag nur; was dann geschieht,
-## entscheidet der Titelbildschirm.
+## Signal, der Titelbildschirm reicht sie über den Communicator an den Hinweis weiter. Blätter und
+## Hinweis kennen einander nicht. Ebenso meldet ein Blatt einen ausgelösten Eintrag nur; was dann
+## geschieht, entscheidet der Titelbildschirm.
 ##
 ## Seit Feature 004 gibt es mehrere Blätter an derselben Stelle (contracts/titelbildschirm.md):
 ## Hauptmenü, Gradwahl und Rückfrage sind je eine Instanz von main_menu.tscn, die Liste der
-## Spielstände ist eine SaveList. Es ist immer genau eins zu sehen; ein unsichtbares hat keinen
-## Fokus. Esc und „Zurück“ führen eine Ebene zurück, im Hauptmenü tut Esc nichts; im Löschmodus der
-## Liste beenden beide nur den Modus. Die Einträge des Hauptmenüs entstehen zur Laufzeit aus den
-## Spielständen im Ordner der Session, beim Erscheinen und bei jeder Rückkehr aus einem Blatt neu
-## gelesen (Analyse, F2); ebenso liest „Spiel laden“ den Ordner bei jedem Öffnen neu (CHK001). Alle
-## Texte kommen aus TitleTexts.
+## Spielstände ist eine SaveList. Seit Feature 005 stehen sie als Seiten auf der Anzeige des
+## Communicators (look = LCD); welche zu sehen ist, sagt Communicator.show_page(). Es ist immer
+## genau eine zu sehen; eine unsichtbare hat keinen Fokus. Esc und „Zurück“ führen eine Ebene
+## zurück, im Hauptmenü tut Esc nichts; im Löschmodus der Liste beenden beide nur den Modus. Die
+## Einträge des Hauptmenüs entstehen zur Laufzeit aus den Spielständen im Ordner der Session, beim
+## Erscheinen und bei jeder Rückkehr aus einem Blatt neu gelesen (Analyse, F2); ebenso liest „Spiel
+## laden“ den Ordner bei jedem Öffnen neu (CHK001). Alle Texte kommen aus TitleTexts.
 ##
 ## Ein Spiel beginnt oder setzt fort nur über die Session, gelöscht wird nur über ihren SaveStore;
 ## den Spielbildschirm zeigt scene_callback. Wege und Vorwahl: data-model.md, „Titelbildschirm:
 ## Blätter und Wege“.
+##
+## Der Communicator fährt (Feature 005, contracts/titelbildschirm.md, „Verhalten“; R8): Beim
+## Erscheinen steht er draußen und fährt herein, sobald das Hauptmenü Einträge und Auswahl hat; bis
+## dahin fängt die Wache _ready_for_input jede Eingabe ab. Beginnt oder setzt der Spieler ein Spiel
+## fort, fährt er erst hinaus, und der Spielbildschirm kommt mit slide_finished. Ab dann fängt
+## _leaving jede Eingabe ab, zusätzlich zur Sperre im Communicator.
 
 ## Kennzeichen in der Versionszeile, solange das Spiel ein Prototyp ist.
 const STAGE := "PROTOTYP"
@@ -48,8 +58,20 @@ var _slots: Array[SaveSlot] = []
 ## Der Eintrag des Hauptmenüs, der das sichtbare Blatt geöffnet hat; zurück im Hauptmenü steht
 ## die Auswahl wieder auf ihm.
 var _opener_id: StringName = &""
-## Die gewählte Zeile des sichtbaren Blatts in globalen Koordinaten; dort erscheint eine Meldung.
+## Die gewählte Zeile des sichtbaren Blatts, relativ zum Communicator; dort erscheint eine Meldung.
+## Relativ, weil der Communicator fährt: Eine Zeile, die während der Fahrt herein gewählt wurde,
+## steht später woanders, und die Meldung gehört neben die Zeile, wo sie jetzt ist (Analyse, C3).
+## _current_row() rechnet sie in die jetzige Lage um.
 var _selected_row := Rect2()
+## Der Hinweis der gewählten Zeile; beim Hinausfahren steht er wieder da und fährt mit dem Gerät.
+var _selected_hint := ""
+## Die Wache vor den Einträgen: false, bis das Hauptmenü Einträge und Auswahl hat. Die Sichtbarkeit
+## des Hauptmenüs taugt dafür nicht, denn der Communicator verbirgt alle Seiten schon in seinem
+## _ready() (Analyse, C4).
+var _ready_for_input := false
+## true ab dem Moment, in dem ein Spiel begonnen oder fortgesetzt ist und der Communicator
+## hinausfährt; dann tut keine Eingabe mehr etwas, und es entsteht kein zweites Spiel (R8; B2).
+var _leaving := false
 ## Die Spielstände, die die Liste gerade zeigt, in ihrer Reihenfolge. Fortsetzen und Löschen nehmen
 ## den Stand, den die Liste gelesen hat (CHK001).
 var _list_slots: Array[SaveSlot] = []
@@ -62,12 +84,14 @@ var _confirm_index := 0
 ## einen anderen Spielstand, und dann gilt dessen Hinweis.
 var _warning_number := -1
 
-@onready var _main_menu: MainMenu = $MainMenu
-@onready var _difficulty_sheet: MainMenu = $DifficultySheet
-@onready var _save_list: SaveList = $SaveList
-@onready var _confirm_sheet: MainMenu = $ConfirmSheet
-@onready var _menu_hint: MenuHint = $MenuHint
+@onready var _communicator: Communicator = $Communicator
+@onready var _main_menu: MainMenu = $Communicator/MainMenu
+@onready var _difficulty_sheet: MainMenu = $Communicator/DifficultySheet
+@onready var _save_list: SaveList = $Communicator/SaveList
+@onready var _confirm_sheet: MainMenu = $Communicator/ConfirmSheet
 @onready var _version_line: Label = $VersionLine
+@onready var _logo: TextureRect = $LogoBlock/Logo
+@onready var _logo_shadow: TextureRect = $LogoBlock/Logo/Shadow
 
 
 func _ready() -> void:
@@ -75,6 +99,12 @@ func _ready() -> void:
 	# Version des laufenden Spiels (FR-014).
 	var version: String = ProjectSettings.get_setting("application/config/version", "")
 	_version_line.text = version_text(version)
+	# Der pixelschatten des Logos: dieselbe Form in tusche, 2 nach rechts unten, hinter dem Logo
+	# (show_behind_parent in der Szene). Die Farbe kommt aus UiPalette, nicht aus der Szene.
+	_logo_shadow.texture = silhouette(_logo.texture, UiPalette.TUSCHE)
+	# Draußen hinstellen, ohne Sperre: _build_sheets() setzt gleich Einträge und Auswahl, dann
+	# fährt der Communicator herein (Analyse, C5).
+	_communicator.place_hidden()
 	_main_menu.header_text = TitleTexts.HEADER_MAIN
 	_difficulty_sheet.header_text = TitleTexts.HEADER_DIFFICULTY
 	_confirm_sheet.header_text = TitleTexts.HEADER_CONFIRM
@@ -91,7 +121,13 @@ func _ready() -> void:
 ## _unhandled_input() bekommt die Taste erst, wenn kein Bedienelement sie genommen hat; die Zeilen
 ## von Menü und Liste nehmen Esc nicht.
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed(&"ui_cancel") or _main_menu.visible:
+	if not event.is_action_pressed(&"ui_cancel"):
+		return
+	# Vor den Einträgen und beim Hinausfahren fängt der Titel Esc ab und tut nichts.
+	if not _accepts_input():
+		get_viewport().set_input_as_handled()
+		return
+	if _main_menu.visible:
 		return
 	get_viewport().set_input_as_handled()
 	if _confirm_sheet.visible:
@@ -111,9 +147,29 @@ static func version_text(version: String) -> String:
 	return "V%s · %s" % [version, STAGE]
 
 
+## Die Silhouette von [param texture]: jedes Pixel, das nicht ganz durchsichtig ist, in
+## [param color], alle anderen ganz durchsichtig. Daraus wird der pixelschatten eines Bilds, ein
+## harter Versatz ohne Unschärfe (Style-Guide, pixelschatten). Ein Bild ist nur ganz durchsichtig
+## oder ganz deckend (test_bilder.gd); die Silhouette also auch.
+##
+## Ein Shader könnte dasselbe auf der Grafikkarte, aber eine Farbe als Uniform läuft dort je nach
+## Farbraum durch eine Umrechnung. So ist jedes Pixel genau die Farbe aus UiPalette, und ein Test
+## kann es nachlesen.
+static func silhouette(texture: Texture2D, color: Color) -> ImageTexture:
+	var image := texture.get_image()
+	image.convert(Image.FORMAT_RGBA8)
+	var clear := Color(color, 0.0)
+	for y in image.get_height():
+		for x in image.get_width():
+			image.set_pixel(x, y, color if image.get_pixel(x, y).a > 0.0 else clear)
+	return ImageTexture.create_from_image(image)
+
+
 ## Führt den ausgelösten Eintrag des Hauptmenüs aus. Verbunden in title_screen.tscn. Das Menü
 ## meldet nur verfügbare Einträge.
 func _on_main_menu_entry_activated(id: StringName) -> void:
+	if not _accepts_input():
+		return
 	match id:
 		&"continue":
 			_continue()
@@ -129,6 +185,8 @@ func _on_main_menu_entry_activated(id: StringName) -> void:
 
 ## Führt den ausgelösten Eintrag der Gradwahl aus. Verbunden in title_screen.tscn.
 func _on_difficulty_sheet_entry_activated(id: StringName) -> void:
+	if not _accepts_input():
+		return
 	# Etwas auslösen beendet eine Meldung (Style-Guide, Baustein Meldung).
 	_hide_hint()
 	if id == &"back":
@@ -141,9 +199,13 @@ func _on_difficulty_sheet_entry_activated(id: StringName) -> void:
 
 ## Zeigt den Hinweis zur gewählten Zeile neben ihr, für jedes Blatt aus main_menu.tscn. Alle drei
 ## sind in title_screen.tscn mit dieser einen Methode verbunden; gemeldet wird nur vom sichtbaren.
+##
+## Ohne Wache: Die erste Auswahl kommt aus _build_sheets(), noch bevor _ready_for_input true ist,
+## und ihr Hinweis soll stehen. Während der Fahrt hinaus meldet keine Seite eine Auswahl, denn der
+## Communicator sperrt sie.
 func _on_sheet_selection_changed(entry: MenuEntry, row_rect: Rect2) -> void:
-	_selected_row = row_rect
-	_menu_hint.show_for(entry, row_rect)
+	_remember_row(row_rect, entry.hint)
+	_communicator.show_hint(entry.hint, row_rect)
 
 
 ## Wie _on_sheet_selection_changed(), für die Liste: Sie meldet den Text des Hinweises selbst, denn
@@ -154,24 +216,26 @@ func _on_sheet_selection_changed(entry: MenuEntry, row_rect: Rect2) -> void:
 ## verschiebt. Sonst ersetzt der Hinweis sie, auch an derselben Stelle; show_text() allein ließe sie
 ## dort stehen, denn der Hinweis kennt nur Stellen.
 func _on_save_list_selection_changed(hint: String, row_rect: Rect2) -> void:
-	_selected_row = row_rect
+	_remember_row(row_rect, hint)
 	if _warning_number != -1:
 		var slot := _save_list.selected_slot()
 		if slot != null and slot.number == _warning_number:
-			_menu_hint.show_warning(TitleTexts.MESSAGE_DELETE_FAILED, row_rect)
+			_communicator.show_warning(TitleTexts.MESSAGE_DELETE_FAILED, row_rect)
 			return
 		_hide_hint()
-	_menu_hint.show_text(hint, row_rect)
+	_communicator.show_hint(hint, row_rect)
 
 
 ## Eine fortsetzbare Zeile der Liste wurde ausgelöst (FR-016): fortsetzen wie „Weiterspielen“, mit
 ## dem Stand, den die Liste gelesen hat. Verbunden in title_screen.tscn; nicht fortsetzbare Zeilen
 ## meldet die Liste gar nicht erst.
 func _on_save_list_resume_requested(slot: SaveSlot) -> void:
+	if not _accepts_input():
+		return
 	_hide_hint()
 	var error := _session().resume(slot)
 	if error == OK:
-		_change_scene(GAME_SCENE)
+		_leave()
 		return
 	# Bei einem fortsetzbaren Spielstand kommt das nicht vor; dann liest die Liste den Ordner neu.
 	push_warning("Titel: %s ließ sich nicht fortsetzen (%s)." % [slot.display_name(),
@@ -183,6 +247,8 @@ func _on_save_list_resume_requested(slot: SaveSlot) -> void:
 ## Im Löschmodus wurde eine Zeile ausgelöst: die Rückfrage zu ihr (FR-017). Verbunden in
 ## title_screen.tscn.
 func _on_save_list_delete_requested(slot: SaveSlot) -> void:
+	if not _accepts_input():
+		return
 	_hide_hint()
 	_confirm_slot = slot
 	_confirm_index = maxi(_list_slots.find(slot), 0)
@@ -196,6 +262,8 @@ func _on_save_list_delete_requested(slot: SaveSlot) -> void:
 ## endet nur der Modus, und die Liste bleibt mit der Auswahl, wo sie war (Analyse, F3); sonst geht es
 ## ins Hauptmenü auf „Spiel laden“.
 func _on_save_list_back_requested() -> void:
+	if not _accepts_input():
+		return
 	_hide_hint()
 	if _save_list.is_delete_mode():
 		# Die Liste ist sichtbar: set_delete_mode() wählt die Zeile neu und bringt ihren Hinweis.
@@ -206,6 +274,8 @@ func _on_save_list_back_requested() -> void:
 
 ## Führt den ausgelösten Eintrag der Rückfrage aus. Verbunden in title_screen.tscn.
 func _on_confirm_sheet_entry_activated(id: StringName) -> void:
+	if not _accepts_input():
+		return
 	_hide_hint()
 	match id:
 		&"cancel":
@@ -214,13 +284,25 @@ func _on_confirm_sheet_entry_activated(id: StringName) -> void:
 			_delete_confirmed()
 
 
-## Baut beim Erscheinen die Einträge von Hauptmenü und Gradwahl und zeigt das Hauptmenü. Liste und
-## Rückfrage bekommen ihren Inhalt erst beim Öffnen.
+## Die Fahrt hinaus ist zu Ende: Erst jetzt kommt der Spielbildschirm (R8). Verbunden in
+## title_screen.tscn. Die Fahrt herein meldet sich auch; dann ist nichts zu tun.
+func _on_communicator_slide_finished(arrived_in: bool) -> void:
+	if arrived_in or not _leaving:
+		return
+	_change_scene(GAME_SCENE)
+
+
+## Baut beim Erscheinen die Einträge von Hauptmenü und Gradwahl, zeigt das Hauptmenü und lässt den
+## Communicator hereinfahren. Liste und Rückfrage bekommen ihren Inhalt erst beim Öffnen.
 func _build_sheets() -> void:
 	# Die Gradwahl ist noch unsichtbar: set_entries() merkt sich die Zeile nur, und das Blatt
 	# nimmt keinen Fokus.
 	_difficulty_sheet.set_entries(_difficulty_entries(), _medium_index())
 	_show_main_menu(&"")
+	# Erst Einträge und Auswahl, dann die Wache auf und die Fahrt (Analyse, C4, C5). Herein ist
+	# alles bedienbar (FR-003).
+	_ready_for_input = true
+	_communicator.slide_in()
 
 
 ## Zeigt das Hauptmenü, mit Einträgen aus dem frisch gelesenen Ordner. Gewählt ist der Eintrag
@@ -334,16 +416,14 @@ func _go_back() -> void:
 ## sobald seine Zeile wieder gewählt wird, etwa nach Esc und erneutem Öffnen der Liste.
 func _hide_hint() -> void:
 	_warning_number = -1
-	_menu_hint.hide_hint()
+	_communicator.hide_hint()
 
 
-## Zeigt [param sheet] und verbirgt jedes andere Blatt. Erst verbergen, dann zeigen: Ein Control,
-## das unsichtbar wird, gibt den Fokus ab, auch den eines Buttons darin.
+## Zeigt [param sheet] als Seite des Communicators und verbirgt jede andere; der Communicator bewegt
+## sich dabei nicht (FR-005). Er verbirgt erst und zeigt dann: Ein Control, das unsichtbar wird,
+## gibt den Fokus ab, auch den eines Buttons darin.
 func _show_only(sheet: Control) -> void:
-	for other: Control in [_main_menu, _difficulty_sheet, _save_list, _confirm_sheet]:
-		if other != sheet:
-			other.visible = false
-	sheet.visible = true
+	_communicator.show_page(sheet)
 
 
 ## Beginnt ein Spiel mit [param level] (FR-006). Gelingt das Anlegen, führt es zum Spielbildschirm;
@@ -351,9 +431,9 @@ func _show_only(sheet: Control) -> void:
 func _start_new(level: Difficulty.Level) -> void:
 	var game_session := _session()
 	if game_session.start_new(level) == OK:
-		_change_scene(GAME_SCENE)
+		_leave()
 		return
-	_menu_hint.show_warning(game_session.last_error, _selected_row)
+	_communicator.show_warning(game_session.last_error, _current_row())
 
 
 ## Setzt den ersten fortsetzbaren Spielstand fort, den zuletzt gespielten (data-model.md,
@@ -364,10 +444,38 @@ func _continue() -> void:
 	var slot := _first_resumable(_slots)
 	var error := _session().resume(slot)
 	if error == OK:
-		_change_scene(GAME_SCENE)
+		_leave()
 		return
 	push_warning("Titel: Weiterspielen ging nicht (%s)." % error_string(error))
 	_show_main_menu(&"")
+
+
+## Das Spiel läuft schon: _leaving sperrt jede weitere Eingabe, dann fährt der Communicator hinaus,
+## und _on_communicator_slide_finished() wechselt die Szene. Der Hinweis der gewählten Zeile steht
+## wieder da und fährt mit dem Gerät hinaus; eine Meldung endete schon beim Auslösen. Schließt der
+## Spieler während der Fahrt das Fenster, speichert die Session wie in Feature 004.
+func _leave() -> void:
+	_leaving = true
+	_communicator.show_hint(_selected_hint, _current_row())
+	_communicator.slide_out()
+
+
+## Ob eine Eingabe etwas tun darf: erst wenn das Hauptmenü Einträge hat, und nicht mehr beim
+## Hinausfahren.
+func _accepts_input() -> bool:
+	return _ready_for_input and not _leaving
+
+
+## Merkt sich die gewählte Zeile [param row_rect] (global) relativ zum Communicator und ihren
+## Hinweis [param hint].
+func _remember_row(row_rect: Rect2, hint: String) -> void:
+	_selected_row = Rect2(row_rect.position - _communicator.global_position, row_rect.size)
+	_selected_hint = hint
+
+
+## Die gewählte Zeile in globalen Koordinaten, da, wo der Communicator jetzt steht.
+func _current_row() -> Rect2:
+	return Rect2(_selected_row.position + _communicator.global_position, _selected_row.size)
 
 
 ## Wechselt zur Szene [param path]: über scene_callback, ohne ihn mit change_scene_to_file().

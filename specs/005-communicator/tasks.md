@@ -264,19 +264,19 @@ vor dem Spielstart (FR-010 bis FR-015). Braucht Phase 2, 3 und 4.
 Spiel“ → SCHWIERIGKEIT auf derselben Anzeige, das Gerät steht; ein Grad → das Gerät fährt hinaus,
 dann der Spielbildschirm (Quickstart, „Von Hand“).
 
-- [ ] T027 [A] [US1] `src/ui/communicator/communicator.tscn`: `Case` zeigt `organizer_1991.png` ×2
+- [x] T027 [A] [US1] `src/ui/communicator/communicator.tscn`: `Case` zeigt `organizer_1991.png` ×2
   statt des Platzhalters, Lage der Anzeige nach der Messung aus T021; Tests aus Phase 2 bleiben
   grün. Genau ×2 absichern: `Case` ist so groß wie die Textur mal 2, oder `STRETCH_KEEP` mit
   `scale` 2, dazu ein Test; heute zieht `expand_mode = 1` mit `STRETCH_SCALE` jede Textur auf
   432 × 264 (Phasenprüfung Phase 2, Befund 2). Am Foto nachsehen, dass das Gehäuse unten aus dem
   Bild ragt und keine geschlossene Unterkante zeigt.
-- [ ] T028 [A] [US1] `src/scenes/title/title_screen.tscn`: `Background` mit `title_t02.png`;
+- [x] T028 [A] [US1] `src/scenes/title/title_screen.tscn`: `Background` mit `title_t02.png`;
   Logo, Untertitel und Versionszeile mit `pixelschatten` (Style-Guide, README, Logo: Text auf einem
   Bild; Phasenprüfung Phase 4, Befund 4);
   `Communicator` in der Endlage aus dem Style-Guide mit den Seiten `MainMenu`, `DifficultySheet`,
   `SaveList`, `ConfirmSheet`, alle `look = LCD`; der eigene `MenuHint` entfällt
   (titelbildschirm.md, „Szenenaufbau“).
-- [ ] T029 [A] [US1] [US2] `src/scenes/title/title_screen.gd` laut titelbildschirm.md, „Verhalten“:
+- [x] T029 [A] [US1] [US2] `src/scenes/title/title_screen.gd` laut titelbildschirm.md, „Verhalten“:
   - Erscheinen: `place_hidden()` in `_ready()`; eine eigene Wache `_ready_for_input` statt
     `_main_menu.visible` fängt jede Eingabe ab, bis das Hauptmenü seine Einträge hat (CHK018, C4);
     dann erst Einträge und Auswahl setzen, danach `slide_in()` (C5).
@@ -287,7 +287,7 @@ dann der Spielbildschirm (Quickstart, „Von Hand“).
     der Seiten und `_unhandled_input()` abfängt (B2), dann `slide_out()`, Szenenwechsel in
     `slide_finished(false)` (R8); scheitert das Fortsetzen, wie in 004 neu lesen, ohne Fahrt
     (CHK016); „Beenden“ sofort.
-- [ ] T030 [A] [US1] [US2] Tests in `src/test/test_title_screen.gd` laut titelbildschirm.md,
+- [x] T030 [A] [US1] [US2] Tests in `src/test/test_title_screen.gd` laut titelbildschirm.md,
   „Tests“: Pfade auf `Communicator/<Seite>`; Erscheinen draußen und Fahrt herein, auch nach der
   Rückkehr; Esc und Enter vor den Einträgen tun nichts; Seitenwechsel ohne Bewegung; jede Seite
   passt auf die Anzeige mit den längsten Texten und „Spiel 9999“ (SC-004); keine Überschneidung
@@ -298,21 +298,49 @@ dann der Spielbildschirm (Quickstart, „Von Hand“).
   Meldung steht neben der Zeile in ihrer jetzigen Lage (C3); Fortsetzen scheitert: keine Fahrt;
   kein `look = PAPER` im Titel. Alte Tests nur angepasst, wo sie Papier, Lage der Blätter oder
   Lage des Hinweises prüfen (SC-007).
-- [ ] T031 [A] [US1] Lernnotizen zu T027 bis T030: Szenenwechsel erst nach einem Signal, Eingabe
+- [x] T031 [A] [US1] Lernnotizen zu T027 bis T030: Szenenwechsel erst nach einem Signal, Eingabe
   sperren beim Verlassen, eine eigene Wache statt der Sichtbarkeit, Lagen relativ zum bewegten
   Knoten.
-- [ ] T032 [C] [US1] [US2] Prüfen: Tests zweimal, Startprobe still; Bildschirmfotos im echten
+- [x] T031a [A] [US1] Nachtrag aus der Phasenprüfung (Klaus, 2026-10-27): Versionszeile oben rechts
+  in `src/scenes/title/title_screen.tscn`, rechtsbündig, 16 vom oberen und rechten Rand
+  (Style-Guide Version 41, Baustein Communicator); Tests in `src/test/test_title_screen.gd`: Lage,
+  und SC-006 über die ganze Fahrt herein und hinaus, nicht nur in der Endlage.
+- [x] T031b [C] [US1] Nachtrag aus der Abnahme (Klaus, 2026-10-27): Anzeige 320 × 160 statt
+  384 × 192, damit vom Gerät mehr zu sehen ist (spec.md, Abnahme Phase 5). Style-Guide Version 42
+  (Bausteine Communicator und Liste, Tokens `geraet-anzeige-breite` und `-hoehe`,
+  Leonardo-Workflow); G-02 aus demselben Original neu gerastert, LCD 160 × 80 Bildpixel, Gehäuse
+  198 × 132 mit Scharnier, Funktionstasten und oberster Tastenreihe, Prompt-Log; research.md R9,
+  SC-004, Verträge und quickstart.md auf fünf sichtbare Spielstände.
+- [x] T031c [A] [US1] [US3] Communicator und Titel auf die neuen Maße: `DISPLAY_SIZE` 320 × 160,
+  `display_rect` und Gehäuse nach dem Style-Guide in `src/ui/communicator/communicator.gd` und
+  `.tscn`, Endlage im Titel in `src/scenes/title/title_screen.tscn`, die Liste auf der Anzeige mit
+  5 sichtbaren Spielständen in `src/scenes/title/save_list.gd` (auf Papier bleiben 6); Tests in
+  `src/test/test_communicator.gd`, `test_title_screen.gd`, `test_save_list.gd`,
+  `test_main_menu.gd`. Danach T032 und die Nachprüfung aus T033 erneut.
+- [x] T031d [C] [US1] Nachtrag aus der Abnahme (Klaus, 2026-10-27): neues Gehäuse **G-03** nach dem
+  Olivetti D2000, weil die Tastatur von G-02 nach dem Zuschneiden seltsam wirkte. Prompt im
+  Style-Guide (Version 43), von Claude in Leonardo erzeugt, Klaus wählte Bild 2; gerastert auf
+  196 × 134 mit LCD 160 × 80 bei 18/14, Zeichen auf den Tasten übermalt; Style-Guide Version 45
+  (Gehäuse 392 × 268 ab x 244, y 92, Anzeige darin bei 36/28), research.md R9, Prompt-Log.
+- [x] T031e [A] [US1] [US3] Communicator und Titel auf G-03: `display_rect` (36, 28), Gehäuse
+  392 × 268, `Case` 196 × 134 in `src/ui/communicator/communicator.gd` und `.tscn`, Endlage
+  (244, 92) in `src/scenes/title/title_screen.tscn` und in der Probeszene; Tests nachziehen.
+  Danach T032 und die Nachprüfung aus T033 erneut.
+- [x] T032 [C] [US1] [US2] Prüfen: Tests zweimal, Startprobe still; Bildschirmfotos im echten
   Fenster in Klaus' Größe: Hauptmenü mit und ohne Spielstände, Gradwahl, Liste mit mehr als sechs
   Spielständen und „Löschen …“ gewählt, Rückfrage, Meldung, Fahrt herein und hinaus.
-- [ ] T033 [C] [US1] [US2] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Stil-Prüfer mit
+- [x] T033 [C] [US1] [US2] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Stil-Prüfer mit
   README (Bildaufbau, Bewegung, Logo), Bausteinen Communicator, Menü, Liste, Hinweis, Meldung,
   `tokens.json`; Text-Prüfer mit `Sprache.md` als Gegenprobe, dass kein Text sich verschoben oder
   gekürzt hat; die Bildschirmfotos aus T032.
-- [ ] T034 [K] [US1] [US2] Phase 5 abnehmen nach dem Quickstart, „Von Hand“, mit „bedienbar nach
+- [x] T034 [K] [US1] [US2] Phase 5 abnehmen nach dem Quickstart, „Von Hand“, mit „bedienbar nach
   höchstens 3 s“ aus SC-002 (C24); noch einmal entscheiden, ob T-02 nichts Wichtiges verdeckt
   (CHK024).
 
 **Checkpoint**: Der Titel läuft ganz über den Communicator; alle Wege aus Feature 004 gehen.
+
+Abgenommen von Klaus am 2026-10-27, mit Anzeige 320 × 160 (T031b, T031c) und Gehäuse G-03 nach dem
+Olivetti D2000 (T031d, T031e), Versionszeile oben rechts (T031a).
 
 ---
 

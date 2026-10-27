@@ -178,3 +178,138 @@ nichts und haben deshalb keine Notiz.
 - Die Rollmarke steht auf der Anzeige 8 vom Rand (`MenuPaper.LCD_SCROLL_MARK_INSET`). In der
   gewählten Zeile ist sie `lcd`, sonst `tusche`; sonst verschwände sie im Balken (CHK001).
   `_scroll_mark_layers()` liefert die Rechtecke für `_draw()` und für die Tests.
+
+## Phase 5
+
+### T027 Das Gehäuse genau ×2
+
+- `Case` ist ein `TextureRect` mit `stretch_mode = STRETCH_KEEP`, so groß wie das Bild (216 × 132)
+  und mit `scale = Vector2(2, 2)`. Jedes Bildpixel wird so 2 × 2 Oberflächenpixel, und der Faktor
+  steht ausdrücklich in der Szene. Ein Ziehen auf eine feste Größe hätte bei einem Bild mit einer
+  anderen Größe still verzerrt.
+- `size` bleibt die Bildgröße. Die Fläche, die das Gehäuse bedeckt, rechnet
+  `get_transform() * Rect2(Vector2.ZERO, size)` aus; der Test vergleicht sie mit der Größe des
+  Communicators.
+- Der Platzhalter aus Phase 2 entfällt von selbst, weil `_draw()` ihn nur malt, wenn `Case` kein
+  Bild hat.
+
+### T028 Der Titel auf dem Communicator
+
+- Die Seiten hängen in `title_screen.tscn` unter der Instanz (`parent="Communicator"`), die
+  Signalverbindungen nennen `from="Communicator/MainMenu"`, und `@onready` holt sie über
+  `$Communicator/…`. Die Namen der Seiten sind dieselben wie vorher; Handler und Tests bleiben
+  wiedererkennbar.
+- `_show_only()` ruft nur noch `Communicator.show_page()`. Die Regel „erst verbergen, dann zeigen“
+  steht damit an einer Stelle.
+- Der pixelschatten des Logos ist ein Kind `Shadow` des Logos, 2 nach rechts unten, mit
+  `show_behind_parent`: Es wird vor seinem Elternteil gemalt, liegt also darunter. Weil `Logo`
+  kein Container ist, stört das Kind das Layout des `VBoxContainer` nicht.
+- Seine Textur macht `TitleScreen.silhouette()` mit `Image`: `get_image()`, `convert()`,
+  `set_pixel()`, `ImageTexture.create_from_image()`. Jedes deckende Pixel wird genau `tusche`. Ein
+  Shader könnte das auch, aber eine Farbe als Uniform läuft je nach Farbraum durch eine Umrechnung,
+  und ein Test kann die Pixel nicht nachlesen.
+- Untertitel und Versionszeile bekommen den Schatten aus dem Theme: `font_shadow_color`,
+  `shadow_offset_x/y` 2 und `shadow_outline_size` 0 ergeben einen harten Versatz ohne Unschärfe.
+
+### T029 Erscheinen, Wache und Hinausfahren
+
+- Eine eigene Wache statt der Sichtbarkeit: `add_page()` verbirgt alle Seiten schon in
+  `Communicator._ready()`. Bis das zeitversetzte `_build_sheets()` das Hauptmenü zeigt, ist
+  `_main_menu.visible` false. Ein Esc in dieser Lücke liefe sonst in `_go_back()`.
+  `_ready_for_input` wird erst true, wenn Einträge und Auswahl stehen.
+- Die Handler, die etwas auslösen, und `_unhandled_input()` fragen zuerst `_accepts_input()`. Die
+  Handler der Auswahl fragen nicht: Die erste Auswahl kommt aus `_build_sheets()`, noch vor der
+  Wache, und ihr Hinweis soll stehen.
+- Den Szenenwechsel macht erst ein Signal: `_leave()` setzt `_leaving` und ruft `slide_out()`;
+  `slide_finished(false)` ruft `_change_scene()`. Das Spiel läuft da schon, und schließt der
+  Spieler in diesen 200 ms das Fenster, speichert die Session wie bisher. Mit `animate = false`
+  kommt das Signal sofort, noch im selben Aufruf; die bisherigen Tests merken deshalb keinen
+  Unterschied.
+- Zwei Sperren beim Verlassen: Der Communicator sperrt Fokus und Maus für seine Seiten, `_leaving`
+  sperrt alle Handler des Titels. So legt weder ein zweites Enter noch „Maus bewegen, dann Enter“
+  ein zweites Spiel an (B2). Weil kein Handler mehr läuft, ruft auch niemand `select()` an einer
+  gesperrten Seite; das gäbe die Warnung „can't grab focus“.
+- Lagen relativ zum bewegten Knoten: `_remember_row()` merkt sich die gewählte Zeile relativ zum
+  Communicator, `_current_row()` rechnet sie in die jetzige Lage zurück. Eine Meldung nach einer
+  Wahl während der Fahrt steht so neben der Zeile, wo sie jetzt ist (C3).
+- Der Hinweis fährt mit dem Gerät hinaus. `_leave()` zeigt den Hinweis der gewählten Zeile noch
+  einmal, denn das Auslösen hat eine Meldung schon beendet. Als Kind des Communicators fährt er
+  dann ohne eigenen Code mit.
+
+### T030 Die Fahrt im Titel testen
+
+- Die bisherigen Tests setzen `animate = false` am Communicator. Er steht dann sofort in der
+  Endlage, und ein begonnenes Spiel wechselt sofort die Szene; die Tests bleiben, wie sie waren.
+- Die Fahrt-Tests schalten mit `set_process(false)` die Engine ab und takten mit `_fahre()` selbst,
+  wie in `test_communicator.gd`. Gesetzt wird das direkt nach dem Einhängen, denn die Fahrt
+  herein beginnt erst zeitversetzt in `_build_sheets()`.
+- Eingaben vor den Einträgen schickt `_druecke()` ohne ein Bild zu warten. So kommen sie, bevor
+  `_build_sheets()` am Ende des Bilds läuft.
+- SC-004 misst mit der echten Schrift: `get_combined_minimum_size()` jeder Zeile gegen die Breite
+  von `Rows` und `Font.get_string_size()` jeder Spalte gegen die Breite ihres Labels.
+- SC-006 prüft Rechtecke mit `Rect2.intersects()`, jedes mit seinen 2 Pixeln Schatten, für jede
+  Zeile jeder Seite, als Hinweis und als Meldung.
+
+### T031a Die Versionszeile oben rechts
+
+- Beim Fahren glitt der Hinweis kurz über die Versionszeile unten links. SC-006 verlangt „in keiner
+  Lage“, der Test prüfte aber nur die Endlage. Die Zeile steht jetzt oben rechts im freien Himmel
+  (Klaus; Style-Guide, Baustein Communicator).
+- Verankert mit `anchor_left` und `anchor_right` 1, `offset_right` −16, `grow_horizontal` BEGIN
+  und `horizontal_alignment` RIGHT. Die rechte Kante bleibt bei x 624, und ein längerer Text wächst
+  nach links, ohne dass jemand die Lage nachrechnen muss.
+- Der neue Test prüft SC-006 über die ganze Fahrt: `_fahre()` ruft nach jedem Bild ein
+  `Callable`, hier eine Lambda mit `bind()`, die Gehäuse, Hinweis und Meldung gegen die freien
+  Flächen prüft. So zählt jede Zwischenlage, nicht nur die Endlage.
+
+### T031c Die Anzeige 320 × 160
+
+- Klaus hat das Gerät kleiner gemacht, damit etwas von der Tastatur zu sehen ist. Im Code ändern
+  sich nur Zahlen an den Stellen, die dafür da sind: `Communicator.DISPLAY_SIZE` (320 × 160), die
+  Vorgabe von `display_rect` (38, 24), die Größen in `communicator.tscn` (Gehäuse 396 × 264, `Case`
+  198 × 132 mit `scale` 2) und die Endlage im Titel (242, 96). Seiten, Hinweis und Rollmarken
+  rechnen ihre Lage aus `display_rect` und der Kante des Gehäuses und ziehen von selbst mit.
+- Die Liste zeigt auf der Anzeige höchstens fünf Spielstände, auf Papier weiter sechs. Ausgedrückt
+  ist das mit zwei Konstanten, `VISIBLE_ROWS` (Papier) und `LCD_VISIBLE_ROWS` (Anzeige), und einer
+  Funktion `visible_rows()`, die nach `look` wählt.
+  - Nach `look` und nicht nach der Größe der Seite: Die Größe gibt der Communicator erst, nachdem
+    die Liste ihre Zeilen gebaut hat, und im Style-Guide steht die Zahl als Regel, nicht als
+    Rechnung.
+  - Zwei Konstanten statt einer gerechneten Zahl: Jede steht für eine Regel des Style-Guides und
+    lässt sich dort nachschlagen.
+  - Die Liste baut genau `visible_rows()` Zeilen; ein Wechsel von `look` baut ohnehin neu. Eine
+    sechste Zeile, die auf der Anzeige immer verborgen bliebe, wäre ein Knoten ohne Aufgabe.
+- Wechselt `look`, kann die gewählte Zeile kurz außerhalb des kleineren Fensters liegen, bevor
+  `select()` sie hineinrollt. `_update_row_colors()` färbt dann noch keine Zeile, statt auf einen
+  Button zuzugreifen, den es nicht gibt.
+- In den Tests stehen die Maße als Konstanten oben in jeder Datei. Wo ein Test „die unterste Zeile
+  des Fensters“ meint, fragt er `visible_rows() - 1` statt einer festen Nummer; so behält er seine
+  Aussage bei jeder Fenstergröße.
+
+### T031e Das Gehäuse G-03
+
+- Ein neues Gehäuse heißt hier: neue Zahlen an genau den Stellen, die zum Gehäuse gehören. Das
+  sind die Vorgabe von `display_rect` (36, 28) in `communicator.gd`, die Größen in
+  `communicator.tscn` (Communicator 392 × 268, `Case` 196 × 134, `Display` von 36/28 bis 356/188)
+  und die Endlage im Titel und in der Probeszene (244, 92). Die Datei bleibt
+  `organizer_1991.png`. Weil Godot das Bild über seine `.uid` und seinen Pfad findet, braucht keine
+  Szene einen neuen Verweis.
+- `Case` behält STRETCH_KEEP und `scale` 2. Seine Größe in der Szene muss trotzdem zum Bild passen:
+  Mit KEEP zeichnet Godot die Textur in Originalgröße, und das Rechteck des Knotens bestimmt nur,
+  was als „Gehäuse“ zählt. `test_gehaeuse_ist_g03_genau_doppelt` prüft deshalb Bild, Knoten und
+  Communicator gegeneinander.
+- Hinweis und Meldung brauchten keine Änderung. `_beside_case()` liest die linke Kante des Gehäuses
+  zur Laufzeit aus `_case.get_global_rect()`, nicht aus einer Zahl, und die rechte Kante des
+  Hinweises liegt damit von selbst bei 244 − 4 = 240.
+- Die Anzeige im Titel bleibt bei x 280 bis 600 und y 120 bis 280: 244 + 36 und 92 + 28. Der Titel
+  verschiebt also nur das Gehäuse um die Anzeige herum. Die Tests der Seiten, die an `ANZEIGE`
+  hängen, laufen ohne Änderung weiter.
+- Im Titeltest steht die Oberkante jetzt als Konstante `GEHAEUSE_OBEN` neben `GEHAEUSE_LINKS`, statt
+  an fünf Stellen als Zahl. Beim nächsten Gehäuse ändert sich dann nur eine Zeile.
+- Der Abstand zum Logo hat jetzt einen eigenen Test,
+  `test_zwischen_logoblock_und_gehaeuse_bleibt_mindestens_raster_8_frei`. Er misst an den echten
+  Rechtecken: `get_global_rect()` des `LogoBlock` (endet bei y 83) und von `Case` (beginnt bei 92),
+  also 9. Gemessen wird am Kasten ohne Schatten, so wie der Style-Guide den freien Bereich festlegt.
+  Das reicht, weil der Schatten des Untertitels im Kasten liegt: Die Grundlinie liegt bei 80, der
+  Text hat keine Unterlängen, der Schatten endet bei 82. `get_global_rect()` rechnet die `scale`
+  von `Case` mit ein; das Rechteck ist also das auf der Oberfläche, 392 × 268.
