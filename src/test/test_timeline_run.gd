@@ -4,7 +4,8 @@ extends GutTest
 ## Start gesetzten Terminen, die Würfelrunde, Modifikatoren, Bedingungen, Folgeereignisse mit
 ## Kettenbremse, den Tagesablauf und das Spielende. Dazu die Würfel (T020), Modifikatoren und
 ## Meldungen (T021). Teil 2 (T042): Ereignisse mit Dauer, Wirkungen „einmal“ und „während“,
-## jährliche Ereignisse und die Kalender-Ereignisse (US3).
+## jährliche Ereignisse und die Kalender-Ereignisse (US3). Dazu replay(), das Nachspielen eines
+## Eingriffsprotokolls (Feature 004, T004).
 ##
 ## Die Tests arbeiten mit kleinen Test-Katalogen res://test/fixtures/catalog_us1_*.json und
 ## catalog_us3_*.json, nie mit dem echten Katalog, und legen jeden Lauf selbst an; die Autoloads
@@ -1197,7 +1198,148 @@ func test_folge_die_noch_laeuft_entfaellt_und_beginnt_nach_dem_ende_neu() -> voi
 		["01.06.1990 beendet", "20.06.1990 entfallen", "01.07.1990 läuft"])
 
 
+# --- Nachspielen (Feature 004, T004) ---------------------------------------------
+
+func test_replay_ergibt_dieselben_fahrplaene_wie_das_bisherige_nachspielen() -> void:
+	# Arrange (R5): Das Protokoll steht in der Reihenfolge der Aktionen wie im Simulator, ein
+	# Eintrag vor Spielbeginn hinter einem von 1992; einer kommt aus einer Datei, mit float. Das
+	# bisherige Nachspielen ist die Schleife aus WhatIfProbe.build_run() vor T004. In
+	# catalog_us1_grade fehlt der Großauftrag: Dort wird die Einplanung abgelehnt, und auch das muss
+	# gleich ausfallen. Schwer und Leicht haben dort Start-Modifikatoren.
+	var protokoll := _protokoll_in_der_reihenfolge_der_aktionen()
+	var bis := _tag(1996, 6, 30)
+
+	for fall: Array in [["catalog_us6_reklamation", Difficulty.Level.MITTEL],
+			["catalog_us1_grade", Difficulty.Level.SCHWER],
+			["catalog_us1_grade", Difficulty.Level.LEICHT]]:
+		var catalog := _katalog(fall[0])
+		for seed_wert: int in [1, 4711, 99999]:
+			var wo := "%s, %s, Seed %d" % [fall[0], Difficulty.label(fall[1]), seed_wert]
+			var bisher := TimelineRun.new(catalog, seed_wert, fall[1])
+			var bisher_abgelehnt := _bisher_nachgespielt(bisher, protokoll, bis)
+			var neu := TimelineRun.new(catalog, seed_wert, fall[1])
+
+			# Act
+			var abgelehnt := neu.replay(protokoll, bis)
+
+			# Assert
+			var gruende := abgelehnt.map(func(eintrag: Dictionary) -> String:
+				return "%s: %s" % [eintrag["record"]["kind"], eintrag["reason"]])
+			assert_eq(gruende, bisher_abgelehnt, "Dieselben Ablehnungen: %s." % wo)
+			assert_eq(_fahrplan(neu), _fahrplan(bisher), "Derselbe Fahrplan: %s." % wo)
+			assert_eq(_zeilen(neu.protocol), _zeilen(bisher.protocol), "Dasselbe Protokoll: %s." % wo)
+			assert_eq(neu.interventions, bisher.interventions, "Dieselben Eingriffe: %s." % wo)
+			assert_eq(neu.today, bis, "Bis zum Tag abgespielt: %s." % wo)
+			if fall[0] == "catalog_us6_reklamation":
+				assert_eq(neu.interventions.size(), protokoll.size(), "Alle gelten: %s." % wo)
+			else:
+				assert_has(gruende, "schedule: Das Ereignis „grossauftrag“ gibt es im Katalog nicht.",
+					"Die Einplanung wird abgelehnt: %s." % wo)
+
+
+func test_replay_nennt_abgelehnte_eintraege_mit_grund() -> void:
+	# Arrange: eine Absage für einen Tag ohne Termin am 01.01.1992, ein Eintrag einer Art, die es
+	# nicht gibt, am Tag 400, dazwischen ein Modifikator vor Spielbeginn, der gilt.
+	var falscher_tag := {"at_day": _tag(1992, 1, 1), "day": _tag(1992, 6, 2),
+		"event_id": "konkurrent_eroeffnet", "kind": "cancel", "reason": "Laden gemietet"}
+	var zaubern := {"at_day": 400, "kind": "zaubern"}
+	var protokoll: Array[Dictionary] = [falscher_tag, _modifikator_als_eintrag(-1), zaubern]
+	var run := TimelineRun.new(_katalog("catalog_us6_reklamation"), 4711)
+
+	# Act
+	var abgelehnt := run.replay(protokoll, LETZTER_TAG)
+
+	# Assert: in der Reihenfolge des Nachspielens, also erst Tag 400, dann 1992
+	assert_eq(abgelehnt.size(), 2, "%s" % [abgelehnt])
+	if abgelehnt.size() != 2:
+		return
+	assert_eq(abgelehnt[0]["reason"], "Einen Eingriff der Art „zaubern“ gibt es nicht.")
+	assert_same(abgelehnt[0]["record"], zaubern, "Der Eintrag selbst, keine Kopie.")
+	assert_eq(abgelehnt[1]["reason"],
+		"Konkurrent eröffnet hat am 02.06.1992 keinen geplanten Termin im Fahrplan.")
+	assert_same(abgelehnt[1]["record"], falscher_tag)
+	assert_eq(abgelehnt[0].keys(), ["record", "reason"], "Genau die beiden Schlüssel.")
+	assert_eq(run.interventions.size(), 1, "Nur der Modifikator ist angenommen.")
+	assert_eq(_kennungen_der_modifikatoren(run), ["windiger_haendler"])
+	assert_eq(_termin_am(run, "konkurrent_eroeffnet", _tag(1992, 6, 1)).state_label(),
+		"eingetreten", "Ein abgelehnter Eintrag hält die übrigen nicht auf.")
+	assert_true(run.is_finished(), "Danach bis zum Tag abgespielt.")
+
+
+func test_replay_ohne_eintraege_spielt_nur_bis_zum_tag() -> void:
+	# Arrange
+	var leer: Array[Dictionary] = []
+	var catalog := _katalog("catalog_us6_reklamation")
+	var vor_dem_start := TimelineRun.new(catalog, 4711)
+	var bis_1990 := TimelineRun.new(catalog, 4711)
+	var verglichen := TimelineRun.new(catalog, 4711)
+	verglichen.advance_to(_tag(1990, 1, 1))
+
+	# Act
+	var ohne := vor_dem_start.replay(leer, -1)
+	var mit_tag := bis_1990.replay(leer, _tag(1990, 1, 1))
+
+	# Assert
+	assert_eq([ohne.size(), mit_tag.size()], [0, 0], "Nichts abgelehnt.")
+	assert_eq(vor_dem_start.today, -1, "Bis −1 spielt es nichts ab.")
+	assert_eq(vor_dem_start.protocol.size(), 0, "Kein Tag im Protokoll.")
+	assert_eq(_zeilen(bis_1990.protocol), _zeilen(verglichen.protocol), "Wie advance_to().")
+
+
 # --- Helfer ----------------------------------------------------------------------
+
+## Ein Eingriffsprotokoll in der Reihenfolge der Aktionen, wie es der Simulator sammelt: Die
+## Verschiebung von „Konkurrent eröffnet“ am 01.01.1992 steht vor dem Modifikator vom Tag −1, und
+## die Absage desselben Termins am selben Tag steht ganz hinten. Der zweite Modifikator kommt wie
+## aus einer Datei, mit allen Zahlen als float.
+func _protokoll_in_der_reihenfolge_der_aktionen() -> Array[Dictionary]:
+	var neujahr_1992 := _tag(1992, 1, 1)
+	var abzug := {"at_day": float(_tag(1992, 6, 30)), "kind": "add_modifier", "modifier": {
+		"event_id": "lieferengpass", "from_day": float(_tag(1992, 7, 1)), "id": "abzug",
+		"reason": "Zweiter Lieferant", "to_day": float(_tag(1995, 12, 31)), "value": -0.02}}
+	var entfernen := _modifikator_als_eintrag(_tag(1993, 6, 30))
+	entfernen["kind"] = TimelineRun.INTERVENTION_REMOVE_MODIFIER
+	return [
+		{"at_day": neujahr_1992, "day": _tag(1992, 6, 1), "event_id": "konkurrent_eroeffnet",
+			"kind": "move", "new_day": _tag(1992, 9, 1), "reason": "Bauarbeiten"},
+		_modifikator_als_eintrag(-1),
+		{"at_day": _tag(1990, 1, 1), "day": _tag(1990, 3, 10), "event_id": "grossauftrag",
+			"kind": "schedule", "reason": "Messeauftrag"},
+		abzug,
+		entfernen,
+		{"at_day": neujahr_1992, "day": _tag(1992, 9, 1), "event_id": "konkurrent_eroeffnet",
+			"kind": "cancel", "reason": "Laden nebenan selbst gemietet"},
+	]
+
+
+## „Ware vom windigen Händler: +5 Prozentpunkte vom 01.01.1990 bis 31.12.1993“ auf die
+## Reklamationswelle, als Eintrag im Eingriffsprotokoll am Tag [param am].
+func _modifikator_als_eintrag(am: int) -> Dictionary:
+	return {"at_day": am, "kind": "add_modifier", "modifier": {"event_id": "reklamationswelle",
+		"from_day": _tag(1990, 1, 1), "id": "windiger_haendler",
+		"reason": "Ware vom windigen Händler", "to_day": _tag(1993, 12, 31), "value": 0.05}}
+
+
+## Das Nachspielen, wie WhatIfProbe.build_run() es vor T004 selbst tat: nach in_replay_order(), je
+## Eintrag bis zu seinem Tag und dort apply_intervention(), danach bis [param bis]. Gibt je
+## Ablehnung „<art>: <grund>“ zurück.
+func _bisher_nachgespielt(run: TimelineRun, protokoll: Array[Dictionary], bis: int) -> Array:
+	var abgelehnt := []
+	for eintrag in TimelineRun.in_replay_order(protokoll):
+		run.advance_to(TimelineRun.intervention_day(eintrag))
+		if run.apply_intervention(eintrag) != OK:
+			abgelehnt.append("%s: %s" % [eintrag["kind"], run.last_refusal])
+	run.advance_to(bis)
+	return abgelehnt
+
+
+## Die Kennungen der Modifikatoren aus Eingriffen, in ihrer Reihenfolge.
+func _kennungen_der_modifikatoren(run: TimelineRun) -> Array:
+	var kennungen := []
+	for modifikator in run.modifiers:
+		kennungen.append(modifikator.id)
+	return kennungen
+
 
 ## Liest einen Test-Katalog aus res://test/fixtures/; er muss fehlerfrei sein.
 func _katalog(datei: String) -> EventCatalog:

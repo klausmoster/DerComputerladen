@@ -5,6 +5,9 @@ extends GutTest
 ## ausgelöst wird, die Bedienung mit Tastatur und Maus, den Mauszeiger je Eintrag und die
 ## gedämpfte Schrift gesperrter Zeilen.
 ##
+## Seit Feature 004 (T017) dazu: Kopfzeile und Breite als Eigenschaften, neue Einträge zur
+## Laufzeit mit Vorwahl, und ein unsichtbares Menü nimmt keinen Fokus.
+##
 ## Die vier Einträge entstehen hier im Code, mit den Werten aus dem Datenmodell
 ## (specs/001-hauptmenue/data-model.md). Geprüft wird also das Menü, nicht die Daten,
 ## die später im Titelbildschirm stehen.
@@ -40,6 +43,13 @@ func before_each() -> void:
 	buehne.add_child(fremder_button)
 	# Einen Frame warten: Die Startauswahl kommt zeitversetzt (call_deferred), und auch
 	# der VBoxContainer ordnet die Zeilen erst dann an.
+	await wait_process_frames(1)
+
+
+func after_each() -> void:
+	# Ein Bild warten: set_entries() nimmt die alten Zeilen mit remove_child() aus dem Baum und gibt
+	# sie mit queue_free() erst am Ende des Bilds frei. Endet ein Test gleich danach, stünden sie
+	# sonst noch als verwaiste Knoten da, wenn GUT nach after_each() zählt.
 	await wait_process_frames(1)
 
 
@@ -236,6 +246,197 @@ func test_gesperrte_zeilen_sind_ausgewaehlt_so_gedaempft_wie_in_ruhe() -> void:
 			"„%s“ wird in Ruhe und ausgewählt als gesperrt gezeichnet." % zeile.text)
 		assert_eq(zeile.get_theme_color(&"font_disabled_color"), UiPalette.GEHAEUSE_DUNKEL,
 			"Die Schrift gesperrter Zeilen ist gehaeuse-dunkel.")
+
+
+# --- Lochrand (Style-Guide, Bildrahmen) ----------------------------------
+
+# Die Löcher malt _draw() über MenuPaper; headless entsteht kein Bild. Geprüft werden die
+# Lochmitten, die draw_paper() malt. Ein Loch mit Mitte y belegt die Pixelreihen y − 2 bis y + 1.
+
+func test_lochrand_bei_fuenf_zeilen_wie_bisher() -> void:
+	# Act: Kopfzeile und vier Einträge, 100 hoch.
+	var mitten := MenuPaper.hole_centers(_menu.size.y)
+
+	# Assert
+	assert_eq(_menu.size.y, 5.0 * MainMenu.ROW_HEIGHT, "Voraussetzung: fünf Zeilen.")
+	assert_eq(mitten, [10, 22, 34, 46, 58, 70, 82, 94],
+		"Acht Löcher wie bisher; unter dem letzten (Reihen 92 bis 95) liegen noch 4 Pixel Papier.")
+
+
+func test_lochrand_bei_sechs_zeilen_ohne_loch_an_der_unterkante() -> void:
+	# Arrange: fünf Einträge wie das Hauptmenü aus Feature 004, 120 hoch.
+	var neu := _eintraege()
+	neu.push_front(_eintrag(&"continue", "Weiterspielen", true, "Weiter."))
+	_menu.set_entries(neu, 0)
+
+	# Act
+	var mitten := MenuPaper.hole_centers(_menu.size.y)
+
+	# Assert
+	assert_eq(_menu.size.y, 6.0 * MainMenu.ROW_HEIGHT, "Voraussetzung: sechs Zeilen.")
+	assert_eq(mitten, [10, 22, 34, 46, 58, 70, 82, 94, 106],
+		"Das Loch bei 118 (Reihen 116 bis 119) berührte die Unterkante und entfällt.")
+
+
+func test_kein_loch_beruehrt_die_unterkante() -> void:
+	for zeilen in range(1, 10):
+		# Arrange
+		var hoehe := zeilen * MenuPaper.ROW_HEIGHT
+
+		# Act
+		var mitten := MenuPaper.hole_centers(hoehe)
+
+		# Assert: Unter dem untersten Loch bleibt Papier, und das nächste Loch passte nicht mehr.
+		var letztes: int = mitten.back()
+		assert_lt(letztes + MenuPaper.HOLE_RADIUS, hoehe,
+			"%d Zeilen: Unter dem untersten Loch liegt Papier." % zeilen)
+		assert_gte(letztes + MenuPaper.HOLE_SPACING + MenuPaper.HOLE_RADIUS, hoehe,
+			"%d Zeilen: Kein weiteres Loch hätte noch Platz." % zeilen)
+	# Bei 3, 6 und 9 Zeilen fiele das unterste Loch genau auf die Unterkante.
+	assert_eq(MenuPaper.hole_centers(60).back(), 46, "3 Zeilen: ohne das Loch bei 58.")
+	assert_eq(MenuPaper.hole_centers(180).back(), 166, "9 Zeilen: ohne das Loch bei 178.")
+
+
+# --- Kopfzeile, Breite, Einträge zur Laufzeit (Feature 004) ---------------
+
+func test_kopfzeile_zeigt_header_text() -> void:
+	# Arrange
+	var kopfzeile := _menu.get_node(^"Rows/Header") as Label
+	var vorher := kopfzeile.text
+
+	# Act
+	_menu.header_text = "SCHWIERIGKEIT"
+
+	# Assert
+	assert_eq(vorher, "HAUPTMENÜ", "Ohne Angabe steht HAUPTMENÜ da, wie bisher.")
+	assert_eq(kopfzeile.text, "SCHWIERIGKEIT", "Die Kopfzeile folgt header_text sofort.")
+
+
+func test_header_text_vor_dem_erscheinen_gilt_beim_erscheinen() -> void:
+	# Arrange
+	var menue := MENU_SCENE.instantiate() as MainMenu
+	menue.header_text = "LÖSCHEN?"
+
+	# Act
+	add_child_autofree(menue)
+
+	# Assert
+	assert_eq((menue.get_node(^"Rows/Header") as Label).text, "LÖSCHEN?")
+
+
+func test_breite_ist_paper_width() -> void:
+	# Arrange
+	var vorher := _menu.size
+	watch_signals(_menu)
+
+	# Act
+	_menu.paper_width = 304
+	_menu.select(2)
+
+	# Assert
+	assert_eq(vorher, Vector2(MainMenu.PAPER_WIDTH, 5 * MainMenu.ROW_HEIGHT),
+		"Ohne Angabe ist das Papier PAPER_WIDTH breit und so hoch wie Kopfzeile und Einträge.")
+	assert_eq(_menu.size, Vector2(304, 5 * MainMenu.ROW_HEIGHT), "Danach ist es 304 breit.")
+	var parameter: Array = get_signal_parameters(_menu, "selection_changed")
+	assert_eq((parameter[1] as Rect2).size.x, 304.0,
+		"Die gemeldete Zeile reicht über das ganze Papier.")
+
+
+func test_set_entries_baut_die_zeilen_neu_und_waehlt_vor() -> void:
+	# Arrange: fünf Einträge wie das Hauptmenü aus Feature 004, vorgewählt die zweite Zeile.
+	var neu := _eintraege()
+	neu.push_front(_eintrag(&"continue", "Weiterspielen", true,
+		"Weiter mit Spiel 2, Schwer, am 14.03.1986."))
+	watch_signals(_menu)
+
+	# Act
+	_menu.set_entries(neu, 1)
+
+	# Assert: sofort, ohne auf ein Bild zu warten.
+	var texte := _zeilen().map(func(zeile: Button) -> String: return zeile.text)
+	assert_eq(texte, ["Weiterspielen", "Neues Spiel", "Spiel laden", "Einstellungen", "Beenden"],
+		"Die alten Zeilen sind weg, die neuen stehen in der Reihenfolge der Einträge.")
+	assert_eq(_menu.selected_index(), 1, "Vorgewählt ist die angegebene Zeile.")
+	assert_eq(_menu.selected_entry().id, &"new_game")
+	assert_eq(_menu.get_viewport().gui_get_focus_owner(), _zeilen()[1],
+		"Die Vorwahl ist der Fokus.")
+	assert_signal_emitted_with_parameters(_menu, "selection_changed", [neu[1],
+		Rect2(_menu.global_position + Vector2(0, 2 * MainMenu.ROW_HEIGHT),
+			Vector2(MainMenu.PAPER_WIDTH, MainMenu.ROW_HEIGHT))])
+	assert_eq(_menu.size, Vector2(MainMenu.PAPER_WIDTH, 6 * MainMenu.ROW_HEIGHT),
+		"Das Papier wächst um eine Zeile.")
+
+
+func test_set_entries_mit_weniger_eintraegen_schrumpft_das_papier() -> void:
+	# Arrange: vier Einträge wie die Gradwahl.
+	var neu: Array[MenuEntry] = [
+		_eintrag(&"easy", "Leicht", true, "Das Glück ist eher auf deiner Seite."),
+		_eintrag(&"medium", "Mittel", true, "Das Glück hält sich raus."),
+		_eintrag(&"hard", "Schwer", true, "Das Glück ist eher auf der Seite der anderen."),
+	]
+
+	# Act
+	_menu.set_entries(neu, 1)
+
+	# Assert
+	assert_eq(_menu.size, Vector2(MainMenu.PAPER_WIDTH, 4 * MainMenu.ROW_HEIGHT))
+	assert_eq(_zeilen().size(), 3, "Keine alte Zeile bleibt stehen.")
+
+
+func test_nach_set_entries_laufen_tasten_und_maus_wie_vorher() -> void:
+	# Arrange
+	var neu := _eintraege()
+	neu.push_front(_eintrag(&"continue", "Weiterspielen", true, "Weiter."))
+	_menu.set_entries(neu, 0)
+	# Ein Bild warten: Erst dann hat der VBoxContainer die neuen Buttons angeordnet, und die
+	# Maus trifft sie dort, wo sie zu sehen sind.
+	await wait_process_frames(1)
+	watch_signals(_menu)
+
+	# Act und Assert: Die Enden sind neu verbunden, und die Maus wählt die neue Zeile.
+	_taste(KEY_UP)
+	assert_eq(_menu.selected_index(), 4, "Vor der ersten Zeile kommt die neue letzte.")
+	_taste(KEY_DOWN)
+	assert_eq(_menu.selected_index(), 0, "Nach der letzten Zeile kommt wieder die erste.")
+	_maus_nach(_mitte(4))
+	_klick(_mitte(4), MOUSE_BUTTON_LEFT)
+	assert_eq(_menu.selected_index(), 4, "Überfahren wählt die neue Zeile „Beenden“.")
+	assert_signal_emitted_with_parameters(_menu, "entry_activated", [&"quit"])
+
+
+func test_set_entries_vor_dem_erscheinen_waehlt_beim_erscheinen_vor() -> void:
+	# Arrange
+	var menue := MENU_SCENE.instantiate() as MainMenu
+	menue.set_entries(_eintraege(), 3)
+
+	# Act
+	add_child_autofree(menue)
+	await wait_process_frames(1)
+
+	# Assert
+	assert_eq(menue.selected_index(), 3, "Die Vorwahl gilt, sobald das Menü erscheint.")
+	assert_eq(menue.size.y, 5.0 * MainMenu.ROW_HEIGHT)
+
+
+func test_unsichtbares_menue_nimmt_keinen_fokus() -> void:
+	# Arrange: Ein zweites Blatt liegt unsichtbar neben dem Menü, wie später die Gradwahl.
+	var blatt := MENU_SCENE.instantiate() as MainMenu
+	blatt.visible = false
+	blatt.entries = _eintraege()
+	_menu.get_parent().add_child(blatt)
+	await wait_process_frames(1)
+	watch_signals(blatt)
+
+	# Act
+	blatt.select(2)
+	blatt.set_entries(_eintraege(), 1)
+
+	# Assert
+	assert_eq(_menu.get_viewport().gui_get_focus_owner(), _zeilen()[0],
+		"Der Fokus bleibt im sichtbaren Menü, auch nach der Startauswahl des Blatts.")
+	assert_eq(blatt.selected_index(), 1, "Das Blatt merkt sich die Zeile trotzdem.")
+	assert_signal_not_emitted(blatt, "selection_changed",
+		"Unsichtbar meldet es keine Auswahl, sonst stünde ein Hinweis neben nichts.")
 
 
 # --- Helfer ---------------------------------------------------------------

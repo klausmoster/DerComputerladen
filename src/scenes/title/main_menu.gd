@@ -1,11 +1,14 @@
 class_name MainMenu
 extends Control
 
-## Das Hauptmenü auf Endlospapier (Baustein Menü im Style-Guide).
+## Ein Menü auf Endlospapier (Baustein Menü im Style-Guide): das Hauptmenü und, als weitere
+## Instanz derselben Szene, jedes andere Blatt im Titel mit einer Angabe je Zeile, etwa die
+## Gradwahl.
 ##
-## Oben steht die Kopfzeile „HAUPTMENÜ“, darunter je Eintrag ein Button. Die Buttons
+## Oben steht die Kopfzeile [member header_text], darunter je Eintrag ein Button. Die Buttons
 ## sind durchsichtig (Theme-Variante `MenuRow`). Papier, Zeilenfarben, Lochränder,
-## Hervorhebung und Pfeil malt das Menü selbst in `_draw()`, also unter den Buttons.
+## Hervorhebung und Pfeil malt das Menü in `_draw()` mit den statischen Funktionen von
+## `MenuPaper`, also unter den Buttons. Dasselbe Papier malt später die Liste der Spielstände.
 ##
 ## Die Auswahl ist Godots Fokus: Gewählt ist die Zeile, deren Button den Fokus hat. So
 ## gibt es nur eine Auswahl, gleich welche Eingabe sie ändert. Die Maus holt sich den
@@ -22,84 +25,82 @@ signal entry_activated(id: StringName)
 signal selection_changed(entry: MenuEntry, row_rect: Rect2)
 
 ## Höhe jeder Zeile, auch der Kopfzeile.
-const ROW_HEIGHT := 20
-## Breite des Papiers.
+const ROW_HEIGHT := MenuPaper.ROW_HEIGHT
+## Vorgabe für die Breite des Papiers, [member paper_width].
 const PAPER_WIDTH := 144
 ## Links und rechts frei bis zum Innenbereich der Zeilen: Lochrand (8) und Abstand (4).
 ## Derselbe Wert steht als offset_left und offset_right von Rows in main_menu.tscn.
-const ROW_INSET := 12
-## Lochränder: Kreise mit Radius 2, Mittelpunkt 4 vom Rand, ab y 10 alle 12 Pixel.
-const HOLE_RADIUS := 2
-const HOLE_INSET := 4
-const HOLE_FIRST_Y := 10
-const HOLE_SPACING := 12
-## Pfeil vor der gewählten Zeile: ein Pixel-Dreieck, 4 breit und 7 hoch, linke Kante bei x 16.
-const ARROW_X := 16
-const ARROW_WIDTH := 4
-const ARROW_HEIGHT := 7
-## pixelschatten: harter Versatz nach rechts unten, ohne Unschärfe.
-const SHADOW_OFFSET := 2
+const ROW_INSET := MenuPaper.ROW_INSET
 
-## Die Einträge von oben nach unten. Aus ihnen baut `_ready()` die Zeilen.
+## Text der Kopfzeile, bisher fest „HAUPTMENÜ“ in der Szene.
+@export var header_text: String = "HAUPTMENÜ":
+	set(value):
+		header_text = value
+		if is_node_ready():
+			_header.text = value
+## Breite des Papiers. PAPER_WIDTH bleibt als Vorgabe stehen; test_main_menu.gd nutzt es weiter.
+@export var paper_width: int = PAPER_WIDTH:
+	set(value):
+		paper_width = value
+		if is_node_ready():
+			_update_size()
+## Die Einträge von oben nach unten. Aus ihnen baut `_ready()` die Zeilen; zur Laufzeit
+## wechselt sie set_entries().
 @export var entries: Array[MenuEntry] = []
 
 var _buttons: Array[Button] = []
 var _selected_index := 0
+## Die Zeile, die `_ready()` wählt; set_entries() vor dem Erscheinen setzt sie.
+var _start_index := 0
 
 @onready var _rows: VBoxContainer = $Rows
+@onready var _header: Label = $Rows/Header
 
 
 func _ready() -> void:
-	for index in entries.size():
-		var button := _make_row(index)
-		_rows.add_child(button)
-		_buttons.append(button)
-	_link_ends()
-	custom_minimum_size = Vector2(PAPER_WIDTH, ROW_HEIGHT * _row_count())
-	# Zeitversetzt: Erst ordnet der VBoxContainer die Zeilen an, dann stimmt auch das
-	# Rechteck, das selection_changed für die erste Zeile meldet.
-	select.call_deferred(0)
+	_header.text = header_text
+	_build_rows()
+	# Zeitversetzt, wie bisher: Erst wenn alle Knoten im Baum bereit sind, wählt das Menü
+	# seine Startzeile und meldet sie. So hört der Titelbildschirm die erste Meldung schon.
+	select.call_deferred(_start_index)
 
 
 func _draw() -> void:
-	var paper := Rect2(0, 0, size.x, ROW_HEIGHT * _row_count())
-	# Zuerst der pixelschatten: dasselbe Rechteck, um 2 nach rechts unten versetzt.
-	# Alles, was danach gemalt wird, liegt darüber.
-	draw_rect(Rect2(paper.position + Vector2.ONE * SHADOW_OFFSET, paper.size), UiPalette.TUSCHE)
-	# Die Zeilen im Wechsel papier / endlos-gruen; die Kopfzeile ist die erste papier-Zeile.
-	for row in _row_count():
-		var color: Color = UiPalette.PAPIER if row % 2 == 0 else UiPalette.ENDLOS_GRUEN
-		draw_rect(Rect2(0, row * ROW_HEIGHT, paper.size.x, ROW_HEIGHT), color)
-	# Die Lochränder links und rechts, durchgehend über alle Zeilen. Auf dem Pixelraster
-	# ist ein Kreis mit Radius 2 um einen Gitterpunkt ein 4 × 4-Block ohne Ecken.
-	var hole_y := HOLE_FIRST_Y
-	while hole_y + HOLE_RADIUS <= paper.size.y:
-		draw_circle(Vector2(HOLE_INSET, hole_y), HOLE_RADIUS, UiPalette.TUSCHE)
-		draw_circle(Vector2(paper.size.x - HOLE_INSET, hole_y), HOLE_RADIUS, UiPalette.TUSCHE)
-		hole_y += HOLE_SPACING
+	MenuPaper.draw_paper(self, size.x, _row_count())
 	# Die gewählte Zeile: signalgelb im Innenbereich, davor der Pfeil.
 	var entry := selected_entry()
 	if entry == null:
 		return
-	var row_top := ROW_HEIGHT * (_selected_index + 1)
-	var highlight := Rect2(ROW_INSET, row_top, paper.size.x - 2 * ROW_INSET, ROW_HEIGHT)
-	draw_rect(highlight, UiPalette.SIGNALGELB)
-	# (20 − 7) / 2 geht nicht auf. Abgerundet belegt der Pfeil die Pixelreihen 6 bis 12
-	# der Zeile.
-	var arrow_top := row_top + floori((ROW_HEIGHT - ARROW_HEIGHT) / 2.0)
-	# Bei einem nicht verfügbaren Eintrag ist der Pfeil gedämpft wie sein Text, dem das
-	# Theme font_disabled_color in gehaeuse-dunkel gibt. So sieht die Zeile ausgewählt
-	# genauso gedämpft aus wie in Ruhe (FR-007).
-	var arrow_color := UiPalette.TUSCHE if entry.available else UiPalette.GEHAEUSE_DUNKEL
-	_draw_arrow(Vector2(ARROW_X, arrow_top), arrow_color)
+	MenuPaper.draw_selection(self, size.x, _selected_index + 1, entry.available)
+
+
+## Baut die Zeilen aus [param new_entries] neu und wählt Zeile [param index]. Für Einträge, deren
+## Verfügbarkeit oder Hinweis sich ändert, etwa „Weiterspielen“.
+func set_entries(new_entries: Array[MenuEntry], index: int = 0) -> void:
+	entries = new_entries
+	_start_index = index
+	# Vor dem Erscheinen gibt es Rows noch nicht; dann baut _ready() die Zeilen.
+	if not is_node_ready():
+		return
+	_build_rows()
+	select(index)
 
 
 ## Wählt Zeile [param index], indem ihr Button den Fokus bekommt. Außerhalb der Liste
 ## geht es am anderen Ende weiter, -1 ist also die letzte Zeile.
+##
+## Ist das Menü unsichtbar, merkt es sich die Zeile nur und meldet nichts: Ein Blatt, das
+## nicht zu sehen ist, darf den Fokus nicht nehmen, sonst gingen Tasten an ein unsichtbares
+## Menü. Wer es zeigt, ruft danach select(selected_index()).
 func select(index: int) -> void:
 	if _buttons.is_empty():
 		return
-	_buttons[posmod(index, _buttons.size())].grab_focus()
+	var row := posmod(index, _buttons.size())
+	if not is_visible_in_tree():
+		_selected_index = row
+		queue_redraw()
+		return
+	_buttons[row].grab_focus()
 
 
 func selected_index() -> int:
@@ -123,6 +124,32 @@ func activate_selected() -> void:
 ## Kopfzeile und Einträge.
 func _row_count() -> int:
 	return entries.size() + 1
+
+
+## Ersetzt die Buttons durch neue, je Eintrag einer, und passt Größe und Enden an.
+func _build_rows() -> void:
+	# remove_child() sofort, queue_free() erst am Ende des Bilds: So stehen die alten Buttons
+	# schon jetzt nicht mehr im VBoxContainer und zählen nicht mehr mit.
+	for button in _buttons:
+		_rows.remove_child(button)
+		button.queue_free()
+	_buttons.clear()
+	_selected_index = 0
+	for index in entries.size():
+		var button := _make_row(index)
+		_rows.add_child(button)
+		_buttons.append(button)
+	_link_ends()
+	_update_size()
+	queue_redraw()
+
+
+## Papier so breit wie [member paper_width] und so hoch wie alle Zeilen. Die Größe setzt das
+## Menü selbst und nicht nur als Mindestgröße, denn Mindestgrößen schrumpfen ein Control nicht:
+## Hätte ein Blatt erst fünf Einträge und dann vier, bliebe es sonst eine Zeile zu hoch.
+func _update_size() -> void:
+	custom_minimum_size = Vector2(paper_width, ROW_HEIGHT * _row_count())
+	size = custom_minimum_size
 
 
 ## Baut den Button für Eintrag [param index]: durchsichtig und linksbündig. Den Platz
@@ -169,15 +196,12 @@ func _link_ends() -> void:
 
 ## Die ganze Zeile [param index] in globalen Koordinaten, von Papierrand zu Papierrand.
 ## Der Button deckt nur den Innenbereich ab; der Hinweis richtet sich aber nach der Zeile.
+## Gerechnet wird aus der Lage des Menüs, nicht aus dem Button: Nach set_entries() hat der
+## VBoxContainer die neuen Buttons erst im nächsten Bild angeordnet, die Zeile stimmt aber
+## schon jetzt.
 func _row_rect(index: int) -> Rect2:
-	return _buttons[index].get_global_rect().grow_individual(ROW_INSET, 0, ROW_INSET, 0)
-
-
-## Der Pfeil als Pixel-Dreieck: vier Spalten mit den Höhen 7, 5, 3 und 1, jede mittig.
-func _draw_arrow(top_left: Vector2, color: Color) -> void:
-	for column in ARROW_WIDTH:
-		var height := ARROW_HEIGHT - 2 * column
-		draw_rect(Rect2(top_left.x + column, top_left.y + column, 1, height), color)
+	var local := Rect2(0, ROW_HEIGHT * (index + 1), size.x, ROW_HEIGHT)
+	return get_global_transform() * local
 
 
 func _on_row_focus_entered(index: int) -> void:

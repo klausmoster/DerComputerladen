@@ -12,6 +12,145 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### `docs/features/` aufräumen (2026-10-27)
+
+- **Sobald Feature 004 und die Spielbeschreibung in `main` sind** (Klaus, 2026-10-27):
+  `Features.md` und `Feature_Ideas.md` bleiben, `Features.md` bekommt eine neue Einleitung ohne
+  `/dcl-feature`. `01-01-spieluhr.md`, `01-02-ereignis-engine.md` und `02-01-bible-importer.md`
+  kommen in ein Archiv; `02-01` dient später als Vorlage für `/speckit-specify`.
+  `TEMPLATE_FEATURE.md` und der Skill `dcl-feature` entfallen. Die Änderung an `CLAUDE.md`,
+  Abschnitt „Featureweise arbeiten“, zeigt Claude Klaus vorher.
+
+### Spec Kit auf 1.2.3 heben (2026-10-26)
+
+- **Nach dem Abschluss von Feature 004** (Klaus, 2026-10-26): Installiert ist 1.2.0, als Kommando
+  `specify` und im Projekt (`.specify/init-options.json`). Aktuell ist 1.2.3 vom 2026-10-22; die
+  drei Patch-Versionen bringen Fehlerbehebungen an Workflows, Erweiterungen und Presets. Vorher
+  zeigt Claude Klaus, welche Dateien im Projekt sich ändern würden, etwa an einer Probe in einem
+  leeren Ordner; erst nach seinem OK wird aktualisiert.
+
+### Feature 004, Phasenprüfung Phase 2 (2026-10-26)
+
+Lücken im Abschnitt „Sprache“, die der Text-Prüfer gemeldet und Claude bestätigt hat. Zwei hat
+Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine blockiert etwas:
+- **Grund im Hinweis: Fehlermeldung oder Hinweis?** „Sprache“ erlaubt Witz in Hinweisen, aber
+  nicht in Fehlermeldungen. Ein Grund wie „Der Schwierigkeitsgrad ist unbekannt.“ steht im Hinweis,
+  ist aber eine Fehlermeldung. Empfehlung: ergänzen „Was ein Hinweis über einen Fehler sagt, ist
+  eine Fehlermeldung: ohne Witz.“
+- **Wörter aus dem Inneren des Spiels:** Klaus hat für die Gründe entschieden, dass Seed,
+  Formatversion, Eingriff und Ereigniskatalog nicht beim Spieler erscheinen. Empfehlung: als
+  allgemeine Regel unter „Nicht“ aufnehmen: „Keine Wörter aus dem Inneren des Spiels in Texten für
+  den Spieler, etwa Seed oder Formatversion; die gehören in die Werkzeuge und ins Protokoll.“
+- **Tausenderpunkt außerhalb von Geld:** „Sprache“ zeigt ihn nur an DM-Beträgen. Empfehlung:
+  Punkt bei Beträgen und Mengen ab vier Stellen, nicht bei Nummern und Namen („Spiel 10000“).
+- **Gilt „Sprache“ auch fürs Protokoll?** (Nachprüfung) Der Abschnitt sagt nicht, ob er auch
+  für Texte gilt, die nur ins Protokoll gehen (`push_warning()`, `last_error`). Das Datenmodell
+  erlaubt dort Godots englische Fehlertexte. Empfehlung: im Einleitungssatz klarstellen „für alle
+  Texte, die der Spieler sieht; das Protokoll ist für Entwickler und muss nur richtig sein“.
+- Verworfen: „Grad“ und „Schwierigkeitsgrad“ seien zwei Wörter für dasselbe. „Gradwahl“ ist nur
+  der Name im Vertrag; der Spieler liest SCHWIERIGKEIT und die Grade selbst.
+
+### Feature 004, Lückensuche (T033, 2026-10-26)
+
+- **`/speckit-converge`:** 64 Anforderungen, Szenarien und Edge Cases, 24 Plan-Entscheidungen und
+  7 Grundsätze der Verfassung geprüft. Zwei kleine Funde, beide in Phase 7: Speichern verliert bei
+  zwei Fehlern hintereinander eine `.neu` (T036, Klaus: reparieren), der Knopf des
+  Spielbildschirms ohne laufendes Spiel (T041, Auslegung angenommen: Läuft kein Spiel, etwa weil
+  die Szene im Editor allein startet, führt der Knopf ohne Speichern gleich ins Hauptmenü;
+  `game_screen.gd`, `_on_leave_button_pressed()`). FR-015 in der Spec war
+  veraltet und ist nachgezogen.
+- **Stil-Prüfer:** kein Verstoß am Gebauten. Der Vertrag sagte beim Knopf „Mauszeiger: die Hand“
+  ohne Ausnahme; nachgezogen. Lücken entschieden (Style-Guide Version 30): Zebra an der Stelle,
+  Rollmarken nur Anzeige, Fokuslinie nur bei Tastatur. **Offen, ohne Eile:** Was geschieht, wenn ein
+  Hinweis unten aus dem Bild ragen würde? Heute bleiben 10 Pixel; Empfehlung: dann rechts neben der
+  Zeile oder nach oben versetzt, festlegen, wenn ein höheres Blatt kommt.
+- **Text-Prüfer:** zwei Befunde bestätigt, beide in Phase 7 (T037 Grund ohne „das Spiel“, T038
+  Hinweis von „Spiel laden“). Verworfen: „Spiel laden“ neben „Laden aufmachen“ sei ein Wort für
+  zwei Dinge; Verb und Name des Ladens sind verschiedene Wörter, „Spiel laden“ ist der übliche
+  Menüeintrag. Lücken entschieden (Version 30): Namen im Satz groß, das Programm heißt nicht „das
+  Spiel“. Die Regel „ein Hinweis verspricht nur, was geht“ hat Klaus am 2026-10-27 wieder
+  verworfen: Ein Hinweis wechselt nicht mit der Lage, „Spiel laden“ sagt immer „Zurück in einen
+  deiner Läden.“ (Style-Guide Version 33).
+
+### Feature 004, Phasenprüfung Phase 5 (2026-10-26)
+
+- **Erledigt durch Klaus' Entscheidungen** (Style-Guide Version 29, Vertrag nachgezogen):
+  - Im Löschmodus sind beschädigte und zu neue Spielstände verfügbar, nicht gedämpft; gedämpft heißt
+    immer „löst nichts aus“ (Stil-Prüfer, Widerspruch zum Vertrag).
+  - Rückfrage bei nicht fortsetzbaren Spielständen in derselben Satzform wie bei fortsetzbaren:
+    „Spiel 9 bleibt: neuere Version. Esc geht auch.“ (Text-Prüfer, Widerspruch zum Vertrag).
+  - „Vorher fragt das Spiel nach.“ wird „Vorher kommt eine Rückfrage.“; in „Sprache“ steht die
+    Regel „Kein Wort für zwei Dinge auf demselben Blatt“ (Text-Prüfer, Lücke).
+  - Der Hinweis einer Zeile der Liste nennt beide Daten: „Steht am 13.07.1985. Gespielt am
+    26.10.2026, 21:40 Uhr.“ Damit ist der Punkt aus Phase 4 „erklärt das Spieldatum nicht“ erledigt.
+- **Repariert** (Stil-Prüfer, bestätigt): Die Meldung „Löschen ging nicht“ blieb beim Rollen an der
+  Stelle statt beim Spielstand. Sie gehört jetzt zum Spielstand.
+- **Lücke im Style-Guide, erledigt in Version 30** (Stil-Prüfer): README, Bewegung, nennt Übergänge von 150 bis
+  250 ms, „Fenster gleiten oder klappen auf“. Ob ein Blatt im Titel, das ein anderes ersetzt, und
+  das Rollen der Liste einen Übergang haben, regelt er nicht; gebaut ist ein Sprung, seit Phase 4.
+  Empfehlung: Blätter und Rollen springen, wie ein neuer Ausdruck aus dem Drucker; in „Bewegung“
+  so festhalten. Für die Lückensuche in Phase 6.
+- **`SaveGame.time_sentence()` wird nicht mehr gebraucht** (Godot-Agent): Der neue Hinweis der
+  Liste setzt Datum und Uhrzeit aus `time_text()` zusammen. `time_sentence()` steht noch im Vertrag
+  `contracts/spielstand.md` und in `test_save_game.gd`. Empfehlung: in Phase 6 mit Vertrag und Test
+  entfernen.
+- **GUT meldet 4 Orphans in `test_main_menu.gd`** (Buttons), schon vor der Reparatur. Die Tests
+  sind grün. Empfehlung: in Phase 6 ansehen.
+- **Lücke im Style-Guide, erledigt in Version 30** (Stil-Prüfer, Nachprüfung): Baustein Meldung sagt „bleibt, bis
+  der Spieler eine andere Zeile wählt“, aber nicht, ob die Zeile der Eintrag oder die Stelle ist.
+  Gebaut ist: Die Meldung gehört zum Eintrag und wandert beim Rollen mit; rollt er aus dem Fenster
+  und die Auswahl rückt nach, ersetzt der Hinweis sie. Empfehlung: diesen Satz in den Baustein
+  Meldung aufnehmen, in Phase 6.
+- **Verworfen** (Text-Prüfer, Nachprüfung): „Spiel 4 ist danach weg: beschädigt. Für immer.“ lasse
+  sich als „für immer beschädigt“ lesen. Der Punkt trennt die Sätze, und die Satzform ist die der
+  fortsetzbaren Spielstände, die Klaus abgenommen hat.
+- **Verworfen:** „WELCHES LÖSCHEN?“ statt „WELCHEN“ (Text-Prüfer): richtig, bezogen auf „Spiel 7“,
+  und so im Style-Guide. Rollmarke in `tusche` neben dem gedämpften „Löschen …“ (Stil-Prüfer): Sie
+  gehört zur Liste, nicht zum Eintrag. Rollen ohne Auswahlwechsel als „andere Zeile“ (Stil-Prüfer):
+  Die Regel der Meldung beantwortet das, gewählt bleibt derselbe Spielstand.
+
+### Feature 004, Phasenprüfung Phase 4 (2026-10-26)
+
+- **„Spiel laden“ tut in Phase 4 noch nichts** (Text-Prüfer, bestätigt): Mit Spielständen ist der
+  Eintrag verfügbar, sein Hinweis verspricht die Liste, die erst mit T026 kommt. Erledigt sich mit
+  Phase 5; bis dahin nur für die Abnahme von Phase 4 wichtig.
+- **Lücken in „Sprache“** (Text-Prüfer), je mit Empfehlung, keine blockiert:
+  - Hinweis einer Zeile der Spielstände: Er nennt „zuletzt gespielt“, sagt aber nicht, was Enter
+    tut, und erklärt das Spieldatum nicht. Empfehlung: in Phase 5 messen, ob „Spielt am 14.03.1986
+    weiter. Zuletzt gespielt am …“ in zwei Zeilen passt; sonst so lassen.
+  - Gleiche Wörter: „Weiterspielen“, „fortsetzen“ und „laden“ für dieselbe Handlung; „Noch kein
+    Spiel angefangen.“ und „Noch keine Spielstände.“ für denselben Zustand. Gehört zur offenen
+    Regel „Dasselbe heißt überall gleich“ (Phase 3).
+  - Satzform der Hinweise (Infinitiv, Imperativ, dritte Person) ist nicht geregelt. Empfehlung:
+    „Ein Hinweis sagt im Infinitiv, was der Eintrag tut; Gründe und Zustände als Aussagesatz.“
+  - Ob der Wortschatz der Zeit auch für Texte über den echten Rechner gilt („Desktop“, „Esc“).
+- **Erledigt durch Klaus' Entscheidungen** (Stil-Prüfer): Lochrand an der Unterkante und Abstand
+  des Hinweises zum allein stehenden Knopf, siehe „Erledigt“.
+- **Für Phase 5 merken:** Die Meldung „Löschen ging nicht. Der Spielstand ist noch da.“ stimmt
+  nicht, wenn `delete()` mit `ERR_FILE_NOT_FOUND` endet, weil die Datei schon weg ist.
+
+### Feature 004, Phasenprüfung Phase 3 (2026-10-26)
+
+Lücken im Style-Guide, die der Text-Prüfer gemeldet und Claude bestätigt hat; keine blockiert:
+- **„Ein Satz pro Meldung“ gegen die Beispiele:** Der Leitsatz „Kurz und gesprochen“ verlangt
+  einen Satz, das Beispiel einer Meldung in „Sprache“ hat drei, der Baustein Meldung zwei.
+  Empfehlung: „Eine Meldung sagt eine Sache in höchstens zwei kurzen Sätzen.“
+- **„Meldung“ heißt zweierlei:** In „Sprache“ ist eine Meldung eine Nachricht aus dem Spiel mit
+  Witz, im Baustein Meldung ein Fehler ohne Witz. Empfehlung: In „Sprache“ für Nachrichten aus
+  dem Spiel „Nachricht“ sagen und ergänzen: „Die Meldung (Baustein) ist eine Fehlermeldung: ohne
+  Witz.“
+- **Dasselbe heißt überall gleich:** „Sprache“ hat keine solche Regel; Anlass war „schließen“
+  gegen „Beenden“. Mit Klaus' Entscheidung unten ist der Anlass weg. Empfehlung: die Regel
+  trotzdem aufnehmen.
+
+### Feature 004, Plan (2026-10-26)
+
+- **Eigener Benutzerordner, später:** Spielstände liegen unter macOS in
+  `~/Library/Application Support/Godot/app_userdata/Der Computerladen/`. Mit
+  `application/config/use_custom_user_dir` lägen sie unter „Der Computerladen“ ohne „Godot“.
+  Empfehlung: vor der ersten Veröffentlichung umstellen, nicht in Feature 004; heute zögen
+  Einstellungen und Sicherungskopien der Werkstatt mit um.
+
 ### Phase 12 von Feature 002 (2026-10-21)
 
 - **Vier Zeilen in den Tabellen (T101):** Mit der neuen Vorgabe zeigen Statistik mit Warnung und
@@ -133,8 +272,6 @@ wenn Klaus es will.
   2026-10-20): beobachtet, von Klaus noch nicht entschieden.
 - **Systemmenüs von macOS sind englisch** (Feature 001): Es gibt kein `.lproj`. Ob sie deutsch
   werden, entscheidet Klaus später.
-- **Spec Kit oder `/dcl-feature`** (Pilot seit 2026-10-19): Ob Spec Kit `/dcl-feature` dauerhaft
-  ersetzt, entscheidet Klaus am Ergebnis des Piloten.
 - **Nächstes Feature nach 002:** Empfehlung 02-01 und 02-02, Bible-Importer und Warengruppen.
 - **Mac-App unter `build/macos`:** Sie stammt vom Probe-Export vor dem Fensterstart. Neu
   exportieren hat Claude angeboten.
@@ -418,6 +555,88 @@ Auslegungen des Agents, die Claude angenommen hat:
     eine hohe Tabelle die Ansicht springen.
   - Bei 1024 × 600 ist die Werkstatt zu breit; gemessen nur zur Information, nicht Teil von T043.
 
+### Feature 004, Plan (2026-10-26)
+
+Festlegungen in `specs/004-neues-spiel/research.md`, die nicht aus Spec und Klärung folgen. Noch
+nicht umgesetzt; Klaus kann sie bei jeder Abnahme ändern. Die übrigen hat Klaus mit der Checkliste
+und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
+- **Zurück aus einem Blatt** wählt im Hauptmenü den Eintrag, der es geöffnet hat
+  (`data-model.md`).
+
+### Feature 004, Phase 2 (2026-10-26)
+
+- **Katalog mit falschem Format im Spielstand ist beschädigt:** `EventCatalog.from_data()` fällt
+  bei `"format": "zwei"` wie `from_json()` auf 1 zurück und meldet nur V22. Ein Spielstand wird
+  aber nur vom Spiel geschrieben; steht dort etwas anderes als die ganze Zahl 1, ist die Datei
+  verändert. `SaveGame.from_data()` prüft das deshalb vorher und meldet den Spielstand als
+  beschädigt. Anlass: Bericht des Agents zu T005.
+- **`replay()` gibt den Eintrag selbst zurück, keine Kopie** (Auslegung des Agents zu T004,
+  angenommen): So sieht die Probe genau ihren eigenen Eintrag; ein Test prüft es.
+- **Auslegungen des Agents zu T006 bis T009, von Claude angenommen:**
+  - `SaveGame.from_data()` hat einen vierten, freiwilligen Parameter `details` für das Protokoll,
+    damit der Satz für den Spieler nie einen Wert aus der Datei enthält.
+  - Scheitert Schritt 5 (die `.alt` löschen), gibt `write()` OK zurück und meldet nur
+    `push_warning()`: Der neue Stand ist zu diesem Zeitpunkt schon gespeichert.
+  - Ein Ordner mit dem Namen einer Spielstandsdatei zählt für die nächste Nummer mit, erscheint
+    aber nie in der Liste.
+  - Zeitpunkte werden streng als `JJJJ-MM-TTTHH:MM:SSZ` gelesen; ein Name nur aus Leerzeichen zählt
+    wie ein leerer.
+  - Der Test zu SC-003 im Kern nimmt den Katalog, wie er gelesen ist; Prüfen und Weglassen beim
+    Fortsetzen kommt mit T013. Das Fortsetzen vom 31.12.1999 in höchstens 1 s misst T014.
+  - SC-002 gemessen: 20 Spielstände mit je 500 Ereignissen in rund 0,6 s gelesen.
+
+### Feature 004, Phase 3 (2026-10-26)
+
+- **Eingriff nach dem Spieldatum macht den Spielstand beschädigt:** Ein Eingriff mit `at_day`
+  nach dem gespeicherten Tag schöbe den Lauf beim Fortsetzen über diesen Tag hinaus, und die Tage
+  dazwischen kämen nie als Signal. Das Spiel schreibt so etwas nie; steht es in der Datei, ist sie
+  verändert. `SaveGame.from_data()` meldet deshalb „Ein Teil der Datei stimmt nicht“. Anlass:
+  Frage des Agents zu T013; umgesetzt mit T014.
+- **Auslegungen des Agents zu T014, angenommen:**
+  - Das zweite Schließen nach gescheitertem Speichern beendet immer ohne Speichern, auch wenn
+    dazwischen ein Speichern gelang.
+  - Ein neues Spiel weicht höchstens fünfmal auf die nächste Nummer aus.
+  - Ein Eingriff, den das Fortsetzen ablehnt, fehlt nach dem nächsten Speichern in der Datei; am
+    Fahrplan ändert das nichts, weil er ohnehin nicht galt.
+  - Ein Test hakt Godots englische Fehlermeldung „Method/function failed“ ab; sie kann sich mit
+    einer anderen Godot-Version ändern.
+- **Auslegungen des Agents zu T012 und T013, angenommen:** `resume_game()` lehnt einen negativen
+  Seed ab, statt zu würfeln; ohne Katalog läuft das Spiel wie mit einem leeren; `set_date()` setzt
+  auch den Rest des angefangenen Tags zurück.
+
+### Feature 004, Phase 4 (2026-10-26)
+
+- **Auslegungen des Agents zu T017 bis T019, angenommen:** Die Fokuslinie am Knopf liegt wie in
+  `bundle.css` einen Pixel neben dem Knopf (ein Pixel Luft, dann die Linie). Relief ein Pixel
+  innerhalb der Kontur, Innenabstand 9 links und rechts, 2 oben und unten, gedrückt 3 und 1.
+  `TitleTexts` hält auch Kopfzeilen und Einträge; die Namen der Grade kommen aus
+  `Difficulty.label()`.
+- **Ausgeschalteter Knopf zeigt den Pfeil:** Der Vertrag sagte „immer die Hand“, der Style-Guide
+  „keine Reaktion beim Überfahren“. Der Style-Guide gilt; umgesetzt mit T021.
+- **Lücke im Style-Guide:** Der `pixelschatten` des Hinweises ist `tusche` und auf `nacht` (dem
+  Spielbildschirm) kaum zu sehen. Für den Stil-Prüfer in T023.
+
+### Feature 004, Phase 5 (2026-10-26)
+
+- **Auslegungen des Agents zu T025, angenommen:** Hinter dem Namen bleiben wie hinter der letzten
+  Spalte 6 Pixel Luft, die Namensspalte ist also 58 breit; „Spiel 10000“ wird zu „Spiel 10…“. Das
+  Mausrad rollt nur das Fenster; rollt der gewählte Spielstand hinaus, rückt die Auswahl auf die
+  nächste sichtbare Zeile. Bei nicht fortsetzbaren Zeilen bleibt „zuletzt gespielt“ leer. Die
+  Liste schaltet den Löschmodus bei „Löschen …“ selbst ein, aus nie selbst.
+- **Löschen einer Datei, die schon weg ist:** Endet `SaveStore.delete()` mit
+  `ERR_FILE_NOT_FOUND`, etwa weil ein zweites Fenster sie gelöscht hat, ist der Wunsch des Spielers
+  erfüllt. Keine Meldung, die Liste wird neu gelesen. „Löschen ging nicht. Der Spielstand ist
+  noch da.“ kommt nur, wenn der Spielstand danach wirklich noch da ist. Anlass: Text-Prüfer in
+  Phase 4.
+- **Auslegungen des Agents zu T026 bis T028, angenommen:** Ist der Ordner beim Öffnen von
+  „Spiel laden“ inzwischen leer, bleibt das Hauptmenü, neu gelesen und auf „Spiel laden“; dessen
+  Hinweis sagt dann, dass es keine gibt. „Abbrechen“ in der Rückfrage liest den Ordner nicht neu.
+  Scheitert das Fortsetzen eines fortsetzbaren Spielstands doch, liest die Liste neu, ohne Meldung
+  (kommt nicht vor, nur abgesichert).
+- **„Spiel 10000 löschen“ passt nicht in die Rückfrage:** 109 Pixel bei 108 Platz. Liegt außerhalb
+  dessen, was die Spec abdeckt (bis „Spiel 9999“); kein Handlungsbedarf, solange niemand 10 000
+  Spiele anlegt.
+
 ### KI-Workflow, Schritte 1 und 2 (2026-10-22)
 
 - **Phasenprüfung als Punkt 8:** In `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, steht sie
@@ -429,6 +648,56 @@ Auslegungen des Agents, die Claude angenommen hat:
 
 ## Erledigt
 
+- **Spec Kit ersetzt `/dcl-feature` dauerhaft:** Klaus, 2026-10-27, nach drei Features im Pilot.
+  Das Aufräumen steht oben unter „`docs/features/` aufräumen“.
+- **Lochrand und Abstand am Knopf (Phasenprüfung Phase 4):** Klaus, 2026-10-26, nach Empfehlung:
+  Ein Loch, das die Unterkante eines Blatts berühren würde, entfällt; beim allein stehenden Knopf
+  zählen die 4 Pixel bis zum Hinweis ab der Fokuslinie. Steht im Style-Guide (Bildrahmen,
+  Hinweis; Version 27).
+- **Rückfrage mit dem Namen vorn (Phase 4):** Klaus, 2026-10-26, nach Empfehlung: „Spiel 2 bleibt:
+  Schwer, 14.03.1986. Esc geht auch.“ und „Spiel 2 ist danach weg: Schwer, 14.03.1986. Für
+  immer.“ Die alte Fassung brauchte mit „Spiel 9999“ drei Zeilen. Steht im Style-Guide (Menü,
+  Version 26), research.md (R14) und im Vertrag.
+- **Meldung beim Beenden (Phasenprüfung Phase 3):** Klaus, 2026-10-26: Scheitert beim Beenden
+  das Speichern, zeigt das Spiel nur den Fehler, dieselbe Meldung wie sonst („Speichern ging nicht.
+  Dein Spiel läuft weiter.“). Ein zweites Beenden endet ohne Speichern, ohne dass die Meldung das
+  erklärt. Vorher stand dort „Schließt du noch einmal, dann ohne.“; Klaus: Ein Spiel zeigt da
+  einfach den Fehler. Steht in Spec (Edge Cases), research.md (R8) und den Verträgen.
+- **Gründe für beschädigte Spielstände (Phasenprüfung Phase 2):** Klaus, 2026-10-26, nach
+  Empfehlung: nur Wörter, die der Spieler kennt. Vier Gründe statt acht; Seed, Formatversion,
+  Eingriff und Ereigniskatalog stehen nur im Protokoll. Steht im Datenmodell, „Zustand“.
+- **Uhrzeit in Spalten einer Liste ohne „Uhr“:** Klaus, 2026-10-26, nach Empfehlung; steht in
+  „Sprache“, „Zahlen, Geld und Daten“ (Style-Guide, Version 24).
+- **Style-Guide für Feature 004 (T001, T002):** Klaus, 2026-10-26, freigegeben: Version 22 mit
+  „Blätter im Titel“ und „Rückfrage“ beim Menü, den Bausteinen Liste und Meldung, dem allein
+  stehenden Knopf mit Hinweis und der Fokuslinie in `papier` auf dunklem Grund, dem Spielbildschirm
+  als Platzhalter. Damit gelten auch die Lage der Blätter, die Spalten der Liste und der
+  Spielbildschirm aus „Feature 004, Plan“ als bestätigt.
+- **Analyse von Feature 004:** Klaus, 2026-10-26: alle 44 Befunde nach Empfehlung einarbeiten.
+  Eingearbeitet in Spec (Clarifications „Analyse 2026-10-26“, Edge Case „Zwei Fenster“, FR-016),
+  Plan („Änderungen nach der Analyse“), research.md, Datenmodell, Verträge, Quickstart und Tasks.
+  Wo Claude anders gelöst hat als der Prüfer vorschlug: Spalten 0, 64, 108, 172 und Papier 304
+  statt nur die 6 px Rest zu benennen (F9, B4), Rollmarken in Kopfzeile und „Löschen …“ statt in
+  Zeilen der Spielstände, Werte im Vertrag als Verweis auf den Style-Guide statt als Zahl (D1).
+- **Review-Checkliste von Feature 004:** Klaus, 2026-10-26: alle 36 Vorschläge freigegeben
+  (`specs/004-neues-spiel/checklists/review.md`), eingearbeitet in Spec, Plan, research.md,
+  Datenmodell, Verträge und Quickstart. Damit bestätigt sind auch diese Festlegungen des Plans, die
+  jetzt in der Spec stehen: Ordnung und Rollen der Liste, „Löschen …“ im Löschmodus nicht
+  verfügbar, die Sätze zu den Graden im Hinweis, „Abbrechen“ als Zurück der Rückfrage, Speichern
+  beim Fortsetzen, Schließen bei gescheitertem Speichern, ein Eingriff mit falschem Datum macht den
+  Spielstand beschädigt, Katalog beim Start der App gelesen.
+- **Sätze zu den Graden (Feature 004, R18):** Klaus, 2026-10-26, nach Empfehlung Vorschlag A:
+  Leicht „Das Glück ist eher auf deiner Seite.“, Mittel „Das Glück hält sich raus.“, Schwer „Das
+  Glück ist eher auf der Seite der anderen.“ Steht in `specs/004-neues-spiel/research.md`, R18, und
+  im Vertrag `titelbildschirm.md`; der Text-Prüfer prüft sie in Phase 4.
+- **Fünf Festlegungen aus der Spec von Feature 004:** Klaus, 2026-10-26, alle bestätigt: Esc auf
+  dem Spielbildschirm löst nichts aus (FR-020); „Spiel N“ mit N = größte Nummer + 1 (FR-009); der
+  Löschmodus mit seinen Enden und „Abbrechen“ vorgewählt (FR-017, FR-017a); nur beschädigte
+  Spielstände machen „Spiel laden“ verfügbar (FR-002); kein Speichern während des Spiels, solange
+  die Uhr steht (Annahmen).
+- **Eine Sitzung je Feature von specify an:** Klaus, 2026-10-26: Ein Feature läuft von
+  `/speckit-specify` bis zur Gesamtabnahme in einer Sitzung; Claude bietet keine eigene Sitzung ab
+  dem Plan mehr an. Steht in `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, Punkt 7.
 - **Merge von Feature 003 und KI-Workflow nach `main`:** Klaus, 2026-10-26, nach Empfehlung, vor
   dem Start von Feature 004: erst Feature 003 (`6e5ea67`), dann der Branch des KI-Workflows
   (`342e0d1`). So sind Prüfer und Skill im Pilot von Feature 004 dabei.

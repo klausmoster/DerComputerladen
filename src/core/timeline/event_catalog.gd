@@ -41,7 +41,8 @@ func _init() -> void:
 ## [param issues]. Strukturfehler landen ebenfalls in [param issues].
 ##
 ## null kommt auch zurück, wenn der Text gar kein Objekt ist oder ein anderes Format als 1 hat:
-## So einen Text als Katalog zu lesen und wieder zu speichern, würde ihn zerstören.
+## So einen Text als Katalog zu lesen und wieder zu speichern, würde ihn zerstören. Alles nach dem
+## Parsen übernimmt from_data().
 static func from_json(text: String, issues: Array[CatalogIssue]) -> EventCatalog:
 	var json := JSON.new()
 	if json.parse(text) != OK:
@@ -51,23 +52,34 @@ static func from_json(text: String, issues: Array[CatalogIssue]) -> EventCatalog
 		issues.append(CatalogIssue.structure_error("Zeile %d" % line,
 			"Kein gültiges JSON in Zeile %d: %s." % [line, json.get_error_message()]))
 		return null
+	return from_data(json.data, issues)
+
+
+## Wie from_json(), aber für schon geparste Daten, etwa den Abschnitt „catalog“ eines Spielstands.
+## from_json() parst den Text und ruft dann from_data(). Ist [param data] kein Objekt oder hat es
+## ein anderes Format als 1: null und eine Meldung V22 in [param issues].
+##
+## Die Daten sind gelesenes JSON: Zahlen dürfen float sein, 1095 also als 1095.0. [param data]
+## selbst bleibt, wie es ist.
+static func from_data(data: Variant, issues: Array[CatalogIssue]) -> EventCatalog:
 	var first := issues.size()
-	if typeof(json.data) != TYPE_DICTIONARY:
-		issues.append(CatalogIssue.wrong_type("", "ein Objekt { … }", json.data))
+	if typeof(data) != TYPE_DICTIONARY:
+		issues.append(CatalogIssue.wrong_type("", "ein Objekt { … }", data))
 		CatalogIssue.locate(issues, first, "Katalog")
 		return null
-	var data: Dictionary = json.data
+	# Ab hier als Dictionary typisiert: So prüft schon der Editor die Aufrufe unten.
+	var section: Dictionary = data
 	# Fehlt format, gilt 1. Eine andere Zahl heißt: Die Datei stammt aus einer späteren Version.
-	var format := CatalogIssue.read_int(data, "format", issues, FORMAT)
+	var format := CatalogIssue.read_int(section, "format", issues, FORMAT)
 	if format != FORMAT:
 		issues.append(CatalogIssue.structure_error("format",
 			"Das Format %d kennt diese Version nicht, sie liest nur %d." % [format, FORMAT]))
 		CatalogIssue.locate(issues, first, "Katalog")
 		return null
-	CatalogIssue.check_keys(data, KEYS, issues)
-	var category_entries := CatalogIssue.read_entries(data, "categories", issues)
-	var event_entries := CatalogIssue.read_entries(data, "events", issues)
-	var profile_lists := _read_profile_lists(data, issues)
+	CatalogIssue.check_keys(section, KEYS, issues)
+	var category_entries := CatalogIssue.read_entries(section, "categories", issues)
+	var event_entries := CatalogIssue.read_entries(section, "events", issues)
+	var profile_lists := _read_profile_lists(section, issues)
 	CatalogIssue.locate(issues, first, "Katalog")
 
 	var catalog := EventCatalog.new()
