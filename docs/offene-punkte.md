@@ -61,7 +61,7 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
   Menüeintrag. Lücken entschieden (Version 30): Namen im Satz groß, das Programm heißt nicht „das
   Spiel“. Die Regel „ein Hinweis verspricht nur, was geht“ hat Klaus am 2026-10-27 wieder
   verworfen: Ein Hinweis wechselt nicht mit der Lage, „Spiel laden“ sagt immer „Zurück in einen
-  deiner Läden. Oder einen aufgeben.“ (Style-Guide Version 32).
+  deiner Läden.“ (Style-Guide Version 33).
 
 ### Feature 004, Phasenprüfung Phase 5 (2026-10-26)
 

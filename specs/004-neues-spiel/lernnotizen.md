@@ -344,7 +344,7 @@ nichts und haben deshalb keine Notiz.
 
 - Der Hinweis von „Spiel laden“ hing erst an der Lage: Ließ sich keiner fortsetzen, kam ein eigener
   Satz. Klaus wollte keine Hinweise, die mit der Lage wechseln; jetzt steht immer „Zurück in einen
-  deiner Läden. Oder einen aufgeben.“ Nur „nicht verfügbar“ hat einen eigenen Satz, denn dort nennt
+  deiner Läden.“ Nur „nicht verfügbar“ hat einen eigenen Satz, denn dort nennt
   der Hinweis den Grund. In `_main_entries()` hängt der Satz so nur noch an `has_slots`.
 - Jeder Hinweis ist eine Konstante in `TitleTexts`, `_main_entries()` wählt nur aus.
   `test_title_texts.gd` holt alle `HINT_*` über `get_script_constant_map()` und misst jeden im echten

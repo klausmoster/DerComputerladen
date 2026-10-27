@@ -609,13 +609,13 @@ eigenen Phasenprüfung (Analyse, D3).
   „Mit einer neueren Version gespeichert.“ statt „Stammt aus einer neueren Version des Spiels.“;
   Tests nachziehen; `data-model.md`, Tabelle „Zustand“, nachziehen [C] per FR-013, Style-Guide
   Sprache „Kein Wort für zwei Dinge“ (contradicts)
-- [x] T038 [A] Hinweis von „Spiel laden“: immer derselbe Satz „Zurück in einen deiner Läden. Oder
-  einen aufgeben.“ in `src/scenes/title/title_texts.gd`, auch wenn sich kein Spielstand fortsetzen
+- [x] T038 [A] Hinweis von „Spiel laden“: immer derselbe Satz „Zurück in einen deiner Läden.“
+  in `src/scenes/title/title_texts.gd`, auch wenn sich kein Spielstand fortsetzen
   lässt; nicht verfügbar bleibt „Noch keine Spielstände.“; gesetzt in `title_screen.gd`,
   `_main_entries()`; Tests in `test_title_texts.gd` und `test_title_screen.gd`; Vertrag
   `titelbildschirm.md`, „Texte“, und Style-Guide, Baustein Hinweis, nachziehen [C] per FR-002
   (partial; Klaus, 2026-10-27: keine Hinweise, die mit der Lage wechseln, statt eines eigenen
-  Satzes nur fürs Löschen)
+  Satzes nur fürs Löschen; beim Quickstart um „Oder einen aufgeben.“ gekürzt)
 - [x] T039 [A] `SaveGame.time_sentence()` mit seinem Test aus `src/core/save/save_game.gd` und
   `src/test/test_save_game.gd` entfernen; `contracts/spielstand.md` und `data-model.md`
   nachziehen [C] per plan: Vertrag Spielstand (unrequested, seit Phase 5 ungenutzt)

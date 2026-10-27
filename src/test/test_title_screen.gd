@@ -43,7 +43,7 @@ const ZEILE := MainMenu.ROW_HEIGHT
 const NICHT_ANGELEGT := "Speichern ging nicht. Es ist kein Spiel angelegt."
 const LOESCHEN_GING_NICHT := "Löschen ging nicht. Der Spielstand ist noch da."
 ## „Spiel laden“, immer derselbe Satz, auch wenn sich keiner fortsetzen lässt (T038).
-const HINWEIS_LADEN := "Zurück in einen deiner Läden. Oder einen aufgeben."
+const HINWEIS_LADEN := "Zurück in einen deiner Läden."
 const HINWEIS_ZURUECK_IM_MODUS := "Nicht löschen. Esc geht auch."
 ## SC-002: so viele Spielstände, so lange darf die Anzeige der Liste dauern, so oft gemessen.
 const SPIELSTAENDE := 20
@@ -169,7 +169,7 @@ func test_mit_spielstaenden_ist_weiterspielen_gewaehlt_und_nennt_den_zuletzt_ges
 	# Assert
 	assert_eq(_verfuegbar(_hauptmenue()), [true, true, true, false, true])
 	assert_eq(_hauptmenue().entries[0].hint, "Weiter mit Spiel 2, Schwer, am 14.03.1986.")
-	assert_eq(_hauptmenue().entries[2].hint, "Zurück in einen deiner Läden. Oder einen aufgeben.")
+	assert_eq(_hauptmenue().entries[2].hint, "Zurück in einen deiner Läden.")
 	assert_eq(_hauptmenue().selected_index(), 0, "„Weiterspielen“ ist vorgewählt (FR-001a).")
 	assert_eq(_hinweis_text(), "Weiter mit Spiel 2, Schwer, am 14.03.1986.")
 	_assert_neben_zeile(_hauptmenue(), 0)
