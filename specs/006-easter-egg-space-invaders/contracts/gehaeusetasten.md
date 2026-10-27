@@ -76,7 +76,8 @@ var is_down: bool  # nur lesen
   von vorn (FR-041).
 - Linke Maustaste hoch: war sie unten und steht die Maus über der Taste, `pressed`; in jedem Fall
   `is_down = false`, `down_changed(false)`.
-- Rechte und mittlere Maustaste: nichts, nicht verbraucht.
+- Rechte und mittlere Maustaste: nichts. Wegen `mouse_filter` STOP gehen sie auch nicht zum Bild
+  darunter durch; das ist gleichgültig, denn dort tut ein Klick ohnehin nichts (T025).
 - Sperre: Mit `mouse_behavior_recursive = DISABLED` (Feature 005) bekommt die Taste keine Maus mehr.
   Damit eine Taste, die in dem Moment unten ist, nicht unten hängen bleibt, ruft `_set_locked(true)`
   von jeder Taste `cancel()`: Sie geht hoch, ohne `pressed`.
@@ -90,11 +91,11 @@ func cancel() -> void
 
 Für jede Taste, die `is_down` ist, malt der Communicator in `_draw()` über das Gehäuse:
 1. die oberste Zeile der Taste in der Farbe des Bildpixels links neben ihr (der Spalt);
-2. den Ausschnitt der Taste ohne ihre oberste Zeile, eine Bildpixelzeile tiefer, aus der Textur von
+2. den Ausschnitt der Taste ohne ihre unterste Zeile, eine Bildpixelzeile tiefer, aus der Textur von
    `Case` (`draw_texture_rect_region`), ×2 wie das Gehäuse.
 
-Eine helle linke Spalte haben die Tasten von G-03 nicht (T001, R2); es fällt nur die oberste Zeile
-weg (R3; Review, CHK029). Kein `relief-gedrueckt`, kein `signalgelb`, kein Tooltip (FR-001b). Die Taste
+Eine helle linke Spalte haben die Tasten von G-03 nicht (T001, R2); eine eigene Lichtkante gibt es
+nicht (R3; Review, CHK029). Kein `relief-gedrueckt`, kein `signalgelb`, kein Tooltip (FR-001b). Die Taste
 ist im nächsten Bild nach dem Drücken eingedrückt (FR-001a). Die unterste Zeile der Taste fällt dabei weg; der Ausschnitt reicht nie über das Rechteck hinaus.
 Gemalt wird in `Keys._draw()`, nicht im Communicator: Dessen `_draw()` läge unter dem Kind `Case`.
 `Keys` liegt über dem Gehäuse und unter den Seiten und malt neu bei jedem `down_changed`.

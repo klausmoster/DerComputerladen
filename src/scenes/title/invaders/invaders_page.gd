@@ -12,7 +12,7 @@ extends Control
 ## durch (R9). Pfeil links und rechts sind gehalten, bis sie losgelassen werden; die Leertaste
 ## schießt bei jedem neuen Druck. Echo-Ereignisse zählen nie. Verliert die Seite den Fokus, solange
 ## sie zu sehen ist und läuft, holt sie ihn zurück. Einen Fokusrahmen malt ein schlichtes Control
-## nicht; der Zeiger ist der Pfeil (mouse_default_cursor_shape in der Szene).
+## nicht; der Zeiger ist der Pfeil, der Standard von mouse_default_cursor_shape.
 ##
 ## Takt: _process() gibt die Zeit an advance(), das sie in einem Zeitspeicher sammelt und in festen
 ## Schritten von 1/60 s an den Kern gibt, höchstens 4 je Aufruf (R6, SC-003). Ohne Fokus des

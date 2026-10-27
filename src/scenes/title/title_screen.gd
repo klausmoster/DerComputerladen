@@ -31,6 +31,13 @@ extends Control
 ## dahin fängt die Wache _ready_for_input jede Eingabe ab. Beginnt oder setzt der Spieler ein Spiel
 ## fort, fährt er erst hinaus, und der Spielbildschirm kommt mit slide_finished. Ab dann fängt
 ## _leaving jede Eingabe ab, zusätzlich zur Sperre im Communicator.
+##
+## Das Easter Egg (Feature 006, contracts/titelbildschirm.md, „TitleScreen, neu“): Die drei grauen
+## Tasten im Gehäuse melden sich mit case_key_pressed. Was die Drücke bedeuten, weiß der Titel, nicht
+## der Communicator; er gibt sie an die Folge _sequence weiter. Links, Mitte, rechts startet Space
+## Invaders als fünfte Seite auf der Anzeige. Vorher merkt sich der Titel Seite und Fokus; Zeile und
+## Hinweis führt er ohnehin. Meldet die Seite finished, steht alles wieder so da wie vorher. Das
+## Easter Egg berührt weder die Session noch einen Spielstand (FR-007).
 
 ## Kennzeichen in der Versionszeile, solange das Spiel ein Prototyp ist.
 const STAGE := "PROTOTYP"
@@ -41,6 +48,8 @@ const LEVELS: Array[Difficulty.Level] = [Difficulty.Level.LEICHT, Difficulty.Lev
 	Difficulty.Level.SCHWER]
 ## Die Kennungen der Zeilen der Gradwahl, je Grad in LEVELS eine.
 const LEVEL_IDS: Array[StringName] = [&"easy", &"medium", &"hard"]
+## Die Folge der Gehäusetasten, die Space Invaders startet: links, Mitte, rechts (FR-002).
+const EASTER_EGG_KEYS: Array[int] = [0, 1, 2]
 
 ## GameSession hat als Autoload keinen class_name; den Typ gibt sein Skript.
 const SESSION_SCRIPT := preload("res://core/game_session.gd")
@@ -86,12 +95,21 @@ var _confirm_index := 0
 ## steht. Die Meldung gehört zum Spielstand, nicht zur Stelle: Rollt die Liste, zeigt dieselbe Zeile
 ## einen anderen Spielstand, und dann gilt dessen Hinweis.
 var _warning_number := -1
+## Wie weit die Folge der Gehäusetasten gekommen ist. Ein neuer Titel beginnt mit einer neuen Folge,
+## also bei 0, auch nach „Zum Hauptmenü“.
+var _sequence := KeySequence.new(EASTER_EGG_KEYS)
+## Die Seite, die beim Start des Easter Eggs zu sehen war, und das Control, das den Fokus hatte;
+## null, solange kein Spiel auf der Anzeige steht. Zeile und Hinweis stehen schon in _selected_row und
+## _selected_hint (Analyse, D1).
+var _return_page: Control = null
+var _return_focus: Control = null
 
 @onready var _communicator: Communicator = $Communicator
 @onready var _main_menu: MainMenu = $Communicator/MainMenu
 @onready var _difficulty_sheet: MainMenu = $Communicator/DifficultySheet
 @onready var _save_list: SaveList = $Communicator/SaveList
 @onready var _confirm_sheet: MainMenu = $Communicator/ConfirmSheet
+@onready var _invaders: InvadersPage = $Communicator/Invaders
 @onready var _version_line: Label = $VersionLine
 @onready var _logo: TextureRect = $LogoBlock/Logo
 @onready var _logo_shadow: TextureRect = $LogoBlock/Logo/Shadow
@@ -111,6 +129,9 @@ func _ready() -> void:
 	_main_menu.header_text = TitleTexts.HEADER_MAIN
 	_difficulty_sheet.header_text = TitleTexts.HEADER_DIFFICULTY
 	_confirm_sheet.header_text = TitleTexts.HEADER_CONFIRM
+	# Wie der Vertrag es sagt, im Code verbunden statt in der Szene (beide neu in Feature 006).
+	_communicator.case_key_pressed.connect(_on_communicator_case_key_pressed)
+	_invaders.finished.connect(_on_invaders_finished)
 	# Zeitversetzt: MainMenu._ready() hat seine Startzeile schon mit call_deferred() bestellt, mit
 	# dem Wert von damals, Zeile 0. Zeitversetzte Aufrufe laufen in der Reihenfolge der Bestellung.
 	# Käme set_entries() jetzt, wählte jener spätere Aufruf danach wieder Zeile 0; so kommt
@@ -128,6 +149,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	# Vor den Einträgen und beim Hinausfahren fängt der Titel Esc ab und tut nichts.
 	if not _accepts_input():
+		get_viewport().set_input_as_handled()
+		return
+	# Steht das Spiel auf der Anzeige, gehört Esc ihm. Kommt es trotzdem hier an, etwa in dem Bild,
+	# in dem die Seite ihren Fokus zurückholt, führt es nicht eine Ebene zurück (Analyse, C3).
+	if _invaders.visible:
 		get_viewport().set_input_as_handled()
 		return
 	if _main_menu.visible:
@@ -293,6 +319,61 @@ func _on_communicator_slide_finished(arrived_in: bool) -> void:
 	if arrived_in or not _leaving:
 		return
 	_change_scene(GAME_SCENE)
+
+
+## Eine Gehäusetaste ist gedrückt (Feature 006). Sie zählt nur, wenn der Titel Eingaben annimmt
+## und das Spiel nicht schon auf der Anzeige steht; sonst klickt sie nur (R5, R16; FR-004). Ist die
+## Folge damit voll, startet das Spiel.
+func _on_communicator_case_key_pressed(index: int) -> void:
+	if not _accepts_input() or _invaders.visible:
+		return
+	if _sequence.press(index):
+		_start_invaders()
+
+
+## Startet Space Invaders auf der Anzeige (contracts/titelbildschirm.md, „Start“). Gemerkt werden
+## Seite und Fokus; dann gehen Hinweis und Meldung weg (Analyse, C2). Erst wird die Seite gezeigt,
+## dann gestartet: Nur eine sichtbare Seite kann den Fokus nehmen (Analyse, C1). Das Gerät bewegt
+## sich nicht (FR-010).
+func _start_invaders() -> void:
+	_sequence.reset()
+	_return_page = _communicator.current_page()
+	_return_focus = get_viewport().gui_get_focus_owner()
+	_hide_hint()
+	_communicator.show_page(_invaders)
+	_invaders.start()
+
+
+## Das Spiel ist zu Ende, nach der Ergebnisanzeige oder mit Esc: dieselbe Seite, derselbe Fokus,
+## derselbe Hinweis wie beim Start (FR-022). Eine Meldung von damals kommt als Hinweis der Zeile
+## zurück, nicht als Meldung (CHK008); _hide_hint() hat sie beim Start vergessen.
+##
+## Die Taste, die das Spiel beendet hat, wird gleich danach losgelassen. Das Loslassen geht an die
+## Zeile mit dem Fokus und löst dort nichts aus, denn ihr Drücken kam nie dort an.
+func _on_invaders_finished() -> void:
+	var page := _return_page
+	var focus := _return_focus
+	_return_page = null
+	_return_focus = null
+	_sequence.reset()
+	if page == null:
+		page = _main_menu
+	_communicator.show_page(page)
+	_restore_focus(page, focus)
+	_communicator.show_hint(_selected_hint, _current_row())
+
+
+## Gibt [param focus] den Fokus zurück; ist es noch nicht zu sehen, erst nach diesem Bild. Fehlt
+## es, weil beim Start kein Control den Fokus hatte, wählt [param page] ihre gemerkte Zeile neu.
+func _restore_focus(page: Control, focus: Control) -> void:
+	if focus != null and is_instance_valid(focus) and focus.is_inside_tree():
+		if focus.is_visible_in_tree():
+			focus.grab_focus()
+		else:
+			focus.grab_focus.call_deferred()
+		return
+	if page.has_method(&"select") and page.has_method(&"selected_index"):
+		page.call(&"select", page.call(&"selected_index"))
 
 
 ## Baut beim Erscheinen die Einträge von Hauptmenü und Gradwahl, zeigt das Hauptmenü und lässt den

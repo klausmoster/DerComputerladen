@@ -351,3 +351,174 @@ Wo Vertrag, Datenmodell und Style-Guide nichts festlegen, gilt:
 - **Zwei Hilfen über den Vertrag hinaus,** beide statisch und ohne Zustand: `result_lines()` (die
   drei Zeilen der Ergebnisanzeige) und `life_pos()` (Lage eines Lebens). Sie machen Malen und
   Messen in den Tests gleich.
+
+## Phase 5
+
+### T025 Gehäusetasten: Klickflächen über einem Bild
+
+- **Unsichtbare Controls über einem Bild.** Das Gehäuse ist ein `TextureRect`, und ein Bild weiß
+  nicht, wo darin Tasten sind. Deshalb legt `_build_case_keys()` je Rechteck aus `case_keys` ein
+  leeres `Control` (`CaseKey`) genau über die Taste: Lage und Größe in Bildpixeln mal `Case.scale`
+  (×2). Es malt nichts, fängt aber mit `mouse_filter = STOP` die Maus. Alles darum herum
+  (Communicator, `Case`, `Keys`) steht auf IGNORE und lässt die Maus durch; deshalb tut ein Klick
+  daneben weiter nichts. Die Klickflächen hängen unter `Keys`, einem eigenen Control ohne Skript
+  über `Case` und unter den Seiten.
+- **Kein `Button`.** Ein Button nimmt Fokus und löst mit Enter und Leertaste aus, und sein Theme
+  bringt eine Hover-Farbe mit (R4). `CaseKey` setzt in `_init()` `focus_mode = FOCUS_NONE` und den
+  Pfeil als Zeiger; das ist alles, was es an Bedienung braucht.
+- **Warum beim Loslassen gezählt wird.** Godot gibt einem Control, auf dem die Maustaste
+  heruntergeht, den **Mausfokus**: Das Loslassen kommt dort an, gleich wo die Maus inzwischen
+  steht, und `event.position` ist dann lokal zu dieser Taste, notfalls außerhalb. `_gui_input()`
+  prüft mit `Rect2(Vector2.ZERO, size).has_point()`, ob die Maus noch drauf ist, und meldet nur
+  dann `pressed`. So nimmt der Spieler einen Druck zurück, indem er wegzieht, wie bei jedem Knopf.
+  Der Klick kommt dagegen beim Drücken, weil eine echte Taste beim Drücken klickt.
+- **`accept_event()` nur für links.** Rechte und mittlere Maustaste lässt `_gui_input()` liegen.
+  Dass sie trotzdem nicht zum Bild darunter durchgehen, macht `mouse_filter = STOP` selbst (siehe
+  „Offen“ im Bericht).
+- **Die Sperre aus Feature 005 gilt von selbst.** `mouse_behavior_recursive = DISABLED` wirkt auf
+  den ganzen Teilbaum, also auch auf `Keys/CaseKey*`, die erst zur Laufzeit entstehen. Nur eine
+  Taste, die gerade unten ist, bekäme ihr Loslassen nicht mehr; dafür ruft `_set_locked(true)`
+  `cancel()`, und die Taste geht hoch, ohne zu zählen.
+- **Malen mit dem Signal `draw`.** `Keys` hat kein Skript. `_ready()` verbindet
+  `_keys.draw` mit `_draw_case_keys()`, und darin malt der Communicator mit `_keys.draw_rect()` und
+  `_keys.draw_texture_rect_region()` *auf* `Keys`. Das geht, weil `draw` genau dann kommt, wenn
+  `Keys` malen darf. Im `_draw()` des Communicators selbst ginge es nicht: Ein Node malt sich vor
+  seinen Kindern, das Gehäuse `Case` läge also darüber.
+- **Ausschnitt aus einer Textur.** `draw_texture_rect_region(textur, ziel, quelle)` malt das
+  Rechteck `quelle` (in Pixeln der Textur) gestreckt auf `ziel`. Für eine eingedrückte Taste ist
+  `quelle` die Taste ohne ihre unterste Zeile und `ziel` dasselbe eine Bildpixelzeile tiefer, ×2.
+  Mit `texture_filter = NEAREST` auf `Keys` bleibt jedes Pixel ein 2 × 2-Block wie im Gehäuse. Die
+  frei werdende oberste Zeile füllt `draw_rect()` in der Farbe des Pixels links neben der Taste;
+  die liest `Texture2D.get_image().get_pixel()` aus dem Gehäusebild. Kein neues Bild, keine neue
+  Farbe. `_pressed_layers()` liefert die Rechtecke und die Farbe als Daten, damit der Test sie ohne
+  Bild prüfen kann, wie `_placeholder_layers()` aus Feature 005.
+- **Im nächsten Bild.** `down_changed` ruft `_keys.queue_redraw()`. Godot malt nicht sofort, sondern
+  merkt sich das und ruft `draw` einmal am Ende des Bilds, auch wenn mehrere Tasten sich ändern.
+- **Setter an einem `@export`.** `case_keys` hat einen Setter wie `display_rect`: Vor `_ready()`
+  setzt die Szene den Wert nur (die Kinder gibt es noch nicht), danach baut der Setter die
+  Klickflächen neu. `is_node_ready()` unterscheidet die beiden Fälle.
+- **Warum der Communicator die Folge nicht kennt.** Er meldet nur `case_key_pressed(index)`. Was
+  links, Mitte, rechts bedeutet, weiß der Titel (Teil 2, `KeySequence`). Ein anderer Bildschirm mit
+  demselben Gerät kann die Tasten für etwas anderes nutzen oder sie gar nicht freigeben; die
+  Vorgabe `[]` heißt: ein Gehäuse ohne drückbare Tasten (R1; Analyse, I2).
+
+- **Fokus des Fensters weg (Nachtrag nach der Phasenprüfung).** Verliert das Fenster den Fokus,
+  ruft Godot an jedem Node `_notification(NOTIFICATION_APPLICATION_FOCUS_OUT)` auf; `CaseKey`
+  ruft dann `cancel()`. Vorher kann aber schon etwas anderes kommen: Der Viewport gibt beim
+  Fensterfokus den Mausfokus ab und schickt dem Control, das ihn hatte, selbst ein Loslassen,
+  vorbei an `push_input()`, mit `device` −2 (`DEVICE_ID_INTERNAL` im Quelltext von Godot, in
+  GDScript nicht als Konstante da). Steht die Maus dabei über der Taste, sähe das aus wie ein
+  echter Druck. `_gui_input()` erkennt es am Gerät und lässt die Taste ohne `pressed` hoch. Ein
+  echtes Loslassen danach findet die Taste oben und tut nichts.
+- **`queue_free()` beim Neubau, nicht `free()`.** Ein Bildschirm könnte `case_keys` in seiner
+  Antwort auf `case_key_pressed` ändern, also während die Taste noch ihr Signal sendet. `free()`
+  löschte sie mitten in ihrem eigenen Aufruf. `queue_free()` löscht am Ende des Bilds; bis dahin
+  hängt sie schon nicht mehr unter `Keys` (`remove_child()`) und zählt nicht mehr mit. GUT meldet
+  solche Nodes als „Orphans“, wenn der Test vor dem Ende des Bilds aufhört; deshalb wartet
+  `test_case_keys_zur_laufzeit_neu_gebaut` nach jedem Neubau ein Bild.
+
+### T026 Probe und Tests
+
+- Die Tests drücken mit erfundenen `InputEventMouseButton` über `push_input()` in einem eigenen
+  `SubViewport`, wie die Klicks aus Feature 005. Ein Druck und ein Loslassen sind zwei Ereignisse;
+  dazwischen prüft der Test `is_case_key_down()`.
+- Headless entsteht kein Bild, `draw` kommt aber trotzdem. Der Test
+  `test_eingedrueckt_im_naechsten_bild_gemalt` hängt sich an `Keys.draw` und sieht, dass nach einem Bild mit der Taste unten gemalt
+  wurde. Wie es aussieht, zeigen die Bildschirmfotos.
+- Die Probeszene setzt `case_keys` in der `.tscn` als `Array[Rect2i]([...])`, so wie es der Titel
+  in Teil 2 tun wird, und zeigt einen gezählten Druck als Meldung „Gehäusetaste 2 gedrückt.“.
+
+### Auslegungen
+
+- `test_teile_in_der_richtigen_reihenfolge` aus Feature 005 erwartet jetzt auch `Keys` und
+  `KeyClick` vor den Seiten; das verlangt der Szenenaufbau im Vertrag.
+- Eingedrückt nach dem Style-Guide: Der Ausschnitt ist die Taste **ohne ihre unterste Zeile**
+  (Zeilen 114 bis 120), gemalt auf 115 bis 121. Zeile 114 bekommt die Spaltfarbe. Der Vertrag sagt
+  an einer Stelle „ohne ihre oberste Zeile“; so wörtlich reichte der Ausschnitt eine Zeile unter
+  die Taste.
+- Die Spaltfarbe ist das Pixel links neben der obersten Zeile der Taste, je Taste eigens gelesen
+  (bei G-03 drei leicht verschiedene dunkle Töne aus dem Bild).
+
+### T029 Eine Folge ohne Node: `KeySequence`
+
+- **`RefCounted` statt Node.** Die Folge hat keine Lage, malt nichts, braucht keinen Takt und kein
+  Signal; sie ist nur ein Zähler mit einer Regel. Ein Node müsste in den Baum, ein `RefCounted`
+  nicht: Der Titel legt sie mit `KeySequence.new(EASTER_EGG_KEYS)` als gewöhnliche Variable an, und
+  Godot gibt sie frei, sobald niemand mehr darauf verweist, hier mit dem Titel. Wie `InvadersGame`
+  in Phase 3 lässt sie sich deshalb ohne Szene testen: `test_key_sequence.gd` ruft nur `press()`.
+- **`press()` gibt die Antwort zurück, statt ein Signal zu senden.** Wer drückt, will sofort wissen,
+  ob die Folge voll ist; ein Rückgabewert ist dafür der kürzeste Weg. Ein Signal lohnt sich erst,
+  wenn mehrere unabhängig zuhören.
+- **Die Regel bei einem falschen Druck** (FR-003): zurück auf 0, außer der Druck ist der Anfang der
+  Folge, dann auf 1. Deshalb startet 1-1-2-3, 1-2-2-3 aber nicht.
+- **`expected.duplicate()`** im Konstruktor: Arrays sind in GDScript Verweise. Ohne Kopie änderte
+  ein Aufrufer, der sein Array später ändert, auch die Folge.
+
+### T030 Der Titel: Folge, Start und Rückweg
+
+- **Warum der Titel die Folge kennt und der Communicator nicht.** Der Communicator meldet nur
+  `case_key_pressed(index)`: Eine Taste ist gedrückt. Ob sie zählt, hängt davon ab, was auf dem
+  Bildschirm gerade los ist (`_accepts_input()`, Spiel schon auf der Anzeige), und was die Folge
+  auslöst, ist eine Seite des Titels. Beides weiß nur der Titel. So bleibt der Communicator ein
+  Baustein, den die Probeszene ganz anders nutzt (sie zeigt nur eine Meldung).
+- **Die Seite steht in der Szene, nicht zur Laufzeit erzeugt.** `Invaders` ist eine Instanz von
+  `invaders_page.tscn` unter dem Communicator wie die vier Blätter. `Communicator._ready()` stellt
+  sie auf die Anzeige und verbirgt sie, `show_page()` zeigt sie. Dass sie existiert, kostet nichts:
+  Verborgen taktet sie nicht (Phase 4).
+- **Signale im Code verbunden.** Die vier Blätter sind in der `.tscn` verbunden, `case_key_pressed`
+  und `finished` in `_ready()`, wie der Vertrag es sagt. Beides ist gleichwertig; im Code steht es
+  neben dem Kommentar, warum.
+- **Reihenfolge beim Start: erst merken, dann zeigen, dann starten.** `gui_get_focus_owner()` liefert
+  das Control mit dem Tastaturfokus, hier eine Zeile des Blatts. Das muss *vor* `show_page()`
+  gemerkt werden: Ein Control, das unsichtbar wird, gibt seinen Fokus ab. Und `start()` kommt erst
+  nach `show_page()`, weil `grab_focus()` auf einem unsichtbaren Control nichts tut (Analyse, C1).
+  Die Gehäusetasten haben `focus_mode = NONE`; der Klick auf die dritte Taste lässt den Fokus also
+  auf der Zeile, und genau die kommt zurück.
+- **Fokus zurückgeben.** Bei `finished` zeigt der Titel die gemerkte Seite und ruft `grab_focus()`
+  auf das gemerkte Control. Ist es zu der Zeit noch nicht sichtbar, kommt der Aufruf mit
+  `call_deferred()` am Ende des Bilds. Nach `show_page()` ist es aber schon sichtbar, denn
+  `show()` wirkt sofort.
+- **Warum der Hinweis eigens zurückkommt.** Bekommt eine Zeile des Menüs den Fokus, meldet das Menü
+  `selection_changed`, und der Hinweis erscheint von selbst. Die Liste meldet nur, wenn sich die
+  Zeile *ändert*; nach dem Spiel ist es dieselbe. Deshalb ruft `_on_invaders_finished()` am Ende
+  `show_hint(_selected_hint, _current_row())`. Die Gegenprobe ohne diese Zeile: Nach dem Spiel aus
+  der Liste fehlt der Hinweis.
+- **Eine Meldung kommt als Hinweis zurück.** `_hide_hint()` beim Start vergisst auch, zu welchem
+  Spielstand „Löschen ging nicht“ gehört (`_warning_number = -1`). `_selected_hint` ist immer der
+  Hinweis der Zeile, auch wenn daneben gerade die Meldung stand; also kommt der Hinweis zurück.
+- **Die Esc-Wache.** Esc geht zuerst an das Control mit dem Fokus, die Spielseite, und die
+  verbraucht es mit `accept_event()`. Nur ohne Fokus, etwa in dem Bild, bevor die Seite ihn sich
+  zurückholt, käme Esc bis `_unhandled_input()` des Titels und führte dort eine Ebene zurück. Darum
+  markiert der Titel es als behandelt, solange `Invaders` sichtbar ist, und tut nichts.
+- **Das Loslassen der Taste, die das Spiel beendet**, kommt bei der Zeile an, die gerade den Fokus
+  zurückbekommen hat. Ein `Button` löst mit Enter nur aus, wenn er auch das Drücken bekommen hat;
+  der Test mit Enter in der Ergebnisanzeige zeigt, dass danach nichts beginnt.
+
+### T031 Tests
+
+- Die Gehäusetasten bekommen ihre Klicks dort, wo sie gerade stehen
+  (`Keys/CaseKey<n>.get_global_rect()`), auch während der Fahrt hinaus. Der Druck ist ein
+  `InputEventMouseButton` gedrückt und losgelassen über `push_input()` wie in Feature 005.
+- `_zustand_des_titels()` fasst Seite, Auswahl, Fokus und Hinweis (Text, Art, Lage) in ein
+  Dictionary, Fokus als Pfad: Ein Unterschied steht dann lesbar im Protokoll, nicht als
+  Objektnummer.
+- Gemessen wird mit `Time.get_ticks_usec()`: SC-001 vom dritten Druck, bis die Seite den Fokus hat;
+  SC-006 von `finished`, bis Spiel weg, Wache offen und der Fokus wieder auf der gemerkten Zeile
+  ist. Beides geschieht im selben Aufruf, die Werte liegen bei einem Zehntel einer Millisekunde.
+- Das Schließen des Fensters schickt der Test wie `test_werkstatt_scene.gd` als
+  `NOTIFICATION_WM_CLOSE_REQUEST` an Session und Titel mit allen Knoten. Der Titel behandelt es
+  nicht selbst; die Session speichert nur, wenn ein Spiel läuft, und das Easter Egg ist keins.
+
+### Auslegungen in T029 bis T031
+
+- **Fallback ohne Fokus.** Hatte beim Start kein Control den Fokus (im Titel bisher nicht gesehen),
+  wählt die gemerkte Seite mit `select(selected_index())` ihre Zeile neu, damit die Tastatur nicht
+  ins Leere geht. Der Vertrag nennt nur „Fokus zurück auf das gemerkte Control“.
+- **Reset der Folge** beim Start (zusätzlich zu dem in `press()`) und bei `finished`. Ein neuer
+  Titel hat eine neue Folge; ein eigener Reset in `_build_sheets()` ist deshalb nicht nötig.
+- **SC-006 nur über Esc und die Niederlage gemessen.** Sieg und Niederlage nehmen denselben Weg
+  über `finished`; eine Partie bis zum Sieg zu spielen, prüft schon `test_invaders_page.gd`.
+- **Probeszene:** Die Meldung „Ausgelöst: …“ rechnet jetzt wie die der Gehäusetasten relativ zum
+  Communicator (`_current_row()`); vorher lag sie unter dem Bildrand, wenn die Zeile gewählt war,
+  während das Gerät noch draußen stand. Neuer Test
+  `test_probeseite_meldung_eines_eintrags_steht_im_bild`; ohne die Reparatur scheitert er.

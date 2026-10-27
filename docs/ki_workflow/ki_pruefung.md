@@ -295,6 +295,7 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 006, Checkliste, 6 Wortlaute der Ergebnisanzeige (2026-10-27) | Text | 3 | 3 | 0 | 5, davon 1 nicht übernommen | 3 |
 | Feature 006, Phase 4, Spielseite und Probeszene, 4 Fotos (2026-10-27) | Stil | 0 | 0 | 0 | 3 | 0 |
 | Feature 006, Phase 4, 5 Texte der Spielseite (2026-10-27) | Text | 0 | 0 | 0 | 2 | 0 |
+| Feature 006, Phase 5, Gehäusetasten und Easter Egg im Titel, 22 Fotos (2026-10-27) | Stil | 0 | 0 | 0 | 4, davon 1 verworfen (Pfad im Auftrag) | 0 |
 
 „Nur er fand“ heißt: Claudes eigene Prüfung hatte es nicht gefunden. Bei den Probeläufen an
 Feature 001 war das Feature schon abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.

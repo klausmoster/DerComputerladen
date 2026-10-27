@@ -18,6 +18,12 @@ extends GutTest
 ##
 ## Probeseite (T008): die Probeszene mit drei Einträgen, bedient ohne Titelbildschirm (SC-005).
 ##
+## Gehäusetasten (Feature 006, T026; contracts/gehaeusetasten.md, „Tests“): Die Tests geben dem
+## Communicator die drei Tasten von G-03 wie später der Titel und drücken sie mit erfundenen
+## Mausereignissen über push_input. Ob eine Taste eingedrückt aussieht, lässt sich headless nicht
+## als Bild prüfen; geprüft werden die Rechtecke und die Farbe, die _draw_case_keys() benutzt, und
+## dass Keys im nächsten Bild neu malt.
+##
 ## Der Communicator steht wie im Titel bei (244, 92) in einem eigenen Viewport von 640 × 360,
 ## so groß wie das Oberflächenraster. Die Seiten hängt der Test vor dem Einhängen unter die Instanz,
 ## wie es ein Bildschirm in seiner Szene tut: Dann sind sie schon Kinder, wenn _ready() läuft.
@@ -49,6 +55,14 @@ const BILDFOLGEN := [
 ]
 ## Mehr Bilder braucht keine Fahrt; danach gilt sie als hängengeblieben.
 const HOECHSTENS_BILDER := 200
+## Die drei grauen Tasten von G-03 in Bildpixeln des Gehäuses, einschließlich gezählt: x 140 bis
+## 150, 154 bis 165, 169 bis 180, je y 114 bis 121 (Style-Guide, Baustein Communicator, Gehäusetasten).
+const TASTEN: Array[Rect2i] = [Rect2i(140, 114, 11, 8), Rect2i(154, 114, 12, 8),
+	Rect2i(169, 114, 12, 8)]
+## Dieselben Tasten auf der Oberfläche, im Titel: ab 524/320, 552/320, 582/320 (Style-Guide).
+const TASTEN_IM_TITEL: Array[Rect2] = [Rect2(524, 320, 22, 16), Rect2(552, 320, 24, 16),
+	Rect2(582, 320, 24, 16)]
+const KLICK := "res://assets/sounds/knopf.wav"
 
 var _buehne: Control
 var _communicator: Communicator
@@ -90,8 +104,9 @@ func test_teile_in_der_richtigen_reihenfolge() -> void:
 	# Act
 	var namen := _communicator.get_children().map(func(kind: Node) -> String: return kind.name)
 
-	# Assert: Gehäuse, Anzeige, Hinweis, danach die Seiten, die also über der Anzeige liegen.
-	assert_eq(namen, ["Case", "Display", "Hint", "SeiteA", "SeiteB"])
+	# Assert: Gehäuse, Anzeige, Hinweis, Gehäusetasten und ihr Klick (Feature 006), danach die
+	# Seiten, die also über der Anzeige liegen.
+	assert_eq(namen, ["Case", "Display", "Hint", "Keys", "KeyClick", "SeiteA", "SeiteB"])
 	assert_true(_communicator.get_node(^"Hint") is MenuHint, "Der Hinweis ist ein MenuHint.")
 	assert_false((_communicator.get_node(^"Hint") as Control).visible,
 		"Der Hinweis ist zu Beginn nicht zu sehen.")
@@ -784,6 +799,417 @@ func test_probeseite_kommt_ohne_titelbildschirm_und_titeltexte_aus() -> void:
 		"Die Probe benutzt den Baustein selbst.")
 
 
+# --- Gehäusetasten (Feature 006, T026) -----------------------------------
+
+func test_ohne_vorgabe_hat_das_gehaeuse_keine_tasten() -> void:
+	# Arrange: Sichtbar ist Seite A, ihr Knopf hat den Fokus; so wie vor Feature 006.
+	_communicator.show_page(_seite_a)
+	watch_signals(_communicator)
+	watch_signals(_buehne)
+
+	# Act: ein Linksklick dorthin, wo bei G-03 die linke graue Taste ist.
+	var stelle := TASTEN_IM_TITEL[0].get_center()
+	_maus_nach(stelle)
+	_klick(stelle)
+
+	# Assert
+	assert_eq(_communicator.case_keys, [] as Array[Rect2i], "Vorgabe ist leer (Analyse, I2).")
+	assert_eq(_tasten().size(), 0, "Ohne case_keys keine Klickfläche.")
+	assert_false(_communicator.is_case_key_down(0), "Eine Taste, die es nicht gibt, ist nie unten.")
+	assert_signal_not_emitted(_communicator, "case_key_pressed")
+	assert_signal_emitted(_buehne, "gui_input", "Der Klick geht durch das Gehäuse wie bisher.")
+	assert_false(_klick_spieler().playing, "Ohne Tasten klickt nichts.")
+
+
+func test_keys_und_keyclick_sind_keine_seiten() -> void:
+	# Arrange
+	var keys := _communicator.get_node(^"Keys") as Control
+	var klick := _klick_spieler()
+
+	# Act
+	_communicator.show_page(_seite_b)
+
+	# Assert: Keys bleibt zu sehen, liegt über dem Gehäuse und unter den Seiten.
+	assert_true(keys.visible, "show_page() verbirgt die Tasten nicht.")
+	assert_eq(_communicator.current_page(), _seite_b)
+	assert_eq(keys.mouse_filter, Control.MOUSE_FILTER_IGNORE, "Keys lässt die Maus durch.")
+	assert_eq(keys.position, Vector2.ZERO, "Keys liegt auf dem Communicator.")
+	assert_gt(keys.get_index(), _communicator.get_node(^"Case").get_index(), "Über dem Gehäuse.")
+	assert_lt(keys.get_index(), _seite_a.get_index(), "Unter den Seiten.")
+	assert_eq(keys.texture_filter, CanvasItem.TEXTURE_FILTER_NEAREST, "Pixel bleiben scharf.")
+	assert_eq(klick.stream.resource_path, KLICK, "Der Klick ist knopf.wav.")
+	assert_eq(klick.bus, &"Effekte", "Auf dem Kanal Effekte.")
+
+
+func test_drei_tasten_an_den_rechtecken_aus_dem_style_guide() -> void:
+	# Act
+	_communicator.case_keys = TASTEN
+
+	# Assert: Klickflächen genau ×2, im Titel an den Stellen aus dem Style-Guide.
+	var tasten := _tasten()
+	assert_eq(tasten.size(), 3, "Drei Tasten.")
+	for index in tasten.size():
+		assert_eq(tasten[index].get_global_rect(), TASTEN_IM_TITEL[index], "Taste %d" % index)
+		assert_eq(tasten[index].get_rect().size, Vector2(TASTEN[index].size * 2),
+			"Taste %d ist genau ×2." % index)
+		assert_false(_communicator.is_case_key_down(index), "Taste %d ist oben." % index)
+
+
+func test_druck_und_loslassen_ueber_taste_1_meldet_einmal_0() -> void:
+	# Arrange
+	_communicator.case_keys = TASTEN
+	watch_signals(_communicator)
+	var stelle := TASTEN_IM_TITEL[0].get_center()
+
+	# Act und Assert
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+	assert_true(_communicator.is_case_key_down(0), "Unten, solange die Maustaste unten ist.")
+	assert_signal_not_emitted(_communicator, "case_key_pressed",
+		"Gezählt wird erst beim Loslassen.")
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, false)
+	assert_false(_communicator.is_case_key_down(0), "Wieder oben.")
+	assert_signal_emit_count(_communicator, "case_key_pressed", 1)
+	assert_signal_emitted_with_parameters(_communicator, "case_key_pressed", [0])
+
+
+func test_jede_taste_meldet_ihren_index() -> void:
+	# Arrange
+	_communicator.case_keys = TASTEN
+	var gemeldet: Array[int] = []
+	_communicator.case_key_pressed.connect(func(index: int) -> void: gemeldet.append(index))
+
+	# Act: rechts, links, Mitte; je am Rand der Taste, einschließlich gezählt.
+	for index: int in [2, 0, 1]:
+		var stelle := TASTEN_IM_TITEL[index].position + Vector2(0.5, 0.5)
+		_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+		_maus_taste(stelle, MOUSE_BUTTON_LEFT, false)
+
+	# Assert
+	assert_eq(gemeldet, [2, 0, 1] as Array[int])
+
+
+func test_loslassen_anderswo_zaehlt_nicht() -> void:
+	# Arrange
+	_communicator.case_keys = TASTEN
+	watch_signals(_communicator)
+	var auf_taste_2 := TASTEN_IM_TITEL[1].get_center()
+	var ziele := {
+		"über Taste 3": TASTEN_IM_TITEL[2].get_center(),
+		"außerhalb": ENDLAGE + Vector2(8, 240),
+		"knapp unter Taste 2": Vector2(auf_taste_2.x, TASTEN_IM_TITEL[1].end.y + 1),
+	}
+
+	for ziel: String in ziele:
+		# Act: drücken auf Taste 2, mit gedrückter Maustaste wegziehen, dort loslassen.
+		_maus_taste(auf_taste_2, MOUSE_BUTTON_LEFT, true)
+		assert_true(_communicator.is_case_key_down(1), "Unten vor dem Loslassen %s." % ziel)
+		_maus_nach(ziele[ziel])
+		_maus_taste(ziele[ziel], MOUSE_BUTTON_LEFT, false)
+
+		# Assert
+		assert_false(_communicator.is_case_key_down(1), "Taste 2 springt zurück (%s)." % ziel)
+		assert_false(_communicator.is_case_key_down(2), "Taste 3 bleibt oben (%s)." % ziel)
+
+	assert_signal_not_emitted(_communicator, "case_key_pressed", "Kein Druck zählt.")
+
+
+func test_rechte_und_mittlere_maustaste_tun_nichts() -> void:
+	# Arrange
+	_communicator.case_keys = TASTEN
+	watch_signals(_communicator)
+	var stelle := TASTEN_IM_TITEL[0].get_center()
+
+	for knopf: MouseButton in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+		# Act
+		_maus_taste(stelle, knopf, true)
+
+		# Assert
+		assert_false(_communicator.is_case_key_down(0), "Nicht eingedrückt (Knopf %d)." % knopf)
+		assert_false(_klick_spieler().playing, "Kein Klick (Knopf %d)." % knopf)
+		_maus_taste(stelle, knopf, false)
+
+	assert_signal_not_emitted(_communicator, "case_key_pressed")
+
+
+func test_slide_out_sperrt_die_tasten_und_laesst_eine_gedrueckte_hoch() -> void:
+	# Arrange: Taste 1 ist unten.
+	_communicator.case_keys = TASTEN
+	watch_signals(_communicator)
+	var stelle := TASTEN_IM_TITEL[0].get_center()
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+
+	# Act
+	_communicator.slide_out()
+
+	# Assert: sofort oben, ohne zu zählen, auch nicht beim Loslassen danach.
+	assert_false(_communicator.is_case_key_down(0), "Die gedrückte Taste geht hoch.")
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, false)
+	assert_signal_not_emitted(_communicator, "case_key_pressed", "Das Loslassen zählt nicht.")
+
+	# Act: ein neuer Druck auf der Fahrt hinaus. Der Communicator steht noch an derselben Stelle.
+	_klick_spieler().stop()
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+
+	# Assert
+	assert_false(_communicator.is_case_key_down(0), "Gesperrt drückt sich nichts ein.")
+	assert_false(_klick_spieler().playing, "Gesperrt klickt nichts.")
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, false)
+	assert_signal_not_emitted(_communicator, "case_key_pressed", "Gesperrt zählt nichts.")
+
+
+func test_nach_slide_in_melden_die_tasten_wieder() -> void:
+	# Arrange: hinaus und wieder herein, ohne Fahrt.
+	_communicator.case_keys = TASTEN
+	_communicator.animate = false
+	_communicator.slide_out()
+	_communicator.slide_in()
+	watch_signals(_communicator)
+	var stelle := TASTEN_IM_TITEL[2].get_center()
+
+	# Act
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, false)
+
+	# Assert
+	assert_signal_emit_count(_communicator, "case_key_pressed", 1)
+	assert_signal_emitted_with_parameters(_communicator, "case_key_pressed", [2])
+
+
+func test_jeder_druck_links_klickt_auch_einer_der_nicht_zaehlt() -> void:
+	# Arrange
+	_communicator.case_keys = TASTEN
+	var klick := _klick_spieler()
+	var auf_taste := TASTEN_IM_TITEL[1].get_center()
+	var daneben := ENDLAGE + Vector2(8, 240)
+
+	# Act und Assert: ein Druck, der zählt.
+	_maus_taste(auf_taste, MOUSE_BUTTON_LEFT, true)
+	assert_true(klick.playing, "Der Klick kommt beim Drücken.")
+	_maus_taste(auf_taste, MOUSE_BUTTON_LEFT, false)
+
+	# Act und Assert: ein Druck, der nicht zählt, weil die Maus woanders losgelassen wird.
+	klick.stop()
+	_maus_taste(auf_taste, MOUSE_BUTTON_LEFT, true)
+	assert_true(klick.playing, "Auch dieser Druck klickt.")
+	_maus_nach(daneben)
+	_maus_taste(daneben, MOUSE_BUTTON_LEFT, false)
+	assert_eq(klick.bus, &"Effekte", "Auf dem Kanal Effekte.")
+
+
+func test_zeiger_pfeil_und_kein_fokus() -> void:
+	# Arrange: Seite A ist zu sehen, ihr Knopf hat den Fokus.
+	_communicator.case_keys = TASTEN
+	_communicator.show_page(_seite_a)
+	var knopf := _seite_a.get_node(^"Knopf") as Button
+	knopf.grab_focus()
+
+	for index in TASTEN_IM_TITEL.size():
+		var taste := _tasten()[index]
+		var stelle := TASTEN_IM_TITEL[index].get_center()
+
+		# Act
+		_maus_nach(stelle)
+		_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+		_maus_taste(stelle, MOUSE_BUTTON_LEFT, false)
+
+		# Assert
+		assert_eq(taste.mouse_filter, Control.MOUSE_FILTER_STOP, "Taste %d nimmt die Maus." % index)
+		assert_eq(taste.mouse_default_cursor_shape, Control.CURSOR_ARROW, "Pfeil, keine Hand.")
+		assert_eq(taste.get_cursor_shape(taste.get_local_mouse_position()), Control.CURSOR_ARROW)
+		assert_eq(taste.focus_mode, Control.FOCUS_NONE, "Taste %d nimmt keinen Fokus." % index)
+		assert_eq(taste.tooltip_text, "", "Kein Tooltip.")
+		assert_eq(_viewport().gui_get_focus_owner(), knopf, "Der Fokus bleibt, wo er war.")
+
+
+func test_eingedrueckt_ausschnitt_eine_zeile_tiefer_oben_der_spalt() -> void:
+	# Arrange
+	_communicator.case_keys = TASTEN
+	var bild := (_communicator.get_node(^"Case") as TextureRect).texture.get_image()
+
+	for index in TASTEN.size():
+		var taste := TASTEN[index]
+		var flaeche := Rect2(Vector2(taste.position * 2), Vector2(taste.size * 2))
+
+		# Act: was _draw_case_keys() für diese Taste malt, in Oberflächenpixeln des Communicators.
+		var ebenen := _communicator._pressed_layers(taste)
+
+		# Assert: Oben eine Bildpixelzeile in der Farbe des Pixels links neben der Taste.
+		assert_eq(ebenen["gap_rect"], Rect2(flaeche.position, Vector2(flaeche.size.x, 2)),
+			"Taste %d: oberste Zeile ×2." % index)
+		assert_eq(ebenen["gap_color"], bild.get_pixel(taste.position.x - 1, taste.position.y),
+			"Taste %d: Farbe des Spalts aus dem Bild, keine neue Farbe." % index)
+		# Darunter die Taste ohne ihre unterste Zeile, eine Bildpixelzeile tiefer, ×2.
+		assert_eq(ebenen["key_source"],
+			Rect2(Vector2(taste.position), Vector2(taste.size.x, taste.size.y - 1)),
+			"Taste %d: Ausschnitt ohne die unterste Zeile." % index)
+		assert_eq(ebenen["key_rect"],
+			Rect2(flaeche.position + Vector2(0, 2), flaeche.size - Vector2(0, 2)),
+			"Taste %d: eine Bildpixelzeile tiefer, ×2." % index)
+		assert_true(flaeche.encloses(ebenen["key_rect"]),
+			"Taste %d: Der Ausschnitt reicht nicht über die Taste hinaus." % index)
+		assert_eq((ebenen["gap_rect"] as Rect2).merge(ebenen["key_rect"]), flaeche,
+			"Taste %d: Spalt und Ausschnitt decken genau die Taste." % index)
+
+
+func test_eingedrueckt_im_naechsten_bild_gemalt() -> void:
+	# Arrange: zählt, wie oft Keys malt und ob Taste 2 dabei unten war.
+	_communicator.case_keys = TASTEN
+	var keys := _communicator.get_node(^"Keys") as Control
+	await wait_process_frames(1)
+	var gemalt: Array[bool] = []
+	keys.draw.connect(func() -> void: gemalt.append(_communicator.is_case_key_down(1)))
+	var stelle := TASTEN_IM_TITEL[1].get_center()
+
+	# Act
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+	await wait_process_frames(1)
+
+	# Assert
+	assert_eq(gemalt, [true] as Array[bool], "Im nächsten Bild malt Keys die Taste eingedrückt.")
+
+	# Act: loslassen, wieder ein Bild.
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, false)
+	await wait_process_frames(1)
+
+	# Assert
+	assert_eq(gemalt, [true, false] as Array[bool], "Danach malt Keys sie wieder oben.")
+
+
+func test_case_keys_zur_laufzeit_neu_gebaut() -> void:
+	# Arrange
+	_communicator.case_keys = TASTEN
+	watch_signals(_communicator)
+
+	# Act: nur noch eine Taste, an der Stelle der rechten. Die alten Klickflächen gibt der
+	# Communicator mit queue_free() frei, also am Ende des Bilds; der Test wartet es ab, damit
+	# keine verwaisten Nodes zurückbleiben.
+	_communicator.case_keys = [TASTEN[2]] as Array[Rect2i]
+	await wait_process_frames(1)
+
+	# Assert
+	assert_eq(_tasten().size(), 1, "Eine Klickfläche.")
+	assert_eq(_tasten()[0].get_global_rect(), TASTEN_IM_TITEL[2])
+	var stelle := TASTEN_IM_TITEL[2].get_center()
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, false)
+	assert_signal_emitted_with_parameters(_communicator, "case_key_pressed", [0])
+
+	# Act: gar keine Tasten mehr.
+	_communicator.case_keys = []
+	await wait_process_frames(1)
+
+	# Assert
+	assert_eq(_tasten().size(), 0, "Keine Klickfläche.")
+
+
+func test_fokus_des_fensters_weg_laesst_die_taste_hoch_ohne_zu_zaehlen() -> void:
+	# Arrange: Taste 1 ist unten.
+	_communicator.case_keys = TASTEN
+	watch_signals(_communicator)
+	var stelle := TASTEN_IM_TITEL[0].get_center()
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+
+	# Act: Das Fenster verliert den Fokus; danach wird über der Taste losgelassen.
+	_communicator.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+
+	# Assert
+	assert_false(_communicator.is_case_key_down(0), "Die Taste springt zurück.")
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, false)
+	assert_false(_communicator.is_case_key_down(0), "Sie bleibt oben.")
+	assert_signal_not_emitted(_communicator, "case_key_pressed", "Der Druck zählt nicht.")
+
+
+func test_godots_eigenes_loslassen_beim_fokusverlust_zaehlt_nicht() -> void:
+	# Arrange: Taste 2 ist unten.
+	_communicator.case_keys = TASTEN
+	watch_signals(_communicator)
+	var stelle := TASTEN_IM_TITEL[1].get_center()
+	_maus_taste(stelle, MOUSE_BUTTON_LEFT, true)
+
+	# Act: das Loslassen, das Godot beim Verlust des Fensterfokus selbst schickt, noch vor der
+	# Benachrichtigung. Godot reicht es am Viewport vorbei direkt an die Taste weiter, mit der Lage
+	# der Maus relativ zur Taste; hier mitten auf ihr.
+	var taste := _tasten()[1]
+	var ereignis := InputEventMouseButton.new()
+	ereignis.device = CaseKey.DEVICE_ID_INTERNAL
+	ereignis.button_index = MOUSE_BUTTON_LEFT
+	ereignis.position = taste.size / 2
+	ereignis.global_position = stelle
+	ereignis.pressed = false
+	taste._gui_input(ereignis)
+
+	# Assert
+	assert_false(_communicator.is_case_key_down(1), "Die Taste springt zurück.")
+	assert_signal_not_emitted(_communicator, "case_key_pressed", "Es zählt nicht.")
+
+
+func test_probeseite_meldet_eine_gehaeusetaste() -> void:
+	# Arrange: die Probeszene mit den drei Tasten von G-03, in der Endlage.
+	var eigener_viewport := SubViewport.new()
+	eigener_viewport.size = Vector2i(640, 360)
+	add_child_autofree(eigener_viewport)
+	var probe := (load(PROBE_SCENE_PATH) as PackedScene).instantiate()
+	eigener_viewport.add_child(probe)
+	var communicator := probe.get_node(^"Communicator") as Communicator
+	# Die Probe fährt beim Start herein. Statt die Fahrt zu takten, steht das Gerät gleich in der
+	# Endlage: place_hidden() beendet die Fahrt, slide_in() ohne Animation springt ans Ziel.
+	communicator.set_process(false)
+	communicator.animate = false
+	communicator.place_hidden()
+	communicator.slide_in()
+	eigener_viewport.notification(Node.NOTIFICATION_VP_MOUSE_ENTER)
+	await wait_process_frames(1)
+	var hinweis := communicator.get_node(^"Hint") as MenuHint
+	watch_signals(communicator)
+
+	# Act: Mitte drücken und loslassen.
+	for gedrueckt: bool in [true, false]:
+		var ereignis := InputEventMouseButton.new()
+		ereignis.button_index = MOUSE_BUTTON_LEFT
+		ereignis.position = TASTEN_IM_TITEL[1].get_center()
+		ereignis.global_position = ereignis.position
+		ereignis.pressed = gedrueckt
+		eigener_viewport.push_input(ereignis, true)
+
+	# Assert
+	assert_eq(communicator.case_keys, TASTEN, "Die Probe setzt die Tasten aus dem Style-Guide.")
+	assert_signal_emitted_with_parameters(communicator, "case_key_pressed", [1])
+	assert_eq((hinweis.get_node(^"Text") as Label).text, "Gehäusetaste 2 gedrückt.",
+		"Die Meldung nennt die Taste.")
+	assert_eq(hinweis.theme_type_variation, &"WarningPanel", "Als Meldung.")
+	assert_true(Rect2(0, 0, 640, 360).encloses(hinweis.get_global_rect()),
+		"Die Meldung steht im Bild, auch wenn die Zeile gewählt wurde, als das Gerät draußen war.")
+
+
+func test_probeseite_meldung_eines_eintrags_steht_im_bild() -> void:
+	# Arrange: die Probeszene wie gleich nach dem Start. Die Startauswahl kam, als das Gerät noch
+	# draußen stand; dann steht es ohne Fahrt in der Endlage.
+	var eigener_viewport := SubViewport.new()
+	eigener_viewport.size = Vector2i(640, 360)
+	add_child_autofree(eigener_viewport)
+	var probe := (load(PROBE_SCENE_PATH) as PackedScene).instantiate()
+	eigener_viewport.add_child(probe)
+	var communicator := probe.get_node(^"Communicator") as Communicator
+	communicator.set_process(false)
+	communicator.animate = false
+	communicator.place_hidden()
+	communicator.slide_in()
+	await wait_process_frames(1)
+	var hinweis := communicator.get_node(^"Hint") as MenuHint
+	var menue := probe.get_node(^"Communicator/MainMenu") as MainMenu
+
+	# Act: Enter auf dem ersten Eintrag.
+	_taste(KEY_ENTER, eigener_viewport)
+
+	# Assert
+	assert_eq((hinweis.get_node(^"Text") as Label).text, "Ausgelöst: Erster Eintrag.",
+		"Die Meldung nennt den Eintrag.")
+	assert_true(Rect2(0, 0, 640, 360).encloses(hinweis.get_global_rect()),
+		"Die Meldung steht im Bild, nicht da, wo die Zeile stand, als das Gerät draußen war.")
+	assert_eq(hinweis.global_position.y, menue.global_position.y + MainMenu.ROW_HEIGHT,
+		"Oben bündig mit der ersten Zeile, wo sie jetzt ist.")
+
+
 # --- Helfer ---------------------------------------------------------------
 
 ## Stellt den Communicator ohne Fahrt in die Endlage, gleich wo er steht.
@@ -919,6 +1345,28 @@ func _maus_nach(ziel: Vector2) -> void:
 	var ereignis := InputEventMouseMotion.new()
 	ereignis.position = ziel
 	ereignis.global_position = ziel
+	_buehne.get_viewport().push_input(ereignis, true)
+
+
+## Die Klickflächen der Gehäusetasten in der Reihenfolge von case_keys.
+func _tasten() -> Array[CaseKey]:
+	var tasten: Array[CaseKey] = []
+	for kind in _communicator.get_node(^"Keys").get_children():
+		tasten.append(kind as CaseKey)
+	return tasten
+
+
+func _klick_spieler() -> AudioStreamPlayer:
+	return _communicator.get_node(^"KeyClick") as AudioStreamPlayer
+
+
+## Drückt die Maustaste [param knopf] bei [param ziel] oder lässt sie los, über push_input.
+func _maus_taste(ziel: Vector2, knopf: MouseButton, gedrueckt: bool) -> void:
+	var ereignis := InputEventMouseButton.new()
+	ereignis.button_index = knopf
+	ereignis.position = ziel
+	ereignis.global_position = ziel
+	ereignis.pressed = gedrueckt
 	_buehne.get_viewport().push_input(ereignis, true)
 
 

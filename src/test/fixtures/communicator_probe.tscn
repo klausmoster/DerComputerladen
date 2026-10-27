@@ -25,6 +25,7 @@ offset_left = 244.0
 offset_top = 92.0
 offset_right = 636.0
 offset_bottom = 360.0
+case_keys = Array[Rect2i]([Rect2i(140, 114, 11, 8), Rect2i(154, 114, 12, 8), Rect2i(169, 114, 12, 8)])
 
 [node name="MainMenu" parent="Communicator" instance=ExtResource("3_main_menu")]
 layout_mode = 0

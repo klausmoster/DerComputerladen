@@ -37,6 +37,12 @@ extends GutTest
 ## Der Titel steht in einem eigenen Viewport von 640 × 360 wie die Menüs in test_main_menu.gd:
 ## eigene Eingabe, eigener Fokus, und GUTs Oberfläche fängt keine Klicks ab. Tasten und Klicks gehen
 ## über push_input wie echte Eingaben.
+##
+## Seit Feature 006 (T031) das Easter Egg: Die Gehäusetasten bekommen erfundene Mausereignisse an der
+## Stelle, an der sie gerade stehen. Links, Mitte, rechts startet Space Invaders auf jeder der vier
+## Seiten, jede andere Folge nichts; Esc und das Ende nach der Ergebnisanzeige stellen Seite, Fokus
+## und Hinweis wieder her; das Easter Egg schreibt nichts, auch nicht beim Schließen des Fensters.
+## SC-001 und SC-006 messen die Zeit mit Time.get_ticks_usec() und nennen sie im Protokoll.
 
 const TITEL := preload("res://scenes/title/title_screen.tscn")
 const SITZUNG := preload("res://core/game_session.gd")
@@ -72,6 +78,20 @@ const HINWEIS_ZURUECK_IM_MODUS := "Nicht löschen. Esc geht auch."
 const SPIELSTAENDE := 20
 const LISTE_MSEC := 1000.0
 const LAEUFE := 3
+## Die Folge des Easter Eggs: Plätze 0, 1, 2 in case_keys, für den Spieler 1-2-3 (FR-002).
+const FOLGE: Array[int] = [0, 1, 2]
+## Die drei grauen Tasten von G-03 in Bildpixeln des Gehäuses (Style-Guide, Baustein Communicator,
+## Gehäusetasten) und dieselben auf der Oberfläche im Titel, ×2 ab der Endlage (244, 92).
+const TASTEN: Array[Rect2i] = [Rect2i(140, 114, 11, 8), Rect2i(154, 114, 12, 8),
+	Rect2i(169, 114, 12, 8)]
+const TASTEN_IM_TITEL: Array[Rect2] = [Rect2(524, 320, 22, 16), Rect2(552, 320, 24, 16),
+	Rect2(582, 320, 24, 16)]
+## SC-001: so lange darf es vom dritten Druck dauern, bis das Spiel den Fokus hat.
+const SPIELBEREIT_S := 0.5
+## SC-006: so lange darf es von finished dauern, bis der Titel wieder Eingaben annimmt.
+const RUECKWEG_S := 1.0
+## Mehr Schritte braucht keine Partie bis zum Ende (wie test_invaders_page.gd).
+const HOECHSTENS_SCHRITTE := 10800
 
 var _titel: TitleScreen
 var _sitzung: SITZUNG
@@ -1717,6 +1737,344 @@ func test_ist_die_datei_schon_weg_und_keiner_mehr_da_geht_es_ins_hauptmenue() ->
 	assert_eq(_hinweis().theme_type_variation, &"HintPanel", "Keine Meldung.")
 
 
+# --- Easter Egg (Feature 006, T031) ---------------------------------------------------------------
+
+func test_titel_hat_die_drei_tasten_und_die_seite_invaders() -> void:
+	# Arrange
+	await _zeige_titel()
+
+	# Assert (contracts/titelbildschirm.md, „Szenenaufbau“ und „Tasten im Titel“)
+	assert_eq(_communicator().case_keys, TASTEN, "Die drei Rechtecke aus dem Style-Guide.")
+	for index in TASTEN_IM_TITEL.size():
+		assert_eq(_gehaeusetaste_flaeche(index), TASTEN_IM_TITEL[index], "Taste %d" % (index + 1))
+	assert_eq(_invaders().get_parent(), _communicator(), "Invaders ist eine Seite.")
+	assert_eq(_invaders().get_global_rect(), ANZEIGE, "So groß wie die Anzeige, an ihrer Stelle.")
+	assert_false(_invaders().visible, "Beim Erscheinen nicht zu sehen.")
+	assert_null(_invaders().game(), "Und keine Partie.")
+	_assert_nur_sichtbar(_hauptmenue())
+
+
+func test_die_folge_startet_das_spiel_auf_jeder_der_vier_seiten() -> void:
+	# Arrange
+	_drei_spiele()
+	await _zeige_titel()
+	var dateien_vorher := _inhalte()
+	var lagen := _lagen()
+
+	for seite: String in ["Hauptmenü", "Gradwahl", "Liste", "Rückfrage"]:
+		await _oeffne(seite)
+		var vorher := _zustand_des_titels()
+
+		# Act
+		await _folge(FOLGE)
+
+		# Assert: das Spiel auf der Anzeige, mit Fokus; Gerät, Logo und Versionszeile still.
+		assert_eq(_communicator().current_page(), _invaders(), "%s: Das Spiel ist die Seite." % seite)
+		assert_true(_invaders().has_focus(), "%s: Die Seite hat den Fokus." % seite)
+		assert_not_null(_invaders().game(), "%s: Eine Partie läuft." % seite)
+		assert_false(_hinweis().visible, "%s: Der Hinweis ist aus." % seite)
+		assert_eq(_lagen(), lagen, "%s: Nichts hat sich bewegt." % seite)
+
+		# Act: Esc beendet das Spiel.
+		await _taste(KEY_ESCAPE)
+
+		# Assert: alles wie vorher (FR-022).
+		assert_eq(_zustand_des_titels(), vorher, "%s: Seite, Fokus und Hinweis wie vorher." % seite)
+		assert_false(_invaders().visible)
+
+	assert_eq(_inhalte(), dateien_vorher, "Kein Spielstand angelegt oder geändert (FR-007).")
+	assert_false(_sitzung.is_running(), "Kein Spiel des Computerladens.")
+	assert_eq(_wechsel, [])
+
+
+func test_eine_andere_folge_startet_nichts() -> void:
+	# Arrange
+	_drei_spiele()
+	await _zeige_titel()
+	var vorher := _zustand_des_titels()
+
+	for druecke: Array in [[1, 0, 2], [2, 1, 0], [0, 2], [0, 1, 1, 2]]:
+		# Act
+		await _folge(druecke)
+
+		# Assert
+		assert_false(_invaders().visible, "%s startet nichts." % [druecke])
+		assert_eq(_zustand_des_titels(), vorher, "%s: Seite, Auswahl und Hinweis bleiben." % [druecke])
+		_titel._sequence.reset()
+
+
+func test_eins_dann_eine_zeile_waehlen_dann_zwei_drei_startet() -> void:
+	# Arrange (FR-003): Eine andere Eingabe dazwischen unterbricht die Folge nicht.
+	_drei_spiele()
+	await _zeige_titel()
+	await _gehaeusetaste(0)
+
+	# Act: eine andere Zeile wählen, dann 2 und 3.
+	await _taste(KEY_DOWN)
+	var vorher := _zustand_des_titels()
+	await _gehaeusetaste(1)
+	await _gehaeusetaste(2)
+
+	# Assert
+	assert_true(_invaders().visible, "Das Spiel startet.")
+	await _taste(KEY_ESCAPE)
+	assert_eq(_zustand_des_titels(), vorher, "Zurück auf der Zeile, die zuletzt gewählt war.")
+	assert_eq(_hauptmenue().selected_index(), 1, "„Neues Spiel“.")
+
+
+func test_waehrend_des_spiels_loest_im_menue_nichts_aus() -> void:
+	# Arrange: ohne Spielstand, „Neues Spiel“ gewählt.
+	await _zeige_titel()
+	var vorher := _zustand_des_titels()
+	await _folge(FOLGE)
+	var partie := _invaders().game()
+
+	# Act (FR-017): Pfeile, Leertaste, Enter, die Maus über einer Zeile und noch einmal die Folge.
+	for taste: Key in [KEY_UP, KEY_DOWN, KEY_SPACE, KEY_ENTER]:
+		await _taste(taste)
+	await _maus_nach(_mitte(_hauptmenue(), 0) + Vector2(0, 2))
+	await _maus_nach(_mitte(_hauptmenue(), 0))
+	await _klick(_mitte(_hauptmenue(), 0))
+	await _folge(FOLGE)
+
+	# Assert: noch dieselbe Partie, das Menü unberührt.
+	assert_eq(_communicator().current_page(), _invaders(), "Das Spiel steht noch.")
+	assert_same(_invaders().game(), partie, "Kein zweites Spiel.")
+	assert_false(_gradwahl().visible, "Enter hat „Neues Spiel“ nicht ausgelöst.")
+	assert_eq(_hauptmenue().selected_index(), 1, "Die Auswahl hat sich nicht bewegt.")
+	assert_eq(_titel._sequence.progress(), 0, "Die Folge zählt während des Spiels nicht.")
+	await _taste(KEY_ESCAPE)
+	assert_eq(_zustand_des_titels(), vorher)
+	assert_eq(_wechsel, [])
+
+
+func test_nach_esc_bedienen_sich_die_seiten_wie_zuvor() -> void:
+	# Arrange
+	await _zeige_titel()
+	await _folge(FOLGE)
+	await _taste(KEY_ESCAPE)
+
+	# Act und Assert: Pfeil runter wählt die nächste Zeile, Pfeil hoch zurück, Enter öffnet die
+	# Gradwahl, Esc führt zurück.
+	await _taste(KEY_DOWN)
+	assert_eq(_hauptmenue().selected_index(), 2)
+	assert_eq(_hinweis_text(), _hauptmenue().entries[2].hint)
+	await _taste(KEY_UP)
+	await _taste(KEY_ENTER)
+	_assert_nur_sichtbar(_gradwahl())
+	assert_eq(_gradwahl().selected_index(), 1, "Mittel.")
+	await _taste(KEY_ESCAPE)
+	_assert_nur_sichtbar(_hauptmenue())
+	assert_eq(_hauptmenue().selected_index(), 1)
+
+
+func test_ende_nach_der_ergebnisanzeige_fuehrt_zurueck() -> void:
+	# Arrange: Gradwahl offen, das Spiel gestartet und ohne Spieler bis zur Niederlage gespielt.
+	await _zeige_titel()
+	_hauptmenue().select(1)
+	await _taste(KEY_ENTER)
+	var vorher := _zustand_des_titels()
+	await _folge(FOLGE)
+	_invaders().autoplay = false
+	_spiele_bis_zum_ende()
+	for _schritt in roundi(InvadersPage.RESULT_LOCK / InvadersGame.STEP):
+		_invaders().advance(InvadersGame.STEP)
+	assert_true(_invaders().is_waiting_for_key(), "Voraussetzung: Die Ergebnisanzeige wartet.")
+
+	# Act: Enter führt weiter; das Loslassen kommt danach bei der Gradwahl an.
+	await _taste(KEY_ENTER)
+
+	# Assert
+	assert_eq(_zustand_des_titels(), vorher, "Gradwahl, Mittel, sein Hinweis wie vorher.")
+	assert_eq(_wechsel, [], "Das Loslassen von Enter hat kein Spiel begonnen.")
+	assert_false(_sitzung.is_running())
+	assert_eq(_dateien(), [])
+
+
+func test_waehrend_der_fahrt_hinaus_zaehlt_kein_druck() -> void:
+	# Arrange: ein Spielstand; Weiterspielen, und der Communicator fährt hinaus.
+	_lege_an(1, Difficulty.Level.MITTEL, 0, ANGELEGT)
+	await _zeige_titel(ORDNER, true)
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+	await _taste(KEY_ENTER)
+	_communicator()._process(1.0 / 60.0)
+	assert_false(_communicator().is_in(), "Voraussetzung: Er fährt hinaus.")
+
+	# Act: die Folge auf die Tasten, wo sie gerade sind.
+	await _folge(FOLGE)
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+
+	# Assert (FR-004)
+	assert_false(_invaders().visible, "Das Spiel startet nicht.")
+	assert_null(_invaders().game())
+	assert_eq(_titel._sequence.progress(), 0, "Kein Druck hat gezählt.")
+	assert_eq(_wechsel, [SPIELBILDSCHIRM], "Der Weg zum Spielbildschirm bleibt, wie er war.")
+
+
+func test_folge_beginnt_bei_neuem_erscheinen_und_nach_dem_spiel_von_vorn() -> void:
+	# Arrange: 1 und 2 gedrückt, dann erscheint der Titel neu wie nach „Zum Hauptmenü“.
+	await _zeige_titel()
+	await _folge([0, 1])
+	assert_eq(_titel._sequence.progress(), 2, "Voraussetzung: zwei richtige.")
+	await _baue_titel()
+
+	# Act: nur noch die 3.
+	await _gehaeusetaste(2)
+
+	# Assert
+	assert_false(_invaders().visible, "Der neue Titel beginnt bei 0.")
+
+	# Arrange: im Spiel 1 und 2, dann Esc.
+	await _folge(FOLGE)
+	await _folge([0, 1])
+	await _taste(KEY_ESCAPE)
+
+	# Act
+	await _gehaeusetaste(2)
+
+	# Assert
+	assert_false(_invaders().visible, "Nach dem Spiel beginnt die Folge bei 0.")
+	await _folge(FOLGE)
+	assert_true(_invaders().visible, "Und lässt sich wieder eingeben.")
+
+
+func test_meldung_dann_folge_dann_esc_zeigt_den_hinweis_der_zeile() -> void:
+	# Arrange (Analyse, C2; CHK008): „Löschen ging nicht“ steht an Spiel 8.
+	_acht_spiele_eins_gesperrt(8)
+	await _zeige_titel()
+	await _oeffne_liste()
+	await _scheitere_beim_loeschen(0)
+	assert_eq(_hinweis_text(), LOESCHEN_GING_NICHT, "Voraussetzung: die Meldung.")
+	var fokus := _titel.get_viewport().gui_get_focus_owner()
+
+	# Act
+	await _folge(FOLGE)
+	assert_false(_hinweis().visible, "Im Spiel ist auch die Meldung aus.")
+	await _taste(KEY_ESCAPE)
+
+	# Assert
+	_assert_nur_sichtbar(_liste())
+	assert_same(_titel.get_viewport().gui_get_focus_owner(), fokus, "Derselbe Fokus.")
+	assert_eq(_liste().selected_slot().display_name(), "Spiel 8")
+	assert_eq(_hinweis_text(), _zeilenhinweis("08.01.1985", ANGELEGT + 8 * 60),
+		"Der Hinweis der Zeile, nicht die Meldung.")
+	assert_eq(_hinweis().theme_type_variation, &"HintPanel")
+	_assert_neben_zeile(_liste(), 0)
+	assert_push_warning("ließ sich nicht löschen")
+
+
+func test_esc_direkt_an_den_titel_waehrend_des_spiels_wechselt_keine_seite() -> void:
+	# Arrange (Analyse, C3): Die Gradwahl ist offen; aus ihr führte Esc ins Hauptmenü.
+	await _zeige_titel()
+	_hauptmenue().select(1)
+	await _taste(KEY_ENTER)
+	var vorher := _zustand_des_titels()
+	await _folge(FOLGE)
+	var esc := InputEventKey.new()
+	esc.keycode = KEY_ESCAPE
+	esc.physical_keycode = KEY_ESCAPE
+	esc.pressed = true
+
+	# Act: Esc direkt an _unhandled_input().
+	_titel._unhandled_input(esc)
+
+	# Assert
+	assert_eq(_communicator().current_page(), _invaders(), "Keine Seite wechselt.")
+
+	# Act: wie in dem Bild, in dem die Seite ihren Fokus zurückholt; Esc geht an den Titel.
+	_titel.get_viewport().gui_release_focus()
+	_druecke(KEY_ESCAPE)
+
+	# Assert
+	assert_eq(_communicator().current_page(), _invaders(), "Auch so wechselt keine Seite.")
+	assert_false(_hauptmenue().visible, "Nicht ins Hauptmenü.")
+	await wait_process_frames(1)
+	assert_true(_invaders().has_focus(), "Die Seite hat den Fokus wieder.")
+
+	# Act: Esc an die Seite beendet das Spiel.
+	await _taste(KEY_ESCAPE)
+
+	# Assert
+	assert_eq(_zustand_des_titels(), vorher, "Zurück in der Gradwahl.")
+
+
+func test_schliessen_des_fensters_waehrend_des_spiels_schreibt_keinen_spielstand() -> void:
+	# Arrange (CHK019): ein Spielstand im Testordner, das Spiel auf der Anzeige.
+	_lege_an(1, Difficulty.Level.MITTEL, 0, ANGELEGT)
+	await _zeige_titel()
+	var vorher := _inhalte()
+	await _folge(FOLGE)
+	assert_true(_invaders().visible, "Voraussetzung: Das Spiel steht.")
+
+	# Act: das Schließen des Fensters, wie Godot es meldet, an Session und Titel mit allen Knoten.
+	_an_alle_knoten(_sitzung, NOTIFICATION_WM_CLOSE_REQUEST)
+	_an_alle_knoten(_titel, NOTIFICATION_WM_CLOSE_REQUEST)
+
+	# Assert: Es läuft kein Spiel des Computerladens; das Fenster schließt ohne Speichern.
+	assert_false(_sitzung.is_running(), "Das Easter Egg ist kein Spiel der Session.")
+	assert_true(get_tree().auto_accept_quit, "Das Fenster schließt gleich, wie auf dem Titel.")
+	assert_eq(_inhalte(), vorher, "Kein Spielstand angelegt oder geändert.")
+	assert_eq(_beendet, 0, "Der Titel beendet nichts selbst.")
+
+
+func test_sc_001_vom_dritten_druck_bis_zum_fokus_hoechstens_eine_halbe_sekunde() -> void:
+	# Arrange
+	await _zeige_titel()
+	await _folge([0, 1])
+	var stelle := _gehaeusetaste_flaeche(2).get_center()
+
+	# Act: der dritte Druck, dann Bild für Bild, bis die Seite den Fokus hat.
+	var beginn := Time.get_ticks_usec()
+	_maus_klick_ohne_warten(stelle)
+	var bilder := 0
+	while not _invaders().has_focus() and bilder < 60:
+		await wait_process_frames(1)
+		bilder += 1
+	var dauer := (Time.get_ticks_usec() - beginn) / 1000000.0
+
+	# Assert
+	gut.p("SC-001, vom dritten Druck bis die Seite den Fokus hat: %.4f s, %d Bilder" % [dauer,
+		bilder])
+	assert_true(_invaders().has_focus())
+	assert_lte(dauer, SPIELBEREIT_S, "SC-001: höchstens 0,5 s.")
+
+
+func test_sc_006_von_finished_bis_der_titel_eingaben_annimmt_hoechstens_eine_sekunde() -> void:
+	# Arrange
+	_drei_spiele()
+	await _zeige_titel()
+	await _oeffne_liste()
+	var vorher := _zustand_des_titels()
+	var fertig_um := [0]
+	_invaders().finished.connect(func() -> void: fertig_um[0] = Time.get_ticks_usec())
+	var dauern := {}
+
+	for weg: String in ["Esc", "Ergebnisanzeige"]:
+		await _folge(FOLGE)
+		if weg == "Ergebnisanzeige":
+			_invaders().autoplay = false
+			_spiele_bis_zum_ende()
+			for _schritt in roundi(InvadersPage.RESULT_LOCK / InvadersGame.STEP):
+				_invaders().advance(InvadersGame.STEP)
+
+		# Act: Esc oder eine Taste, dann Bild für Bild, bis der Titel wieder Eingaben annimmt.
+		_druecke(KEY_ESCAPE if weg == "Esc" else KEY_A)
+		var bilder := 0
+		while not _nimmt_eingaben_an(vorher) and bilder < 60:
+			await wait_process_frames(1)
+			bilder += 1
+		dauern[weg] = (Time.get_ticks_usec() - fertig_um[0]) / 1000000.0
+		_invaders().autoplay = true
+
+		# Assert
+		assert_true(_nimmt_eingaben_an(vorher), "%s: Der Titel nimmt Eingaben an." % weg)
+		assert_lte(dauern[weg], RUECKWEG_S, "SC-006, %s: höchstens 1 s." % weg)
+		assert_eq(_zustand_des_titels(), vorher, "%s: wie vorher." % weg)
+
+	gut.p("SC-006, von finished bis der Titel wieder Eingaben annimmt: Esc %.4f s, Ergebnisanzeige %.4f s"
+		% [dauern["Esc"], dauern["Ergebnisanzeige"]])
+
+
 # --- Helfer ---------------------------------------------------------------------------------------
 
 ## Baut eine Session mit eigener Uhr, eigener Zeitleiste und dem Ordner [param ordner], dann den
@@ -2180,3 +2538,102 @@ func _pruefe_jede_zeile(seite: Control, frei: Dictionary) -> void:
 func _hinweis_flaeche() -> Rect2:
 	var schatten := Vector2(MenuHint.SHADOW_OFFSET, MenuHint.SHADOW_OFFSET)
 	return Rect2(_hinweis().global_position, _hinweis().size + schatten)
+
+
+# --- Helfer zum Easter Egg ------------------------------------------------------------------------
+
+func _invaders() -> InvadersPage:
+	return _titel.get_node(^"Communicator/Invaders") as InvadersPage
+
+
+## Die Klickfläche der Gehäusetaste [param index] da, wo sie gerade steht, in Koordinaten des
+## Viewports.
+func _gehaeusetaste_flaeche(index: int) -> Rect2:
+	return (_communicator().get_node("Keys/CaseKey%d" % index) as Control).get_global_rect()
+
+
+## Ein Linksklick auf die Mitte der Gehäusetaste [param index], dann ein Bild.
+func _gehaeusetaste(index: int) -> void:
+	await _klick(_gehaeusetaste_flaeche(index).get_center())
+
+
+## Klickt die Gehäusetasten [param druecke] nacheinander.
+func _folge(druecke: Array) -> void:
+	for index: int in druecke:
+		await _gehaeusetaste(index)
+
+
+## Ein Linksklick bei [param ziel] wie _klick(), aber ohne ein Bild zu warten (für Messungen).
+func _maus_klick_ohne_warten(ziel: Vector2) -> void:
+	for gedrueckt: bool in [true, false]:
+		var ereignis := InputEventMouseButton.new()
+		ereignis.button_index = MOUSE_BUTTON_LEFT
+		ereignis.position = ziel
+		ereignis.global_position = ziel
+		ereignis.pressed = gedrueckt
+		_titel.get_viewport().push_input(ereignis, true)
+
+
+## Öffnet [param seite] aus dem Zustand des Tests davor: Hauptmenü beim Erscheinen, dann Gradwahl
+## über „Neues Spiel“, die Liste über das Hauptmenü, die Rückfrage aus der Liste.
+func _oeffne(seite: String) -> void:
+	match seite:
+		"Gradwahl":
+			_hauptmenue().select(1)
+			await _taste(KEY_ENTER)
+		"Liste":
+			await _taste(KEY_ESCAPE)
+			await _oeffne_liste()
+		"Rückfrage":
+			await _frage_nach(0)
+	await wait_process_frames(1)
+
+
+## Was nach dem Easter Egg wieder so sein muss wie vorher: sichtbare Seite, ihre Auswahl, der
+## Fokus und der Hinweis mit Text, Art und Lage. Pfade statt Objekte, damit ein Unterschied lesbar ist.
+func _zustand_des_titels() -> Dictionary:
+	var seite := _communicator().current_page()
+	var fokus := _titel.get_viewport().gui_get_focus_owner()
+	var hinweis := _hinweis()
+	return {
+		"seite": String(seite.name) if seite != null else "",
+		"auswahl": seite.call(&"selected_index") if seite != null
+			and seite.has_method(&"selected_index") else -1,
+		"fokus": String(_titel.get_path_to(fokus)) if fokus != null else "",
+		"hinweis": (hinweis.get_node(^"Text") as Label).text if hinweis.visible else "",
+		"art": hinweis.theme_type_variation if hinweis.visible else &"",
+		"lage": hinweis.global_position if hinweis.visible else Vector2(),
+	}
+
+
+## Lagen von Gerät, Logoblock und Versionszeile.
+func _lagen() -> Array:
+	return [_communicator().global_position,
+		(_titel.get_node(^"LogoBlock") as Control).global_position,
+		(_titel.get_node(^"VersionLine") as Control).global_position]
+
+
+## Taktet die Partie ohne Spieler bis WON oder LOST; die Seite taktet sich dabei nicht selbst.
+func _spiele_bis_zum_ende() -> void:
+	for _schritt in HOECHSTENS_SCHRITTE:
+		var partie := _invaders().game()
+		if partie.state == InvadersGame.State.WON or partie.state == InvadersGame.State.LOST:
+			return
+		_invaders().advance(InvadersGame.STEP)
+	fail_test("Die Partie endet nicht in %d Schritten." % HOECHSTENS_SCHRITTE)
+
+
+## Ob der Titel wieder Eingaben annimmt: das Spiel weg, die Wache offen und der Fokus da, wo er in
+## [param vorher] war.
+func _nimmt_eingaben_an(vorher: Dictionary) -> bool:
+	return (not _invaders().visible and _titel._accepts_input()
+		and _zustand_des_titels()["fokus"] == vorher["fokus"])
+
+
+## Schickt [param nachricht] an [param knoten] und alle Knoten darunter, wie Godot das Schließen des
+## Fensters meldet (wie test_werkstatt_scene.gd).
+func _an_alle_knoten(knoten: Node, nachricht: int) -> void:
+	knoten.notification(nachricht)
+	for kind in knoten.get_children(true):
+		if not kind is Window:
+			_an_alle_knoten(kind, nachricht)

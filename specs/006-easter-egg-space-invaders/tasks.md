@@ -254,7 +254,7 @@ bisherigen Tests des Titels grün (SC-004).
 
 ### Teil 1: Gehäusetasten am Communicator
 
-- [ ] T025 [A] [US1] `src/ui/communicator/case_key.gd` (`class_name CaseKey`) und die Erweiterung
+- [x] T025 [A] [US1] `src/ui/communicator/case_key.gd` (`class_name CaseKey`) und die Erweiterung
   von `src/ui/communicator/communicator.gd` und `.tscn` laut contracts/gehaeusetasten.md:
   `case_keys` mit leerer Vorgabe (Analyse, I2), `case_key_pressed(index)`,
   `is_case_key_down()`, Knoten `Keys` und `KeyClick` (`knopf.wav` auf `Effekte`); gezählt beim
@@ -262,21 +262,21 @@ bisherigen Tests des Titels grün (SC-004).
   `_set_locked(true)` ruft `cancel()` jeder Taste; Eindrücken in `Keys._draw()` nach R3 und dem
   Ergebnis von T001, im nächsten Bild (FR-001a); Zeiger Pfeil, kein Fokus (FR-001b);
   `_page_list()` nimmt `Keys` aus, `KeyClick` ist kein Control (Analyse, C4).
-- [ ] T026 [A] [US1] Probeszene `src/test/fixtures/communicator_probe.tscn` und `.gd`: zeigt
+- [x] T026 [A] [US1] Probeszene `src/test/fixtures/communicator_probe.tscn` und `.gd`: zeigt
   `case_key_pressed` an; Tests in `src/test/test_communicator.gd` laut contracts/gehaeusetasten.md,
   „Tests“; alle Tests aus Feature 005 bleiben unverändert grün.
-- [ ] T027 [A] [US1] Lernnotizen zu T025 und T026: Klickflächen über einem Bild, warum gezählt wird
+- [x] T027 [A] [US1] Lernnotizen zu T025 und T026: Klickflächen über einem Bild, warum gezählt wird
   beim Loslassen, Ausschnitt aus einer Textur mit `draw_texture_rect_region`, warum der Communicator
   nichts von der Folge weiß.
-- [ ] T028 [C] [US1] Prüfen von Teil 1: Tests zweimal, Startprobe still, Bildschirmfotos der
+- [x] T028 [C] [US1] Prüfen von Teil 1: Tests zweimal, Startprobe still, Bildschirmfotos der
   Probeszene mit jeder Taste eingedrückt, ×4 vergrößert neben der Montage aus T001.
 
 ### Teil 2: Folge und Titel
 
-- [ ] T029 [A] [US1] `src/scenes/title/key_sequence.gd` (`class_name KeySequence`) laut
+- [x] T029 [A] [US1] `src/scenes/title/key_sequence.gd` (`class_name KeySequence`) laut
   contracts/titelbildschirm.md und data-model.md, „Folge“; `src/test/test_key_sequence.gd` mit den
   Beispielen aus dem Vertrag und SC-005 (20 zufällige Folgen, fester Seed).
-- [ ] T030 [A] [US1] [US3] `src/scenes/title/title_screen.tscn` und `title_screen.gd` laut
+- [x] T030 [A] [US1] [US3] `src/scenes/title/title_screen.tscn` und `title_screen.gd` laut
   contracts/titelbildschirm.md: `case_keys` der Instanz auf die drei Rechtecke aus dem Style-Guide
   (Analyse, I2); Seite `Invaders` unter dem Communicator; Druck nur, wenn der Titel Eingaben annimmt
   und das Spiel nicht läuft; Start mit Merken von Seite und Fokus (Zeile und Hinweis aus
@@ -284,20 +284,28 @@ bisherigen Tests des Titels grün (SC-004).
   `start()` (C1); Esc-Wache in `_unhandled_input()`, solange `Invaders` sichtbar ist (C3); Ende bei
   `finished` mit Seite, Fokus und Hinweis zurück, eine Meldung kommt als Hinweis zurück (CHK008);
   Folge auf 0 bei Start und neuem Erscheinen.
-- [ ] T031 [A] [US1] [US3] Tests in `src/test/test_title_screen.gd` laut
+- [x] T031 [A] [US1] [US3] Tests in `src/test/test_title_screen.gd` laut
   contracts/titelbildschirm.md, „Tests“, mit erfundenen Mausereignissen auf den Tasten, auch: kein
   Spielstand beim Schließen des Fensters während des Spiels (CHK019); Meldung, Folge, Esc ohne
   Meldung danach (C2); Esc direkt an den Titel während des Spiels (C3); gemessen SC-001 und SC-006
   (Analyse, A2).
-- [ ] T032 [A] [US1] [US3] Lernnotizen zu T029 bis T031: eine Folge ohne Node, Fokus merken und
+- [x] T032 [A] [US1] [US3] Lernnotizen zu T029 bis T031: eine Folge ohne Node, Fokus merken und
   zurückgeben, warum der Titel die Folge kennt und der Communicator nicht.
-- [ ] T033 [C] [US1] [US3] Prüfen: Tests zweimal, Startprobe still; Bildschirmfotos im echten
+- [x] T033 [C] [US1] [US3] Prüfen: Tests zweimal, Startprobe still; Bildschirmfotos im echten
   Fenster in Klaus' Größe: Knopf eingedrückt, Spiel auf jeder der vier Seiten gestartet, nach Esc
   zurück mit Hinweis, Ergebnisanzeige im Titel.
-- [ ] T034 [C] [US1] [US3] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Stil-Prüfer mit dem
+- [x] T034 [C] [US1] [US3] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Stil-Prüfer mit dem
   Baustein Communicator (Gehäusetasten), „Spiel auf der Anzeige“, README (Bewegung, Bildaufbau
   Titel), `tokens.json`; die Bildschirmfotos aus T028 und T033.
-- [ ] T035 [K] [US1] [US3] Phase 5 abnehmen nach quickstart.md, „Im Titel“.
+- [x] T035 [K] [US1] [US3] Phase 5 abnehmen nach quickstart.md, „Im Titel“.
+
+Erledigt am 2026-10-27, von Klaus im Titel ausprobiert und abgenommen: Gehäusetasten am
+Communicator (`CaseKey`, `case_keys` ab Werk leer), `KeySequence`, Einbau in den Titel mit Rückweg
+und Esc-Wache. Nach der Phasenprüfung (Stil 0 Befunde, Lücken nach Klaus' Entscheidung im
+Style-Guide 54 geschlossen): Taste springt bei Fokusverlust des Fensters zurück, ohne zu zählen;
+liegen gebliebene Knoten in einem Test aufgeräumt. Dazu die Meldung „Ausgelöst: …“ der Probeszene im
+Bild. Zweimal 1131 von 1131 Tests grün (186 181 Prüfungen), Startprobe und echtes Fenster still;
+SC-001 und SC-006 im selben Bild erfüllt.
 
 **Checkpoint**: Das Easter Egg ist fertig; der Titel ohne Knopfdruck unverändert.
 

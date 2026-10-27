@@ -58,12 +58,13 @@ Version 49 gelten die Werte aus dem Baustein Communicator, „Gehäusetasten“.
 ## R3 Eingedrückt: Ausschnitt aus dem Gehäusebild, eine Zeile tiefer
 
 **Entscheidung:** Solange die linke Maustaste auf einer Taste unten ist, malt der Communicator über
-die Taste ihren eigenen Ausschnitt aus dem Gehäusebild, **ohne seine oberste Zeile**, um 1 Bildpixel
-tiefer; die frei werdende oberste Zeile füllt er mit der Farbe des Spalts links neben der Taste. Die
+die Taste ihren eigenen Ausschnitt aus dem Gehäusebild, **ohne ihre unterste Zeile**, um 1 Bildpixel
+tiefer (bis Phase 5 stand hier versehentlich „ohne seine oberste Zeile“; der Agent hat nach dem
+Style-Guide gebaut, T025); die frei werdende oberste Zeile füllt er mit der Farbe des Spalts links neben der Taste. Die
 Vorderkante wird dadurch eine Zeile schmaler; die unterste Zeile der Taste fällt weg, der Ausschnitt
 reicht nie über das Rechteck hinaus (Analyse, I5). Kein neues Bild, keine neue Farbe (Spec, FR-001a;
-Claude, 2026-10-27). Eine helle linke Spalte haben die Tasten nicht (T001, R2); es fällt also nur die
-oberste Zeile weg (Review, CHK029). Gehäusetasten sind Teil des
+Claude, 2026-10-27). Eine helle linke Spalte haben die Tasten nicht (T001, R2); eine eigene
+Lichtkante, die wegfallen müsste, gibt es also nicht (Review, CHK029). Gehäusetasten sind Teil des
 Bildes und bekommen deshalb kein `relief-gedrueckt` (Review, CHK003).
 
 **Grund:** Ein Ausschnitt mit `AtlasTexture` aus der vorhandenen Textur hält Farben und Raster des

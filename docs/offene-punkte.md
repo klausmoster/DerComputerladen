@@ -953,3 +953,21 @@ Anzeige, Sprache):
 - **„Weiter mit …“ in zwei Bedeutungen** (Text): „Weiter mit Spiel 2 …“ im Hauptmenü und „Weiter mit
   Taste oder Klick.“ in der Ergebnisanzeige stehen auf verschiedenen Seiten nacheinander.
   Empfehlung: lassen; „Blatt“ in der Regel meint eine Seite.
+
+### Feature 006, Phasenprüfung Phase 5 (2026-10-27)
+
+Lücken vom Stil-Prüfer, von Claude nachgeprüft. Klaus hat am 2026-10-27 nach Empfehlung entschieden;
+die Sätze stehen im Style-Guide, Version 54 (Baustein Communicator), der Code folgt in einer Aufgabe
+für den Agent vor der Abnahme:
+- **Fenster verliert den Fokus, während eine Gehäusetaste unten ist:** Heute schickt Godot dann ein
+  Loslassen, und steht die Maus über der Taste, zählt der Druck. Empfehlung: wie beim Hinausfahren
+  zurückspringen und nicht zählen; Satz im Baustein Communicator, `cancel()` bei
+  `NOTIFICATION_APPLICATION_FOCUS_OUT` in `CaseKey`, ein Test. Aufwand: klein, eine Aufgabe für den
+  Agent.
+- **Kein Fokus und keine Tastatur an den Gehäusetasten:** gebaut so (`FOCUS_NONE`), im Style-Guide
+  fehlt der Satz. Empfehlung: in die Ausnahmeliste im Baustein Communicator.
+- **Meldung in der Probeszene für einen Tastendruck:** Die Probe zeigt „Gehäusetaste 3 gedrückt.“ als
+  Meldung, obwohl die Meldung für Fehler ist; so macht es die Probe seit Feature 005. Empfehlung:
+  lassen, Probeszenen sind kein Teil des Spiels.
+- Verworfen: „Baustein Hinweis fehlt im Maßstab“; der Pfad im Auftrag war falsch, der Baustein
+  steht im Style-Guide.
