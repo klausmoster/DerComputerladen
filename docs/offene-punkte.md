@@ -12,14 +12,6 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
-### Spec Kit auf 1.2.3 heben (2026-10-26)
-
-- **Nach dem Abschluss von Feature 004** (Klaus, 2026-10-26): Installiert ist 1.2.0, als Kommando
-  `specify` und im Projekt (`.specify/init-options.json`). Aktuell ist 1.2.3 vom 2026-10-22; die
-  drei Patch-Versionen bringen Fehlerbehebungen an Workflows, Erweiterungen und Presets. Vorher
-  zeigt Claude Klaus, welche Dateien im Projekt sich ändern würden, etwa an einer Probe in einem
-  leeren Ordner; erst nach seinem OK wird aktualisiert.
-
 ### Feature 004, Phasenprüfung Phase 2 (2026-10-26)
 
 Lücken im Abschnitt „Sprache“, die der Text-Prüfer gemeldet und Claude bestätigt hat. Zwei hat
@@ -639,6 +631,10 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 
 ## Erledigt
 
+- **Spec Kit auf 1.2.3 gehoben:** Klaus, 2026-10-27, nach einer Probe in einem leeren Ordner.
+  Geändert haben sich nur `setup-plan.sh` und `check-prerequisites.sh` (Schutz vor leerem
+  `plan.md`) sowie Versionsnummern und Prüfsummen; gezielt eingespielt statt `specify init --force`,
+  damit Verfassung und eigene Vorlagen unberührt bleiben. `specify` auf Klaus' Rechner ist 1.2.3.
 - **Spec Kit ersetzt `/dcl-feature` dauerhaft:** Klaus, 2026-10-27, nach drei Features im Pilot.
   Aufgeräumt am 2026-10-27: alte Feature-Docs in `docs/features/archiv/`, `TEMPLATE_FEATURE.md`
   und der Skill `dcl-feature` entfernt, `CLAUDE.md` mit Klaus' OK angepasst.
