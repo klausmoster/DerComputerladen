@@ -17,7 +17,6 @@ Kollisionen mit eingebauten/globalen Skills und gruppiert sie im Slash-Menü
 | Skill | Aufruf | Zweck | Ort |
 |---|---|---|---|
 | Komponenten-Doc füllen | `/dcl-komponente` | Beliebige PC-Komponente der game_bible mit Daten befüllen (template-gesteuert) | `.claude/skills/dcl-komponente/` |
-| Feature spezifizieren | `/dcl-feature` | Feature-Doc anlegen und durch die Phasen spec → plan → tasks schieben | `.claude/skills/dcl-feature/` |
 
 ### `dcl-komponente` — Komponenten-Doc füllen
 
@@ -79,34 +78,7 @@ diesem Routing-Block anlegt — der Skill findet es dann automatisch.
 Wenn eine PC-Komponente (CPU, Tastatur, …) angelegt, befüllt, recherchiert oder
 vervollständigt werden soll.
 
-### `dcl-feature` — Feature spezifizieren
+### Features
 
-**Aufruf:** `/dcl-feature`
-**Ort:** `.claude/skills/dcl-feature/SKILL.md`
-
-#### Was er macht
-Legt Feature-Spezifikationen unter `docs/features/` an und schiebt sie durch drei
-Phasen. Struktur gibt `docs/features/TEMPLATE_FEATURE.md` vor — dieselbe Machart
-wie bei den Komponenten: Template ist die Autorität, der Skill bleibt dünn.
-
-#### Ablauf
-1. **Feature bestimmen** — neu, aus `Feature_Ideas.md` hochgezogen oder ein
-   vorhandenes weiterschieben. ID als `SS-NN` (System 01–11, laufende Nummer).
-2. **Phase füllen** — `spec` (Problem, Lösung, Akzeptanzkriterien) → `plan`
-   (technischer Vertrag, Schritte, Godot-Bauteile) → `tasks` (Entscheidungen,
-   offene Fragen, Lernnotizen). Nur die aktuelle Phase, keine Vorgriffe.
-3. **Recherche vor dem Vertrag** — Godot-Doku zur Version 4.7 und bestehender
-   Code, nicht aus dem Gedächtnis spezifizieren.
-4. **Schritte mit Besitzer** — jeder Schritt `[K]` oder `[C]`, klein geschnitten.
-5. **Index pflegen** — `Features.md` und ggf. `Feature_Ideas.md` nachziehen.
-
-#### Dateien
-| Datei | Zweck |
-|---|---|
-| `docs/features/Features.md` | Systemliste 01–11 und Index aller Feature-Docs |
-| `docs/features/Feature_Ideas.md` | Unverbindlicher Backlog, nach Systemen gruppiert |
-| `docs/features/TEMPLATE_FEATURE.md` | Autorität für Struktur und Felder |
-
-#### Wann nutzen
-Wenn ein Feature spezifiziert, geplant oder weitergeschoben werden soll — oder
-sobald es heißt „wir arbeiten jetzt an Feature xy".
+Features entstehen mit Spec Kit (`/speckit-specify` bis `/speckit-analyze`) unter `specs/`;
+der Ablauf steht in `CLAUDE.md` und `docs/ki_workflow/ki_dev.md`.

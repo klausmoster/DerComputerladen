@@ -1,20 +1,13 @@
 # Features
 
-Arbeitsverzeichnis für Feature-Spezifikationen. Ein Dokument pro Feature, angelegt
-und weitergeschoben mit `/dcl-feature`. Struktur gibt `TEMPLATE_FEATURE.md` vor.
+Systemliste und Index der Features. Gebaut wird mit Spec Kit: Jedes Feature hat eine
+Nummer `NNN` und einen Ordner `specs/NNN-kurzname/` mit Spec, Plan und Aufgaben. Die Feature-Docs
+aus der Zeit davor liegen in `archiv/`.
 
-**So wird gearbeitet:** „Wir arbeiten an Feature xy" — das Dokument ist die
-Gesprächsgrundlage. Claude schreibt Specs, beschafft Informationen, bereitet vor,
-erklärt und reviewt; Klaus baut in Godot. Einzelne Tasks gehen im Gespräch an
-Claude über (in `## + Schritte` mit `[C]` markiert), und Code, den Claude
-erzeugt, sieht Klaus sich vorher an — er ist Lernmaterial und Vorlage, kein
-ungesehenes Ergebnis.
-
-**Abgrenzung:** `docs/game_design.md` ist das Visionsdokument — *was* das Spiel ist,
-ändert sich selten. Die Feature-Docs hier sind der Bauplan — *wie* es funktioniert,
-und hier werden die „Offenen Fragen" des GDD einzeln abgearbeitet.
-`docs/game_bible/` ist davon getrennt: dort liegt Spielinhalt (Komponenten, Preise,
-Texte), nicht Technik.
+**Abgrenzung:** `docs/game_design.md` ist das Visionsdokument — *was* das Spiel ist.
+`specs/` ist der Bauplan — *wie* es funktioniert, dort werden die „Offenen Fragen" des GDD
+einzeln abgearbeitet. `docs/spielbeschreibung/` beschreibt den Stand im Code, `docs/game_bible/`
+den Spielinhalt (Komponenten, Preise, Texte).
 
 ## Systeme
 
@@ -41,9 +34,9 @@ unter „Offene Fragen", sind aber eigene Systeme.
 
 | ID | Feature | Status | Phase |
 |---|---|---|---|
-| 01-01 | [[01-01-spieluhr]] | fertig | tasks |
-| 01-02 | [[01-02-ereignis-engine]] | fertig | tasks |
-| 02-01 | [[02-01-bible-importer]] | spezifiziert | plan |
+| 01-01 | [Spieluhr](archiv/01-01-spieluhr.md), vor Spec Kit, überholt durch 002 | fertig | tasks |
+| 01-02 | [Ereignis-Engine](archiv/01-02-ereignis-engine.md), vor Spec Kit, überholt durch 002 | fertig | tasks |
+| 02-01 | [Bible-Importer](archiv/02-01-bible-importer.md), Entwurf vor Spec Kit, Vorlage für `/speckit-specify` | Entwurf | — |
 | 001 | [Start bis zum Hauptmenü](../../specs/001-hauptmenue/spec.md), Spec-Kit-Pilot, System 10 | fertig | tasks |
 | 002 | [Zeitleisten-Werkstatt](../../specs/002-zeitleisten-werkstatt/spec.md), System 01 | fertig | tasks |
 | 003 | [Schwierigkeitsgrade der Zeitleiste](../../specs/003-schwierigkeitsgrade/spec.md), System 01 | fertig | tasks |

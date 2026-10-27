@@ -2,7 +2,7 @@
 
 Vormerkungen. Alles hier ist **unverbindlich** — noch nicht spezifiziert, noch
 nicht entschieden, Reihenfolge offen. Sobald an einem Punkt wirklich gearbeitet
-wird, entsteht daraus ein eigenes Dokument nach `TEMPLATE_FEATURE.md` und der
+wird, entsteht daraus mit `/speckit-specify` ein Feature unter `specs/`, und der
 Eintrag wandert in die Tabelle in [[Features]].
 
 Die IDs sind **reserviert, nicht vergeben** — sie können sich noch verschieben.
@@ -13,7 +13,7 @@ Zeitleiste aufgefallen ist.
 
 ## 01 Zeitleiste
 
-Weitgehend gebaut ([[01-01-spieluhr]], [[01-02-ereignis-engine]]).
+Weitgehend gebaut ([[archiv/01-01-spieluhr]], [[archiv/01-02-ereignis-engine]]).
 
 | ID | Idee | Braucht |
 |---|---|---|
@@ -27,7 +27,7 @@ Weitgehend gebaut ([[01-01-spieluhr]], [[01-02-ereignis-engine]]).
 
 | ID | Idee | Braucht |
 |---|---|---|
-| 02-01 | game_bible-Importer — **spezifiziert**, siehe [[02-01-bible-importer]] | — |
+| 02-01 | game_bible-Importer — **Entwurf vor Spec Kit**, siehe [[archiv/02-01-bible-importer]] | — |
 | 02-02 | Warengruppen — die `target`-Strings der Timeline (`"cpu_486"`, `"ram"`) auf echte Produkte abbilden | 02-01 |
 | 02-03 | Produktlebenszyklus — Verfügbarkeit aus `grunddaten_einführung_de` / `marktende_de` | 02-01 |
 | 02-04 | Kompatibilitätsregeln — der `kompatibilität`-Block der game_bible als prüfbare Bedingungen („braucht ISA-Slot") | 02-01 |

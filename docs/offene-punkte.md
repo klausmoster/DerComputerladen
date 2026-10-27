@@ -12,15 +12,6 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
-### `docs/features/` aufräumen (2026-10-27)
-
-- **Sobald Feature 004 und die Spielbeschreibung in `main` sind** (Klaus, 2026-10-27):
-  `Features.md` und `Feature_Ideas.md` bleiben, `Features.md` bekommt eine neue Einleitung ohne
-  `/dcl-feature`. `01-01-spieluhr.md`, `01-02-ereignis-engine.md` und `02-01-bible-importer.md`
-  kommen in ein Archiv; `02-01` dient später als Vorlage für `/speckit-specify`.
-  `TEMPLATE_FEATURE.md` und der Skill `dcl-feature` entfallen. Die Änderung an `CLAUDE.md`,
-  Abschnitt „Featureweise arbeiten“, zeigt Claude Klaus vorher.
-
 ### Spec Kit auf 1.2.3 heben (2026-10-26)
 
 - **Nach dem Abschluss von Feature 004** (Klaus, 2026-10-26): Installiert ist 1.2.0, als Kommando
@@ -649,7 +640,8 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 ## Erledigt
 
 - **Spec Kit ersetzt `/dcl-feature` dauerhaft:** Klaus, 2026-10-27, nach drei Features im Pilot.
-  Das Aufräumen steht oben unter „`docs/features/` aufräumen“.
+  Aufgeräumt am 2026-10-27: alte Feature-Docs in `docs/features/archiv/`, `TEMPLATE_FEATURE.md`
+  und der Skill `dcl-feature` entfernt, `CLAUDE.md` mit Klaus' OK angepasst.
 - **Lochrand und Abstand am Knopf (Phasenprüfung Phase 4):** Klaus, 2026-10-26, nach Empfehlung:
   Ein Loch, das die Unterkante eines Blatts berühren würde, entfällt; beim allein stehenden Knopf
   zählen die 4 Pixel bis zum Hinweis ab der Fokuslinie. Steht im Style-Guide (Bildrahmen,

@@ -62,23 +62,19 @@ die Skills dürfen selbstständig befüllt werden.
 
 ## Featureweise arbeiten
 
-Feature-Dokumente liegen in `docs/features/`, ein Dokument pro Feature, angelegt
-und weitergeschoben mit `/dcl-feature`. `TEMPLATE_FEATURE.md` ist die Autorität
-für Struktur und Felder.
+Gearbeitet wird mit Spec Kit; es ersetzt `/dcl-feature` seit 2026-10-27 dauerhaft. Jedes Feature
+hat eine feste Nummer `NNN`, einen Branch `feature/NNN-kurzname` und einen Ordner
+`specs/NNN-kurzname/` mit Spec, Plan, Aufgaben und Lernnotizen. Der Ablauf steht in der Verfassung
+(`.specify/memory/constitution.md`) und in `docs/ki_workflow/ki_dev.md`.
 
-- `Features.md` — Systemliste 01–11 und Index der vorhandenen Feature-Docs
-- `Feature_Ideas.md` — unverbindlicher Backlog; IDs dort sind reserviert, nicht
-  vergeben
-- IDs sind `SS-NN` (System, laufende Nummer) und stabil — Wikilinks, Branches
-  (`feature/02-01-bible-importer`) und Commits verweisen darauf
-- Drei Phasen: `spec` (was und woran erkennbar fertig) → `plan` (technischer
-  Vertrag, Schritte) → `tasks` (Umsetzung, Entscheidungen, Lernnotizen).
-  Das Dokument wächst mit, es wird nicht auf einmal geschrieben.
-- In `## + Schritte` (bei Spec Kit in `tasks.md`) trägt jeder Schritt einen
-  Besitzer: `[K]` Klaus, `[A]` Godot-Agent, `[C]` Claude.
+- `docs/features/Features.md` — Systemliste 01–11 und Index der Features
+- `docs/features/Feature_Ideas.md` — unverbindlicher Backlog; die IDs `SS-NN` dort sind
+  reserviert, nicht vergeben. Wird ein Eintrag gebaut, entsteht er mit `/speckit-specify`.
+- `docs/features/archiv/` — Feature-Docs aus der Zeit vor Spec Kit
+- In `tasks.md` trägt jeder Schritt einen Besitzer: `[K]` Klaus, `[A]` Godot-Agent, `[C]` Claude.
 
-Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist),
-`docs/features/` der Bauplan (*wie*), `docs/game_bible/` der Spielinhalt.
+Abgrenzung: `docs/game_design.md` ist die Vision (*was* das Spiel ist), `specs/` der Bauplan
+(*wie*), `docs/spielbeschreibung/` der Stand im Code und `docs/game_bible/` der Spielinhalt.
 
 ## Aufbau
 
