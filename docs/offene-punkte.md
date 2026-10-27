@@ -12,6 +12,23 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 005, Phase 4 (2026-10-27)
+
+Aus der Phasenprüfung (Stil-Prüfer, 7 Befunde, alle von Claude bestätigt) und Klaus'
+Entscheidungen vom 2026-10-27, alle nach Empfehlung:
+- **Tastatur nicht im Bild:** Der Baustein Communicator sagt jetzt „Deckel, Scharnier und der
+  Ansatz des Unterteils; die Tastatur liegt unter dem Bildrand“.
+- **Logo und Untertitel auf der Fassade:** bekommen den `pixelschatten`; neue Regel im README,
+  Abschnitt Logo: Text direkt auf einem Bild trägt auf unruhigem oder hellem Grund den Schatten.
+  Umgesetzt in Phase 5 (T028).
+- **Gehäuse zu braun:** aufgehellt auf Cremebeige wie die Geräte in C2.
+- **Schaufenster unter dem Gerät angeschnitten:** Klaus hatte T-02 nach einer Montage gewählt; so
+  bleibt es.
+- Offene Lücken aus derselben Prüfung, ohne Eile: ab wann ein Grund „unruhig“ ist; ob „Licht von
+  oben links“ in Nachtszenen mit eigener Lichtquelle für das Umgebungslicht gilt; die Grenze
+  zwischen Textur mit Dithering und Rauschen. Empfehlung: bei der nächsten Szene klären, nicht
+  jetzt.
+
 ### Feature 005, Phase 3 (2026-10-27)
 
 Lücken im Style-Guide aus der Phasenprüfung (Stil-Prüfer, von Claude nachgeprüft). Von Klaus am

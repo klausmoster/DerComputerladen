@@ -222,25 +222,34 @@ auch wenn die Zeile gedämpft ist; eine Zeile hat keinen eigenen Zustand „gedr
 fest: erst G-02, dann T-02 (CHK005). Klaus darf G-02 schon nach T003 erzeugen; die Phase beginnt
 mit Klaus' Auftrag nach T019.
 
-- [ ] T020 [K] G-02 in Leonardo erzeugen mit dem Prompt aus T002; ein Bild auswählen und als
+- [x] T020 [K] G-02 in Leonardo erzeugen mit dem Prompt aus T002; ein Bild auswählen und als
   Original nach `docs/art/leonardo/g-02-organizer.*` legen.
-- [ ] T021 [C] G-02 rastern: freistellen, mit `tools/raster/rasterize.py` so verkleinern, dass das
+- [x] T021 [C] G-02 rastern: freistellen, mit `tools/raster/rasterize.py` so verkleinern, dass das
   LCD 192 × 96 Bildpixel hat, `cleanup.py`, die LCD-Fläche von Hand auf genau 192 × 96 bringen;
   Ergebnis `src/assets/images/organizer_1991.png`, nur Farben der Hauptpalette. Lage der Anzeige
   im Gehäuse nachmessen; weicht sie vom Style-Guide ab, die Änderung dort vorbereiten, Freigabe in
   T026 (C21). Eintrag im Prompt-Log `docs/art/leonardo/prompt-log.md` mit Modell, Seed und
   Rasterfassung.
-- [ ] T022 [C] Prompt **T-02 Titelbild**: dieselbe Welt wie T-01, ruhige dunkle Fläche rechts unten
+- [x] T022 [C] Prompt **T-02 Titelbild**: dieselbe Welt wie T-01, ruhige dunkle Fläche rechts unten
   in der Größe des Gehäuses aus T021; T-01 als Bildvorlage, wenn Leonardo es anbietet, sonst in
   Worten, C2 als Style Reference (R10, CHK026). In die Prompt-Bibliothek.
-- [ ] T023 [K] T-02 in Leonardo erzeugen; Original nach `docs/art/leonardo/t-02-titelbild.*`.
-- [ ] T024 [C] T-02 rastern auf 320 × 180 (`rasterize.py --groesse 320x180`, `cleanup.py`),
+- [x] T023 [K] T-02 in Leonardo erzeugen; Original nach `docs/art/leonardo/t-02-titelbild.*`.
+- [x] T024 [C] T-02 rastern auf 320 × 180 (`rasterize.py --groesse 320x180`, `cleanup.py`),
   Ergebnis `src/assets/images/title_t02.png`; Prompt-Log. `title_t01.png` bleibt.
-- [ ] T025 [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`: Stil-Prüfer mit README (Szenen und
+- [x] T025 [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`: Stil-Prüfer mit README (Szenen und
   Figuren, Farben), Leonardo-Workflow, Stilanker C2 und beiden Bildern ×4; dazu eine Montage von
   G-02 auf T-02 in der Lage aus R9.
-- [ ] T026 [K] Phase 4 abnehmen: beide Bilder freigeben, eine Änderung am Style-Guide aus T021
+- [x] T026 [K] Phase 4 abnehmen: beide Bilder freigeben, eine Änderung am Style-Guide aus T021
   freigeben (C21); an der Montage entscheiden, ob nichts Wichtiges verdeckt ist (FR-015, CHK024).
+
+Stand 2026-10-27: Klaus hat Claude Leonardo bedienen lassen; T020 und T023 hat Claude über Claude in
+Chrome erzeugt, Klaus hat je das Bild gewählt (G-02 Bild 2, T-02 Bild 3). G-02 hatte einen zu
+breiten Rand und wurde beim Rastern schmal gemacht (Klaus, nach Empfehlung); T-02 zeigt den Laden
+links. Phasenprüfung: Stil-Prüfer mit 7 Befunden, alle bestätigt. Behoben: Blende unter dem LCD,
+Reste vom Rastern, Rauschen in T-02. Klaus entschied: Tastatur liegt unter dem Bildrand (Style-Guide
+angepasst), Logo und Untertitel bekommen auf T-02 den `pixelschatten` (Regel für Text auf einem
+Bild im README, gilt für T028/T029), Gehäuse aufgehellt; das Fenster unter dem Gerät war seine Wahl.
+Style-Guide Version 40. 1006 Tests grün. Am 2026-10-27 von Klaus abgenommen, beide Bilder freigegeben.
 
 **Checkpoint**: G-02 und T-02 sind freigegeben und im Prompt-Log vermerkt.
 
@@ -262,6 +271,8 @@ dann der Spielbildschirm (Quickstart, „Von Hand“).
   432 × 264 (Phasenprüfung Phase 2, Befund 2). Am Foto nachsehen, dass das Gehäuse unten aus dem
   Bild ragt und keine geschlossene Unterkante zeigt.
 - [ ] T028 [A] [US1] `src/scenes/title/title_screen.tscn`: `Background` mit `title_t02.png`;
+  Logo, Untertitel und Versionszeile mit `pixelschatten` (Style-Guide, README, Logo: Text auf einem
+  Bild; Phasenprüfung Phase 4, Befund 4);
   `Communicator` in der Endlage aus dem Style-Guide mit den Seiten `MainMenu`, `DifficultySheet`,
   `SaveList`, `ConfirmSheet`, alle `look = LCD`; der eigene `MenuHint` entfällt
   (titelbildschirm.md, „Szenenaufbau“).
