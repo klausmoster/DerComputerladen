@@ -4,6 +4,8 @@ The prototype's event engine was replaced by a schedule that can be computed in 
 a workshop tool to maintain the events. The planning steps found a lot: the review 36 points, the
 analysis 40 findings, before a line of code was written.
 
+**Tokens and cost:** 2026-10-20 to 2026-10-21 on `feature/002-zeitleisten-werkstatt`: 1.9 M output, 6,910 input, 35.4 M cache write, 1,602.7 M cache read; 862 responses from Claude, 2,536 from sub-agents; about $566 at API list price.
+
 ### 2026-10-20 · The schedule model `[Architecture]`
 
 - **Decision:** Catalog, then a schedule per game, then playback, then signals. Each game has one

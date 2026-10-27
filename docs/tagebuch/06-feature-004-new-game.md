@@ -4,6 +4,8 @@ Starting, saving and continuing a game. Review 36 points, analysis 44 findings, 
 acceptance. Around it: the reviewer agents' pilot, a description of the code by system, Spec Kit
 for good, and a first look at a pocket device as the game's controls.
 
+**Tokens and cost:** 2026-10-26 to 2026-10-27 on `feature/004-neues-spiel`: 2.0 M output, 3,226 input, 8.0 M cache write, 369.9 M cache read; 684 responses from Claude, 889 from sub-agents; about $162 at API list price.
+
 ### 2026-10-26 · One Claude session per feature, from the very start `[Workflow]`
 
 - **Decision:** A feature's session now begins with `/speckit-specify`, not with the plan, and runs
