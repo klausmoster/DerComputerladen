@@ -199,6 +199,8 @@ Die Bitte um Abnahme enthält, in dieser Reihenfolge:
   von `/speckit-specify` und `/speckit-clarify`, die Spec Kit sonst als Kurzantwort zulässt.
   Anlass: die Klärungsfragen zu Feature 003.
 - Dauert etwas länger, meldet Claude kurz den Stand.
+- **Eingedeutschte Fachwörter bleiben, wie sie sind** (Klaus, 2026-10-27): „scrollen“, nicht
+  „rollen“. Im Deutschen übersetzen wir solche Wörter nicht. Anlass: eine Frage mit „rollen“.
 
 ## Werkzeuge und Pfade
 

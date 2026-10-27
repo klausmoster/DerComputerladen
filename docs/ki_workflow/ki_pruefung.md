@@ -358,12 +358,15 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 - **Der Auftrag nennt Umfang und Maßstab, keine eigene Einschätzung.** In Phase 2 stand „Seed
   eingeführt“ im Auftrag, und der Prüfer übernahm diese Sicht. Anlass: Pilot Feature 004, Phase 2
   (2026-10-26).
-- **Der Stil-Prüfer findet auch Verhalten, nicht nur Pixel.** Die Meldung, die beim Rollen neben
+- **Der Stil-Prüfer findet auch Verhalten, nicht nur Pixel.** Die Meldung, die beim Scrollen neben
   dem falschen Spielstand stand, las er aus dem Code. Maße messen die Tests, Zustände sieht der
   Prüfer. Anlass: Pilot Feature 004, Phase 5 (2026-10-26).
 - **Lücken gleich vorlegen.** 31 Lücken kamen im Pilot, fünfmal „schon bekannt“. Eine Lücke geht
   mit Empfehlung gleich an Klaus, statt bis zur Lückensuche liegen zu bleiben. Anlass: Pilot
   Feature 004 (2026-10-26).
+- **Bei jeder Frage, ob etwas gebaut wird, steht der ungefähre Aufwand dabei** (Klaus,
+  2026-10-27), etwa „Aufwand: klein, eine Aufgabe für den Agent“ oder „Aufwand: eine eigene Phase
+  mit Abnahme“. So sieht Klaus Nutzen und Arbeit zusammen. Anlass: T044 in Feature 004.
 
 ## Offen
 
