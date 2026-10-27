@@ -350,3 +350,92 @@ Abschnitt Sprache geprüft.
 
 Metal Gear Solid, Shenmue, GTA IV und Animal Crossing stehen aus eigener Kenntnis drin, nicht
 eigens nachgeschlagen.
+
+---
+
+## Nachtrag: Spike „Organizer im Hauptmenü“ (2026-10-27)
+
+Ein Wegwerf-Prototyp auf dem Branch `claude/spike-communicator-625f4c`, abgezweigt von
+`feature/004-neues-spiel`. Er wird nicht gemergt; dauerhaft bleiben nur diese Erkenntnisse, der
+Eintrag G-01 im Prompt-Log und der Prompt in der Prompt-Bibliothek.
+
+**Gerät:** der Organizer von 1991 nach Art des Psion Series 3 (Klaus, 2026-10-27). Begründung:
+Das Hauptmenü liegt außerhalb der Spielzeit und steht für das ganze Spiel. Titelbild T-01 und
+Stilanker C2 zeigen die frühen Neunziger, und das LCD hebt sich vom Endlospapier ab. Der
+Communicator von 1996 passt nicht zum Titelbild und nähme das Gerät vom Spielende vorweg, der
+Zeitplaner von 1985 wäre wieder Papier.
+
+**Gebaut:**
+- Das Gehäuse ist ein Bild auf dem Bildraster, 157 × 202 Bildpixel, gezeigt ×2.
+- Darauf liegt ein LCD in `endlos-gruen` mit 188 × 122 Oberflächenpixeln. Hauptmenü, Gradwahl und
+  Rückfrage stehen darauf, als dieselbe Menü-Szene mit dem Schalter `look = LCD`: ohne Papier,
+  Streifen, Lochränder und Schatten.
+- Das Gerät gleitet beim Erscheinen in 200 ms von unten herein, ohne zu federn, in ganzen Pixeln.
+- Die Liste der Spielstände bleibt Papier. Öffnet sie sich, fährt das Gerät hinaus, und mit der
+  Rückfrage zum Löschen kommt es wieder. Die Tastatur ragt unten aus dem Bild, als halte man das
+  Gerät hoch.
+- Tests: 940 von 940, zweimal.
+
+### Wirkung
+
+- **Stark und eigen.** Das Gerät sagt sofort „frühe Neunziger“, deutlicher als das Blatt Papier.
+  Das Hereinfahren fühlt sich an, als zöge man den Organizer aus der Tasche. Die Fahrt mit 200 ms
+  ist kurz genug, um nicht zu nerven.
+- **Es verdeckt das Titelbild.** Mit 314 Pixeln Breite, also der halben Bildbreite, liegt es über
+  dem Schaufenster, der hellsten und wichtigsten Stelle von T-01. Das Titelbild wurde für ein
+  kleines Menü rechts gemalt („a calm darker area on the right for a menu“), nicht für ein Gerät.
+- **Bruch zwischen Gerät und Papier:** Die Liste der Spielstände ist 304 breit und passt nicht aufs
+  LCD. Deshalb wechselt der Titel zwischen Gerät und Endlospapier hin und her. Das sieht
+  ungewollt aus, auch wenn die Fahrt hinaus es abmildert.
+- Die Auswahl in `signalgelb` mit Pfeil wirkt auf dem LCD fremd. Ein echtes LCD würde invertieren,
+  also dunkler Balken und helle Schrift. Das erlauben die Textpaare des Style-Guides heute nicht.
+
+### Lesbarkeit in 640 × 360
+
+- Ark Pixel 12 in `tusche` auf `endlos-gruen` ist sehr gut lesbar, gedämpfte Einträge eingeschlossen.
+- Kopfzeile und fünf Zeilen à 20 passen in 122 Höhe, nur gerade so: Es bleibt je 1 Pixel. Sechs
+  Einträge, ein Pausenmenü mit „Speichern“ oder längere Wörter passen nicht mehr.
+- Der Hinweis steht links vom Gerät, über der Straße. Er verdeckt nichts Wichtiges und überschneidet
+  nicht das Logo.
+- Bei Faktor 6 wäre das Gerät kleiner (260 × 334), das LCD aber nur 152 × 96. Dann bräuchte das
+  Menü Zeilen zu 16 statt 20.
+- Über dem LCD sitzen im Gehäusebild zwei Zeilen olivgrauer Punkte. Sie wirken wie Sprenkel. Bei
+  ernsthafter Nutzung muss das von Hand aufgeräumt werden.
+
+### Aufwand
+
+- **Grafik:** ein Durchgang in Leonardo, Lucid Origin mit C2 als Style Reference (High), 1:1, 4
+  Bilder, 78 Token. Schon das erste Bild war brauchbar: frontal, leeres LCD, Licht von oben links.
+  Dazu kommen Freistellen per Füllung vom Rand, Zuschnitt, `rasterize.py --faktor 5` und
+  `cleanup.py`, zusammen etwa eine halbe Stunde. Das LCD-Grün fehlt in der Hauptpalette und wird
+  beige. Das macht nichts, solange die Oberfläche das LCD übermalt.
+- **Code:** eine neue Szene `Organizer` mit Skript von etwa 100 Zeilen, ein Schalter im Menü und
+  etwa 30 Zeilen im Titelbildschirm.
+- **Zwei Fallen:**
+  - Das erste Bild nach dem Laden dauert lange, darum sprang der Tween gleich zur Hälfte. Abhilfe:
+    den Zeitschritt je Bild auf 1/60 s deckeln.
+  - Der Hinweis kennt nur Bildschirmlagen. Damit er mitfährt, wird er hier per Differenz
+    verschoben, ein Behelf.
+- **Ernsthaft gebaut:** etwa 3 bis 5 Tage nur für den Titel, nach Schätzung des Agents. Dazu
+  gehören eine LCD-Variante im Theme, „Bewegung reduzieren“, ein eigener Zustand für das Gerät,
+  ein Hinweis, der seiner Zeile folgt, sowie Vertrag und Tests. Das Gerät im Spiel mit Reitern,
+  Seiten und Leiste braucht eher Wochen.
+
+### Empfehlung
+
+- **Im Hauptmenü bleibt das Endlospapier.** Das Gerät verdeckt das Titelbild. Es erzwingt einen
+  Wechsel zwischen Gerät und Papier, sobald die Liste kommt. Außerdem gehört es inhaltlich ins
+  Spiel: Dort wechselt es mit den Jahren und wird gekauft. Im Titel außerhalb der Spielzeit ist das
+  Papier aus dem Drucker die stimmigere Klammer.
+- **Das Gerät wird ein eigenes Feature im Spielbildschirm**, wie oben empfohlen (10-05
+  Taschengerät, nach Rahmen und Leiste). Dafür nimmt der Spike mit:
+  - Der Leonardo-Weg trägt, und das Gehäuse lässt sich in einem Durchgang erzeugen.
+  - Für den Inhalt von 384 × 192 braucht das Gehäuse ein LCD in diesem Seitenverhältnis von 2 : 1.
+    Das muss in den Prompt („wide LCD, twice as wide as high“), sonst entsteht ein 3 : 2-LCD wie
+    hier.
+  - Vor dem Bauen gehören in den Style-Guide: Baustein Gerät, eine LCD-Farbrolle oder die
+    Freigabe von `endlos-gruen` als LCD-Grund und die Auswahl auf dem LCD.
+  - Mit `look` an MainMenu ließ sich dasselbe Menü auf zwei Untergründe stellen. Das taugt als
+    Muster für das Pausenmenü im Gerät.
+- Will Klaus das Gerät trotzdem im Titel, dann kleiner (Faktor 6) mit Zeilen zu 16, und die
+  Spielstände als Seite des Geräts statt als Papier. Das wäre ein eigenes kleines Feature.

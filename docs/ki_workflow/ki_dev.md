@@ -206,6 +206,9 @@ Die Bitte um Abnahme enthält, in dieser Reihenfolge:
 
 - Godot liegt unter `/Applications/Godot.app/Contents/MacOS/Godot`, Version 4.7.2 stable, nicht
   .NET; den Pfad direkt nutzen statt zu suchen. Kommt eine zweite Version dazu, hier nachtragen.
+- Claude darf Prozesse selbst mit `kill` beenden, etwa ein hängendes Godot oder eine offene
+  Werkstatt nach einem Test (Klaus, 2026-10-27, im Spike zum Communicator). Die Erlaubnis steht als
+  `Bash(kill *)` in Klaus' `~/.claude/settings.json`.
 - Projekt-Root ist `src/`, also immer `--path src`. Startbefehle vom Repo-Ordner aus:
   - Spiel: `/Applications/Godot.app/Contents/MacOS/Godot --path src`
   - Werkstatt:

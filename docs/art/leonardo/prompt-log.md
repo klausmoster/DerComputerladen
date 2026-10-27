@@ -56,3 +56,14 @@ Prompt der Endfassung:
 - Status: freigegeben für das Cover. Noch nicht aufs Raster 300 × 450 gebracht.
 
 > A cheerful shopkeeper in his late thirties with dark hair and a moustache, a short-sleeved light blue shirt with a small name badge and a red striped tie, standing proudly behind the counter of a cramped German computer shop in the early 1990s, arms spread wide to present his goods. On the counter a beige desktop PC with a CRT monitor and a dot-matrix printer printing continuous form paper with pale green stripes that curls over the counter edge toward the viewer. Shelves full of colorful software boxes and floppy disks behind him, a cash register with a green glowing display, a skeptical customer couple at the left edge, a cat asleep on top of a monitor. Warm interior light. Keep the top quarter calm and uncluttered for the title logo. Early 1990s VGA point-and-click adventure game screenshot: pixel art at 320x180 resolution scaled up, limited 256-color palette, clearly visible square pixels, hand-placed dithering in the shading, crisp dark outlines, no anti-aliasing. No text, no lettering, no logos, no user interface.
+
+## G-01 Gerät: Organizer 1991 (Spike)
+
+- Datei: `g-01-organizer.jpg`, 1440 × 1440
+- Datum: 2026-10-27
+- Durchgang: `1f1d1cda-de2f-6870-8a72-225eb21fdb42`, Bild 0, Seed 1515248944
+- Format: 1:1 Large, 4 Bilder, Style Reference C2 (High, als Upload `stilanker-c2.jpg`), 78 Token
+- Rasterfassung: Hintergrund per Füllung vom Rand freigestellt (OKLab-Abstand unter 0,06), auf 785 × 1010 ab 335/215 zugeschnitten, `rasterize.py --faktor 5`, `cleanup.py` → `src/assets/images/organizer_1991.png`, 157 × 202, 110 Farben. Das LCD-Grün fehlt in der Hauptpalette und wird beige; die Oberfläche malt das LCD darüber.
+- Status: nur für den Spike „Taschengerät im Hauptmenü“, nicht freigegeben.
+
+> An open pocket organizer from the early 1990s, a small clamshell palmtop computer, seen straight from the front and slightly from above, perfectly symmetrical, centered, opened flat like a book. Warm light grey plastic housing with rounded corners and a darker grey hinge bar across the middle. The upper lid holds one large, completely blank rectangular LCD screen, plain pale grey-green and empty, inside a thin dark bezel; the screen takes up most of the lid. The lower half holds a compact keyboard with rows of small dark grey rubber keys and a row of small function keys above them. Light from the upper left, a thin highlight along the upper left edges, a soft dark outline around the device. The device fills most of the image. Plain flat dark navy blue background, nothing else in the image. Early 1990s VGA point-and-click adventure game screenshot: pixel art at 320x180 resolution scaled up, limited 256-color palette, clearly visible square pixels, hand-placed dithering in the shading, crisp dark outlines, no anti-aliasing. No text, no lettering, no logos, no user interface.
