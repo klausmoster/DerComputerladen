@@ -47,7 +47,7 @@ unter „Offene Fragen", sind aber eigene Systeme.
 | 001 | [Start bis zum Hauptmenü](../../specs/001-hauptmenue/spec.md), Spec-Kit-Pilot, System 10 | fertig | tasks |
 | 002 | [Zeitleisten-Werkstatt](../../specs/002-zeitleisten-werkstatt/spec.md), System 01 | fertig | tasks |
 | 003 | [Schwierigkeitsgrade der Zeitleiste](../../specs/003-schwierigkeitsgrade/spec.md), System 01 | fertig | tasks |
-| 004 | [Neues Spiel starten](../../specs/004-neues-spiel/spec.md), System 11 und 01, Pilot der Prüf-Agents | umgesetzt, Gesamtabnahme offen | tasks |
+| 004 | [Neues Spiel starten](../../specs/004-neues-spiel/spec.md), System 11 und 01, Pilot der Prüf-Agents | fertig | tasks |
 
 Diese Tabelle wird derzeit von Hand gepflegt. Ab etwa zehn Features lohnt ein
 Generator, der sie aus dem Frontmatter baut — gleiches Prinzip wie
