@@ -434,7 +434,7 @@ Abschluss.
   sie mit einer eigenen Phasenprüfung (Analyse, D3).
 - [ ] T034 [K] Quickstart vollständig durchgehen, Abschnitte 1 bis 4, dazu die Quickstarts von
   Feature 001 bis 003 mit den zwei bekannten Ausnahmen (quickstart.md, Einleitung). Hängt an T033
-  und an der Phase für Lücken, falls es eine gibt.
+  und an den Phasen für Lücken (7 und 8).
 - [ ] T035 [K] Feature abnehmen: Die Abnahmen T002, T011, T016, T024, T030 und T034 sind erledigt.
   Dann entscheidet Klaus über den Merge nach `main`.
 
@@ -627,3 +627,18 @@ eigenen Phasenprüfung (Analyse, D3).
 - [x] T042 [C] Phasenprüfung Phase 7 mit `/dcl-phasenpruefung`: Text-Prüfer über die Texte aus T037
   und T038; Tests zweimal, Startprobe.
 - [x] T043 [K] Phase 7 abnehmen; danach T034 und T035.
+
+## Phase 8: Prüfordner im Quickstart
+
+**Purpose**: Entscheidungen von Klaus beim Quickstart (T034, 2026-10-27).
+
+- [x] T044 [A] ~~Je Datei nur eine Warnung je Programmstart in `src/core/save/`~~ Verworfen (Klaus,
+  2026-10-27): Gebaut und wieder zurückgenommen. Die Regel kostete rund 50 Zeilen Code und ein
+  Gedächtnis, das jeder Test leeren musste, nur damit eine Meldung im Protokoll seltener steht.
+  Klaus will keine Regel „wurde diese Meldung schon gezeigt“; die Warnung zu einem Spielstand, der
+  sich nicht fortsetzen lässt, kommt weiter bei jedem Einlesen des Ordners.
+- [x] T045 [C] `quickstart.md`, Abschnitt 4: Der Prüfordner bekommt beim Aufräumen das Datum in
+  den Namen (`spielstaende_pruefung_JJJJ-MM-TT`), damit er nie in einem älteren Prüfordner landet
+  (Quickstart Feature 004: `spielstaende` landete als Unterordner in `spielstaende_pruefung`).
+- [x] T046 [C] Prüfen: Tests zweimal mit derselben Zahl, Startprobe still.
+- [x] T047 [K] Phase 8 abnehmen; danach T034 und T035.

@@ -141,11 +141,12 @@ belegt `test_save_resume_run.gd`; den echten Katalog ändert Klaus dafür nicht.
 
 ## 4. Aufräumen
 
-Den beiseitegelegten Ordner zurückholen; vorher den Prüfordner wegräumen, wenn Klaus ihn nicht
-behalten will:
+Den Prüfordner, also `spielstaende` mit allem, was beim Prüfen entstanden ist, unter dem Datum
+des Tages beiseitelegen und danach den beiseitegelegten Ordner zurückholen. Das Datum im Namen
+sorgt dafür, dass der Prüfordner nie in einem älteren landet:
 
 ```bash
-mv ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende_pruefung
+mv ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende ~/Library/Application\ Support/Godot/app_userdata/Der\ Computerladen/spielstaende_pruefung_$(date +%F)
 ```
 
 ```bash
