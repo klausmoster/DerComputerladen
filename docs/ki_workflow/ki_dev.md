@@ -42,7 +42,8 @@ flowchart TD
     CV -->|"Lücken: eine neue Phase"| F
     CV -->|"keine Lücken"| GA["Gesamtabnahme durch Klaus"]
     GA --> SB["Claude prüft die Spielbeschreibung,<br/>Klaus gibt Änderungen frei"]
-    SB --> M["Merge auf Klaus' Wort,<br/>Klaus pusht"]
+    SB --> TB["Claude schreibt das Tagebuch,<br/>Klaus nimmt ab"]
+    TB --> M["Merge auf Klaus' Wort,<br/>Klaus pusht"]
 ```
 
 Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
@@ -88,6 +89,14 @@ Gestrichelt ist die Phasenprüfung, die noch eingeführt wird (Punkt 8).
    Klaus' OK; es ist ein Schritt wie jeder andere. In `tasks.md` steht er als `[C]`-Aufgabe, die
    das Template unter `.specify/templates/overrides/` mitbringt. Warum: Die Spielbeschreibung ist
    der Kontext, den jede Sitzung vorlädt. Veraltet sie still, arbeitet die KI mit falschem Wissen.
+10. **Vor jedem Merge nach `main` das Tagebuch fortschreiben** (Klaus, 2026-10-27): Claude schreibt
+    in `docs/tagebuch/` die Einträge zu dem, was der Branch entschieden hat, ein Eintrag je echter
+    Entscheidung, nicht je Commit, in der Form aus dem [README](../tagebuch/README.md) und auf
+    Englisch. Ein Feature bekommt eine eigene Datei, ein kleiner Branch, etwa zur Arbeitsweise,
+    Einträge in der Datei, die zeitlich passt. Bei Grafik kommt das Bild dazu. Nur Belegtes kommt
+    hinein; wo der Grund fehlt, fragt Claude Klaus. Klaus nimmt die Einträge ab, sie gehen mit in
+    den Merge. Warum: Das Tagebuch hält fest, wie das Spiel mit KI entsteht, vor allem die
+    Entscheidungen zu Arbeitsweise und Grafik. Nachträglich lassen sich Gründe kaum noch belegen.
 
 ## Git
 

@@ -100,6 +100,7 @@ deren `README.md`.
 | `docs/spielbeschreibung/` | Stand im Code, nach Systemen; Index `README.md` |
 | `docs/ki_workflow/` | Arbeitsweise mit KI: Abläufe, Prüfungen, Erfahrungen |
 | `docs/offene-punkte.md` | offene Fragen, Lücken und Claudes eigene Entscheidungen |
+| `docs/tagebuch/` | Entwicklungstagebuch: wichtige Entscheidungen seit Projektbeginn, je Merge fortgeschrieben |
 | `.claude/skills/` | Projekt-Skills, Präfix `dcl-` (eigene) und `speckit-` (Spec Kit) |
 | `.claude/agents/` | Projekt-Agents, z.B. `godot-entwickler` für `[A]`-Aufgaben |
 
