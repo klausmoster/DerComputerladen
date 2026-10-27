@@ -22,6 +22,11 @@ extends Control
 ## Die Liste führt selbst nichts aus, sie meldet nur. Allein den Löschmodus schaltet sie selbst ein,
 ## denn er ändert nur sie. Ausschalten kann ihn nur, wer sie zeigt: Ob „Zurück“ und Esc den Modus
 ## oder das Blatt beenden, entscheidet der Titelbildschirm.
+##
+## Seit Feature 005 kann die Liste wie MainMenu auf der Anzeige des Communicators stehen ([member
+## look] = LCD; Style-Guide, Baustein Liste, „Auf der Anzeige“): kein Papier, kein Zebra, kein
+## Schatten; die gewählte Zeile ein Balken in tusche, Schrift, Spalten, Pfeil und Rollmarke darin
+## lcd. Die Größe gibt dann der Communicator. Bedienung, Rollen, Löschmodus und Signale sind gleich.
 
 ## Eine fortsetzbare Zeile wurde ausgelöst.
 signal resume_requested(slot: SaveSlot)
@@ -65,6 +70,25 @@ const SCROLL_MARK_INSET := 12
 ## Die Labels einer Zeile, in dieser Reihenfolge; „State“ steht bei nicht fortsetzbaren Spielständen
 ## statt Grad und Spieldatum.
 const CELL_NAMES: Array[StringName] = [&"Name", &"Difficulty", &"Day", &"Played", &"State"]
+## Die Schriftfarben, die der Button der gewählten Zeile auf der Anzeige per Override in lcd
+## bekommt, wie in MainMenu; font_disabled_color bleibt, gedämpft bleibt gedämpft (R3, R15).
+const LIT_FONT_COLORS: Array[StringName] = MainMenu.LIT_FONT_COLORS
+
+## Worauf die Liste steht: PAPER ist Endlospapier wie in Feature 004, LCD die Anzeige des
+## Communicators. Derselbe Schalter wie MainMenu.Look.
+enum Look { PAPER, LCD }
+
+## Worauf die Liste steht, siehe [enum Look]. Es gilt beim Bau der Zeilen; wer es danach ändert,
+## lässt die Zeilen neu bauen, und die Auswahl bleibt auf ihrer Zeile (Analyse, C23).
+@export var look: Look = Look.PAPER:
+	set(value):
+		look = value
+		if is_node_ready():
+			_apply_look()
+			_clear_rows()
+			_build_rows()
+			_update_size()
+			select(_selected_index)
 
 ## Die Spielstände in der Reihenfolge der Liste.
 var _slots: Array[SaveSlot] = []
@@ -87,6 +111,7 @@ var _back_button: Button
 
 
 func _ready() -> void:
+	_apply_look()
 	_build_rows()
 	_update_header()
 	_refresh_rows()
@@ -97,15 +122,18 @@ func _ready() -> void:
 
 
 func _draw() -> void:
-	MenuPaper.draw_paper(self, size.x, _row_count())
-	# Die Auswahl: signalgelb, davor der Pfeil, gedämpft wie der Text der Zeile.
-	MenuPaper.draw_selection(self, size.x, _visual_row(_selected_index) + 1,
-		not _is_dimmed(_selected_index))
+	if _draws_paper():
+		MenuPaper.draw_paper(self, size.x, _row_count())
+	# Die Auswahl, davor der Pfeil, gedämpft wie der Text der Zeile: auf Papier signalgelb, auf der
+	# Anzeige ein Balken in tusche.
+	var row := _visual_row(_selected_index) + 1
+	if look == Look.LCD:
+		MenuPaper.draw_lcd_selection(self, size.x, row, not _is_dimmed(_selected_index))
+	else:
+		MenuPaper.draw_selection(self, size.x, row, not _is_dimmed(_selected_index))
 	# Die Rollmarken zuletzt, damit sie auch auf einer gewählten Zeile „Löschen …“ zu sehen sind.
-	if _more_above():
-		_draw_scroll_mark(0, true)
-	if _more_below():
-		_draw_scroll_mark(_visual_row(_slots.size()) + 1, false)
+	for layer in _scroll_mark_layers():
+		draw_rect(layer["rect"], layer["color"])
 
 
 ## Mausrad über der Kopfzeile oder dem Rand des Papiers. Über einer Zeile kommt es bei
@@ -162,6 +190,9 @@ func select(index: int) -> void:
 		return
 	_selected_index = posmod(index, _slots.size() + 2)
 	_scroll_to(_selected_index)
+	# Erst die Farben der Buttons, dann die Zeilen: _fill_row() nimmt die Farbe der Spalten vom
+	# Button, und der gewählte hat auf der Anzeige schon seinen Override lcd.
+	_update_row_colors()
 	_refresh_rows()
 	queue_redraw()
 	if not is_visible_in_tree():
@@ -188,6 +219,63 @@ func _build_rows() -> void:
 		_slot_buttons.append(button)
 	_delete_button = _make_row("DeleteMode", TitleTexts.LABEL_DELETE_MODE)
 	_back_button = _make_row("Back", TitleTexts.LABEL_BACK)
+	_update_row_colors()
+
+
+## Nimmt alle Buttons heraus, damit _build_rows() sie mit dem neuen [member look] baut. Wie im
+## Menü remove_child() sofort und queue_free() erst am Ende des Bilds.
+func _clear_rows() -> void:
+	var buttons: Array[Button] = _slot_buttons.duplicate()
+	buttons.append_array([_delete_button, _back_button])
+	for button in buttons:
+		_rows.remove_child(button)
+		button.queue_free()
+	_slot_buttons.clear()
+	_delete_button = null
+	_back_button = null
+
+
+## Stellt Kopfzeile und Innenbereich der Zeilen auf [member look]: auf Papier 12 frei für Lochrand
+## und Abstand, auf der Anzeige 4 (Style-Guide, Baustein Liste).
+func _apply_look() -> void:
+	var inset := _row_inset()
+	_rows.offset_left = inset
+	_rows.offset_right = -inset
+	_header.theme_type_variation = &"LcdHeader" if look == Look.LCD else &"MenuHeader"
+
+
+## Ob _draw() Papier malt: nur auf Papier. Headless entsteht kein Bild; Tests fragen hier.
+func _draws_paper() -> bool:
+	return look == Look.PAPER
+
+
+## Links frei bis zum Innenbereich der Zeilen: ROW_INSET auf Papier, MenuPaper.LCD_ROW_INSET auf der
+## Anzeige.
+func _row_inset() -> int:
+	return MenuPaper.LCD_ROW_INSET if look == Look.LCD else ROW_INSET
+
+
+## Vom linken Rand bis zum Text der Zeile: TEXT_INSET auf Papier, MenuPaper.LCD_TEXT_INSET auf der
+## Anzeige.
+func _text_inset() -> int:
+	return MenuPaper.LCD_TEXT_INSET if look == Look.LCD else TEXT_INSET
+
+
+## Auf der Anzeige bekommt der Button der gewählten Zeile seine Schrift lcd per Override, jeder
+## andere verliert ihn; die Spalten übernimmt _fill_row() von ihm. Begründung wie in
+## MainMenu._update_row_colors(): Das Theme kennt „gewählt“ nicht (R15; Analyse, B1).
+func _update_row_colors() -> void:
+	if _delete_button == null:
+		return
+	var lit_button: Button = _button_for(_selected_index) if look == Look.LCD else null
+	var buttons: Array[Button] = _slot_buttons.duplicate()
+	buttons.append_array([_delete_button, _back_button])
+	for button in buttons:
+		for color_name in LIT_FONT_COLORS:
+			if button == lit_button:
+				button.add_theme_color_override(color_name, UiPalette.LCD)
+			else:
+				button.remove_theme_color_override(color_name)
 
 
 ## Ein durchsichtiger, linksbündiger Button wie im Menü, schon in Rows eingehängt, damit er das
@@ -196,7 +284,7 @@ func _make_row(node_name: String, label: String) -> Button:
 	var button := Button.new()
 	button.name = node_name
 	button.text = label
-	button.theme_type_variation = &"MenuRow"
+	button.theme_type_variation = &"LcdRow" if look == Look.LCD else &"MenuRow"
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.custom_minimum_size = Vector2(0, ROW_HEIGHT)
 	button.focus_entered.connect(_on_row_focus_entered.bind(button))
@@ -208,7 +296,8 @@ func _make_row(node_name: String, label: String) -> Button:
 
 ## Ein Label für Spalte [param cell] in [param button]. Ein Button ist kein Container; seine Kinder
 ## stehen also genau dort, wo position sie hinsetzt. Schrift und Größe kommen aus der Theme-Variante
-## MenuRow des Buttons, die Farbe setzt _fill_row().
+## des Buttons, MenuRow oder LcdRow, die Farbe setzt _fill_row(). Die Spalten beginnen ab dem Text
+## wie auf Papier und sind genauso breit; auf der breiteren Anzeige bleibt rechts nur mehr Luft.
 func _make_cell(button: Button, cell: StringName) -> Label:
 	var label := Label.new()
 	label.name = cell
@@ -218,7 +307,7 @@ func _make_cell(button: Button, cell: StringName) -> Label:
 	label.add_theme_font_override(&"font", button.get_theme_font(&"font"))
 	label.add_theme_font_size_override(&"font_size", button.get_theme_font_size(&"font_size"))
 	var column := COLUMNS[_column_of(cell)]
-	label.position = Vector2(TEXT_INSET - ROW_INSET + column, 0)
+	label.position = Vector2(_text_inset() - _row_inset() + column, 0)
 	label.size = Vector2(_cell_width(cell), ROW_HEIGHT)
 	if cell == &"Name":
 		# Passt der Name nicht, kürzt Godot ihn selbst und hängt „…“ an (ellipsis_char). Dafür muss
@@ -263,7 +352,12 @@ func _update_header() -> void:
 
 ## Papier so breit wie PAPER_WIDTH und so hoch wie alle sichtbaren Zeilen; wie im Menü die Größe
 ## selbst, nicht nur die Mindestgröße, damit das Blatt mit weniger Spielständen auch schrumpft.
+##
+## Auf der Anzeige setzt die Liste keine Größe, die gibt ihr der Communicator (Analyse, C6).
 func _update_size() -> void:
+	if look == Look.LCD:
+		custom_minimum_size = Vector2.ZERO
+		return
 	custom_minimum_size = Vector2(PAPER_WIDTH, ROW_HEIGHT * _row_count())
 	size = custom_minimum_size
 
@@ -417,21 +511,40 @@ func _more_below() -> bool:
 	return _first_visible + VISIBLE_ROWS < _slots.size()
 
 
-## Wo die Rollmarke in Zeile [param row] steht (0 ist die Kopfzeile), in Koordinaten des Blatts.
+## Wo die Rollmarke in Zeile [param row] steht (0 ist die Kopfzeile), in Koordinaten des Blatts:
+## auf Papier SCROLL_MARK_INSET vom rechten Rand, auf der Anzeige MenuPaper.LCD_SCROLL_MARK_INSET.
 func _scroll_mark_rect(row: int) -> Rect2:
-	return Rect2(size.x - SCROLL_MARK_INSET - SCROLL_MARK_WIDTH, ROW_HEIGHT * row + SCROLL_MARK_TOP,
+	var inset := MenuPaper.LCD_SCROLL_MARK_INSET if look == Look.LCD else SCROLL_MARK_INSET
+	return Rect2(size.x - inset - SCROLL_MARK_WIDTH, ROW_HEIGHT * row + SCROLL_MARK_TOP,
 		SCROLL_MARK_WIDTH, SCROLL_MARK_HEIGHT)
 
 
-## Malt die Rollmarke in Zeile [param row] als Pixel-Dreieck: vier Reihen mit den Breiten 1, 3, 5
-## und 7 nach oben, 7, 5, 3 und 1 nach unten, jede mittig. Das ist der Pfeil vor der Auswahl,
-## gedreht.
-func _draw_scroll_mark(row: int, up: bool) -> void:
+## Die Rollmarken, die _draw() malt, je als { "rect": Rect2, "color": Color }: oben in der
+## Kopfzeile, wenn oben mehr steht, unten in „Löschen …“, wenn unten mehr steht. Headless entsteht
+## kein Bild; Tests prüfen die Marken hierüber.
+func _scroll_mark_layers() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if _more_above():
+		result.append_array(_scroll_mark_lines(0, true))
+	if _more_below():
+		result.append_array(_scroll_mark_lines(_visual_row(_slots.size()) + 1, false))
+	return result
+
+
+## Die Rollmarke in Zeile [param row] als Pixel-Dreieck: vier Reihen mit den Breiten 1, 3, 5 und 7
+## nach oben, 7, 5, 3 und 1 nach unten, jede mittig. Das ist der Pfeil vor der Auswahl, gedreht.
+## Sie ist tusche; nur auf der Anzeige in der gewählten Zeile lcd, sonst verschwände sie im Balken
+## (CHK001). Auf Papier steht sie auch gewählt in tusche auf signalgelb.
+func _scroll_mark_lines(row: int, up: bool) -> Array[Dictionary]:
 	var rect := _scroll_mark_rect(row)
+	var lit := look == Look.LCD and row == _visual_row(_selected_index) + 1
+	var color := UiPalette.LCD if lit else UiPalette.TUSCHE
+	var result: Array[Dictionary] = []
 	for line in SCROLL_MARK_HEIGHT:
 		var inset := SCROLL_MARK_HEIGHT - 1 - line if up else line
-		draw_rect(Rect2(rect.position.x + inset, rect.position.y + line,
-			SCROLL_MARK_WIDTH - 2 * inset, 1), UiPalette.TUSCHE)
+		result.append({"rect": Rect2(rect.position.x + inset, rect.position.y + line,
+			SCROLL_MARK_WIDTH - 2 * inset, 1), "color": color})
+	return result
 
 
 # --- Zeilen und Auswahl ---------------------------------------------------------------------------

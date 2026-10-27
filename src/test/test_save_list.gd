@@ -10,6 +10,10 @@ extends GutTest
 ## Liste, nicht das Lesen. Was SaveStore und SaveSlot aus Dateien machen, prüfen test_save_store.gd
 ## und test_save_game.gd.
 ##
+## Seit Feature 005 (T015) dazu: die Liste auf der Anzeige des Communicators (look = LCD). Die Tests
+## dazu bauen eine eigene Liste in einem eigenen Viewport, so groß wie die Anzeige, wie der
+## Communicator sie hinstellt; alle Tests davor laufen unverändert auf Papier.
+##
 ## Wie in test_main_menu.gd steht die Liste in einem eigenen Viewport, neben einem fremden Button,
 ## und Tasten und Klicks gehen über push_input wie echte Eingaben. Das Ende des Löschmodus auf allen
 ## vier Wegen prüft test_title_screen.gd mit T027, denn beenden kann ihn nur der Titelbildschirm; hier
@@ -20,6 +24,10 @@ const LISTE := preload("res://scenes/title/save_list.tscn")
 const ZULETZT := 1793047212
 const STUNDE := 3600
 const ZEILE := SaveList.ROW_HEIGHT
+## Größe der Anzeige des Communicators (Style-Guide, Baustein Communicator).
+const ANZEIGE := Vector2(384, 192)
+## Die Spalten einer fortsetzbaren Zeile.
+const SPALTEN: Array[StringName] = [&"Name", &"Difficulty", &"Day", &"Played"]
 
 ## Die Sätze für den Spieler, hier ausgeschrieben statt als Konstanten aus dem Code: So fällt jede
 ## Änderung hier auf.
@@ -810,6 +818,251 @@ func test_show_slots_vor_dem_erscheinen_gilt_beim_erscheinen() -> void:
 	assert_eq(liste.size, Vector2(304, 6 * ZEILE))
 
 
+# --- Auf der Anzeige (Feature 005, T015) ---------------------------------------------------------
+
+func test_papier_ohne_override_der_schrift() -> void:
+	# Arrange und Act: auf Papier, gewählt die zweite Zeile.
+	await _zeige(_drei(), 1)
+
+	# Assert: Auf Papier kommt jede Farbe aus MenuRow; der Titel bleibt, wie er ist.
+	assert_true(_liste._draws_paper())
+	for button in _alle_knoepfe():
+		for farbe in SaveList.LIT_FONT_COLORS:
+			assert_false(button.has_theme_color_override(farbe),
+				"%s hat auf Papier keinen Override %s." % [button.name, farbe])
+	for zelle in SPALTEN:
+		assert_eq(_zelle(1, zelle).get_theme_color(&"font_color"), UiPalette.TUSCHE,
+			"Auf Papier ist auch die gewählte Zeile tusche: %s." % zelle)
+
+
+func test_lcd_ohne_papier_mit_den_varianten_der_anzeige() -> void:
+	# Arrange und Act
+	await _auf_der_anzeige(_drei())
+
+	# Assert
+	assert_false(_liste._draws_paper(), "Auf der Anzeige kein Papier, kein Zebra, kein Schatten.")
+	assert_eq((_liste.get_node(^"Rows/Header") as Label).theme_type_variation, &"LcdHeader")
+	for button in _alle_knoepfe():
+		assert_eq(button.theme_type_variation, &"LcdRow", "%s ist eine LcdRow." % button.name)
+	var zeilen := _liste.get_node(^"Rows") as Control
+	assert_eq([zeilen.offset_left, zeilen.offset_right],
+		[float(MenuPaper.LCD_ROW_INSET), -float(MenuPaper.LCD_ROW_INSET)],
+		"Der Innenbereich beginnt 4 vom Rand und endet 4 davor.")
+	# Text bei x 16, die Spalten ab dem Text wie auf Papier.
+	for spalte in SPALTEN.size():
+		assert_eq(_links(_zelle(0, SPALTEN[spalte])),
+			float(MenuPaper.LCD_TEXT_INSET + SaveList.COLUMNS[spalte]),
+			"Spalte %s ab x 16." % SPALTEN[spalte])
+	var loeschen := _knopf("DeleteMode")
+	assert_eq(_links(loeschen) + loeschen.get_theme_stylebox(&"normal").content_margin_left,
+		float(MenuPaper.LCD_TEXT_INSET), "Auch „Löschen …“ beginnt bei x 16.")
+
+
+func test_lcd_spalten_so_breit_wie_auf_papier() -> void:
+	# Arrange
+	await _auf_der_anzeige(_drei())
+
+	# Assert: Was auf Papier passt, passt auch auf der Anzeige; rechts bleibt nur mehr Luft.
+	for zelle in SPALTEN:
+		assert_eq(_zelle(0, zelle).size.x, float(SaveList._cell_width(zelle)), String(zelle))
+	var letzte := _zelle(0, &"Played")
+	assert_lte(_links(letzte) + letzte.size.x, ANZEIGE.x - MenuPaper.LCD_ROW_INSET,
+		"Die letzte Spalte endet vor dem Innenrand.")
+
+
+func test_lcd_groesse_kommt_von_aussen() -> void:
+	# Arrange
+	await _auf_der_anzeige(_drei())
+
+	# Act: Was auf Papier die Größe setzt, darf sie auf der Anzeige nicht ändern.
+	await _zeige(_viele(20), 3)
+	_liste.set_delete_mode(true)
+
+	# Assert
+	assert_eq(_liste.size, ANZEIGE, "Die Seite bleibt so groß wie die Anzeige.")
+	assert_eq(_liste.custom_minimum_size, Vector2.ZERO, "Keine Mindestgröße überstimmt sie.")
+
+
+func test_lcd_auswahl_ist_invertiert_auch_in_den_spalten() -> void:
+	# Arrange
+	await _auf_der_anzeige(_drei())
+
+	# Act: Pfeil runter auf „Spiel 6“.
+	_taste(KEY_DOWN)
+
+	# Assert: Schrift und Spalten der gewählten Zeile lcd, die übrigen tusche.
+	assert_eq(_liste.selected_index(), 1)
+	assert_eq(_spaltenfarben(0), [UiPalette.TUSCHE, UiPalette.TUSCHE, UiPalette.TUSCHE,
+		UiPalette.TUSCHE])
+	assert_eq(_spaltenfarben(1), [UiPalette.LCD, UiPalette.LCD, UiPalette.LCD, UiPalette.LCD])
+	assert_eq(_zeile(1).get_theme_color(&"font_focus_color"), UiPalette.LCD)
+	var ebenen := MenuPaper.lcd_selection_layers(_liste.size.x, 2, true)
+	assert_eq(ebenen[0], {"rect": Rect2(4, 40, ANZEIGE.x - 8, ZEILE), "color": UiPalette.TUSCHE},
+		"Balken in tusche über den Innenbereich.")
+
+
+func test_lcd_maus_auf_a_pfeil_auf_b() -> void:
+	# Arrange: Die Maus steht auf „Spiel 7“ und wählt sie.
+	await _auf_der_anzeige(_drei())
+	_maus_nach(_mitte(_zeile(0)))
+
+	# Act: Pfeil runter wählt „Spiel 6“; die Maus bleibt auf „Spiel 7“.
+	_taste(KEY_DOWN)
+
+	# Assert
+	assert_eq(_zeile(0).get_draw_mode(), BaseButton.DRAW_HOVER, "Voraussetzung: A unter der Maus.")
+	assert_eq(_liste.selected_index(), 1)
+	assert_eq(_spaltenfarben(0)[0], UiPalette.TUSCHE, "A unter der Maus bleibt tusche.")
+	assert_eq(_spaltenfarben(1)[0], UiPalette.LCD, "B gewählt ist lcd.")
+
+
+func test_lcd_loeschen_und_zurueck_unter_der_maus() -> void:
+	# Arrange: Die Maus fährt auf „Löschen …“ und wählt es.
+	await _auf_der_anzeige(_drei())
+	_maus_nach(_mitte(_knopf("DeleteMode")))
+
+	# Act und Assert: Pfeil runter auf „Zurück“, die Maus bleibt auf „Löschen …“.
+	_taste(KEY_DOWN)
+	assert_eq(_knopf("DeleteMode").get_draw_mode(), BaseButton.DRAW_HOVER)
+	assert_eq(_schriftfarbe(_knopf("DeleteMode")), UiPalette.TUSCHE,
+		"„Löschen …“ unter der Maus, nicht gewählt: tusche.")
+	assert_eq(_schriftfarbe(_knopf("Back")), UiPalette.LCD, "„Zurück“ gewählt: lcd.")
+
+	# Act und Assert: Die Maus fährt auf „Zurück“, gewählt und darunter.
+	_maus_nach(_mitte(_knopf("Back")))
+	assert_eq(_knopf("Back").get_draw_mode(), BaseButton.DRAW_HOVER)
+	assert_eq(_schriftfarbe(_knopf("Back")), UiPalette.LCD, "Gewählt unter der Maus bleibt lcd.")
+	assert_eq(_schriftfarbe(_knopf("DeleteMode")), UiPalette.TUSCHE)
+
+
+func test_lcd_gewaehlt_und_nicht_verfuegbar_bleibt_gedaempft() -> void:
+	# Arrange: oben fortsetzbar, darunter beschädigt.
+	await _auf_der_anzeige([_spielstand(2, Difficulty.Level.SCHWER, 0, ZULETZT), _beschaedigt(4)])
+
+	# Act
+	_liste.select(1)
+
+	# Assert
+	for zelle: StringName in [&"Name", &"State"]:
+		assert_eq(_zelle(1, zelle).get_theme_color(&"font_color"), UiPalette.GEHAEUSE_DUNKEL,
+			"Beschädigt und gewählt: %s gedämpft." % zelle)
+	assert_eq(_spaltenfarben(0)[0], UiPalette.TUSCHE, "Die vorige Zeile ist wieder tusche.")
+	assert_true(_liste._is_dimmed(1), "Der Pfeil im Balken ist gehaeuse-dunkel.")
+	var ebenen := MenuPaper.lcd_selection_layers(_liste.size.x, 2, false)
+	assert_eq(ebenen[1]["color"], UiPalette.GEHAEUSE_DUNKEL)
+
+	# Act und Assert: im Löschmodus „Löschen …“ gewählt, gesperrt und gedämpft.
+	_liste.set_delete_mode(true)
+	_liste.select(2)
+	assert_eq(_schriftfarbe(_knopf("DeleteMode")), UiPalette.GEHAEUSE_DUNKEL)
+
+
+func test_lcd_rollmarke_8_vom_rand_in_der_gewaehlten_zeile_lcd() -> void:
+	# Arrange: sieben Spielstände, unten steht mehr; gewählt ist der oberste.
+	await _auf_der_anzeige(_viele(7))
+
+	# Act und Assert: nicht gewählt tusche.
+	var marke := _liste._scroll_mark_layers()
+	assert_true(_liste._more_below() and not _liste._more_above())
+	assert_eq(_liste._scroll_mark_rect(7), Rect2(ANZEIGE.x - 8 - 7, 7 * ZEILE + 8, 7, 4),
+		"In „Löschen …“, 8 vom rechten Rand der Anzeige.")
+	assert_eq(_farben(marke), [UiPalette.TUSCHE], "Nicht gewählt: tusche.")
+
+	# Act und Assert: „Löschen …“ gewählt, die Marke im Balken lcd.
+	_liste.select(7)
+	assert_eq(_farben(_liste._scroll_mark_layers()), [UiPalette.LCD], "Gewählt: lcd (CHK001).")
+
+	# Act und Assert: gerollt; oben in der Kopfzeile tusche, unten keine mehr.
+	_liste.select(6)
+	assert_true(_liste._more_above() and not _liste._more_below())
+	assert_eq(_liste._scroll_mark_rect(0), Rect2(ANZEIGE.x - 8 - 7, 8, 7, 4), "Kopfzeile.")
+	assert_eq(_farben(_liste._scroll_mark_layers()), [UiPalette.TUSCHE])
+
+
+func test_papier_rollmarke_bleibt_tusche_auch_gewaehlt() -> void:
+	# Arrange
+	await _zeige(_viele(7))
+
+	# Act
+	_liste.select(7)
+
+	# Assert
+	assert_eq(_farben(_liste._scroll_mark_layers()), [UiPalette.TUSCHE],
+		"Auf Papier steht die Marke in tusche auf signalgelb.")
+	assert_eq(_liste._scroll_mark_rect(7).end.x, 304.0 - 12.0)
+
+
+func test_lcd_bedienung_rollen_und_loeschmodus_wie_auf_papier() -> void:
+	# Arrange: sieben Spielstände, der oberste gewählt.
+	var spielstaende := _viele(7)
+	await _auf_der_anzeige(spielstaende)
+	watch_signals(_liste)
+
+	# Act und Assert: Pfeil runter läuft über sieben Spielstände, „Löschen …“, „Zurück“ reihum.
+	assert_eq(_auswahl_nach_jedem_druck(KEY_DOWN, 9), [1, 2, 3, 4, 5, 6, 7, 8, 0])
+	_taste(KEY_ENTER)
+	assert_signal_emitted_with_parameters(_liste, "resume_requested", [spielstaende[0]])
+	var parameter: Array = get_signal_parameters(_liste, "selection_changed")
+	assert_eq((parameter[1] as Rect2).size.x, ANZEIGE.x, "Die Zeile reicht über die Anzeige.")
+
+	# Mausrad rollt um eine Zeile.
+	_rad(_mitte(_zeile(2)), MOUSE_BUTTON_WHEEL_DOWN)
+	assert_true(_liste._more_above(), "Nach dem Rad steht oben mehr.")
+
+	# Löschmodus über „Löschen …“, dann eine Zeile, dann „Zurück“.
+	_liste.select(7)
+	_taste(KEY_ENTER)
+	assert_true(_liste.is_delete_mode())
+	assert_eq(_kopfzeile(), "WELCHES LÖSCHEN?")
+	_liste.select(2)
+	_taste(KEY_ENTER)
+	assert_signal_emitted_with_parameters(_liste, "delete_requested", [spielstaende[2]])
+	_liste.select(8)
+	_taste(KEY_ENTER)
+	assert_signal_emit_count(_liste, "back_requested", 1)
+
+
+func test_lcd_beschaedigt_und_neuere_version_wie_auf_papier() -> void:
+	# Arrange und Act
+	await _auf_der_anzeige([_spielstand(2, Difficulty.Level.SCHWER, 0, ZULETZT), _beschaedigt(4),
+		_zu_neu(3)])
+
+	# Assert
+	assert_eq(_zellen(1), ["Spiel 4", "beschädigt"])
+	assert_eq(_zellen(2), ["Spiel 3", "neuere Version"])
+	assert_eq(_zelle(2, &"State").get_theme_color(&"font_color"), UiPalette.GEHAEUSE_DUNKEL)
+
+
+func test_look_spaeter_setzen_baut_die_zeilen_neu() -> void:
+	# Arrange: auf Papier, gewählt die zweite Zeile.
+	await _zeige(_drei(), 1)
+
+	# Act: auf die Anzeige …
+	_liste.look = SaveList.Look.LCD
+
+	# Assert
+	for button in _alle_knoepfe():
+		assert_eq(button.theme_type_variation, &"LcdRow", "%s ist neu gebaut." % button.name)
+	assert_eq(_liste.get_node(^"Rows").get_child_count(), 1 + SaveList.VISIBLE_ROWS + 2,
+		"Keine alte Zeile bleibt stehen.")
+	assert_eq(_liste.selected_index(), 1, "Die Auswahl bleibt auf ihrer Zeile.")
+	assert_eq(_spaltenfarben(1)[0], UiPalette.LCD)
+	assert_eq(_sichtbare_namen(), ["Spiel 7", "Spiel 6", "Spiel 5"])
+
+	# Act: … und zurück aufs Papier.
+	_liste.look = SaveList.Look.PAPER
+
+	# Assert
+	assert_eq(_zeile(1).theme_type_variation, &"MenuRow")
+	assert_false(_zeile(1).has_theme_color_override(&"font_focus_color"))
+	assert_eq(_spaltenfarben(1)[0], UiPalette.TUSCHE)
+	assert_eq(_liste.size, Vector2(SaveList.PAPER_WIDTH, 6 * ZEILE),
+		"Auf Papier setzt die Liste ihre Größe wieder selbst.")
+	# Ein Bild warten: Die alten Zeilen gibt queue_free() erst am Ende des Bilds frei. Endete der Test
+	# vorher, zählte GUT sie als verwaiste Knoten (wie after_each() in test_main_menu.gd).
+	await wait_process_frames(1)
+
+
 # --- Helfer ---------------------------------------------------------------------------------------
 
 ## Zeigt [param spielstaende] und wartet ein Bild, bis der VBoxContainer die Zeilen angeordnet hat
@@ -983,3 +1236,61 @@ func _viele(anzahl: int) -> Array[SaveSlot]:
 
 func _tag(jahr: int, monat: int, tag: int) -> int:
 	return GameDate.new(jahr, monat, tag).to_day_index()
+
+
+## Ersetzt die Liste dieses Tests durch eine auf der Anzeige: look = LCD, so groß wie die Anzeige
+## des Communicators, in einem eigenen Viewport, mit [param spielstaende] und Zeile [param index]
+## gewählt. Die Helfer oben gelten dann für diese Liste.
+func _auf_der_anzeige(spielstaende: Array[SaveSlot], index := 0) -> void:
+	var eigener_viewport := SubViewport.new()
+	eigener_viewport.size = Vector2i(640, 360)
+	add_child_autofree(eigener_viewport)
+	_liste = LISTE.instantiate() as SaveList
+	_liste.look = SaveList.Look.LCD
+	eigener_viewport.add_child(_liste)
+	# Das täte der Communicator in add_page().
+	_liste.size = ANZEIGE
+	eigener_viewport.notification(Node.NOTIFICATION_VP_MOUSE_ENTER)
+	await _zeige(spielstaende, index)
+
+
+## Alle Buttons der Liste: die Zeilen des Fensters, „Löschen …“ und „Zurück“.
+func _alle_knoepfe() -> Array[Button]:
+	var knoepfe: Array[Button] = []
+	for zeile in SaveList.VISIBLE_ROWS:
+		knoepfe.append(_zeile(zeile))
+	knoepfe.append_array([_knopf("DeleteMode"), _knopf("Back")])
+	return knoepfe
+
+
+## Die Farben der vier Spalten einer fortsetzbaren Zeile [param zeile].
+func _spaltenfarben(zeile: int) -> Array[Color]:
+	var farben: Array[Color] = []
+	for zelle in SPALTEN:
+		farben.append(_zelle(zeile, zelle).get_theme_color(&"font_color"))
+	return farben
+
+
+## Die verschiedenen Farben in einer Liste von Ebenen { "rect", "color" }.
+func _farben(ebenen: Array[Dictionary]) -> Array[Color]:
+	var farben: Array[Color] = []
+	for ebene in ebenen:
+		if not farben.has(ebene["color"]):
+			farben.append(ebene["color"])
+	return farben
+
+
+## Die Schriftfarbe von [param button], wie Godots Button sie für seinen Zustand wählt (wie in
+## test_main_menu.gd): gesperrt, unter der Maus, gedrückt, sonst mit oder ohne Fokus.
+func _schriftfarbe(button: Button) -> Color:
+	var farbname: StringName = &"font_focus_color" if button.has_focus() else &"font_color"
+	match button.get_draw_mode():
+		BaseButton.DRAW_DISABLED:
+			farbname = &"font_disabled_color"
+		BaseButton.DRAW_HOVER:
+			farbname = &"font_hover_color"
+		BaseButton.DRAW_PRESSED:
+			farbname = &"font_pressed_color"
+		BaseButton.DRAW_HOVER_PRESSED:
+			farbname = &"font_hover_pressed_color"
+	return button.get_theme_color(farbname)

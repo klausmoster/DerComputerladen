@@ -12,6 +12,21 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 005, Phase 3 (2026-10-27)
+
+Lücken im Style-Guide aus der Phasenprüfung (Stil-Prüfer, von Claude nachgeprüft). Von Klaus am
+2026-10-27 mit der Abnahme von Phase 3 nach Empfehlung entschieden und eingetragen (Style-Guide,
+Version 38, Bausteine Liste und Menü):
+- **Rollmarke in einer gewählten, gedämpften Zeile:** Im Löschmodus ist „Löschen …“ gedämpft. Ist
+  es gewählt und steht unten mehr, ist die Rollmarke `lcd`, Schrift und Pfeil aber
+  `gehaeuse-dunkel`. Der Baustein Liste sagt „`lcd` wie die Schrift“. Empfehlung: so lassen, denn die
+  Rollmarke gehört zur Liste, nicht zum Eintrag; im Baustein „wie die Schrift“ ersetzen durch „auch
+  wenn die Zeile gedämpft ist“.
+- **Gedrückte Zeile:** Das README verlangt für alles Bedienbare `relief-gedrueckt` beim Drücken;
+  Menü und Liste regeln weder auf Papier noch auf der Anzeige, ob eine Zeile gedrückt anders
+  aussieht. Gebaut ist seit Feature 001: kein eigener Zustand. Empfehlung: im Baustein Menü
+  festhalten „Eine Zeile hat keinen eigenen Zustand ‚gedrückt‘; die Auswahl ist die Rückmeldung.“
+
 ### Feature 005, Phase 2 (2026-10-27)
 
 Auslegungen des Agents beim Baustein Communicator, von Claude übernommen. Klaus bestätigt sie oder

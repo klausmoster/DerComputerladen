@@ -27,6 +27,9 @@ spacing_glyph = 1
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_menu_row"]
 content_margin_left = 12.0
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lcd_row"]
+content_margin_left = 12.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knopf_normal"]
 content_margin_left = 9.0
 content_margin_top = 2.0
@@ -119,6 +122,25 @@ Knopf/styles/hover = SubResource("StyleBoxFlat_knopf_hover")
 Knopf/styles/hover_pressed = SubResource("StyleBoxFlat_knopf_hover_pressed")
 Knopf/styles/normal = SubResource("StyleBoxFlat_knopf_normal")
 Knopf/styles/pressed = SubResource("StyleBoxFlat_knopf_pressed")
+LcdHeader/base_type = &"Label"
+LcdHeader/colors/font_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+LcdHeader/font_sizes/font_size = 10
+LcdHeader/fonts/font = SubResource("FontVariation_drucker")
+LcdRow/base_type = &"Button"
+LcdRow/colors/font_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+LcdRow/colors/font_disabled_color = Color(0.43529412, 0.4, 0.32941177, 1)
+LcdRow/colors/font_focus_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+LcdRow/colors/font_hover_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+LcdRow/colors/font_hover_pressed_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+LcdRow/colors/font_pressed_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
+LcdRow/font_sizes/font_size = 12
+LcdRow/fonts/font = ExtResource("3_ark_pixel_12")
+LcdRow/styles/disabled = SubResource("StyleBoxEmpty_lcd_row")
+LcdRow/styles/focus = SubResource("StyleBoxEmpty_lcd_row")
+LcdRow/styles/hover = SubResource("StyleBoxEmpty_lcd_row")
+LcdRow/styles/hover_pressed = SubResource("StyleBoxEmpty_lcd_row")
+LcdRow/styles/normal = SubResource("StyleBoxEmpty_lcd_row")
+LcdRow/styles/pressed = SubResource("StyleBoxEmpty_lcd_row")
 MenuHeader/base_type = &"Label"
 MenuHeader/colors/font_color = Color(0.11372549, 0.09803922, 0.08627451, 1)
 MenuHeader/font_sizes/font_size = 10

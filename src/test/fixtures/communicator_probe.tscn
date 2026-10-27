@@ -29,3 +29,4 @@ offset_bottom = 360.0
 [node name="MainMenu" parent="Communicator" instance=ExtResource("3_main_menu")]
 layout_mode = 0
 header_text = "PROBE"
+look = 1

@@ -5,6 +5,11 @@ extends RefCounted
 ## Papier mit pixelschatten, Zeilen im Wechsel papier und endlos-gruen, Lochränder, die gewählte
 ## Zeile in signalgelb und den Pfeil davor.
 ##
+## Seit Feature 005 dazu die Fassung für die Anzeige des Communicators (Bausteine Menü und Liste,
+## „Auf der Anzeige“): kein Papier, die gewählte Zeile als Balken in tusche, der Pfeil darin in lcd.
+## Die Abstände für beide Untergründe stehen hier an einer Stelle; die Breite einer Seite auf der
+## Anzeige kommt nicht von hier, sondern vom Communicator.
+##
 ## Die Klasse hat keine Instanzen, nur Konstanten und statische Funktionen. Das Hauptmenü und die
 ## Liste der Spielstände rufen sie aus ihrem eigenen `_draw()` auf und geben sich selbst als
 ## [param canvas] mit; gemalt wird also immer auf dem Control, das gerade zeichnet. So malen beide
@@ -25,6 +30,18 @@ const ARROW_WIDTH := 4
 const ARROW_HEIGHT := 7
 ## pixelschatten: harter Versatz nach rechts unten, ohne Unschärfe.
 const SHADOW_OFFSET := 2
+
+## Auf der Anzeige (Style-Guide, Bausteine Menü und Liste, „Auf der Anzeige“): Der Innenbereich der
+## Zeilen beginnt 4 vom Rand der Anzeige und endet 4 davor, ohne Lochrand.
+const LCD_ROW_INSET := 4
+## Auf der Anzeige steht der Pfeil bei x 8, so groß wie auf Papier.
+const LCD_ARROW_X := 8
+## Auf der Anzeige beginnt der Text bei x 16. Den Platz für den Pfeil hält der Innenabstand der
+## Theme-Variante LcdRow frei: LCD_TEXT_INSET − LCD_ROW_INSET.
+const LCD_TEXT_INSET := 16
+## Auf der Anzeige stehen die Rollmarken der Liste 8 vom rechten Rand (auf Papier 12, wegen des
+## Lochrands).
+const LCD_SCROLL_MARK_INSET := 8
 
 
 ## Malt das Papier, [param width] breit und [param row_count] Zeilen hoch, die Kopfzeile
@@ -70,9 +87,7 @@ static func draw_selection(canvas: CanvasItem, width: float, row: int, available
 	var row_top := ROW_HEIGHT * row
 	var highlight := Rect2(ROW_INSET, row_top, width - 2 * ROW_INSET, ROW_HEIGHT)
 	canvas.draw_rect(highlight, UiPalette.SIGNALGELB)
-	# (20 − 7) / 2 geht nicht auf. Abgerundet belegt der Pfeil die Pixelreihen 6 bis 12
-	# der Zeile.
-	var arrow_top := row_top + floori((ROW_HEIGHT - ARROW_HEIGHT) / 2.0)
+	var arrow_top := _arrow_top(row_top)
 	# Bei einem nicht verfügbaren Eintrag ist der Pfeil gedämpft wie sein Text, dem das
 	# Theme font_disabled_color in gehaeuse-dunkel gibt. So sieht die Zeile ausgewählt
 	# genauso gedämpft aus wie in Ruhe (FR-007 aus Feature 001).
@@ -82,6 +97,44 @@ static func draw_selection(canvas: CanvasItem, width: float, row: int, available
 
 ## Der Pfeil als Pixel-Dreieck: vier Spalten mit den Höhen 7, 5, 3 und 1, jede mittig.
 static func draw_arrow(canvas: CanvasItem, top_left: Vector2, color: Color) -> void:
+	for layer in arrow_layers(top_left, color):
+		canvas.draw_rect(layer["rect"], layer["color"])
+
+
+## Die Spalten des Pfeils mit linker oberer Ecke [param top_left], je als
+## { "rect": Rect2, "color": Color }. Headless entsteht kein Bild; Tests prüfen den Pfeil hierüber.
+static func arrow_layers(top_left: Vector2, color: Color) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
 	for column in ARROW_WIDTH:
 		var height := ARROW_HEIGHT - 2 * column
-		canvas.draw_rect(Rect2(top_left.x + column, top_left.y + column, 1, height), color)
+		result.append({"rect": Rect2(top_left.x + column, top_left.y + column, 1, height),
+			"color": color})
+	return result
+
+
+## Malt die Auswahl auf der Anzeige auf Zeile [param row] (0 ist die Kopfzeile), [param width] so
+## breit wie die Anzeige; siehe lcd_selection_layers().
+static func draw_lcd_selection(canvas: CanvasItem, width: float, row: int,
+		available: bool) -> void:
+	for layer in lcd_selection_layers(width, row, available):
+		canvas.draw_rect(layer["rect"], layer["color"])
+
+
+## Die Auswahl auf der Anzeige, von unten nach oben, je als { "rect": Rect2, "color": Color }: der
+## Balken in tusche über den Innenbereich, ganze Zeilenhöhe, darin der Pfeil bei LCD_ARROW_X. Der
+## Pfeil ist lcd wie die Schrift der gewählten Zeile, invertiert wie auf einem echten LCD (R3). Bei
+## einem nicht verfügbaren Eintrag bleibt der Balken, und der Pfeil ist gehaeuse-dunkel wie sein
+## Text: Gedämpft bleibt gedämpft, auch gewählt.
+static func lcd_selection_layers(width: float, row: int, available: bool) -> Array[Dictionary]:
+	var row_top := ROW_HEIGHT * row
+	var bar := Rect2(LCD_ROW_INSET, row_top, width - 2 * LCD_ROW_INSET, ROW_HEIGHT)
+	var result: Array[Dictionary] = [{"rect": bar, "color": UiPalette.TUSCHE}]
+	var arrow_color := UiPalette.LCD if available else UiPalette.GEHAEUSE_DUNKEL
+	result.append_array(arrow_layers(Vector2(LCD_ARROW_X, _arrow_top(row_top)), arrow_color))
+	return result
+
+
+## Oberkante des Pfeils in einer Zeile mit Oberkante [param row_top]. (20 − 7) / 2 geht nicht auf;
+## abgerundet belegt der Pfeil die Pixelreihen 6 bis 12 der Zeile.
+static func _arrow_top(row_top: int) -> int:
+	return row_top + floori((ROW_HEIGHT - ARROW_HEIGHT) / 2.0)

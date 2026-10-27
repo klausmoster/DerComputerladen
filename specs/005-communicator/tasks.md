@@ -174,12 +174,12 @@ an den Bildrand; der Hinweis fährt mit hinaus.
 **Purpose**: Menü und Liste können auf der Anzeige stehen: Schalter `look` mit `PAPER` und `LCD`
 (R3, R5, R15). Der Titel bleibt in dieser Phase Papier.
 
-- [ ] T013 [A] Theme `src/ui/computerladen_theme.tres`: Varianten `LcdRow` (Basis `Button`, Ark
+- [x] T013 [A] Theme `src/ui/computerladen_theme.tres`: Varianten `LcdRow` (Basis `Button`, Ark
   Pixel 12, alle Schriftfarben `tusche`, `font_disabled_color` `gehaeuse-dunkel`, leere Styles wie
   `MenuRow`, Innenabstand links aus dem Style-Guide) und `LcdHeader` (wie `MenuHeader`). Die
   helle Schrift der gewählten Zeile kommt nicht aus dem Theme, sondern aus dem Code (R15, B1). Test
   in `src/test/test_lcd_theme.gd` (neu, C15): die Farben gleich `UiPalette`.
-- [ ] T014 [A] `src/scenes/title/menu_paper.gd`: `draw_lcd_selection()` (Balken `tusche`, Pfeil
+- [x] T014 [A] `src/scenes/title/menu_paper.gd`: `draw_lcd_selection()` (Balken `tusche`, Pfeil
   `lcd`, gedämpft `gehaeuse-dunkel`) und die Abstände auf der Anzeige aus dem Style-Guide; die
   Breite kommt nicht von hier, sondern von der Größe, die der Communicator der Seite gibt (C6).
   `src/scenes/title/main_menu.gd`: `enum Look { PAPER, LCD }`, `@export var look` mit Vorgabe
@@ -191,20 +191,26 @@ an den Bildrand; der Hinweis fährt mit hinaus.
   `src/test/test_main_menu.gd`: auf `LCD` kein Papier und invertierte Auswahl; Maus auf A, Pfeil
   auf B: A ist `tusche`, B ist `lcd` (B1); gewählt und nicht verfügbar `gehaeuse-dunkel`;
   Bedienung und Signale wie auf `PAPER`; alle bisherigen Tests mit `PAPER` unverändert grün.
-- [ ] T015 [A] `src/scenes/title/save_list.gd`: derselbe Schalter `look` mit denselben Regeln;
+- [x] T015 [A] `src/scenes/title/save_list.gd`: derselbe Schalter `look` mit denselben Regeln;
   auf `LCD` kein Papier und kein Zebra, `PAPER_WIDTH`, `TEXT_INSET`, `ROW_INSET` und die Spalten
   nach dem Style-Guide statt fest (C6), Spalten-Labels in den Farben der Zeile, auch invertiert
   (R15), Rollmarke in der gewählten Zeile `lcd` (CHK001). Tests in `src/test/test_save_list.gd`:
   wie T014, dazu „Löschen …“ und „Zurück“ unter der Maus und die Rollmarke auf „Löschen …“
   gewählt. Hängt an T014 (`menu_paper.gd`).
-- [ ] T016 [A] Lernnotizen zu T013 bis T015: warum ein Button unter der Maus die Hover-Farbe nimmt
+- [x] T016 [A] Lernnotizen zu T013 bis T015: warum ein Button unter der Maus die Hover-Farbe nimmt
   und die gewählte Zeile deshalb aus dem Code gefärbt wird, warum ein gesperrter Button die
   gedämpfte Schrift auch mit Fokus behält, ein Schalter statt zweier Klassen.
-- [ ] T017 [C] Prüfen: Tests zweimal, Startprobe still, Bildschirmfotos von Menü und Liste auf
+- [x] T017 [C] Prüfen: Tests zweimal, Startprobe still, Bildschirmfotos von Menü und Liste auf
   `LCD` in der Probeszene, gewählt verfügbar und nicht verfügbar, Maus auf einer anderen Zeile.
-- [ ] T018 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`: Stil-Prüfer mit Bausteinen Menü,
+- [x] T018 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`: Stil-Prüfer mit Bausteinen Menü,
   Liste und Communicator, `tokens.json`; die Bildschirmfotos aus T017.
-- [ ] T019 [K] Phase 3 abnehmen.
+- [x] T019 [K] Phase 3 abnehmen.
+
+Erledigt am 2026-10-27, von Klaus abgenommen: 1006 Tests zweimal grün (16.768 Prüfungen, vorher
+980), Startprobe und Probeszene still, Hauptpalette unverändert, der Titel per Foto-Vergleich Byte
+für Byte gleich wie vor der Phase. Phasenprüfung: Stil-Prüfer ohne Befund, zwei Lücken im
+Style-Guide, von Klaus nach Empfehlung entschieden (Version 38): Die Rollmarke im Balken ist `lcd`,
+auch wenn die Zeile gedämpft ist; eine Zeile hat keinen eigenen Zustand „gedrückt“.
 
 **Checkpoint**: Menü und Liste stehen auf der Anzeige wie im Style-Guide; der Titel ist unverändert.
 

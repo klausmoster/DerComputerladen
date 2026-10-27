@@ -113,3 +113,68 @@ nichts und haben deshalb keine Notiz.
   runter, Enter, gemeldet wird der zweite Eintrag. Dass weder Titelbildschirm noch `TitleTexts`
   beteiligt sind, prüft ein zweiter Test an den Quelltexten der Probe.
 - `src/test/` ist vom Export ausgeschlossen; die Probe kommt also nie ins fertige Spiel.
+
+## Phase 3
+
+### T013 `LcdRow` und `LcdHeader`: was das Theme kann und was nicht
+
+- Eine Theme-Variante (`theme_type_variation`) ist ein eigener Typname im Theme mit einer Basis,
+  etwa `LcdRow` mit Basis `Button`. Ein Button mit dieser Variante nimmt Farben, Schrift und
+  Stile von dort und, was dort fehlt, von `Button`.
+- Alle Schriftfarben von `LcdRow` sind `tusche`, auch `font_hover_color`; nur
+  `font_disabled_color` ist `gehaeuse-dunkel`. `lcd` steht bewusst nicht im Theme: Das Theme kennt
+  die Zustände eines Buttons (normal, Fokus, Hover, gedrückt, gesperrt), aber nicht „gewählt“.
+  Unter der Maus nimmt ein Button `font_hover_color`, ob er den Fokus hat oder nicht. Wäre die
+  `lcd`, stünde eine nicht gewählte Zeile unter der Maus hell auf hellem Grund; wäre sie `tusche`,
+  stünde die gewählte unter der Maus schwarz auf dem schwarzen Balken (R15; Analyse, B1).
+- `LcdRow` hat einen eigenen leeren Stil mit Innenabstand 12, obwohl `MenuRow` denselben Wert hat.
+  So zieht eine spätere Änderung an der Anzeige das Papier nicht mit. Die 12 sind
+  `MenuPaper.LCD_TEXT_INSET − LCD_ROW_INSET`, also Text bei x 16; `test_lcd_theme.gd` prüft das.
+- Eine `.tres` kann keine Konstante aus `UiPalette` nennen, die Farben stehen dort als Zahlen.
+  `test_lcd_theme.gd` vergleicht sie mit `UiPalette`, wie `test_werkstatt_theme.gd` es für die
+  Werkstatt tut.
+
+### T014 `MainMenu.look`: ein Schalter statt zweier Klassen
+
+- `enum Look { PAPER, LCD }` und `@export var look`: Papier und Anzeige unterscheiden sich nur im
+  Malen, in den Varianten und in den Abständen. Bedienung, Fokus, Umlauf an den Enden und Signale
+  sind derselbe Code, und die Tests der Bedienung laufen auf beiden Fassungen. Zwei Klassen hießen
+  doppelte Bedienung und doppelte Tests (R5).
+- `look` gilt beim Bau der Zeilen, denn jede Zeile bekommt ihre Variante in `_make_row()`. Der
+  Setter baut sie deshalb neu, wenn das Menü schon bereit ist (`is_node_ready()`), und wählt
+  danach dieselbe Zeile wieder.
+- Die helle Schrift der gewählten Zeile setzt `_update_row_colors()` per
+  `add_theme_color_override()` und nimmt sie allen anderen mit `remove_theme_color_override()`
+  wieder. Ein Override an einem Control geht vor das Theme. Es läuft beim Wählen
+  (`_on_row_focus_entered()`), beim Wählen im Verborgenen und nach dem Bau der Zeilen.
+- `font_disabled_color` bekommt keinen Override. Ein gesperrter Button ist immer im Zustand
+  `DRAW_DISABLED` und nimmt diese Farbe, auch mit Fokus. Eine gewählte, nicht verfügbare Zeile
+  bleibt so gedämpft, ohne eigenen Code.
+- Auf der Anzeige setzt das Menü keine Größe, auch keine Mindestgröße: Die Seite gehört dem
+  Communicator. Eine Mindestgröße lässt ein Control nie kleiner werden; bliebe die vom Papier
+  stehen, könnte sie die Anzeige überstimmen.
+- Die Maße beider Fassungen stehen in `MenuPaper` (`LCD_ROW_INSET`, `LCD_ARROW_X`,
+  `LCD_TEXT_INSET`). `_apply_look()` stellt danach die Offsets von `Rows` und die Variante der
+  Kopfzeile.
+- Headless entsteht kein Bild. `MenuPaper.lcd_selection_layers()` und `arrow_layers()` liefern die
+  Rechtecke, die gemalt würden, `_draws_paper()` sagt, ob Papier gemalt wird. Der Papierpfeil malt
+  aus derselben Liste; das Bild auf Papier bleibt Pixel für Pixel gleich.
+- Welche Farbe eine Zeile wirklich zeigt, rechnet der Test so nach, wie der Button sie wählt:
+  `get_draw_mode()` und `has_focus()` ergeben den Namen der Farbe, `get_theme_color()` den Wert mit
+  Override.
+
+### T015 `SaveList.look`: dieselben Regeln, Spalten aus dem Button
+
+- Derselbe Schalter wie im Menü. `SaveList` baut ihre Zeilen nur einmal; beim späteren Setzen von
+  `look` nimmt `_clear_rows()` sie mit `remove_child()` sofort heraus und gibt sie mit
+  `queue_free()` am Ende des Bilds frei. Ein Test, der gleich danach endet, wartet deshalb ein
+  Bild, sonst zählt GUT die alten Zeilen als verwaiste Knoten.
+- Die Spalten sind Labels im Button. `_fill_row()` nimmt ihre Farbe schon immer vom Button
+  (`get_theme_color(&"font_color")`). Weil `select()` erst `_update_row_colors()` und dann
+  `_refresh_rows()` aufruft, bekommen die Spalten der gewählten Zeile den Override `lcd` gleich mit.
+  Gedämpfte Zeilen nehmen `font_disabled_color` und bleiben `gehaeuse-dunkel`.
+- Die Spalten beginnen ab dem Text wie auf Papier (0, 64, 108, 172) und sind genauso breit. Was auf
+  Papier passt, passt so auch auf der Anzeige; die breitere Anzeige lässt rechts nur mehr Luft.
+- Die Rollmarke steht auf der Anzeige 8 vom Rand (`MenuPaper.LCD_SCROLL_MARK_INSET`). In der
+  gewählten Zeile ist sie `lcd`, sonst `tusche`; sonst verschwände sie im Balken (CHK001).
+  `_scroll_mark_layers()` liefert die Rechtecke für `_draw()` und für die Tests.

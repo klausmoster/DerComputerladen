@@ -3,7 +3,7 @@ extends Control
 ## Probeszene für den Baustein Communicator (Feature 005, T008): ein Communicator in der Endlage des
 ## Titels, darauf ein Menü aus drei Einträgen, auf nacht. Ohne Titelbildschirm und ohne TitleTexts,
 ## so zeigt sie, dass ein anderer Bildschirm den Communicator mit eigenen Seiten benutzen kann
-## (SC-005). Bis Phase 3 steht das Menü auf Papier; T014 stellt es auf die Anzeige um.
+## (SC-005). Das Menü steht auf der Anzeige (look = LCD in der Szene, seit T014).
 ##
 ## Allein startbar für Bildschirmfotos und zum Ausprobieren: Beim Start fährt der Communicator
 ## herein. „Hinaus und herein“ lässt ihn hinausfahren und gleich wieder herein; so sind beide
