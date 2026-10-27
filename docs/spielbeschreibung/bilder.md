@@ -5,10 +5,12 @@
 - **Laden, wenn:** ein neues Bild ins Spiel soll oder ein vorhandenes neu gerastert wird.
 - **Code:** `tools/raster/` (Python 3, nur Standardbibliothek; Anleitung in
   `tools/raster/README.md`); Originale in `docs/art/leonardo/`, Palette `docs/art/hauptpalette.gpl`,
-  Ebenen des Symbols `docs/art/app_icon/`; Ergebnisse in `src/assets/images/`, `src/assets/icon/`
+  Ebenen des Symbols `docs/art/app_icon/`; Ergebnisse in `src/assets/images/`, `src/assets/icon/`;
+  Ablauf für Claude im Skill `.claude/skills/dcl-grafik/SKILL.md`, Protokoll jedes Bilds in
+  `docs/art/leonardo/prompt-log.md`
 - **Herkunft:** `specs/001-hauptmenue/` (`research.md`, R5 bis R7); Leonardo-Workflow im
   [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX)
-- **Stand:** Feature 003, 2026-10-27
+- **Stand:** Feature 005, 2026-10-27
 
 ## Stil
 
@@ -17,8 +19,11 @@ Stilanker ist Bild C2 aus der Leonardo-Stilprobe (Ladenbesitzer hinter der Theke
 oberstes Ziel. Szenen haben 320 × 180 Bildpixel, die Oberfläche 640 × 360 (siehe
 [darstellung.md](darstellung.md)).
 
-Klaus erzeugt die Bilder in Leonardo.ai. Claude liefert den Prompt auf Englisch mit dem Stilblock
-aus dem Style-Guide und trägt ihn in dessen Prompt-Bibliothek ein.
+Claude erzeugt die Bilder in Leonardo.ai, über Claude in Chrome im Konto des Projekts; Klaus
+wählt eins aus und gibt es frei (seit 2026-10-27, vorher erzeugte Klaus selbst). Der Prompt ist
+englisch, endet mit dem Stilblock aus dem Style-Guide und steht vor dem Erzeugen in dessen
+Prompt-Bibliothek. Ein echtes Vorbild wird nur in Worten beschrieben, ohne Markennamen und
+Schrift.
 
 ## Ablauf
 
@@ -40,6 +45,10 @@ Aufruf immer vom Repo-Root mit `python3 -I`, denn die Bilder stammen aus dem Net
 2. **Rastern** (`rasterize.py`) mit `--groesse 320x180` oder `--faktor 6`. Zugeschnitten wird
    mittig, damit der Faktor ganzzahlig bleibt. Flächenmittel statt Nearest Neighbor, weil die
    gemalten Pixel in Leonardo-Bildern ungleich groß sind. Alpha unter 128 wird transparent.
+   Muss ein Maß genau passen, etwa die Anzeige im Gehäuse, wird das Original vorher so skaliert,
+   dass es ein Vielfaches des Faktors wird. Freistehende Geräte werden vorher freigestellt, per
+   Füllung vom Rand aus. Ist ein Rand danach zu breit, kommen ganze Spalten und Zeilen aus
+   gleichförmigen Flächen heraus, nie aus Tasten oder Kanten.
 3. **Aufräumen** (`cleanup.py`): seltene Farben und Einzelpixel nach festen Regeln in OKLab;
    Lichter, Kanten und Schrift bleiben. Danach von Hand, nur mit Farben der Hauptpalette.
 4. **App-Symbol** (`make_icon.py`) nach jeder Änderung am Logo: Monitor aus dem Logo ×32 auf ein
@@ -49,7 +58,9 @@ Aufruf immer vom Repo-Root mit `python3 -I`, denn die Bilder stammen aus dem Net
 
 | Datei | Herkunft | Größe |
 |---|---|---|
-| `src/assets/images/title_t01.png` | Titelbild T-01 | 320 × 180, im Spiel ×2 |
+| `src/assets/images/title_t02.png` | Titelbild T-02, der Laden links, rechts Platz für den Communicator | 320 × 180, im Spiel ×2 |
+| `src/assets/images/organizer_1991.png` | Gehäuse G-03 des Communicators nach dem Olivetti D2000, freigestellt | 196 × 134, Faktor 3 aus dem skalierten Original, im Spiel ×2 |
+| `src/assets/images/title_t01.png` | Titelbild T-01, seit Feature 005 nicht mehr im Spiel | 320 × 180 |
 | `src/assets/images/logo_ladenschild.png` | Ladenschild | 141 × 27, Faktor 6 aus dem Original, im Spiel ×2 |
 | `src/assets/icon/app_icon.png`, `app_icon.icon` | Monitor aus dem Logo | 1024 × 1024 |
 

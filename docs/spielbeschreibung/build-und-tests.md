@@ -6,7 +6,7 @@
 - **Code:** `src/export_presets.cfg`, `src/.gutconfig.json`, `src/test/`, `src/addons/gut/`
 - **Herkunft:** `specs/001-hauptmenue/` (Export, GUT), `specs/002-zeitleisten-werkstatt/`
   (Fixtures, Grundlinien), Regeln in `docs/ki_workflow/ki_dev.md`, „Tests“
-- **Stand:** Feature 004, 2026-10-27
+- **Stand:** Feature 005, 2026-10-27
 
 ## Starten
 
@@ -74,13 +74,15 @@ als eingefrorene Kopie der Übernahme mit Fahrplänen und Protokollen für die S
 geblieben ist. Unter `fixtures/spielstaende/` liegt je Fehlerfall ein kleiner Spielstand, etwa
 `spiel_kein_json.json`, `spiel_format_2.json`, `spiel_grad_extrem.json`, dazu
 `spiel_gueltig.json`; Tests kopieren sie unter einem Namen `spiel_<N>.json` in ihren Ordner.
+`communicator_probe.tscn` ist eine Probeszene mit einem Communicator und einem Menü außerhalb des
+Titels; sie zeigt, dass der Baustein ohne Titel läuft.
 
 **Tests am echten Bestand:**
 - `test_shipped_catalog.gd`: Der echte Katalog hat keinen Fehler, die Kalender-Ereignisse sind
   da, Leicht und Schwer haben je mindestens einen Start-Modifikator. Einzelne Werte prüft er
   bewusst nicht, denn Klaus ändert sie in der Werkstatt.
 - `test_bilder.gd`: Jedes Bild in `res://assets/images/` nutzt nur Farben der Hauptpalette, ohne
-  Halbtransparenz.
+  Halbtransparenz; `lcd` steht nicht darin.
 - `test_texte.gd`: Texte in Szenen und Skripten unter `scenes/`, `tools/werkstatt/` und `core/`
   duzen.
 

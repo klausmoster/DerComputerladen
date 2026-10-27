@@ -362,12 +362,13 @@ Olivetti D2000 (T031d, T031e), Versionszeile oben rechts (T031a).
   Freigabe; hat sie Sichtbares, endet sie mit eigener Phasenprüfung.
 - [x] T037 [K] Gesamtabnahme nach dem ganzen Quickstart.
   Abgenommen von Klaus am 2026-10-27, nach Phase 7.
-- [ ] T038 [C] Spielbeschreibung prüfen (immer die letzte Aufgabe des Features, nach der
+- [x] T038 [C] Spielbeschreibung prüfen (immer die letzte Aufgabe des Features, nach der
   Gesamtabnahme und vor dem Merge; `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“): Claude
   gleicht `docs/spielbeschreibung/` mit dem Code ab und legt Klaus eine Liste vor, welche Dateien
   veralten und welche neu angelegt werden sollten, mit Grund, mindestens `titel-und-hauptmenue.md`,
   `darstellung.md`, `bilder.md`, `glossar.md` und `architektur.md` (CHK006). Abweichungen zwischen
   Spec und Code gehören dazu. Geändert wird erst nach Klaus' OK.
+  Erledigt 2026-10-27: acht Dateien nachgezogen, `communicator.md` neu; freigegeben von Klaus.
 
 ---
 

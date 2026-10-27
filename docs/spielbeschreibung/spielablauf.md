@@ -9,7 +9,7 @@
   `src/test/test_game_session.gd`, `test_game_screen.gd`
 - **Herkunft:** `specs/004-neues-spiel/` (`contracts/spielablauf.md`, `data-model.md`,
   `research.md` R6 bis R9, R15)
-- **Stand:** Feature 004, 2026-10-27
+- **Stand:** Feature 005, 2026-10-27
 - **Nachbarn:** Dateien in [spielstaende.md](spielstaende.md), Menüs in
   [titel-und-hauptmenue.md](titel-und-hauptmenue.md), Zeitleiste in [zeitleiste.md](zeitleiste.md)
 
@@ -71,7 +71,8 @@ Hinweises.
 Knopf „Zum Hauptmenü“ in der Mitte (Baustein Knopf, siehe [darstellung.md](darstellung.md)).
 - Der Knopf hat von Anfang an den Fokus. Daneben steht wie im Menü sein Hinweis: „Speichert
   Spiel 2 und führt ins Hauptmenü.“
-- Auslösen ruft `leave()` und wechselt zum Titelbildschirm. Scheitert das Speichern, steht die
+- Auslösen ruft `leave()` und wechselt zum Titelbildschirm; dort fährt der Communicator wieder
+  herein. Scheitert das Speichern, steht die
   Meldung neben dem Knopf, und das Spiel läuft weiter.
 - Scheiterte schon das Speichern beim Fortsetzen, zeigt der Bildschirm die Meldung beim
   Erscheinen.
@@ -80,7 +81,9 @@ Knopf „Zum Hauptmenü“ in der Mitte (Baustein Knopf, siehe [darstellung.md](
   festhalten, belegen Tests, die selbst vorspulen.
 
 Szenen wechseln mit `change_scene_to_file()`. Titel- und Spielbildschirm haben dafür
-`scene_callback`, damit Tests den Wechsel prüfen, statt ihn auszuführen.
+`scene_callback`, damit Tests den Wechsel prüfen, statt ihn auszuführen. Der Titel ruft ihn erst,
+wenn der Communicator nach dem Beginnen oder Fortsetzen hinausgefahren ist (siehe
+[titel-und-hauptmenue.md](titel-und-hauptmenue.md)).
 
 ## Für Tests
 
