@@ -54,7 +54,7 @@ Phase endet mit Klaus' Abnahme; jede Phase mit Sichtbarem hat davor die [C]-Aufg
 **Purpose**: Was Phase 2 bis 5 zeigen, steht vorher im Style-Guide (FR-008; research.md, R12). Kein
 Code.
 
-- [ ] T001 [C] Style-Guide ergänzen, https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Dateien
+- [x] T001 [C] Style-Guide ergänzen, https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Dateien
   unter `project/`, nach research.md, R12 (mit CHK001 bis CHK004, CHK014, CHK015, CHK017, CHK019,
   CHK023):
   - Neuer Baustein **Communicator** mit README und Vorschau: Gehäuse als reine Grafik ohne Klick,
@@ -75,14 +75,21 @@ Code.
 
   Vorher liest Claude die betroffenen Dateien neu und ändert nur diese; danach bekommt Klaus den
   Link und eine Liste der Änderungen.
-- [ ] T002 [C] Prompt **G-02 Organizer 1991** mit dem Stilblock des Style-Guides in die
+- [x] T002 [C] Prompt **G-02 Organizer 1991** mit dem Stilblock des Style-Guides in die
   Prompt-Bibliothek: frontal, aufgeklappt, leeres LCD „exactly twice as wide as high“, keine Marke,
   keine Sprenkel über dem LCD; Modell, Seitenverhältnis und Style Reference C2 nach dem aktuellen
   Stand von Leonardo (R10). Nach T001, denn die Prompt-Bibliothek gehört zum Style-Guide (C17). Der
   Prompt für T-02 folgt erst in T022 (CHK005).
-- [ ] T003 [K] Phase 1 abnehmen: Style-Guide lesen, den Wert von `lcd` und die Lage im Titel
+- [x] T003 [K] Phase 1 abnehmen: Style-Guide lesen, den Wert von `lcd` und die Lage im Titel
   freigeben oder ändern lassen, den Prompt G-02 freigeben. Ab hier kann Klaus G-02 in Leonardo
   erzeugen, wann es ihm passt; abgenommen wird es in Phase 4.
+
+Erledigt am 2026-10-27, von Klaus abgenommen: Style-Guide Version 36. Neu sind der Baustein
+Communicator mit Vorschau, die Farbe `lcd` (#b8c4a8) mit vier Kontrasten, die Abschnitte „Auf der
+Anzeige“ bei Menü und Liste, „Seiten im Titel“ statt „Blätter im Titel“, die Lage neben dem Gehäuse
+bei Hinweis und Meldung, im README Bildaufbau des Titels, Farben, Schrift und Bewegung, dazu die
+Maße `geraet-anzeige-breite` und `geraet-anzeige-hoehe` und der Prompt G-02 im Leonardo-Workflow.
+Klaus hat `lcd`, die Lage im Titel und den Prompt G-02 freigegeben.
 
 **Checkpoint**: Der Style-Guide regelt alles, was der Communicator braucht.
 

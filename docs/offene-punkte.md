@@ -33,8 +33,8 @@ Eigene Festlegungen von Claude in `specs/005-communicator/research.md`. Klaus be
   Differenz nachgeführt zu werden.
 - **Platzhalter-Gehäuse** (R11): Kern und Seiten entstehen vor G-02 mit einem Rechteck in
   `gehaeuse`; nur der Titel wartet auf die Bilder.
-- **Vorschlag `lcd` = #b8c4a8** (R2) und **Lage im Titel** (R9): entscheidet Klaus mit dem
-  Style-Guide in Phase 1.
+- **Vorschlag `lcd` = #b8c4a8** (R2) und **Lage im Titel** (R9): von Klaus mit Phase 1 freigegeben
+  (2026-10-27); stehen im Style-Guide, Version 36.
 
 ### Feature 005, Spec (2026-10-27)
 

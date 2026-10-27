@@ -39,7 +39,8 @@ Verweis auf R1 im Test. Ein zweiter Test sichert, dass `lcd` in keinem Bild unte
 
 ## R2 Wert von `lcd`: #b8c4a8, ein graugrünes LCD-Grau
 
-**Entscheidung (Vorschlag für den Style-Guide, Klaus entscheidet in Phase 1):** `lcd` = `#b8c4a8`.
+**Entscheidung (Vorschlag von Claude, von Klaus in Phase 1 freigegeben, 2026-10-27):** `lcd` =
+`#b8c4a8`.
 Gemessen nach WCAG:
 
 | Paar | Kontrast | Regel |
@@ -190,7 +191,7 @@ selbst (`main_menu.gd`, `_make_row()`), `SaveList` wählt bei jeder Mausbewegung
 
 ## R9 Lage im Titel: Anzeige rechts unten, Gehäuse ragt unten hinaus
 
-**Vorschlag für den Style-Guide (Claude, 2026-10-27; Klaus entscheidet in Phase 1):**
+**Vorschlag von Claude, von Klaus in Phase 1 freigegeben (2026-10-27), steht im Style-Guide:**
 
 | Teil | Lage |
 |---|---|
