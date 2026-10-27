@@ -57,8 +57,8 @@ ein Autoload/Resource tut — an der konkreten Stelle im Projekt, kein
 Tutorial-Vortrag. Gelernt wird über Lernnotizen, Review und die `[K]`-Aufgaben,
 die Klaus sich aussucht. Kleine, überprüfbare Schritte.
 
-Ausgenommen von alldem: die Daten in `docs/game_bible/`, die Feature-Docs und
-die Skills dürfen selbstständig befüllt werden.
+Ausgenommen von alldem: die Daten in `docs/game_bible/` und die Skills dürfen
+selbstständig befüllt werden.
 
 ## Featureweise arbeiten
 

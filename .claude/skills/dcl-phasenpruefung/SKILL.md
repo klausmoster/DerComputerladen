@@ -13,6 +13,13 @@ gibt und wie sie entstanden ist, steht in `docs/ki_workflow/ki_pruefung.md`; lie
 Prüfer lesen nur und melden. Repariert wird nur, was Claude bestätigt hat, vom Godot-Agent und in
 der freigegebenen Phase. Ein Probelauf an einem fertigen Feature repariert nichts.
 
+## Vorab: Prüfung des Vertrags bei der Checkliste
+
+Bei `/speckit-checklist` laufen Text- und Stil-Prüfer einmal über die Wortlaute und Zustände, die
+Spec und Vertrag festlegen, noch bevor gebaut wird (Klaus, 2026-10-27). Vorgehen wie unten in den
+Schritten 2 bis 4, nur mit Spec und `contracts/` statt Code und Fotos. Bestätigte Befunde ändern
+den Vertrag, mit Klaus' OK. Gezählt wird unter „Nachmessen“ als eigener Lauf.
+
 ## 1. Klären, was geprüft wird
 
 1. Feature und Phase aus dem Aufruf, sonst nachfragen (als Auswahl, Empfehlung zuerst).

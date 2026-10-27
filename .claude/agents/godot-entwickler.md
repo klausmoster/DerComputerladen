@@ -16,7 +16,9 @@ erklärt, dass Klaus daraus Godot lernt.
 1. `CLAUDE.md` und die Verfassung `.specify/memory/constitution.md`.
 2. Im Ordner des Features `specs/<nummer>-<kurzname>/`: `spec.md`, `plan.md`, `research.md`,
    `data-model.md`, `contracts/` und `tasks.md`.
-3. Jede Datei, die du änderst oder an die du andockst, vollständig.
+3. Aus `docs/spielbeschreibung/` die Dateien zu den Systemen, an denen du baust; welche, sagt
+   deren `README.md`. Sie beschreiben den Stand im Code.
+4. Jede Datei, die du änderst oder an die du andockst, vollständig.
 
 Der Vertrag unter `contracts/` ist verbindlich: Pfade, Klassennamen, Signale und Signaturen
 genau so, wie dort angegeben. Passt etwas nicht zusammen, hörst du auf und meldest es, statt den

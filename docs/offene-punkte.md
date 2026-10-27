@@ -175,15 +175,12 @@ Lücken im Style-Guide, die der Text-Prüfer gemeldet und Claude bestätigt hat;
 
 ### KI-Workflow und Prüf-Agents (2026-10-22)
 
-Aus dem Konzept, das in `docs/ki_workflow/ki_pruefung.md` aufgegangen ist. Jede Frage kommt
-einzeln, wenn ihr Schritt dran ist (dort unter „Stand der Einführung“).
+Aus der Einführung der Prüfer, beschrieben in `docs/ki_workflow/ki_pruefung.md`.
 - **Gemeinsames `user://`:** Alle Arbeitsordner teilen sich `user://` von „Der
   Computerladen“, und die Tests schreiben in feste Unterordner wie `user://test_simulator/`. Zwei
   Testläufe zur selben Zeit, etwa im Worktree der Arbeitsweise und in der Sitzung „[003]
   Schwierigkeitsgrade ab dem Plan“, können sich stören. Ein Hook, der von selbst testet, macht das
   wahrscheinlicher.
-- **Abnahme des Skills:** `/dcl-phasenpruefung` einmal in einer neuen Sitzung aufrufen, etwa als
-  Probelauf am Titelbildschirm (Schritt 6).
 
 ### Probelauf des Stil-Prüfers an Feature 001 (2026-10-22)
 
@@ -645,6 +642,17 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 
 ## Erledigt
 
+- **Nachzug der Arbeitsweise auf `main`** (Klaus, 2026-10-27): Prüfung ergab elf veraltete Stellen.
+  Behoben: Phasenprüfung fest statt „in Einführung“, Tagebuch im Einstieg, Spec Kit 1.2.3 mit
+  eigener Vorlage, Regel „Aufwand“ nach `ki_dev.md`, Godot-Agent liest die Spielbeschreibung.
+  Beschlossen nach Empfehlung: die Aufgabe „Phasenprüfung“ in
+  `.specify/templates/overrides/tasks-template.md`, nach jedem Spec-Kit-Update ein Diff über
+  `overrides/` und die Verfassung; die Prüfer lesen bei `/speckit-checklist` schon den Vertrag;
+  `CLAUDE.md` ohne die alten Feature-Docs; Verfassung 2.2.0 mit Grundsatz VI. Den Abschnitt
+  „Grafik“ in `ki_dev.md` zieht der Merge von Feature 005 nach.
+- **Abnahme des Skills `/dcl-phasenpruefung`** (Schritt 6 des KI-Workflows): erledigt mit dem
+  Pilot in Feature 004, wo der Skill die Phasenprüfungen trug, etwa T010 und T015 (2026-10-26).
+  Ausgetragen beim Nachzug der Arbeitsweise am 2026-10-27.
 - **Spec Kit auf 1.2.3 gehoben:** Klaus, 2026-10-27, nach einer Probe in einem leeren Ordner.
   Geändert haben sich nur `setup-plan.sh` und `check-prerequisites.sh` (Schutz vor leerem
   `plan.md`) sowie Versionsnummern und Prüfsummen; gezielt eingespielt statt `specify init --force`,
