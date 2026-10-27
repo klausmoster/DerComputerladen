@@ -36,6 +36,7 @@ Rollen im Einzelnen stehen in [ki_dev.md](ki_dev.md), „Rollen“.
 | [ki_pruefung.md](ki_pruefung.md) | Prüfen mit KI: Grundsätze, Prüfer und ihre Maßstäbe, Ablauf einer Phasenprüfung, Tests, Stand der Einführung |
 | `CLAUDE.md` | die verbindliche Arbeitsanweisung für Claude Code in diesem Projekt |
 | `.specify/memory/constitution.md` | die Verfassung: verbindliche Grundsätze für die Spec-Kit-Abläufe |
+| `docs/spielbeschreibung/` | der Stand im Code nach Systemen, zum gezielten Vorladen; am Ende jedes Features geprüft ([ki_dev.md](ki_dev.md), Punkt 9) |
 | `docs/offene-punkte.md` | offene Fragen, Lücken und Claudes eigene Entscheidungen, bis Klaus sie entschieden oder bestätigt hat |
 | `docs/Ideensammlung.md` | lose Ideen, auch zur Arbeitsweise |
 | `.claude/agents/` | die Agents, etwa `godot-entwickler` |
