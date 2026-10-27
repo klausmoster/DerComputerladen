@@ -6,7 +6,7 @@
 - **Code:** `src/export_presets.cfg`, `src/.gutconfig.json`, `src/test/`, `src/addons/gut/`
 - **Herkunft:** `specs/001-hauptmenue/` (Export, GUT), `specs/002-zeitleisten-werkstatt/`
   (Fixtures, Grundlinien), Regeln in `docs/ki_workflow/ki_dev.md`, „Tests“
-- **Stand:** Feature 003, 2026-10-27
+- **Stand:** Feature 004, 2026-10-27
 
 ## Starten
 
@@ -56,18 +56,24 @@ Regeln:
 - **Deterministisch:** feste Seeds, etwa 1, 4711 und 99999.
 - **Nie in echte Daten:** Tests lesen eigene Kataloge aus `src/test/fixtures/` und schreiben nur
   in eigene Ordner unter `user://`. Dafür lassen sich Pfade umstellen, etwa
-  `Timeline.catalog_path`, `CatalogEditor.backup_folder`, `Werkstatt.settings_path`; die Uhr der
-  Zeitleiste über `Timeline.clock`.
+  `Timeline.catalog_path`, `CatalogEditor.backup_folder`, `Werkstatt.settings_path`,
+  `GameSession.folder`; die Uhr der Zeitleiste über `Timeline.clock`. `GameSession` nimmt dazu
+  eigene Uhr, Zeitleiste, Uhrzeit (`now`), Würfel (`rng`) und `quit_callback`. Titel- und
+  Spielbildschirm nehmen eine eigene `session` und prüfen Szenenwechsel über `scene_callback`.
+  Kein Test schreibt in `user://spielstaende/`.
 - **Ausgaben als Ganzes vergleichen:** Bytevergleich gegen gespeicherte Erwartungen.
 - **Zahlen aus der Spec messen:** Tests prüfen ein ganzes Spiel unter 1 s, mit 500 Ereignissen
-  ein Spiel unter 2 s und Prüfung samt Änderung unter 100 ms. Die Statistik über 1.000 Spiele
+  ein Spiel unter 2 s, Prüfung samt Änderung unter 100 ms und 20 Spielstände mit 500 Ereignissen
+  in höchstens 1 s gelesen. Die Statistik über 1.000 Spiele
   (Ziel unter 30 s) prüft kein Test.
 
 **Fixtures:** je Prüfregel ein Katalog (`catalog_v01_…` bis `catalog_v31_…`), je User Story
 Kataloge (`catalog_us…`), `catalog_500.json` für die Größe, `event_catalog_uebernahme.json`
 als eingefrorene Kopie der Übernahme mit Fahrplänen und Protokollen für die Seeds 1, 4711 und
 99999. Diese Grundlinien belegen, dass Mittel seit Feature 003 Zeichen für Zeichen gleich
-geblieben ist.
+geblieben ist. Unter `fixtures/spielstaende/` liegt je Fehlerfall ein kleiner Spielstand, etwa
+`spiel_kein_json.json`, `spiel_format_2.json`, `spiel_grad_extrem.json`, dazu
+`spiel_gueltig.json`; Tests kopieren sie unter einem Namen `spiel_<N>.json` in ihren Ordner.
 
 **Tests am echten Bestand:**
 - `test_shipped_catalog.gd`: Der echte Katalog hat keinen Fehler, die Kalender-Ereignisse sind

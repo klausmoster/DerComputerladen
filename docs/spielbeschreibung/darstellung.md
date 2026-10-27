@@ -7,7 +7,7 @@
   `src/ui/computerladen_theme.tres`, `src/assets/fonts/`, Einstellungen in `src/project.godot`;
   Tests `src/test/test_game_window.gd`, `test_ui_palette.gd`
 - **Herkunft:** `specs/001-hauptmenue/` (Vertrag `contracts/titelbildschirm.md`, `research.md`)
-- **Stand:** Feature 003, 2026-10-27
+- **Stand:** Feature 004, 2026-10-27
 - **Maßstab:** der [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX). Er ist die
   einzige Quelle für Farben, Raster, Schriften und Bausteine. Was man sieht, kommt zuerst dort
   hinein, dann in den Code.
@@ -85,9 +85,15 @@ Die 15 Oberflächenfarben des Style-Guides als Konstanten, mit Token-Namen:
 Ark Pixel ist je Größe pixelgenau gezeichnet und nur in seiner Entwurfsgröße zu benutzen. Doto
 nicht unter 10. Beide Schriften stehen unter SIL OFL 1.1, die Lizenzen liegen daneben.
 
-Theme-Varianten heute: `MenuRow`, `MenuHeader`, `HintPanel`, `HintLabel`, `Subtitle`,
-`VersionLine`. Der harte `pixelschatten` (2 px nach rechts unten in `tusche`) wird von Hand in
+Theme-Varianten heute: `MenuRow`, `MenuHeader`, `HintPanel`, `HintLabel`, `WarningPanel` (die
+Meldung: `papier` mit Kontur in `kassenrot`), `Knopf`, `Subtitle`, `VersionLine`. Der harte `pixelschatten` (2 px nach rechts unten in `tusche`) wird von Hand in
 `_draw()` gemalt, weil der Schatten einer `StyleBoxFlat` weich ist.
+
+**Baustein Knopf** (`src/ui/knopf.gd`, `class_name Knopf`): Fläche `gehaeuse`, Kontur `tusche`,
+Schrift `menue`; erhabenes Relief, gedrückt vertieft, beim Überfahren `signalgelb`. Relief und
+Fokuslinie malt `_draw()`, denn eine `StyleBoxFlat` kennt kein Relief in zwei Farben. Mit
+`on_dark` ist die Fokuslinie `papier` statt `tusche`, für dunklen Grund wie den Spielbildschirm.
+Steht ein Knopf allein auf einem Bildschirm, zeigt der Bildschirm seinen Hinweis wie im Menü.
 
 Die Werkstatt hat ein eigenes Theme und läuft nicht im Pixelraster (siehe
 [werkstatt.md](werkstatt.md)).

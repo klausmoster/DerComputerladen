@@ -10,7 +10,7 @@
   `chance_modifier.gd`, `difficulty_profile.gd`
 - **Herkunft:** `specs/002-zeitleisten-werkstatt/contracts/ereigniskatalog.md` und
   `data-model.md`, ergänzt durch dieselben Dateien in `specs/003-schwierigkeitsgrade/`
-- **Stand:** Feature 003, 2026-10-27
+- **Stand:** Feature 004, 2026-10-27
 - **Nachbarn:** was die Felder im Spiel bewirken in [zeitleiste.md](zeitleiste.md), Profile in
   [schwierigkeitsgrade.md](schwierigkeitsgrade.md), Pflege in [werkstatt.md](werkstatt.md)
 
@@ -20,6 +20,10 @@
 eines Spiels ändert er sich nie. Gepflegt wird er nur mit der Zeitleisten-Werkstatt, nicht im
 Code und nicht von Hand. Lesen dürfen ihn Spiel, Werkstatt, Textausgabe und Tests; Tests nehmen
 eigene Kataloge unter `src/test/fixtures/`.
+
+Jeder Spielstand trägt eine eigene Kopie des Katalogs im selben Format (Abschnitt `catalog`) und
+läuft damit weiter; Änderungen in der Werkstatt gelten erst für neue Spiele (siehe
+[spielstaende.md](spielstaende.md)).
 
 Oberste Ebene:
 
@@ -119,7 +123,9 @@ Gleicher Inhalt ergibt immer dieselbe Datei, und eine Feldänderung ändert gena
 
 ## Lesen
 
-`EventCatalog.read_file(path, issues)` bzw. `from_json(text, issues)`:
+`EventCatalog.read_file(path, issues)` bzw. `from_json(text, issues)`; für schon geparste Daten
+wie den Katalog im Spielstand `from_data(data, issues)`, das `from_json()` nach dem Parsen auch
+selbst aufruft:
 - Ist der Text kein gültiges JSON, kein Objekt oder hat ein anderes `format`, gibt es `null` und
   eine Meldung V22, beim Parse-Fehler mit Zeile.
 - Fehlende Schlüssel, falsche Typen, unbekannte Werte und Daten, die kein Kalendertag sind, werden

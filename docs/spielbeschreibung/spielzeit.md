@@ -3,8 +3,9 @@
 - **Worum es geht:** wie das Spiel Tage zählt und wie die Spieluhr die Zeit vorantreibt.
 - **Laden, wenn:** etwas mit Datum, Tagen, Monaten, der Uhr oder dem Tempo zu tun hat.
 - **Code:** `src/core/game_date.gd`, `src/core/game_clock.gd` (Autoload `GameClock`)
-- **Herkunft:** `docs/features/01-01-spieluhr.md`, Feature 002 (negative Tage, Kalender-Ereignisse)
-- **Stand:** Feature 003, 2026-10-27
+- **Herkunft:** `docs/features/archiv/01-01-spieluhr.md`, Feature 002 (negative Tage,
+  Kalender-Ereignisse), Feature 004 (`set_date()`)
+- **Stand:** Feature 004, 2026-10-27
 
 ## Spielzeitraum
 
@@ -53,9 +54,13 @@ selbst, sie hängen sich an die Signale der Uhr.
 - **Schritte:** `advance_day()`, `advance_one_month()` (bis zum nächsten Monatsersten),
   `advance_one_year()` (bis zum nächsten 1. Januar). Jeder übersprungene Tag sendet seine Signale.
 - **Pause:** `set_paused()`, `toggle_paused()`. `is_finished()` sagt, ob das Ende erreicht ist.
+- **Stellen:** `set_date(date)` setzt die Uhr ohne Signale auf ein Datum; die Pause bleibt, wie sie
+  ist. `GameSession` stellt damit die Uhr beim Anlegen auf den 01.01.1985, beim Fortsetzen auf das
+  Spieldatum und beim Verlassen zurück (siehe [spielablauf.md](spielablauf.md)).
 
 Die Zeitleiste hängt an `day_passed` (siehe [zeitleiste.md](zeitleiste.md)). Wer die Uhr im
-Spiel startet und anhält, ist noch nicht gebaut; bisher pausiert die Uhr dauerhaft.
+Spiel startet und anhält, ist noch nicht gebaut; bisher pausiert die Uhr dauerhaft, auch auf dem
+Spielbildschirm.
 
 Jahreszeiten und Weihnachtsgeschäft kennt die Uhr nicht. Sie sind seit Feature 002 jährliche
 Ereignisse im Katalog, das Signal `season_changed` gibt es nicht mehr.
