@@ -200,14 +200,6 @@ static func time_text(unix: int, bias_minutes: int = SYSTEM_BIAS) -> String:
 		local["hour"], local["minute"]]
 
 
-## „am 26.10.2026 um 21:40 Uhr“ in Ortszeit, für Hinweise, etwa „Zuletzt gespielt am 26.10.2026 um
-## 21:40 Uhr.“ (R12). [param bias_minutes] wie bei time_text().
-static func time_sentence(unix: int, bias_minutes: int = SYSTEM_BIAS) -> String:
-	var local := _local_time(unix, bias_minutes)
-	return "am %02d.%02d.%04d um %02d:%02d Uhr" % [local["day"], local["month"], local["year"],
-		local["hour"], local["minute"]]
-
-
 ## Bringt gelesene Daten einer älteren Formatversion Schritt für Schritt auf FORMAT (FR-014): Für
 ## Format 2 käme hier ein Schritt „von 1 auf 2“ dazu, der eine Kopie umbaut. Mit Format 1 gibt es
 ## nichts umzuwandeln, [param data] kommt unverändert zurück (Analyse, E4).

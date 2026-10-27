@@ -235,7 +235,7 @@ andere ist unverändert.
   von außen oder von Hand verändert, erscheint in der Liste als „beschädigt“ mit dem Grund. Sie
   lässt sich nicht fortsetzen, aber löschen. Das Spiel überschreibt sie nie und stürzt nicht ab.
 - **Zu neuer Spielstand**: Ein Spielstand aus einer neueren Version des Spiels, erkennbar an seiner
-  Formatversion, erscheint in der Liste mit dem Hinweis, dass er eine neuere Version braucht. Er
+  Formatversion, erscheint in der Liste mit dem Hinweis, dass er mit einer neueren Version gespeichert wurde. Er
   lässt sich nicht fortsetzen, aber löschen, und wird nie überschrieben.
 - **Werte außerhalb ihres Bereichs**: Ein unbekannter Grad, ein Seed außerhalb, ein Spieldatum
   außerhalb von 1985 bis 1999 oder ein Eingriff mit einem Datum, das es nicht gibt: Der

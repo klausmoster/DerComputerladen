@@ -42,7 +42,8 @@ const ZEILE := MainMenu.ROW_HEIGHT
 ## Änderung hier auf.
 const NICHT_ANGELEGT := "Speichern ging nicht. Es ist kein Spiel angelegt."
 const LOESCHEN_GING_NICHT := "Löschen ging nicht. Der Spielstand ist noch da."
-const HINWEIS_LADEN := "Alle Spielstände: fortsetzen oder löschen."
+## „Spiel laden“, immer derselbe Satz, auch wenn sich keiner fortsetzen lässt (T038).
+const HINWEIS_LADEN := "Zurück in einen deiner Läden. Oder einen aufgeben."
 const HINWEIS_ZURUECK_IM_MODUS := "Nicht löschen. Esc geht auch."
 ## SC-002: so viele Spielstände, so lange darf die Anzeige der Liste dauern, so oft gemessen.
 const SPIELSTAENDE := 20
@@ -168,7 +169,7 @@ func test_mit_spielstaenden_ist_weiterspielen_gewaehlt_und_nennt_den_zuletzt_ges
 	# Assert
 	assert_eq(_verfuegbar(_hauptmenue()), [true, true, true, false, true])
 	assert_eq(_hauptmenue().entries[0].hint, "Weiter mit Spiel 2, Schwer, am 14.03.1986.")
-	assert_eq(_hauptmenue().entries[2].hint, "Alle Spielstände: fortsetzen oder löschen.")
+	assert_eq(_hauptmenue().entries[2].hint, "Zurück in einen deiner Läden. Oder einen aufgeben.")
 	assert_eq(_hauptmenue().selected_index(), 0, "„Weiterspielen“ ist vorgewählt (FR-001a).")
 	assert_eq(_hinweis_text(), "Weiter mit Spiel 2, Schwer, am 14.03.1986.")
 	_assert_neben_zeile(_hauptmenue(), 0)
@@ -182,9 +183,41 @@ func test_nur_beschaedigte_spielstaende_machen_nur_spiel_laden_verfuegbar() -> v
 	# Assert
 	assert_eq(_verfuegbar(_hauptmenue()), [false, true, true, false, true])
 	assert_eq(_hauptmenue().entries[0].hint, "Kein Spielstand lässt sich fortsetzen.")
-	assert_eq(_hauptmenue().entries[2].hint, "Alle Spielstände: fortsetzen oder löschen.")
+	assert_eq(_hauptmenue().entries[2].hint, HINWEIS_LADEN,
+		"Derselbe Satz, auch wenn sich keiner fortsetzen lässt (T038).")
 	assert_eq(_hauptmenue().selected_index(), 1, "Ohne fortsetzbaren: „Neues Spiel“.")
 	assert_push_warning("spiel_1.json", "Das Protokoll nennt die beschädigte Datei.")
+
+
+func test_nur_zu_neue_und_beschaedigte_spielstaende_bei_spiel_laden_derselbe_satz() -> void:
+	# Arrange (T038): ein zu neuer und ein beschädigter, keiner fortsetzbar
+	_kopiere("spiel_format_2.json", 1)
+	_kopiere("spiel_kein_json.json", 2)
+	await _zeige_titel()
+
+	# Assert
+	assert_eq(_verfuegbar(_hauptmenue()), [false, true, true, false, true])
+	assert_eq(_hauptmenue().entries[2].hint, HINWEIS_LADEN)
+
+
+func test_nur_ein_zu_neuer_spielstand_bei_spiel_laden_derselbe_satz() -> void:
+	# Arrange (T038)
+	_kopiere("spiel_format_2.json", 1)
+	await _zeige_titel()
+
+	# Assert
+	assert_eq(_hauptmenue().entries[2].hint, HINWEIS_LADEN)
+
+
+func test_ein_fortsetzbarer_neben_beschaedigten_bei_spiel_laden_derselbe_satz() -> void:
+	# Arrange (T038)
+	_kopiere("spiel_kein_json.json", 2)
+	_kopiere("spiel_format_2.json", 3)
+	_lege_an(1, Difficulty.Level.MITTEL, _tag(1985, 1, 1), ANGELEGT)
+	await _zeige_titel()
+
+	# Assert
+	assert_eq(_hauptmenue().entries[2].hint, HINWEIS_LADEN)
 
 
 func test_esc_im_hauptmenue_tut_nichts() -> void:
@@ -575,7 +608,7 @@ func test_nicht_fortsetzbare_zeilen_loesen_ausserhalb_des_loeschmodus_nichts_aus
 	# Assert
 	assert_eq(_namen(), ["Spiel 1", "Spiel 4", "Spiel 3"])
 	assert_eq(hinweise, ["Lässt sich nicht lesen: Die Datei ist beschädigt.",
-		"Stammt aus einer neueren Version des Spiels."], "Der Hinweis nennt den Grund.")
+		"Mit einer neueren Version gespeichert."], "Der Hinweis nennt den Grund.")
 	_assert_nur_sichtbar(_liste())
 	assert_eq(_wechsel, [])
 	assert_false(_sitzung.is_running())

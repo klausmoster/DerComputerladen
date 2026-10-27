@@ -323,3 +323,45 @@ nichts und haben deshalb keine Notiz.
   den Pfeil nach derselben Regel. So kann eine Zeile nicht gesperrt aussehen und doch auslösen.
 - **Eine Vorlage statt zwei:** Die Rückfrage hat einen Platzhalter `{angaben}`, gefüllt mit „Schwer,
   14.03.1986“ oder dem Zustand. Zwei Satzformen für dasselbe laufen sonst mit der Zeit auseinander.
+
+## Phase 7 (Convergence)
+
+### T036 Eine Regel an zwei Stellen fragen statt sie zweimal schreiben
+
+- Schritt 1 des Speicherns muss wissen, ob die übrig gebliebene `.neu` der Stand ist, den die Liste
+  zeigen würde. Das beantwortet die Leseregel schon. Deshalb ist `_slot_of()` geteilt:
+  `_pick_slot()` wendet nur die Regel an, `_slot_of()` ruft sie und schreibt ins Protokoll, wenn eine
+  Zwischendatei gilt. `list_slots()` nimmt `_slot_of()`, `_clear_fresh()` nimmt `_pick_slot()`
+  direkt, denn beim Speichern wird nichts aus einer Zwischendatei gelesen. Ändert sich die
+  Leseregel, gilt die Änderung an beiden Stellen.
+- `_clear_fresh()` räumt nur um und schreibt nichts Neues. Scheitert es, steht die `.neu` noch da und
+  gilt weiter. Die umbenannte `.alt` verschwindet erst in Schritt 3, wenn die neue `.neu` geprüft
+  ist.
+- Getestet wird das Scheitern mit der Unterklasse `SaveStoreMitDefekt`, die `_store_text()`
+  überschreibt. Darum ist das Schreiben eine eigene Methode.
+
+### T037, T038 Texte an einer Stelle
+
+- Der Hinweis von „Spiel laden“ hing erst an der Lage: Ließ sich keiner fortsetzen, kam ein eigener
+  Satz. Klaus wollte keine Hinweise, die mit der Lage wechseln; jetzt steht immer „Zurück in einen
+  deiner Läden. Oder einen aufgeben.“ Nur „nicht verfügbar“ hat einen eigenen Satz, denn dort nennt
+  der Hinweis den Grund. In `_main_entries()` hängt der Satz so nur noch an `has_slots`.
+- Jeder Hinweis ist eine Konstante in `TitleTexts`, `_main_entries()` wählt nur aus.
+  `test_title_texts.gd` holt alle `HINT_*` über `get_script_constant_map()` und misst jeden im echten
+  `MenuHint`; ein neuer Satz ist so ohne eigenen Test auf zwei Zeilen geprüft.
+- Die Tests schreiben die Sätze aus, statt die Konstanten zu nehmen. So fällt eine Textänderung in
+  allen Testdateien auf, statt still durchzurutschen.
+
+### T039 Ungenutzten Code löschen
+
+- Ein öffentliches `static func`, das nur noch sein eigener Test aufruft, ist toter Code mit
+  Wartungskosten. Vorher ein grep über ganz `src/`, auch `src/tools/`: GDScript meldet einen
+  fehlenden Aufruf erst, wenn das Skript geladen wird.
+
+### T040 `queue_free()` und verwaiste Knoten
+
+- `MainMenu._build_rows()` nimmt alte Buttons sofort mit `remove_child()` aus dem Baum, gibt sie
+  aber erst mit `queue_free()` am Ende des Bilds frei; ein Button, der gerade ein Signal sendet,
+  darf nicht mitten darin verschwinden. Vier Tests endeten direkt danach, und GUT zählte die
+  wartenden Buttons als Orphans. Kein Leck im Spiel: `after_each()` wartet jetzt ein Bild.
+  `autofree` passte nicht, denn die Buttons gehören dem Menü, nicht dem Test.

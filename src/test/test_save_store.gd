@@ -3,7 +3,8 @@ extends GutTest
 ## Prüft SaveStore (Feature 004, T008; data-model.md, „SaveStore“; research.md, R3, R4, R12 und
 ## R16): die Liste mit ihrer Ordnung und der Leseregel aus R3, fremde Dateien, die nächste Nummer,
 ## das Schreiben in fünf Schritten mit jedem Abbruch und dem lesbaren Stand danach, das Ausweichen
-## eines neuen Spiels und das Löschen. Dazu die Messung zu SC-002.
+## eines neuen Spiels und das Löschen. Dazu die Messung zu SC-002. Seit T036 auch zwei Fehler beim
+## Speichern hintereinander, nach denen der Spielstand noch fortsetzbar ist.
 ##
 ## Jeder Test arbeitet in ORDNER, den after_each() samt allem darin wieder abräumt, auch den
 ## Ordnern, die ein Test als Hindernis anlegt. Nach user://spielstaende/ schreibt kein Test.
@@ -286,7 +287,7 @@ func test_zu_neue_json_faellt_nie_auf_eine_zwischendatei_zurueck() -> void:
 	# Assert
 	assert_eq(_zustaende(slots), ["TOO_NEW"])
 	assert_eq([slots[0].path, slots[0].reason],
-		[store.path_of(2), "Stammt aus einer neueren Version des Spiels."],
+		[store.path_of(2), "Mit einer neueren Version gespeichert."],
 		"Sonst überschriebe das nächste Speichern den neueren Stand.")
 
 
@@ -389,6 +390,118 @@ func test_schritt_2_findet_einen_text_der_nicht_stimmt() -> void:
 		"Nichts am alten Stand ist berührt.")
 	assert_false(FileAccess.file_exists(store.path_of(2) + ".alt"), "Schritt 3 lief nicht.")
 	assert_eq(store.list_slots()[0].game.to_json(), alt.to_json())
+
+
+# --- Zwei Fehler hintereinander (T036) ----------------------------------------------------------
+
+# Gilt die .neu nach der Leseregel, ist sie der einzige lesbare Stand. Schritt 1 des nächsten
+# Speicherns macht sie zu .alt, statt sie zu löschen; scheitert dieses Speichern danach auch, ist
+# der Spielstand nicht verloren. Das Scheitern kommt aus Schritt 2 (SaveStoreMitDefekt).
+
+func test_einzige_neu_bleibt_fortsetzbar_wenn_das_naechste_speichern_scheitert() -> void:
+	# Arrange: nur eine fortsetzbare .neu, ohne .json und ohne .alt
+	var store := _store()
+	var gerettet := _spielstand(2)
+	_schreibe(store.path_of(2) + ".neu", gerettet.to_json())
+
+	# Act
+	var ergebnis := SaveStoreMitDefekt.new(ORDNER).write(_spielstand(2, 3600))
+
+	# Assert
+	assert_eq(ergebnis, ERR_FILE_CORRUPT, "Voraussetzung: Das Speichern scheitert in Schritt 2.")
+	var slots := store.list_slots()
+	assert_eq(_zustaende(slots), ["OK"], "Der Spielstand lässt sich weiter fortsetzen.")
+	assert_eq([slots[0].path, slots[0].game.to_json()],
+		[store.path_of(2) + ".alt", gerettet.to_json()], "Die .neu von vorher gilt jetzt als .alt.")
+
+
+func test_einzige_neu_ersetzt_eine_beschaedigte_alt() -> void:
+	# Arrange: daneben eine .alt, die sich nicht fortsetzen lässt
+	var store := _store()
+	var gerettet := _spielstand(2)
+	_schreibe(store.path_of(2) + ".neu", gerettet.to_json())
+	_kopiere("spiel_kein_json.json", 2, ".alt")
+
+	# Act
+	var ergebnis := SaveStoreMitDefekt.new(ORDNER).write(_spielstand(2, 3600))
+
+	# Assert
+	assert_eq(ergebnis, ERR_FILE_CORRUPT)
+	var slots := store.list_slots()
+	assert_eq(_zustaende(slots), ["OK"])
+	assert_eq([slots[0].path, slots[0].game.to_json()],
+		[store.path_of(2) + ".alt", gerettet.to_json()], "Die beschädigte .alt ist ersetzt.")
+
+
+func test_einzige_neu_neben_einer_beschaedigten_json_bleibt_fortsetzbar() -> void:
+	# Arrange: Die .json ist beschädigt, also gilt die .neu, wie nach einem Abbruch zwischen
+	# Schritt 3 und 4, als die .json noch halb war.
+	var store := _store()
+	var gerettet := _spielstand(2)
+	_kopiere("spiel_grad_extrem.json", 2)
+	_schreibe(store.path_of(2) + ".neu", gerettet.to_json())
+
+	# Act
+	var ergebnis := SaveStoreMitDefekt.new(ORDNER).write(_spielstand(2, 3600))
+
+	# Assert
+	assert_eq(ergebnis, ERR_FILE_CORRUPT)
+	var slots := store.list_slots()
+	assert_eq([slots[0].path, slots[0].game.to_json()],
+		[store.path_of(2) + ".alt", gerettet.to_json()])
+
+
+func test_eine_fortsetzbare_alt_bleibt_und_die_neu_wird_geloescht() -> void:
+	# Arrange: eine fortsetzbare .neu und eine ältere fortsetzbare .alt
+	var store := _store()
+	var aelter := _spielstand(2)
+	_schreibe(store.path_of(2) + ".neu", _spielstand(2, 60).to_json())
+	_schreibe(store.path_of(2) + ".alt", aelter.to_json())
+
+	# Act
+	var ergebnis := SaveStoreMitDefekt.new(ORDNER).write(_spielstand(2, 3600))
+
+	# Assert
+	assert_eq(ergebnis, ERR_FILE_CORRUPT)
+	assert_eq(FileAccess.get_file_as_string(store.path_of(2) + ".alt"), aelter.to_json(),
+		"Die .alt bleibt, wie sie war.")
+	var slots := store.list_slots()
+	assert_eq([slots[0].path, slots[0].game.to_json()], [store.path_of(2) + ".alt", aelter.to_json()],
+		"Die halbe neue .neu wird übergangen, die .alt gilt.")
+
+
+func test_neben_einer_fortsetzbaren_json_wird_die_neu_geloescht_wie_bisher() -> void:
+	# Arrange: Die .json gilt, die .neu ist nicht der einzige lesbare Stand.
+	var store := _store()
+	var alt := _spielstand(2)
+	assert_eq(store.write(alt), OK)
+	_schreibe(store.path_of(2) + ".neu", _spielstand(2, 60).to_json())
+
+	# Act
+	var ergebnis := SaveStoreMitDefekt.new(ORDNER).write(_spielstand(2, 3600))
+
+	# Assert
+	assert_eq(ergebnis, ERR_FILE_CORRUPT)
+	assert_false(FileAccess.file_exists(store.path_of(2) + ".alt"), "Keine .alt entsteht.")
+	assert_eq(FileAccess.get_file_as_string(store.path_of(2)), alt.to_json())
+
+
+func test_gelungenes_speichern_nach_zwei_fehlern_hinterlaesst_nur_die_json() -> void:
+	# Arrange: wie oben, eine einzige .neu, und das nächste Speichern scheitert.
+	var store := _store()
+	_schreibe(store.path_of(2) + ".neu", _spielstand(2).to_json())
+	assert_eq(SaveStoreMitDefekt.new(ORDNER).write(_spielstand(2, 3600)), ERR_FILE_CORRUPT)
+	assert_eq(_dateien(), ["spiel_2.json.alt", "spiel_2.json.neu"],
+		"Voraussetzung: die gerettete .alt und die halbe .neu.")
+	var neu := _spielstand(2, 7200)
+
+	# Act
+	var ergebnis := store.write(neu)
+
+	# Assert
+	assert_eq(ergebnis, OK)
+	assert_eq(_dateien(), ["spiel_2.json"], "Schritt 5 räumt auf.")
+	assert_eq(FileAccess.get_file_as_string(store.path_of(2)), neu.to_json())
 
 
 func test_neues_spiel_weicht_einer_vorhandenen_nummer_aus() -> void:

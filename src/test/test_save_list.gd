@@ -28,7 +28,7 @@ const HINWEIS_LOESCHEN_IM_MODUS := "Wähl oben den Spielstand, der weg soll. Esc
 const HINWEIS_ZURUECK := "Zurück zum Hauptmenü. Esc geht auch."
 const HINWEIS_ZURUECK_IM_MODUS := "Nicht löschen. Esc geht auch."
 const GRUND_BESCHAEDIGT := "Lässt sich nicht lesen: Die Datei ist beschädigt."
-const GRUND_ZU_NEU := "Stammt aus einer neueren Version des Spiels."
+const GRUND_ZU_NEU := "Mit einer neueren Version gespeichert."
 
 var _liste: SaveList
 

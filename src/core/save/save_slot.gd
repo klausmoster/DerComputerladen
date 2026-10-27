@@ -20,7 +20,7 @@ enum State { OK, DAMAGED, TOO_NEW }
 ## Grund, wenn die Datei kein gültiges JSON-Objekt ist oder sich gar nicht lesen lässt.
 const REASON_UNREADABLE := "Lässt sich nicht lesen: Die Datei ist beschädigt."
 ## Grund, wenn „format“ eine ganze Zahl größer als SaveGame.FORMAT ist.
-const REASON_TOO_NEW := "Stammt aus einer neueren Version des Spiels."
+const REASON_TOO_NEW := "Mit einer neueren Version gespeichert."
 
 ## Die Nummer aus dem Dateinamen.
 var number: int = 0

@@ -598,31 +598,32 @@ Task: "T019 [A] Texte in src/scenes/title/title_texts.gd"
 mit Klaus' Entscheidungen vom 2026-10-26. Fertig vor T034. Ändert Texte, endet deshalb mit einer
 eigenen Phasenprüfung (Analyse, D3).
 
-- [ ] T036 [A] Speichern ohne Verlust bei zwei Fehlern hintereinander in `src/core/save/save_store.gd`,
+- [x] T036 [A] Speichern ohne Verlust bei zwei Fehlern hintereinander in `src/core/save/save_store.gd`,
   Schritt 1: Ist `spiel_N.json.neu` der einzige lesbare Stand (keine lesbare `spiel_N.json`), wird
   sie zu `spiel_N.json.alt` umbenannt statt gelöscht; eine vorhandene `.alt` wird dabei nur
   ersetzt, wenn sie nicht fortsetzbar ist. Test in `src/test/test_save_store.gd`: nur eine
   fortsetzbare `.neu`, das nächste Speichern scheitert nach Schritt 1, der Spielstand ist danach
   noch fortsetzbar; `research.md`, R3, nachziehen [C] per SC-004, Edge Case „Absturz oder
   Stromausfall während des Speicherns“ (contradicts)
-- [ ] T037 [A] Grund eines zu neuen Spielstands in `src/core/save/save_slot.gd` (`REASON_TOO_NEW`):
+- [x] T037 [A] Grund eines zu neuen Spielstands in `src/core/save/save_slot.gd` (`REASON_TOO_NEW`):
   „Mit einer neueren Version gespeichert.“ statt „Stammt aus einer neueren Version des Spiels.“;
   Tests nachziehen; `data-model.md`, Tabelle „Zustand“, nachziehen [C] per FR-013, Style-Guide
   Sprache „Kein Wort für zwei Dinge“ (contradicts)
-- [ ] T038 [A] Hinweis von „Spiel laden“, wenn sich kein Spielstand fortsetzen lässt: neue Konstante
-  in `src/scenes/title/title_texts.gd` mit „Fortsetzen lässt sich keiner. Löschen geht.“, gesetzt in
-  `title_screen.gd`, `_main_entries()`; sonst bleibt „Alle Spielstände: fortsetzen oder löschen.“;
-  Tests in `test_title_texts.gd` und `test_title_screen.gd`; Vertrag `titelbildschirm.md`, „Texte“,
-  nachziehen [C] per FR-002, Style-Guide Baustein Hinweis „verspricht nur, was der Eintrag gerade
-  kann“ (partial)
-- [ ] T039 [A] `SaveGame.time_sentence()` mit seinem Test aus `src/core/save/save_game.gd` und
+- [x] T038 [A] Hinweis von „Spiel laden“: immer derselbe Satz „Zurück in einen deiner Läden. Oder
+  einen aufgeben.“ in `src/scenes/title/title_texts.gd`, auch wenn sich kein Spielstand fortsetzen
+  lässt; nicht verfügbar bleibt „Noch keine Spielstände.“; gesetzt in `title_screen.gd`,
+  `_main_entries()`; Tests in `test_title_texts.gd` und `test_title_screen.gd`; Vertrag
+  `titelbildschirm.md`, „Texte“, und Style-Guide, Baustein Hinweis, nachziehen [C] per FR-002
+  (partial; Klaus, 2026-10-27: keine Hinweise, die mit der Lage wechseln, statt eines eigenen
+  Satzes nur fürs Löschen)
+- [x] T039 [A] `SaveGame.time_sentence()` mit seinem Test aus `src/core/save/save_game.gd` und
   `src/test/test_save_game.gd` entfernen; `contracts/spielstand.md` und `data-model.md`
   nachziehen [C] per plan: Vertrag Spielstand (unrequested, seit Phase 5 ungenutzt)
-- [ ] T040 [A] Die 4 Orphans in `src/test/test_main_menu.gd` beseitigen (Buttons, die ein Test nicht
+- [x] T040 [A] Die 4 Orphans in `src/test/test_main_menu.gd` beseitigen (Buttons, die ein Test nicht
   freigibt), ohne Erwartungen zu ändern per Verfassung, Arbeitsweise „Tests“ (partial)
-- [ ] T041 [C] Auslegung in `docs/offene-punkte.md` festhalten: Der Knopf des Spielbildschirms führt
+- [x] T041 [C] Auslegung in `docs/offene-punkte.md` festhalten: Der Knopf des Spielbildschirms führt
   ohne laufendes Spiel gleich ins Hauptmenü (`game_screen.gd`, für den Start der Szene im Editor)
   per FR-020 (unrequested)
-- [ ] T042 [C] Phasenprüfung Phase 7 mit `/dcl-phasenpruefung`: Text-Prüfer über die Texte aus T037
+- [x] T042 [C] Phasenprüfung Phase 7 mit `/dcl-phasenpruefung`: Text-Prüfer über die Texte aus T037
   und T038; Tests zweimal, Startprobe.
-- [ ] T043 [K] Phase 7 abnehmen; danach T034 und T035.
+- [x] T043 [K] Phase 7 abnehmen; danach T034 und T035.

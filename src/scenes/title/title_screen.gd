@@ -380,22 +380,23 @@ func _change_scene(path: String) -> void:
 
 ## Die fünf Einträge des Hauptmenüs nach FR-001 und FR-002: „Weiterspielen“ nur mit einem
 ## fortsetzbaren Spielstand, „Spiel laden“ mit irgendeinem, auch einem beschädigten; die Hinweise
-## nennen sonst den Grund.
+## nennen sonst den Grund. Der Hinweis von „Spiel laden“ ist immer derselbe, ob sich einer
+## fortsetzen lässt oder nicht.
 func _main_entries(slots: Array[SaveSlot]) -> Array[MenuEntry]:
 	var resumable := _first_resumable(slots)
+	var has_slots := not slots.is_empty()
 	var continue_hint := TitleTexts.HINT_CONTINUE_NO_SAVES
 	if resumable != null:
 		var game := resumable.game
 		continue_hint = TitleTexts.continue_hint(game.name, Difficulty.label(game.difficulty),
 			game.day_text())
-	elif not slots.is_empty():
+	elif has_slots:
 		continue_hint = TitleTexts.HINT_CONTINUE_NONE_RESUMABLE
-	var has_slots := not slots.is_empty()
+	var load_hint := TitleTexts.HINT_LOAD_GAME if has_slots else TitleTexts.HINT_LOAD_GAME_NO_SAVES
 	return [
 		_entry(&"continue", TitleTexts.LABEL_CONTINUE, resumable != null, continue_hint),
 		_entry(&"new_game", TitleTexts.LABEL_NEW_GAME, true, TitleTexts.HINT_NEW_GAME),
-		_entry(&"load_game", TitleTexts.LABEL_LOAD_GAME, has_slots,
-			TitleTexts.HINT_LOAD_GAME if has_slots else TitleTexts.HINT_LOAD_GAME_NO_SAVES),
+		_entry(&"load_game", TitleTexts.LABEL_LOAD_GAME, has_slots, load_hint),
 		_entry(&"settings", TitleTexts.LABEL_SETTINGS, false, TitleTexts.HINT_SETTINGS),
 		_entry(&"quit", TitleTexts.LABEL_QUIT, true, TitleTexts.HINT_QUIT),
 	]

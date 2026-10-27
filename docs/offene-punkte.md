@@ -46,7 +46,9 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
 - **`/speckit-converge`:** 64 Anforderungen, Szenarien und Edge Cases, 24 Plan-Entscheidungen und
   7 Grundsätze der Verfassung geprüft. Zwei kleine Funde, beide in Phase 7: Speichern verliert bei
   zwei Fehlern hintereinander eine `.neu` (T036, Klaus: reparieren), der Knopf des
-  Spielbildschirms ohne laufendes Spiel (T041, Auslegung angenommen). FR-015 in der Spec war
+  Spielbildschirms ohne laufendes Spiel (T041, Auslegung angenommen: Läuft kein Spiel, etwa weil
+  die Szene im Editor allein startet, führt der Knopf ohne Speichern gleich ins Hauptmenü;
+  `game_screen.gd`, `_on_leave_button_pressed()`). FR-015 in der Spec war
   veraltet und ist nachgezogen.
 - **Stil-Prüfer:** kein Verstoß am Gebauten. Der Vertrag sagte beim Knopf „Mauszeiger: die Hand“
   ohne Ausnahme; nachgezogen. Lücken entschieden (Style-Guide Version 30): Zebra an der Stelle,
@@ -57,7 +59,9 @@ Klaus gleich entschieden (unter „Erledigt“); diese bleiben offen, keine bloc
   Hinweis von „Spiel laden“). Verworfen: „Spiel laden“ neben „Laden aufmachen“ sei ein Wort für
   zwei Dinge; Verb und Name des Ladens sind verschiedene Wörter, „Spiel laden“ ist der übliche
   Menüeintrag. Lücken entschieden (Version 30): Namen im Satz groß, das Programm heißt nicht „das
-  Spiel“, ein Hinweis verspricht nur, was geht.
+  Spiel“. Die Regel „ein Hinweis verspricht nur, was geht“ hat Klaus am 2026-10-27 wieder
+  verworfen: Ein Hinweis wechselt nicht mit der Lage, „Spiel laden“ sagt immer „Zurück in einen
+  deiner Läden. Oder einen aufgeben.“ (Style-Guide Version 32).
 
 ### Feature 004, Phasenprüfung Phase 5 (2026-10-26)
 

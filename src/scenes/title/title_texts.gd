@@ -53,7 +53,8 @@ const HINT_CONTINUE_NO_SAVES := "Noch kein Spiel angefangen."
 ## „Weiterspielen“ ist nicht verfügbar, weil sich keiner fortsetzen lässt.
 const HINT_CONTINUE_NONE_RESUMABLE := "Kein Spielstand lässt sich fortsetzen."
 const HINT_NEW_GAME := "Einen neuen Laden aufmachen. Los geht es am 01.01.1985."
-const HINT_LOAD_GAME := "Alle Spielstände: fortsetzen oder löschen."
+## Immer derselbe Satz, auch wenn sich keiner fortsetzen lässt (Klaus, 2026-10-27).
+const HINT_LOAD_GAME := "Zurück in einen deiner Läden. Oder einen aufgeben."
 ## „Spiel laden“ ist nicht verfügbar.
 const HINT_LOAD_GAME_NO_SAVES := "Noch keine Spielstände."
 ## Wie Feature 001.

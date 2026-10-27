@@ -228,7 +228,7 @@ Text-Prüfer prüft sie in der Phase. Die Sätze zu den Graden hat Klaus entschi
 | Weiterspielen, nicht verfügbar, keine Spielstände | „Noch kein Spiel angefangen.“ |
 | Weiterspielen, nicht verfügbar, keiner fortsetzbar | „Kein Spielstand lässt sich fortsetzen.“ |
 | Neues Spiel | „Einen neuen Laden aufmachen. Los geht es am 01.01.1985.“ |
-| Spiel laden | „Alle Spielstände: fortsetzen oder löschen.“ |
+| Spiel laden, verfügbar | „Zurück in einen deiner Läden. Oder einen aufgeben.“, auch wenn sich keiner fortsetzen lässt (Klaus, 2026-10-27) |
 | Spiel laden, nicht verfügbar | „Noch keine Spielstände.“ |
 | Einstellungen, Beenden | wie Feature 001 |
 | Gradwahl, Leicht | „Das Glück ist eher auf deiner Seite.“ (Klaus, 2026-10-26, R18) |

@@ -75,7 +75,7 @@ oder der Zeitumstellung stimmt. Angezeigt wird Ortszeit: Unix-Zeit plus
 `Time.get_time_zone_from_system().bias` Minuten, wie die Werkstatt ihre Sicherungskopien zeigt
 (`werkstatt.gd`). Die Verschiebung gilt für heute; ein Spielstand aus dem Sommer zeigt im Winter
 eine Stunde früher. Das reicht für „zuletzt gespielt“. Tests geben den Versatz vor
-(`bias_minutes` in `time_text()` und `time_sentence()`, Analyse, C3).
+(`bias_minutes` in `time_text()`, Analyse, C3).
 
 **Spielversion:** `ProjectSettings` `application/config/version`, heute „0.1“.
 
@@ -112,7 +112,7 @@ Was die Liste über eine Nummer weiß, auch wenn sich die Datei nicht lesen läs
 | Prüfung | Zustand | Grund im Hinweis |
 |---|---|---|
 | kein gültiges JSON oder kein Objekt | `DAMAGED` | „Lässt sich nicht lesen: Die Datei ist beschädigt.“ |
-| `"format"` ganze Zahl > 1 | `TOO_NEW` | „Stammt aus einer neueren Version des Spiels.“ |
+| `"format"` ganze Zahl > 1 | `TOO_NEW` | „Mit einer neueren Version gespeichert.“ (Klaus, 2026-10-26, Lückensuche: „Spiel“ hieße sonst zweierlei) |
 | `"format"` fehlt, keine ganze Zahl oder < 1 | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
 | Pflichtfeld fehlt oder hat den falschen Typ | `DAMAGED` | „Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht.“ |
 | Grad unbekannt | `DAMAGED` | „Der Schwierigkeitsgrad ist unbekannt.“ |

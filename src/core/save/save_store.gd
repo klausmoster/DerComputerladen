@@ -10,9 +10,10 @@ extends RefCounted
 ## etwa notizen.txt oder spiel_02.json, wird nie gelistet, nie mitgezählt und nie gelöscht.
 ##
 ## Geschrieben wird in fünf Schritten über .neu und .alt (R3), damit ein Abbruch an jeder Stelle
-## einen lesbaren Stand hinterlässt; welcher dann gilt, regelt die Leseregel in list_slots(). Das
-## Spiel überschreibt so nie einen beschädigten oder zu neuen Spielstand: Fortsetzen lässt sich nur
-## ein fortsetzbarer, und ein neues Spiel nimmt nur eine Nummer ohne Dateien (FR-013, R4).
+## einen lesbaren Stand hinterlässt, auch zwei Abbrüche hintereinander; welcher dann gilt, regelt
+## die Leseregel in list_slots(). Das Spiel überschreibt so nie einen beschädigten oder zu neuen
+## Spielstand: Fortsetzen lässt sich nur ein fortsetzbarer, und ein neues Spiel nimmt nur eine
+## Nummer ohne Dateien (FR-013, R4).
 ##
 ## last_error ist für das Protokoll und nennt Datei und Schritt, auch mit Godots englischem
 ## Fehlertext. Den Satz für den Spieler wählt GameSession (spielablauf.md).
@@ -66,13 +67,17 @@ func next_number() -> int:
 
 
 ## Schreibt [param game] unter seiner Nummer in fünf Schritten (R3):
-## 1. eine übrig gebliebene .neu löschen, den Text von game.to_json() nach .neu schreiben;
+## 1. eine übrig gebliebene .neu abräumen (_clear_fresh()), den Text von game.to_json() nach .neu
+##    schreiben. Ist die übrig gebliebene .neu der einzige lesbare Stand, wird sie dabei zu .alt,
+##    statt gelöscht zu werden;
 ## 2. .neu wieder lesen; der Text muss Zeichen für Zeichen gleich sein, sonst Abbruch;
-## 3. eine übrig gebliebene .alt löschen, den alten Stand spiel_N.json in .alt umbenennen;
+## 3. eine übrig gebliebene .alt löschen, den alten Stand spiel_N.json in .alt umbenennen. Erst
+##    hier geht auch eine .alt aus Schritt 1, denn jetzt ist die neue .neu geprüft und lesbar;
 ## 4. .neu in spiel_N.json umbenennen;
 ## 5. .alt löschen.
 ## Fehlt der Ordner, legt es ihn an. Gibt OK oder den Fehler des Schritts zurück, der scheiterte;
-## dann ist der vorige Stand lesbar, und last_error nennt Datei und Schritt.
+## dann ist der vorige Stand lesbar, und last_error nennt Datei und Schritt. Das gilt auch, wenn
+## schon das vorige Speichern gescheitert war und der Spielstand nur noch aus der .neu kam.
 ##
 ## Mit [param is_new] true, für ein neues Spiel, schreibt es nur, wenn es zu game.number noch keine
 ## Datei gibt, auch keine .neu oder .alt; sonst ERR_ALREADY_EXISTS, und GameSession versucht es mit
@@ -103,10 +108,9 @@ func write(game: SaveGame, is_new: bool = false) -> Error:
 	var text := game.to_json()
 
 	# Schritt 1
-	var error := _remove_if_present(fresh)
+	var error := _clear_fresh(game.number)
 	if error != OK:
-		return _fail(error, "Schritt 1: Die übrig gebliebene Datei %s lässt sich nicht löschen"
-			% fresh)
+		return error
 	error = _store_text(fresh, text)
 	if error != OK:
 		return _fail(error, "Schritt 1: Die Datei %s lässt sich nicht schreiben" % fresh)
@@ -186,9 +190,56 @@ func _store_text(path: String, text: String) -> Error:
 	return OK if stored else ERR_FILE_CANT_WRITE
 
 
+## Schritt 1, erster Teil: räumt eine übrig gebliebene .neu der Nummer [param number] ab, ohne dass
+## ein Spielstand verloren geht. Gilt die .neu nach der Leseregel (_pick_slot()), gibt es also keine
+## spiel_N.json, die fortsetzbar oder zu neu ist, dann ist sie der einzige lesbare Stand, etwa weil
+## das vorige Speichern zwischen Schritt 3 und 4 abbrach. Sie zu löschen hieße, alles auf dieses
+## Speichern zu setzen. Deshalb wird sie zu .alt; eine .alt, die sich nicht fortsetzen lässt, weicht
+## ihr. Ist die .alt fortsetzbar, bleibt sie, und die .neu wird gelöscht: Scheitert das Speichern
+## danach, gilt die .alt. In allen anderen Fällen wird die .neu gelöscht wie immer.
+## Gibt OK oder den Fehler zurück; dann nennt last_error Datei und Schritt.
+func _clear_fresh(number: int) -> Error:
+	var fresh := path_of(number) + ".neu"
+	var old := path_of(number) + ".alt"
+	var present: Dictionary = _names_by_number(false).get(number, {})
+	var keep := false
+	if present.has(".neu"):
+		var chosen := _pick_slot(number, present)
+		keep = chosen != null and chosen.path == fresh
+	if keep and present.has(".alt") and SaveSlot.read(old, number).can_resume():
+		keep = false
+	if not keep:
+		var removed := _remove_if_present(fresh)
+		if removed != OK:
+			return _fail(removed,
+				"Schritt 1: Die übrig gebliebene Datei %s lässt sich nicht löschen" % fresh)
+		return OK
+	# Scheitert eins von beiden, ist die .neu noch da und gilt weiter.
+	var error := _remove_if_present(old)
+	if error != OK:
+		return _fail(error, "Schritt 1: Die übrig gebliebene Datei %s lässt sich nicht löschen"
+			% old)
+	error = DirAccess.rename_absolute(fresh, old)
+	if error != OK:
+		return _fail(error, "Schritt 1: Die Datei %s lässt sich nicht in %s umbenennen"
+			% [fresh, old])
+	return OK
+
+
 ## Der Spielstand einer Nummer nach der Leseregel (siehe list_slots()); null, wenn es keinen gibt.
-## [param present] sind die Endungen, zu denen es eine Datei gibt.
+## [param present] sind die Endungen, zu denen es eine Datei gibt. Gilt .neu oder .alt, meldet es
+## das im Protokoll.
 func _slot_of(number: int, present: Dictionary) -> SaveSlot:
+	var slot := _pick_slot(number, present)
+	if slot != null and slot.path != path_of(number):
+		_warn_spare(slot)
+	return slot
+
+
+## Die Leseregel selbst, ohne Meldung im Protokoll: list_slots() fragt sie über _slot_of(),
+## _clear_fresh() direkt. Beim Speichern wird kein Spielstand aus einer Zwischendatei gelesen, eine
+## Warnung „gelesen aus …“ stünde dort falsch im Protokoll.
+func _pick_slot(number: int, present: Dictionary) -> SaveSlot:
 	var main: SaveSlot = null
 	if present.has(""):
 		main = SaveSlot.read(path_of(number), number)
@@ -200,14 +251,11 @@ func _slot_of(number: int, present: Dictionary) -> SaveSlot:
 			continue
 		var slot := SaveSlot.read(path_of(number) + suffix, number)
 		if slot.can_resume():
-			_warn_spare(slot)
 			return slot
 		if suffix == ".alt":
 			spare = slot
 	if main != null:
 		return main
-	if spare != null:
-		_warn_spare(spare)
 	return spare
 
 

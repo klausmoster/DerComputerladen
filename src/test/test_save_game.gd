@@ -23,7 +23,7 @@ const ANGELEGT := 1793047212
 const GESPIELT := 1793124300
 
 const KEIN_JSON := "Lässt sich nicht lesen: Die Datei ist beschädigt."
-const ZU_NEU := "Stammt aus einer neueren Version des Spiels."
+const ZU_NEU := "Mit einer neueren Version gespeichert."
 ## Formatversion, Pflichtfeld, Seed, Zeitpunkt, Eingriff und Katalog: Welcher Teil es ist, sagt nur
 ## das Protokoll.
 const TEIL := "Lässt sich nicht lesen: Ein Teil der Datei stimmt nicht."
@@ -193,8 +193,6 @@ func test_ortszeit_mit_vorgegebenem_versatz() -> void:
 	assert_eq(SaveGame.time_text(ANGELEGT, 0), "26.10.2026 20:40")
 	assert_eq(SaveGame.time_text(ANGELEGT, 240), "27.10.2026 00:40", "Über Mitternacht.")
 	assert_eq(SaveGame.time_text(ANGELEGT, -300), "26.10.2026 15:40", "Westlich von UTC.")
-	assert_eq(SaveGame.time_sentence(ANGELEGT, 60), "am 26.10.2026 um 21:40 Uhr")
-	assert_eq(SaveGame.time_sentence(GESPIELT, 120), "am 27.10.2026 um 20:05 Uhr")
 
 
 func test_ortszeit_ohne_vorgabe_nimmt_den_versatz_des_rechners() -> void:
@@ -203,7 +201,6 @@ func test_ortszeit_ohne_vorgabe_nimmt_den_versatz_des_rechners() -> void:
 
 	# Act und Assert
 	assert_eq(SaveGame.time_text(ANGELEGT), SaveGame.time_text(ANGELEGT, versatz))
-	assert_eq(SaveGame.time_sentence(ANGELEGT), SaveGame.time_sentence(ANGELEGT, versatz))
 
 
 func test_day_text_ist_das_spieldatum() -> void:

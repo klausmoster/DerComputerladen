@@ -51,7 +51,7 @@ func test_jeder_hinweis_und_jede_meldung_passt_in_zwei_zeilen() -> void:
 	# Arrange
 	var texte := _hinweise_und_meldungen()
 
-	# Assert: Ohne Texte prüfte der Test nichts. 21 aus TitleTexts, 2 aus GameSession, 3 aus
+	# Assert: Ohne Texte prüfte der Test nichts. 22 aus TitleTexts, 2 aus GameSession, 3 aus
 	# SaveGame, 2 aus SaveSlot.
 	assert_eq(texte.size(), 28, "Alle Hinweise und Meldungen gefunden: %s" % [texte.keys()])
 	for herkunft: String in texte:

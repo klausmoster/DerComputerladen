@@ -127,8 +127,6 @@ const SYSTEM_BIAS := -100000
 ## „26.10.2026 21:40“ in Ortszeit, für die Spalte der Liste. [param bias_minutes] ist der Versatz
 ## zu UTC in Minuten; Tests geben ihn vor (Analyse, C3).
 static func time_text(unix: int, bias_minutes: int = SYSTEM_BIAS) -> String
-## „am 26.10.2026 um 21:40 Uhr“ in Ortszeit, für Hinweise.
-static func time_sentence(unix: int, bias_minutes: int = SYSTEM_BIAS) -> String
 ## Bringt gelesene Daten einer älteren Formatversion Schritt für Schritt auf FORMAT (FR-014). Mit
 ## Format 1 gibt es nichts umzuwandeln; die Funktion ist die Stelle für Format 2 (Analyse, E4).
 static func _upgrade(data: Dictionary, from_format: int) -> Dictionary

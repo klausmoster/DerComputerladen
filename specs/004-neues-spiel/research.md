@@ -68,7 +68,11 @@ FR-049).
 
 **Entscheidung:** Gespeichert wird in fünf Schritten, alle im Ordner der Spielstände:
 1. eine übrig gebliebene `spiel_2.json.neu` löschen, dann den neuen Stand vollständig nach
-   `spiel_2.json.neu` schreiben und schließen;
+   `spiel_2.json.neu` schreiben und schließen. Ist die übrig gebliebene `.neu` aber der Stand, der
+   nach der Leseregel gilt, wird sie zu `spiel_2.json.alt` umbenannt statt gelöscht; eine `.alt`,
+   die selbst fortsetzbar ist, bleibt dann, und die `.neu` wird gelöscht. Sonst ginge der
+   Spielstand verloren, wenn nach einem Absturz auch das nächste Speichern scheitert (Lückensuche,
+   T036; Klaus, 2026-10-26);
 2. `spiel_2.json.neu` wieder lesen und prüfen: Der Text ist Zeichen für Zeichen gleich
    `to_json()`. Sonst Abbruch mit Meldung, und nichts am alten Stand ist berührt;
 3. eine übrig gebliebene `spiel_2.json.alt` löschen, dann den alten Stand `spiel_2.json` in

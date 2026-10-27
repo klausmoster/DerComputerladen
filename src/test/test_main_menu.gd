@@ -46,6 +46,13 @@ func before_each() -> void:
 	await wait_process_frames(1)
 
 
+func after_each() -> void:
+	# Ein Bild warten: set_entries() nimmt die alten Zeilen mit remove_child() aus dem Baum und gibt
+	# sie mit queue_free() erst am Ende des Bilds frei. Endet ein Test gleich danach, stünden sie
+	# sonst noch als verwaiste Knoten da, wenn GUT nach after_each() zählt.
+	await wait_process_frames(1)
+
+
 # --- Aufbau ---------------------------------------------------------------
 
 func test_vier_eintraege_in_der_richtigen_reihenfolge() -> void:
