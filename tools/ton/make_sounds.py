@@ -86,7 +86,7 @@ def als_bytes(werte):
     return b"".join(struct.pack("<h", int(round(w * PEGEL))) for w in werte)
 
 
-# Name, Erzeuger. Werte aus dem Style-Guide, Abschnitt „Ton“ (Version 49).
+# Name, Erzeuger. Werte aus dem Style-Guide, Abschnitt „Ton“.
 TOENE = [
     ("knopf.wav", lambda: abfallend(rauschen(4, 1), 4)),
     ("schuss.wav", lambda: rechteck(1200, 600, 80)),

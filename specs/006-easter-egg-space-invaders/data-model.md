@@ -17,6 +17,7 @@ stateDiagram-v2
     Unten --> Oben: Loslassen über der Taste / case_key_pressed(index)
     Unten --> Oben: Loslassen woanders / zählt nicht
     Unten --> Oben: Sperre (slide_out) / zählt nicht
+    Unten --> Oben: Fenster verliert den Fokus / zählt nicht
 ```
 
 Gesperrt (ab `slide_out()`) nimmt keine Taste einen Druck an (Feature 005, R8).

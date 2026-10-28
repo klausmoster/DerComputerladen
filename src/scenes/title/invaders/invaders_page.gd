@@ -283,7 +283,7 @@ func _release_keys() -> void:
 	_fire_pressed = false
 
 
-## Das Ende der Seite: kein Takt, keine Töne mehr, dann die Meldung.
+## Das Ende der Seite: kein Takt, keine Töne mehr, dann [signal finished].
 func _finish() -> void:
 	_active = false
 	_release_keys()
@@ -291,9 +291,10 @@ func _finish() -> void:
 	finished.emit()
 
 
-## Der Fokus ging weg, etwa an eine Gehäusetaste. Zurück erst nach diesem Bild, wenn die Seite dann
-## noch läuft und zu sehen ist (Analyse, C5): Wer sie gerade verbirgt, bekommt den Fokus nicht
-## wieder weggenommen.
+## Der Fokus ging weg, etwa an ein anderes Control, das grab_focus() ruft, oder weil der Viewport
+## ihn mit gui_release_focus() freigibt. Zurück erst nach diesem Bild, wenn die Seite dann noch läuft
+## und zu sehen ist (Analyse, C5): Wer sie gerade verbirgt, bekommt den Fokus nicht wieder
+## weggenommen.
 func _on_focus_exited() -> void:
 	if _active:
 		_reclaim_focus.call_deferred()

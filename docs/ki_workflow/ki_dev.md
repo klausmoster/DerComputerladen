@@ -159,7 +159,9 @@ Claude selbst prüft:
 
 ## Abnahme durch Klaus
 
-Die Bitte um Abnahme enthält, in dieser Reihenfolge:
+Jede Bitte um Abnahme, auch die Gesamtabnahme am Ende und jede Ankündigung „danach folgt deine
+Abnahme“, enthält den Startweg; ohne ihn ist sie unvollständig (Klaus, 2026-10-28; Anlass: Bitte um
+die Gesamtabnahme von Feature 006 ohne Startbefehl). Die Bitte enthält, in dieser Reihenfolge:
 1. den Startbefehl als eigenen `bash`-Block, damit Klaus ihn mit dem Play-Knopf startet;
 2. was gebaut ist, kurz je Aufgabe;
 3. was geprüft ist, mit Zahlen;

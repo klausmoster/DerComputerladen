@@ -315,10 +315,10 @@ SC-001 und SC-006 im selben Bild erfüllt.
 
 **Purpose**: Lückensuche, Gesamtabnahme, Doku, Tagebuch.
 
-- [ ] T036 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
+- [x] T036 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
   Feature“), dazu Stil- und Text-Prüfer einmal über alles. Lücken werden eine eigene Phase mit
   Klaus' Freigabe; hat sie Sichtbares, endet sie mit eigener Phasenprüfung.
-- [ ] T037 [K] Gesamtabnahme nach dem ganzen Quickstart.
+- [x] T037 [K] Gesamtabnahme nach dem ganzen Quickstart.
 - [ ] T038 [C] Doku nachziehen: `docs/features/Features.md` (006 fertig, Systeme 10 und 11; System
   11 „Sound“ nicht mehr nur Idee); `docs/offene-punkte.md`; `CLAUDE.md` (Tabelle „Aufbau“:
   `src/assets/sounds/`, `tools/ton/`, `default_bus_layout.tres`) nur mit Klaus' OK.
@@ -408,3 +408,40 @@ mehr Abstimmung braucht als die Knöpfe.
 - **Nur ein Testlauf zur selben Zeit:** Alle Sitzungen teilen sich `user://`.
 - Braucht der Agent einen Wert oder eine Regel, die der Style-Guide nach T002 nicht hat, hält er an
   und fragt (Grundsatz IV).
+
+---
+
+## Phase 7: Convergence
+
+Aus T036 (`/speckit-converge` mit Lückensucher, Stil- und Text-Prüfer über das ganze Feature,
+2026-10-27). Der Code erfüllt alle 28 FR, 7 SC und 16 Akzeptanzszenarien, die Werte stimmen mit dem
+Style-Guide. Es bleiben Doku, die nicht mehr stimmt, drei Randfälle ohne eigenen Test, zwei
+ungenaue Kommentare und vier Lücken im Style-Guide. Claude hat jeden Befund nachgeprüft; alle sind
+NIEDRIG. Umgesetzt wird erst nach Klaus' Freigabe.
+
+- [x] T041 [C] Doku angleichen: `contracts/gehaeusetasten.md` Tests, erster Punkt auf „Mit den drei
+  Rechtecken aus dem Style-Guide gibt es drei Tasten ×2“ (Lückensuche F1, contradicts); Regel und
+  Test „Fokusverlust des Fensters lässt die Taste ohne Zählen hoch“ in `contracts/gehaeusetasten.md`,
+  den Übergang in `data-model.md` („Gehäusetaste“) und einen Randfall in die Spec (F2,
+  unrequested); `research.md` R4 „ohne eigenen Code“ → `_set_locked()` ruft `cancel()`, R3
+  `AtlasTexture` → `draw_texture_rect_region` (F3, contradicts); `plan.md` „Scale/Scope“ um
+  `test_texte.gd`; in `tools/ton/make_sounds.py` den Kommentar „(Version 49)“ ohne Versionsnummer
+  (F7, contradicts).
+- [x] T042 [A] Kommentare in `src/scenes/title/invaders/invaders_page.gd`: `_finish()` „dann die
+  Meldung“ → „dann `finished`“; `_on_focus_exited()` „etwa an eine Gehäusetaste“ → „etwa durch einen
+  Klick auf eine Gehäusetaste“ (Stil B1, B2, contradicts).
+- [x] T043 [A] Drei Randfälle der Spec mit Test in `src/test/test_title_screen.gd`: die Folge während
+  der Fahrt herein verhält sich wie die Seiten (F4, Randfall „noch hereinfährt“, FR-004); die Folge
+  mit einem beschädigten Spielstand startet das Spiel (F5); während des Spiels drücken sich die
+  Knöpfe ein und klicken (`is_case_key_down`, `KeyClick.playing`), ohne ein zweites Spiel (F6)
+  (partial).
+- [x] T044 [C] Lücken im Style-Guide nach Klaus' Entscheidung schließen: Communicator „Einsatz“ nennt
+  das Spiel als Seite, Menü „Seiten im Titel“ gilt für Menü- und Listenseiten (Stil L1);
+  Gehäusetasten „heute im Titel und in der Probeszene des Communicators“ (Stil L3); „Der Name des
+  Vorbilds erscheint nirgends“ gilt für alles Sichtbare, nicht für Datei- und Klassennamen (Stil
+  L2); „Werkzeuge und Probeszenen folgen denselben Regeln“ in „Anrede“ (Text L2). Nicht übernommen,
+  mit Grund in `docs/offene-punkte.md`: „Taste“ neben sichtbaren Gehäusetasten (Text L1, kein Verstoß,
+  die Zeile passt sonst nicht in die Breite), Meldung oder Warnung (Text L3, hier ohne Folge),
+  Satzform der Probe-Meldungen (Text L4, Probe).
+- [x] T045 [C] Prüfen: Tests zweimal, Startprobe still; Prüfer nur über das Geänderte; dann Klaus'
+  Gesamtabnahme (T037).

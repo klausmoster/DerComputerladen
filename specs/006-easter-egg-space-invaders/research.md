@@ -67,7 +67,7 @@ Claude, 2026-10-27). Eine helle linke Spalte haben die Tasten nicht (T001, R2); 
 Lichtkante, die wegfallen müsste, gibt es also nicht (Review, CHK029). Gehäusetasten sind Teil des
 Bildes und bekommen deshalb kein `relief-gedrueckt` (Review, CHK003).
 
-**Grund:** Ein Ausschnitt mit `AtlasTexture` aus der vorhandenen Textur hält Farben und Raster des
+**Grund:** Ein Ausschnitt mit `draw_texture_rect_region` aus der vorhandenen Textur hält Farben und Raster des
 Gehäuses genau; fährt das Gerät, fährt die Taste mit. Die Farbe des Spalts steht schon im Bild.
 
 **Verworfen:**
@@ -82,7 +82,8 @@ Pfeil als Zeiger. Gedrückt wird bei linker Maustaste unten; **gezählt wird bei
 derselben Taste** (Spec, FR-001). Der Klick ertönt beim Drücken, wie bei einer echten Taste, auch wenn
 der Druck nachher nicht zählt. Rechte und mittlere Maustaste tun nichts. Die Klickflächen sind Kinder
 des Communicators; die Sperre aus Feature 005 (`mouse_behavior_recursive`) gilt damit auch für sie
-(FR-004), ohne eigenen Code (Claude, 2026-10-27).
+(FR-004); damit eine Taste, die beim Sperren unten ist, nicht hängen bleibt, ruft `_set_locked(true)`
+von jeder Taste `cancel()` (Claude, 2026-10-27; bis Phase 7 stand hier „ohne eigenen Code“).
 
 **Grund:** „Loslassen über derselben Taste“ ist das Verhalten jedes Buttons und verhindert, dass ein
 weggezogener Druck zählt (Spec, Randfälle). Ein Klick beim Drücken fühlt sich mechanisch an.
@@ -209,8 +210,8 @@ oder Alt, auch eine unbekannte, wird mit `accept_event()` verbraucht, damit nich
 durchdringt (Spec, FR-012, FR-017). Tasten mit Cmd, Strg oder Alt und die Aktion `toggle_fullscreen`
 lässt sie durch: „Fenster schließen und Vollbild wirken wie immer“ (Baustein Communicator; Review,
 CHK006). Die Seite zeigt keinen Fokusrahmen (Review, CHK025). Die Maus: Ein Linksklick auf die Anzeige zählt nur in der Ergebnisanzeige (FR-020). Verliert
-die Seite den Fokus, etwa durch einen Klick auf eine Gehäusetaste, holt sie ihn zurück (Claude,
-2026-10-27).
+die Seite den Fokus, etwa an ein anderes Control, holt sie ihn zurück (Claude, 2026-10-27). Ein Klick
+auf eine Gehäusetaste nimmt ihn nicht, die Tasten haben `FOCUS_NONE` (Phase 7, Stil-Prüfer).
 
 **Grund:** Über den Fokus bekommt nur die Seite die Tasten; die verborgenen Seiten des Menüs haben
 keinen Fokus mehr, weil `show_page()` sie verbirgt. Ein eigener Tastenzustand statt

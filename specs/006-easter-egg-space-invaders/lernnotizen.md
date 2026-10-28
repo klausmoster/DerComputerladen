@@ -522,3 +522,27 @@ Wo Vertrag, Datenmodell und Style-Guide nichts festlegen, gilt:
   Communicator (`_current_row()`); vorher lag sie unter dem Bildrand, wenn die Zeile gewählt war,
   während das Gerät noch draußen stand. Neuer Test
   `test_probeseite_meldung_eines_eintrags_steht_im_bild`; ohne die Reparatur scheitert er.
+
+## Phase 7
+
+### T043 Tests für Randfälle, die schon funktionieren
+
+Die drei Randfälle (Folge während der Fahrt herein, Folge mit beschädigtem Spielstand, Tasten
+während des Spiels) liefen schon richtig, ohne dass ein Test es sagte. Ein Test für Verhalten, das
+schon stimmt, ist trotzdem kein Leerlauf:
+
+- **Er hält eine Entscheidung fest, die der Code nur nebenbei trifft.** Dass die Folge beim
+  Hereinfahren zählt, steht nirgends ausdrücklich in `_on_communicator_case_key_pressed()`; es folgt
+  daraus, dass `slide_in()` nicht sperrt und `_accepts_input()` schon nach `_build_sheets()` true
+  ist. Wer später „während der Fahrt nichts annehmen“ einbaut, merkt erst am roten Test, dass er
+  FR-004 und die Gleichheit mit den Seiten bricht.
+- **Er schützt vor Kopplungen, die es heute nicht gibt.** Für beschädigte Spielstände hat der
+  Easter-Egg-Code gar keinen Zweig. Gerade darum: Liest der Titel eines Tages beim Start etwas aus
+  `_slots`, würde ein beschädigter Spielstand das Spiel blockieren, und niemand probiert das von Hand.
+- **Ein Test muss rot werden können.** Darum je Test eine Mutationsprobe: die Stelle kurz brechen
+  (etwa die Wache `_invaders.visible` entfernen oder die Tasten während des Spiels sperren), den
+  Test scheitern sehen, zurücksetzen. Ein Test, der bei jeder Mutation grün bleibt, prüft nichts.
+- **Kurze Töne nicht über ein Bild hinweg prüfen.** `KeyClick.playing` wird direkt nach dem
+  Drücken geprüft, ohne `wait_process_frames()`: Im ersten Versuch wartete der Test ein Bild, und in
+  einem von zwei Läufen war der kurze Klick in dem Bild schon verklungen. Gleiche Lehre wie in
+  `test_communicator.gd`.

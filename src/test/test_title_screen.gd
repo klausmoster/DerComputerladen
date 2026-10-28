@@ -2075,6 +2075,110 @@ func test_sc_006_von_finished_bis_der_titel_eingaben_annimmt_hoechstens_eine_sek
 		% [dauern["Esc"], dauern["Ergebnisanzeige"]])
 
 
+# --- Randfälle zum Easter Egg (Feature 006, T043) -------------------------------------------------
+
+func test_waehrend_der_fahrt_herein_startet_die_folge_wie_die_seiten_eingaben_annehmen() -> void:
+	# Arrange (Edge Cases, „noch hereinfährt“; FR-004): ohne Spielstand. Der Communicator fährt
+	# gerade herein und ist nicht gesperrt; seine Seiten nehmen schon Eingaben an (Feature 005,
+	# FR-003), also zählen auch die Tasten.
+	await _zeige_titel(ORDNER, true)
+	for _bild in 3:
+		_communicator()._process(1.0 / 60.0)
+	assert_gt(_communicator().position.y, GEHAEUSE_OBEN, "Voraussetzung: noch unterwegs.")
+	assert_true(_communicator().accepts_input(), "Voraussetzung: Die Seiten nehmen Eingaben an.")
+
+	# Act: die Folge auf die Tasten, wo sie gerade sind.
+	await _folge(FOLGE)
+
+	# Assert: Das Spiel startet wie in der Endlage.
+	assert_eq(_communicator().current_page(), _invaders(), "Das Spiel ist die Seite.")
+	assert_true(_invaders().has_focus(), "Die Seite hat den Fokus.")
+	assert_not_null(_invaders().game(), "Eine Partie läuft.")
+	assert_false(_hinweis().visible, "Der Hinweis ist aus.")
+
+	# Act: Die Fahrt geht zu Ende.
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+
+	# Assert: in der Endlage noch dasselbe Spiel; Esc führt ins Hauptmenü wie vorher.
+	assert_eq(_communicator().position, Vector2(GEHAEUSE_LINKS, GEHAEUSE_OBEN), "In der Endlage.")
+	assert_eq(_communicator().current_page(), _invaders(), "Das Spiel steht noch.")
+	await _taste(KEY_ESCAPE)
+	_assert_nur_sichtbar(_hauptmenue())
+	assert_eq(_hauptmenue().selected_index(), 1, "„Neues Spiel“ wie beim Erscheinen.")
+	assert_eq(_hinweis_text(), _hauptmenue().entries[1].hint)
+	_assert_neben_zeile(_hauptmenue(), 1)
+	assert_eq(_wechsel, [])
+	assert_false(_sitzung.is_running())
+
+
+func test_mit_einem_beschaedigten_spielstand_startet_die_folge_das_spiel() -> void:
+	# Arrange (Edge Cases, „einen beschädigten“): nur ein Spielstand, und der lässt sich nicht lesen.
+	_kopiere("spiel_kein_json.json", 1)
+	await _zeige_titel()
+	var dateien_vorher := _inhalte()
+
+	for seite: String in ["Hauptmenü", "Liste"]:
+		if seite == "Liste":
+			# Die Liste steht auf ihrer obersten Zeile, dem beschädigten Spielstand.
+			await _oeffne_liste()
+		var vorher := _zustand_des_titels()
+
+		# Act
+		await _folge(FOLGE)
+
+		# Assert: Das Easter Egg braucht keinen Spielstand.
+		assert_eq(_communicator().current_page(), _invaders(), "%s: Das Spiel ist die Seite." % seite)
+		assert_true(_invaders().has_focus(), "%s: Die Seite hat den Fokus." % seite)
+		assert_not_null(_invaders().game(), "%s: Eine Partie läuft." % seite)
+
+		# Act
+		await _taste(KEY_ESCAPE)
+
+		# Assert
+		assert_eq(_zustand_des_titels(), vorher, "%s: Seite, Fokus und Hinweis wie vorher." % seite)
+
+	assert_eq(_inhalte(), dateien_vorher, "Der beschädigte Spielstand bleibt, wie er war (FR-007).")
+	assert_false(_sitzung.is_running(), "Kein Spiel des Computerladens.")
+	assert_eq(_wechsel, [])
+	assert_push_warning("spiel_1.json", "Das Protokoll nennt die beschädigte Datei.")
+
+
+func test_waehrend_des_spiels_druecken_sich_die_tasten_ein_und_klicken_ohne_zweites_spiel() -> void:
+	# Arrange (Edge Cases, „während das Spiel läuft“): das Spiel auf der Anzeige.
+	await _zeige_titel()
+	await _folge(FOLGE)
+	var partie := _invaders().game()
+	var klick := _communicator().get_node(^"KeyClick") as AudioStreamPlayer
+
+	for index: int in FOLGE:
+		var stelle := _gehaeusetaste_flaeche(index).get_center()
+		klick.stop()
+
+		# Act: die linke Maustaste runter auf die Taste. Geprüft wird ohne ein Bild zu warten wie in
+		# test_communicator.gd: Der Klick ist kurz und könnte in einem langsamen Bild schon verklungen
+		# sein.
+		_maus_taste(stelle, true)
+
+		# Assert (FR-001a, FR-041)
+		assert_true(_communicator().is_case_key_down(index), "Taste %d ist eingedrückt." % (index + 1))
+		assert_true(klick.playing, "Taste %d klickt." % (index + 1))
+
+		# Act: über der Taste loslassen; der Druck ginge an die Folge, wenn sie zählte.
+		_maus_taste(stelle, false)
+		await wait_process_frames(1)
+
+		# Assert
+		assert_false(_communicator().is_case_key_down(index), "Taste %d ist wieder oben." % (index + 1))
+
+	# Assert: dieselbe Seite, dieselbe Partie, die Folge bei 0 (FR-004; R16).
+	assert_eq(_communicator().current_page(), _invaders(), "Das Spiel steht noch.")
+	assert_same(_invaders().game(), partie, "Kein zweites Spiel.")
+	assert_eq(_invaders().game().state, InvadersGame.State.PLAYING, "Die Partie läuft weiter.")
+	assert_true(_invaders().has_focus(), "Die Seite hat den Fokus.")
+	assert_eq(_titel._sequence.progress(), 0, "Kein Druck hat gezählt.")
+	assert_eq(_wechsel, [])
+
+
 # --- Helfer ---------------------------------------------------------------------------------------
 
 ## Baut eine Session mit eigener Uhr, eigener Zeitleiste und dem Ordner [param ordner], dann den
@@ -2572,6 +2676,17 @@ func _maus_klick_ohne_warten(ziel: Vector2) -> void:
 		ereignis.global_position = ziel
 		ereignis.pressed = gedrueckt
 		_titel.get_viewport().push_input(ereignis, true)
+
+
+## Nur Drücken ([param gedrueckt] true) oder nur Loslassen der linken Maustaste bei [param ziel],
+## ohne ein Bild zu warten; dazwischen lässt sich prüfen, ob eine Gehäusetaste eingedrückt ist.
+func _maus_taste(ziel: Vector2, gedrueckt: bool) -> void:
+	var ereignis := InputEventMouseButton.new()
+	ereignis.button_index = MOUSE_BUTTON_LEFT
+	ereignis.position = ziel
+	ereignis.global_position = ziel
+	ereignis.pressed = gedrueckt
+	_titel.get_viewport().push_input(ereignis, true)
 
 
 ## Öffnet [param seite] aus dem Zustand des Tests davor: Hauptmenü beim Erscheinen, dann Gradwahl

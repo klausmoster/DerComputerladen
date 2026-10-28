@@ -85,7 +85,7 @@ func test_der_fokus_kommt_zurueck_solange_die_seite_laeuft() -> void:
 	_viewport.add_child(anderes)
 	_seite.start(SEED)
 
-	# Act: Ein anderes Control nimmt den Fokus, etwa eine Gehäusetaste.
+	# Act: Ein anderes Control nimmt den Fokus mit grab_focus().
 	anderes.grab_focus()
 	await wait_process_frames(1)
 

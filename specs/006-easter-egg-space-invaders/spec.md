@@ -227,6 +227,8 @@ danach der Titel bedienbar da wie vorher.
   reagiert; das Menü dahinter löst nichts aus und wechselt keine Auswahl.
 - Das Fenster verliert den Fokus, während das Spiel läuft: Das Spiel und sein Ton halten an, bis
   das Fenster wieder den Fokus hat.
+- Das Fenster verliert den Fokus, während ein Knopf eingedrückt ist: Der Knopf springt zurück, und
+  der Druck zählt nicht (Klaus, nach der Phasenprüfung von Phase 5).
 - Der Spieler drückt Esc, während ein Ton klingt: Der Ton des Spiels verstummt sofort.
 - Auf dem Rechner ist kein Tonausgang da oder er ist stumm: Das Spiel läuft ohne Ton weiter, ohne
   Meldung.

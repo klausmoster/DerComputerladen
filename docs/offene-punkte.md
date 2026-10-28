@@ -971,3 +971,35 @@ für den Agent vor der Abnahme:
   lassen, Probeszenen sind kein Teil des Spiels.
 - Verworfen: „Baustein Hinweis fehlt im Maßstab“; der Pfad im Auftrag war falsch, der Baustein
   steht im Style-Guide.
+
+### Feature 006, Lückensuche (2026-10-28)
+
+Lücken vom Stil- und Text-Prüfer über das ganze Feature (T036), von Claude nachgeprüft. Klaus hat am
+2026-10-28 nach Empfehlung entschieden. Übernommen in den Style-Guide, Version 56 (T044): das Spiel
+als Seite im Titel (Baustein Communicator, „Einsatz“; Baustein Menü, „Seiten im Titel“), die
+Gehäusetasten auch in der Probeszene, „Name des Vorbilds“ nur für Sichtbares und Hörbares, Werkzeuge
+und Probeszenen unter denselben Sprachregeln (Abschnitt Sprache, „Anrede“). Nicht übernommen:
+- **„Taste“ in „Weiter mit Taste oder Klick.“, während Gehäusetasten zu sehen sind (Text L1):** Kein
+  Verstoß; die Regel „kein Wort für zwei Dinge“ gilt für Wörter auf derselben Seite, und die
+  Gehäusetasten stehen nirgends als Wort. „Knopf“ oder „Tastendruck“ passt nicht in die Zeile.
+- **Ob die Ergebnisanzeige als Meldung oder Warnung zählt (Text L3):** Der Abschnitt „Texte im Spiel
+  auf der Anzeige“ sagt schon „zählt als Meldung“; eine Warnung kommt im Spiel nicht vor. Ohne Folge
+  für Text oder Code.
+- **Satzform der Meldungen in der Probeszene (Text L4):** Probeszenen folgen jetzt denselben
+  Sprachregeln; eine eigene Regel für ihre Satzform braucht es nicht. „Gehäusetaste 3 gedrückt.“
+  bleibt, wie in Phase 5 entschieden.
+
+### Feature 006, Nachprüfung Phase 7 (2026-10-28)
+
+Lücken von Stil- und Text-Prüfer über das Geänderte, von Claude nachgeprüft. Klaus hat am 2026-10-28
+nach Empfehlung entschieden; die Sätze stehen im Style-Guide, Version 57, der Code tut es schon so:
+- **Meldung beim Start des Spiels:** Hinweis und Meldung sind verborgen; danach kommt der Hinweis der
+  gewählten Zeile zurück, die Meldung nicht (Baustein Communicator, „Hinweis und Meldung“; Baustein
+  Spiel, „Einsatz“).
+- **Versionszeile während des Spiels:** bleibt stehen (Baustein Spiel, „Einsatz“).
+- **Gehäusetasten beim Hereinfahren:** zählen schon, wie die Seiten (Baustein Communicator,
+  „Gehäusetasten“).
+- **Sprachregeln und Testausgaben:** Testausgaben im Code sind ausgenommen (Abschnitt Sprache,
+  „Anrede“).
+- Der Befund des Stil-Prüfers (Kommentar zum Fokusverlust in `invaders_page.gd` nannte eine
+  Gehäusetaste als Ursache) ist behoben, ebenso in `research.md` R9 und `test_invaders_page.gd`.

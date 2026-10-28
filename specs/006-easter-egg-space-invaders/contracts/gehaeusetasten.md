@@ -81,6 +81,9 @@ var is_down: bool  # nur lesen
 - Sperre: Mit `mouse_behavior_recursive = DISABLED` (Feature 005) bekommt die Taste keine Maus mehr.
   Damit eine Taste, die in dem Moment unten ist, nicht unten hängen bleibt, ruft `_set_locked(true)`
   von jeder Taste `cancel()`: Sie geht hoch, ohne `pressed`.
+- Fokusverlust des Fensters: Bei `NOTIFICATION_APPLICATION_FOCUS_OUT` ruft die Taste `cancel()`.
+  Das Loslassen, das Godot dabei selbst schickt (Gerät `DEVICE_ID_INTERNAL`, -2), zählt nie, auch
+  wenn es vor der Benachrichtigung kommt (Klaus, nach der Phasenprüfung von Phase 5).
 
 ```gdscript
 ## Lässt die Taste ohne pressed hochgehen, falls sie unten ist.
@@ -102,12 +105,14 @@ Gemalt wird in `Keys._draw()`, nicht im Communicator: Dessen `_draw()` läge unt
 
 ## Tests (`test_communicator.gd`)
 
-- Mit den Vorgaben gibt es drei Tasten an den Rechtecken aus dem Style-Guide ×2.
+- Mit den drei Rechtecken aus dem Style-Guide gibt es drei Tasten an diesen Rechtecken ×2.
 - Links runter und hoch über Taste 1: genau ein `case_key_pressed(0)`; dazwischen `is_case_key_down(0)`.
 - Links runter auf Taste 2, hoch über Taste 3 oder außerhalb: kein Signal, Taste wieder oben.
 - Rechte Maustaste: kein Signal, nicht eingedrückt.
 - Nach `slide_out()`: kein Signal; eine gedrückte Taste geht hoch.
 - Nach `slide_in()`: wieder Signale.
+- Fokusverlust des Fensters bei gedrückter Taste: Sie geht hoch, kein Signal; auch Godots eigenes
+  Loslassen danach zählt nicht.
 - Jeder Druck links spielt `KeyClick` auf dem Kanal `Effekte`, auch der, der nicht zählt.
 - Der Zeiger über einer Taste ist der Pfeil; keine Taste nimmt den Fokus.
 - Eingedrückt: Die Pixel innerhalb der Taste entsprechen dem Ausschnitt eine Zeile tiefer

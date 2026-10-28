@@ -57,7 +57,7 @@ Neu: `CaseKey`, `KeySequence`, `InvadersGame`, `InvadersSprites`, `InvadersPage`
 Probeszenen-Änderungen bzw. eine neue, `default_bus_layout.tres`, zehn WAV, `tools/ton/`. Neue
 Testdateien: `test_ton.gd`, `test_invaders_game.gd`, `test_invaders_sprites.gd`,
 `test_invaders_page.gd`, `test_key_sequence.gd`; geändert: `test_communicator.gd`,
-`test_title_screen.gd`, `test_title_texts.gd`. Im Style-Guide ein erweiterter Baustein und zwei neue
+`test_title_screen.gd`, `test_title_texts.gd`, `test_texte.gd`. Im Style-Guide ein erweiterter Baustein und zwei neue
 Abschnitte.
 
 ## Constitution Check
