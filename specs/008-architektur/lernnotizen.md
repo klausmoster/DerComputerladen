@@ -136,3 +136,31 @@ zu schaffen, berührt beide. `MenuHint` liegt im Ordner des Titels, obwohl der C
 `src/ui/` es nutzt; es umzuziehen, berührt drei Ordner. Solche Umbauten stehen als 11-07 und 11-08 in
 `docs/features/Feature_Ideas.md`. So bleibt 008 ein Feature über den Maßstab und den Prüfer, und ein
 Umbau über mehrere Systeme bekommt seine eigene Spec.
+
+## Phase 4
+
+### T031 `test_architektur.gd`: Regeln, die jeder Testlauf misst
+
+Geschrieben vom Godot-Agent, hier gekürzt.
+
+- **Text lesen statt Skript laden.** `load(pfad).get_instance_base_type()` würde die Basisklasse
+  direkt liefern, aber jedes Skript kompilieren und an erfundenen Dateien nicht gehen. Deshalb nimmt
+  jede Prüffunktion einen `String`, wie in `test_bilder.gd`: Dieselbe Funktion läuft am echten Code,
+  an den kleinen Texten der Fehlerproben und an einer Kopie außerhalb des Repos.
+- **Der kleine Leser `_lies()`** trennt Code, Zeichenketten und Kommentare. Sonst wäre
+  `## Fragt GameSession …` ein Verstoß. Er macht daraus drei Fassungen desselben Textes, in denen
+  Kommentare oder Zeichenketten durch Leerzeichen ersetzt sind; die Zeilenumbrüche bleiben, deshalb
+  hat eine Fundstelle in jeder Fassung dieselbe Zeile. Er springt mit `RegEx.search(text, ab)` von
+  einem `"`, `'` oder `#` zum nächsten; der Anker `\G` heißt „genau hier beginnen“. Das läuft in C++,
+  rund 900 KB Quelltext brauchen Sekundenbruchteile.
+- **Welche Fassung welche Regel liest:** Autoloads, `get_tree()` und Zufall zählen nur im Code;
+  Knotenpfade stehen immer in Zeichenketten (`get_node("…")`, `^"…"`, `$"…"`, `NodePath("…")` in
+  `.tscn`); `res://tools/` zählt in Code und Zeichenketten. `TimelineRun` ist kein `Timeline`, weil
+  der Wortrand `(?<![\p{L}\p{N}_])` davor und danach keinen Buchstaben erlaubt.
+- **Eigener Würfel oder globaler Zufall:** Steht direkt vor `randf(` ein Punkt, wie bei
+  `_rng.randf()`, ist es ein eigener Würfel.
+- **Der Leitfaden liegt außerhalb von `res://`.** `ProjectSettings.globalize_path("res://")` liefert
+  den echten Ordner von `src/`, dazu `..`, wie `_palettenpfad()` in `test_bilder.gd`.
+- **Test gegen Leichen:** Wird die Stelle in `werkstatt.gd` einmal behoben, wird
+  `test_listen_ohne_leichen` rot und erinnert daran, den Eintrag zu streichen. So veraltet die Liste
+  nicht still.

@@ -413,6 +413,21 @@ wenn Klaus es will.
   bitgleich rechnet, ist ungeprüft. Wichtig, sobald die Wirtschaft mit Seed rechnet und Spielstände
   aus Eingriffen nachspielt (`docs/recherche/architektur-quellen.md`, 6.3).
 
+### Feature 008, Lücken im Style-Guide aus der Phasenprüfung Phase 4 (2026-10-28)
+
+Vom Text-Prüfer an den Testmeldungen von `test_architektur.gd` gemeldet, je mit Empfehlung von
+Claude; Klaus entscheidet:
+- **Geltung für Testmeldungen:** „Ausgenommen sind Testausgaben“ steht nur unter „Anrede“.
+  Empfehlung: ein Satz im Abschnitt „Sprache“: Für Testausgaben gelten klares Deutsch und die
+  Begriffe des Maßstabs, den der Test misst; Ton und Wortschatz der Zeit nicht.
+- **„das Spiel“ in Texten für Entwickler:** Empfehlung: Die Regel „Das Programm heißt nicht ‚das
+  Spiel‘“ gilt nur für Texte, die der Spieler sieht.
+- **Ort und Regel in Testmeldungen:** Empfehlung: einheitlich „pfad:zeile:“ und die Regelnummer
+  einmal am Ende in Klammern.
+- **Namen aus Code und Engine** (Autoload, Node, RefCounted) in Texten für Entwickler: Empfehlung:
+  bleiben stehen.
+- **Einzahl bei Zahlen** („1 Stelle“): schon als künftiger Test in `ki_pruefung.md` vorgemerkt.
+
 ### Feature 008, Lücken im Leitfaden aus Fehler- und Planprobe (2026-10-28)
 
 Gemeldet vom Architektur-Prüfer, von Claude nachgeprüft. Klaus hat am 2026-10-28 alle acht wie

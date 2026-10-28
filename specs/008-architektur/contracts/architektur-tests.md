@@ -75,6 +75,23 @@ Kommentare und Zeichenketten in Doku-Kommentaren zählen nicht als Treffer; der 
 
 Testnamen und Meldungen deutsch; jede Meldung nennt Datei, Zeile und AR-Nummer.
 
+## Auslegungen beim Bau (T031, Claude, 2026-10-28)
+
+Vom Godot-Agent gemeldet, von Claude geprüft und übernommen:
+- Ein Eintrag in einer Liste erlaubt genau eine Stelle; die Einträge haben keine Zeile. Ein zweites
+  `/root/` in `werkstatt.gd` würde rot, ein Eintrag ohne Stelle meldet der Test gegen Leichen.
+- Nur `test_kein_weg_nach_oben` liest die Listen. Ein Eintrag mit einer anderen Regel als AR-02 ist
+  deshalb ein Fehler der Liste.
+- Eine Zeichenkette mit `://` ist ein Dateipfad, nie ein Knotenpfad.
+- Gezählt werden wörtlich `../` und `/root/`; `get_node("..")` und `"/root"` ohne Schrägstrich
+  nicht. Heute gibt es keine solche Stelle; erweitert wird erst, wenn eine auftaucht.
+- Ein Kern erbt wörtlich von `RefCounted` oder `Resource` oder hat kein `extends`; eine eigene
+  Resource-Klasse als Basis würde gemeldet.
+- `.shuffle()` und `.pick_random()` zählen auf jedem Objekt; `rng.randomize()` auf einem eigenen
+  Würfel prüft der Prüfer, nicht der Test.
+- Geprüft werden `.gd` und `.tscn`, keine `.tres`.
+- Meldungen: Einzahl bei 1, AR-Nummer einmal (Phasenprüfung T033).
+
 ## Fehlerprobe
 
 Der Agent zeigt für jede Prüffunktion an einer Kopie außerhalb des Repos (`OS.get_cache_dir()` oder

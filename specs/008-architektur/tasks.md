@@ -176,16 +176,16 @@ Schwere, Claudes Urteil und Klaus' Entscheidung (quickstart.md, Phase 3).
 **Independent Test**: Alle Tests zweimal grün; jede Prüffunktion hat eine Fehlerprobe (quickstart.md,
 Phase 4).
 
-- [ ] T031 [A] `src/test/test_architektur.gd` nach contracts/architektur-tests.md mit den Listen aus
+- [x] T031 [A] `src/test/test_architektur.gd` nach contracts/architektur-tests.md mit den Listen aus
   T028: Prüffunktionen `kern_verstoesse` (mit globalem Zufall), `autoloads_aus`, `wege_nach_oben`,
   `verweise_auf_werkzeuge`; Tests `test_kerne_ohne_node`, `test_genau_diese_autoloads`,
   `test_kein_weg_nach_oben`, `test_spiel_kennt_werkzeuge_nicht`, `test_listen_ohne_leichen`, `test_ausnahmen_wie_im_leitfaden`; Meldungen deutsch mit Datei, Zeile
   und AR-Nummer; Fehlerprobe je Prüffunktion an Kopien außerhalb des Repos; Lernnotiz.
-- [ ] T032 [C] Ergebnis prüfen: Tests zweimal, Startprobe, Fehlerprobe nachvollziehen, Code lesen;
+- [x] T032 [C] Ergebnis prüfen: Tests zweimal, Startprobe, Fehlerprobe nachvollziehen, Code lesen;
   Auslegungen in Vertrag oder research.md.
-- [ ] T033 [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`: nur Text-Prüfer über die
+- [x] T033 [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`: nur Text-Prüfer über die
   Testmeldungen; Tests lösen den Architektur-Prüfer nicht aus (plan.md, „Prüfer je Phase“; FR-016).
-- [ ] T034 [K] Abnahme Phase 4.
+- [x] T034 [K] Abnahme Phase 4.
 
 **Checkpoint**: Ein neues Autoload oder ein Kern mit Node fällt bei jedem Testlauf auf.
 
