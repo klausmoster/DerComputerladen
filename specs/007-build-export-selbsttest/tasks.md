@@ -408,17 +408,17 @@ Renderer-Frage in eigener Sitzung.
 - [x] T053 [K] Gesamtabnahme nach dem ganzen Quickstart, die erste mit Selbsttest auf drei Systemen:
   Claude baut mit `tools/build/baue_alles.sh`, lässt den Selbsttest auf dem Mac laufen und nennt das
   Ergebnis in der Bitte um Abnahme.
-- [ ] T054 [C] Doku nachziehen: `docs/features/Features.md` (007 fertig, System 11),
+- [x] T054 [C] Doku nachziehen: `docs/features/Features.md` (007 fertig, System 11),
   `docs/offene-punkte.md`; `CLAUDE.md` (Tabelle „Aufbau“: `src/tools/selbsttest/`,
   `tools/selbsttest/`, `tools/build/`) nur mit Klaus' OK.
-- [ ] T055 [C] Spielbeschreibung prüfen (die letzte Aufgabe vor dem Tagebuch, nach der
+- [x] T055 [C] Spielbeschreibung prüfen (die letzte Aufgabe vor dem Tagebuch, nach der
   Gesamtabnahme und vor dem Merge; `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“): Claude
   gleicht `docs/spielbeschreibung/` mit dem Code ab und legt Klaus eine Liste vor, welche Dateien
   veralten und welche neu angelegt werden sollten, mit Grund, mindestens `build-und-tests.md`,
   `darstellung.md` (Vollbildtasten), `spielstaende.md` (Zeitzonenversatz), `architektur.md`,
   `glossar.md` und ein mögliches neues `selbsttest.md` samt Index. Abweichungen zwischen Spec und
   Code gehören dazu. Geändert wird erst nach Klaus' OK.
-- [ ] T056 [C] Tagebuch vor dem Merge (`ki_dev.md`, Punkt 10): eigene Datei für Feature 007 unter
+- [x] T056 [C] Tagebuch vor dem Merge (`ki_dev.md`, Punkt 10): eigene Datei für Feature 007 unter
   `docs/tagebuch/` nach dem README dort, auf Englisch, je echter Entscheidung ein Eintrag, oben die
   Zeile „Tokens and cost“ aus `python3 -I tools/tagebuch/token_bilanz.py
   feature/007-build-export-selbsttest`. Klaus nimmt die Einträge ab.

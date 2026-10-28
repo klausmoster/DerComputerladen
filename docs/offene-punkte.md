@@ -37,6 +37,10 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   - Rangfolge der Texte in `werkzeug-titel`: Seitenüberschrift und Summe gleich groß wie
     Bereichstitel.
   - Windows-Lauf mit Vulkan oder Direct3D 12 (Windows bisher nur mit Compatibility belegt).
+  - Linux und Windows mit Version 2 des Selbsttests (45 Schritte) laufen lassen; belegt sind dort
+    bisher 37 Schritte.
+  - `vergleich.py` legt Belege fest unter `specs/007-build-export-selbsttest/belege/` ab; für spätere
+    Features einen Ordner je Feature wählbar machen.
 
 ### Feature 007, Phase 6 (2026-10-28)
 

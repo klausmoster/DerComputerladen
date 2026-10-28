@@ -8,9 +8,10 @@
   Ebenen des Symbols `docs/art/app_icon/`; Ergebnisse in `src/assets/images/`, `src/assets/icon/`;
   Ablauf für Claude im Skill `.claude/skills/dcl-grafik/SKILL.md`, Protokoll jedes Bilds in
   `docs/art/leonardo/prompt-log.md`
-- **Herkunft:** `specs/001-hauptmenue/` (`research.md`, R5 bis R7); Leonardo-Workflow im
-  [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX)
-- **Stand:** Feature 005, 2026-10-27
+- **Herkunft:** `specs/001-hauptmenue/` (`research.md`, R5 bis R7), ICO aus
+  `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R14); Leonardo-Workflow
+  im [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX)
+- **Stand:** Feature 007, 2026-10-28
 
 ## Stil
 
@@ -52,7 +53,10 @@ Aufruf immer vom Repo-Root mit `python3 -I`, denn die Bilder stammen aus dem Net
 3. **Aufräumen** (`cleanup.py`): seltene Farben und Einzelpixel nach festen Regeln in OKLab;
    Lichter, Kanten und Schrift bleiben. Danach von Hand, nur mit Farben der Hauptpalette.
 4. **App-Symbol** (`make_icon.py`) nach jeder Änderung am Logo: Monitor aus dem Logo ×32 auf ein
-   Quadrat in `nacht`; schreibt `app_icon.png` und die Ebenen für Icon Composer.
+   Quadrat in `nacht`; schreibt `app_icon.png` und die Ebenen für Icon Composer. Seit Feature 007
+   dazu `app_icon.ico` für Windows mit sechs Größen, 16, 32, 48, 64, 128 und 256 Pixel, als
+   PNG-Einträge. Die kleinen Größen sind pixelgenau aus dem gerasterten Logo, der Monitor je Größe
+   ganzzahlig vergrößert (bei 16 halb so groß); Godot würde ein PNG verwischt herunterrechnen.
 
 ## Bilder im Spiel
 
@@ -63,5 +67,6 @@ Aufruf immer vom Repo-Root mit `python3 -I`, denn die Bilder stammen aus dem Net
 | `src/assets/images/title_t01.png` | Titelbild T-01, seit Feature 005 nicht mehr im Spiel | 320 × 180 |
 | `src/assets/images/logo_ladenschild.png` | Ladenschild | 141 × 27, Faktor 6 aus dem Original, im Spiel ×2 |
 | `src/assets/icon/app_icon.png`, `app_icon.icon` | Monitor aus dem Logo | 1024 × 1024 |
+| `src/assets/icon/app_icon.ico` | Monitor aus dem Logo, für Windows | 16 bis 256, sechs Größen |
 
 Zu jedem Bild gehört seine `.import`-Datei; sie wird mitcommittet.

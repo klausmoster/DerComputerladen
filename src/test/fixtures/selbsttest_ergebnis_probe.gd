@@ -4,7 +4,7 @@ extends Node
 ## mit einem erfundenen Lauf im echten Fenster, für Bildschirmfotos und zum Ausprobieren. Der echte
 ## Lauf bleibt davon unberührt; die Probe liegt unter test/ und kommt in keinen Export.
 ##
-## Die Schritte sind die echten 37 aus SelbsttestLaeufer.ablaeufe(), mit Wortlauten aus dem Spiel;
+## Die Schritte sind die echten 45 aus SelbsttestLaeufer.ablaeufe(), mit Wortlauten aus dem Spiel;
 ## die Ergebnisse sind erfunden. Die Systemdaten liest die Probe wie die Startszene vom Rechner.
 ## Zwischenablage und Dateimanager sind abgeklemmt: „Kopieren“ zeigt nur die Bestätigung.
 ##
