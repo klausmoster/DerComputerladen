@@ -72,7 +72,7 @@ in Phase 5 die Skripte, die Klaus zur Behebung freigibt; `docs/spielbeschreibung
 | III. Erst spezifizieren | Spec mit 10 Klärungen, eigener Branch, System 11 genannt; 12 Entscheidungen mit verworfenen Alternativen in research.md. Die Spec nennt Godot-Begriffe, weil sie selbst Gegenstand sind (checklists/requirements.md) | erfüllt | erfüllt |
 | IV. Ein Look: der Style-Guide | nichts Sichtbares; der Leitfaden regelt den Aufbau, nicht das Aussehen, und schreibt keine Werte aus dem Style-Guide ab | erfüllt | erfüllt |
 | V. Daten sauber halten | game_bible und Katalog unberührt; die Fahrpläne bleiben bytegleich (R9) | erfüllt | erfüllt |
-| VI. Prüfen mit eigenem Maßstab | Wird in 008 erweitert (FR-023). Bis dahin gilt 2.2.0: Phasen mit Texten, auch Testmeldungen, bekommen den Text-Prüfer; Phasen mit Code ab Phase 4 schon den Architektur-Prüfer. Bei der Checkliste von 008 gibt es keine Wortlaute und den Prüfer noch nicht (R11) | erfüllt | erfüllt |
+| VI. Prüfen mit eigenem Maßstab | Wird in 008 erweitert (FR-023). Bis dahin gilt 2.2.0: Phasen mit Texten, auch Testmeldungen, bekommen den Text-Prüfer; die Phase mit Code (5) schon den Architektur-Prüfer. Bei der Checkliste von 008 gibt es keine Wortlaute und den Prüfer noch nicht (R11) | erfüllt | erfüllt |
 | Technische Rahmenbedingungen | Godot 4.7, GUT 9.7.1, Projekt in `src/`. Kein neuer Autoload; die vier bleiben und werden im Leitfaden und im Test festgeschrieben | erfüllt | erfüllt |
 | Arbeitsweise | Dokumente deutsch. Die Änderung an der Verfassung läuft über `/speckit-constitution` mit Versionssprung; Spec Kits Vorlagen bleiben unberührt, nur `overrides/` ändert sich | erfüllt | erfüllt |
 
@@ -151,13 +151,39 @@ streng nacheinander (Grundsatz II).
 | Phase | Inhalt | Story |
 |---|---|---|
 | 1 | Leitfaden: Claude schreibt den Entwurf aus Recherche und Spec, mit Beispielen aus dem Code; Klaus geht ihn durch und entscheidet je Regel (R2); messbare Regeln markiert. Kein Code | US1 |
-| 2 | Prüfer und Arbeitsweise: Agent `architektur-pruefer`; Fehlerprobe mit fünf Proben und Lauf (SC-002); `ki_pruefung.md`, `ki_dev.md`, README, Skill, Aufgaben-Vorlage, `godot-entwickler.md`; Vorschlag für Grundsatz VI, den Klaus über `/speckit-constitution` beschließt; `CLAUDE.md` nur mit OK. Neue Sitzung oder allgemeiner Agent für den ersten Lauf | US2, US3 |
-| 3 | Bestandsprüfung: drei Läufe, Claude prüft nach, `bestandsbericht.md`; Klaus entscheidet je Abweichung; Einträge in `Feature_Ideas.md` für große Umbauten; Ausnahmen in den Leitfaden. Danach ergänzt Claude die Aufgaben von Phase 5 | US4 |
+| 2 | Prüfer und Arbeitsweise: Agent `architektur-pruefer`; Fehlerprobe mit fünf Proben und Lauf (SC-002, höchstens zwei Wiederholungen); Planprobe am Plan von 006 (Story 3); `ki_pruefung.md`, `ki_dev.md`, README, Skill, Aufgaben-Vorlage, `godot-entwickler.md`; Vorschlag für Grundsatz VI, den Klaus über `/speckit-constitution` beschließt; `CLAUDE.md` nur mit OK. Der neue Agent-Typ steht erst in einer neuen Sitzung bereit; Fehler- und Planprobe laufen deshalb über einen allgemeinen Agent, der die Datei des Prüfers liest | US2, US3 |
+| 3 | Bestandsprüfung: vorher fragt Claude, ob 007 gemergt ist, und holt `main` mit Klaus' OK in den Branch; drei Läufe über Skripte, Szenen, Resources und `project.godot`, Claude prüft nach, `bestandsbericht.md`; Klaus entscheidet je Abweichung; Einträge in `Feature_Ideas.md` für große Umbauten; Ausnahmen in den Leitfaden. Danach ergänzt Claude die Aufgaben von Phase 5 | US4 |
 | 4 | Tests: `test_architektur.gd` mit Listen aus dem Bericht und Fehlerprobe; erste echte Phasenprüfung mit dem Architektur-Prüfer | FR-008 |
-| 5 | Behebung, notfalls in zwei Teilen: die freigegebenen Abweichungen; `BIS_BEHEBUNG` wird leer; feste Größen vorher und nachher (R9) | US5 |
+| 5 | Behebung, notfalls in zwei Teilen, erst wenn 007 gemergt und `main` im Branch ist: die freigegebenen Abweichungen; `BIS_BEHEBUNG` wird leer; feste Größen und zwei Spielstände vorher und nachher (R9) | US5 |
 | 6 | Abschluss: Lückensuche mit `/speckit-converge`, der Architektur-Prüfer einmal über das ganze Feature; Gesamtabnahme; Zählung und Auswertung in `ki_pruefung.md` (SC-007 vorbereitet); `Features.md`; Spielbeschreibung prüfen (`architektur.md`, `build-und-tests.md`, README) und Klaus vorlegen; Tagebuch. Merge erst nach 007 | – |
 
-Phase 2 hängt an 1, Phase 3 an 2, Phase 4 an 3 (Listen), Phase 5 an 3 und 4.
+Phase 2 hängt an 1, Phase 3 an 2, Phase 4 an 3 (Listen), Phase 5 an 3 und 4 und an 007.
+
+## Änderungen nach der Checkliste
+
+Aus `checklists/review.md`, von Klaus am 2026-10-28 alle 19 Punkte nach Vorschlag freigegeben:
+
+| Punkt | Änderung | Wo |
+|---|---|---|
+| CHK001 | Story 2 meldet einen Aufruf nach oben; das Autoload ohne Grund gehört zur Planprüfung | Spec US2, US3 |
+| CHK002 | „Code“ = Skripte, Szenen, Resources unter `src/`; Tests lösen den Architektur-Prüfer nicht aus; Phase 4 nur Text-Prüfer | Spec FR-016, FR-019; Prüfer je Phase; Verträge |
+| CHK003 | Annahme zu Stil- und Text-Prüfer an den Plan angeglichen | Spec, Assumptions |
+| CHK004 | SC-005 gilt für Features nach 008; Bestand ausgenommen | Spec SC-005 |
+| CHK005 | Planprobe am Plan von 006 in Phase 2 | Phase 2, R8, Quickstart |
+| CHK006 | Fehlerprobe höchstens zweimal wiederholt, dann entscheidet Klaus | Spec SC-002, R8 |
+| CHK007 | Bestand mit Resources und `project.godot` | Spec FR-025, SC-003, R5, Quickstart |
+| CHK008 | vor Phase 3 `main` mit 007 in den Branch, mit Klaus' OK | Spec, Assumptions; Phase 3 |
+| CHK009 | Regeln als Tabelle mit Empfehlung, Antwort „alle wie Vorschlag außer …“ | R2 |
+| CHK010 | Ausnahme ohne Skript: nur die Zeile in der Tabelle, mit Knoten | R3, Vertrag leitfaden |
+| CHK011 | ein Lauf, der nicht alles schafft, wird geteilt und nur das Fehlende wiederholt | R5 |
+| CHK012 | „ein System“ = ein Ordner, keine geänderte Schnittstelle nach außen | Spec FR-027, R9 |
+| CHK013 | zwei gesicherte Spielstände belegen „lädt wie vorher“ | Spec FR-028, R9, Quickstart |
+| CHK014 | „vorgemerkt“ = in `Features.md` und `Feature_Ideas.md` | Spec FR-003 |
+| CHK015 | Tabelle „Schwere“ auch im Leitfaden | Spec FR-011, Vertrag leitfaden |
+| CHK016 | SC-006 und SC-007: in 008 an Vorlage und Skill belegt, Ergebnis später nachgetragen | Spec |
+| CHK017 | SC-001 zählt ein kurzes Skript, kein Test | Quickstart Phase 1 |
+| CHK018 | neuer Agent erst in neuer Sitzung; Proben über allgemeinen Agent | Phase 2 |
+| CHK019 | Behebung erst mit 007 im Branch | Spec, Assumptions; Phase 5 |
 
 ## Prüfer je Phase
 
@@ -170,6 +196,6 @@ Architektur-Prüfer).
 | 1 Leitfaden | den Maßstab selbst | keine; Klaus nimmt ab | – |
 | 2 Prüfer und Arbeitsweise | Agent, Doku, Vorlage; kein Code | keine; die Fehlerprobe misst den Prüfer | – |
 | 3 Bestandsprüfung | nur den Bericht und den Leitfaden | keine; der Lauf ist selbst die Prüfung | – |
-| 4 Tests | ein Testskript, deutsche Testmeldungen | Architektur, Text | Leitfaden; Abschnitt „Sprache“ des Style-Guides für die Meldungen |
+| 4 Tests | ein Testskript, deutsche Testmeldungen; Tests lösen den Architektur-Prüfer nicht aus (FR-016) | Text | Abschnitt „Sprache“ des Style-Guides für die Meldungen |
 | 5 Behebung | Skripte und Szenen, nichts Sichtbares | Architektur; Stil nur, wenn sich wider Erwarten Sichtbares ändert | Leitfaden, Bestandsbericht |
 | 6 Abschluss | Doku | bei der Lückensuche Architektur einmal über das ganze Feature | Leitfaden |

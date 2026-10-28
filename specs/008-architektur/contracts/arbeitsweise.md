@@ -7,7 +7,8 @@ Verfassung beschließt Klaus `[K]`. FR-016 bis FR-024.
 
 Den Wortlaut beschließt Klaus. Vorschlag, Änderungen gegenüber 2.2.0 fett:
 
-> - Ändert eine Phase Sichtbares oder Texte, auch in Werkzeugen, **oder Code und Szenen**, endet sie
+> - Ändert eine Phase Sichtbares oder Texte, auch in Werkzeugen, **oder Skripte, Szenen und
+>   Resources unter `src/` außer Tests**, endet sie
 >   vor Klaus' Abnahme mit einer Phasenprüfung. Stil- und Text-Prüfer prüfen nur lesend gegen den
 >   Style-Guide, **der Architektur-Prüfer gegen den Architektur-Leitfaden
 >   (`docs/architektur-leitfaden.md`)**; Claude prüft jeden ihrer Befunde nach.
@@ -55,9 +56,9 @@ steht im Leitfaden.
 
 - Beschreibung: „… Stil-, Text- und Architektur-Prüfer … Nutze dies am Ende jeder Phase, die
   Sichtbares, Texte oder Code ändert …“.
-- Schritt 2: fehlt „Prüfer je Phase“, gilt zusätzlich: Architektur, wenn die Phase Skripte oder
-  Szenen ändert.
-- Vorbereitung: für den Architektur-Prüfer die Liste der geänderten `.gd` und `.tscn` aus dem Diff,
+- Schritt 2: fehlt „Prüfer je Phase“, gilt zusätzlich: Architektur, wenn die Phase Skripte, Szenen
+  oder Resources unter `src/` ändert; Tests und `addons/` allein lösen ihn nicht aus.
+- Vorbereitung: für den Architektur-Prüfer die Liste der geänderten `.gd`, `.tscn` und `.tres` aus dem Diff,
   den Vertrag des Features und die Regeln, die `test_architektur.gd` misst.
 - Ersatz-Auftrag für einen allgemeinen Agent wie bei den anderen.
 - Checkliste: der Architektur-Prüfer liest Plan, research.md, data-model.md und contracts/.

@@ -44,6 +44,10 @@ Einzeln als Auswahl fragt Claude nur dort, wo es eine echte Alternative gibt, et
 System ein Autoload sein darf. Danach steht bei jeder Regel „gilt seit 2026-…, Klaus“. Gestrichenes
 wandert mit Grund in den Abschnitt „Geschichte“ (Claude, 2026-10-28).
 
+Die Durchsicht kommt als Tabelle: Regel, Kurzfassung, Empfehlung. Klaus antwortet wie bei der
+Checkliste („alle wie Vorschlag außer …“); die echten Alternativen fragt Claude vorher einzeln als
+Auswahl (Klaus, 2026-10-28, Checkliste CHK009).
+
 **Grund:** Bei 20 bis 30 Regeln wären 30 Einzelfragen mühsam, und die meisten Regeln folgen direkt
 aus Klaus' Antworten in der Spec. FR-007 verlangt nur, dass jede Regel entschieden ist.
 
@@ -54,6 +58,9 @@ aus Klaus' Antworten in der Spec. FR-007 verlangt nur, dass jede Regel entschied
 **Entscheidung:** Eine Ausnahme hat zwei Teile:
 1. einen Kommentar an der Stelle: `# Ausnahme AR-NN: <Grund> (Klaus, JJJJ-MM-TT)`;
 2. eine Zeile in der Tabelle „Ausnahmen“ des Leitfadens: Ort, Regel, Grund, wer freigab.
+
+Hat die Stelle kein Skript, etwa ein Knoten in einer Szene oder eine Resource, reicht die Zeile in
+der Tabelle mit Datei und Knoten (Klaus, 2026-10-28, CHK010).
 
 In einem Plan steht eine geplante Ausnahme unter „Ausnahmen vom Leitfaden“; Klaus gibt sie mit dem
 Plan frei. Der Prüfer führt eine Stelle nur dann als begründete Ausnahme, wenn beide Teile da sind;
@@ -92,8 +99,12 @@ bereit; bis dahin nimmt Claude einen allgemeinen Agent, der die Datei liest (`ki
 
 **Entscheidung:** Rund 19.700 Zeilen passen nicht verlässlich in einen Lauf. Der Prüfer läuft
 dreimal gleichzeitig: **Kern** (`src/core/`), **Spiel und Oberfläche** (`src/scenes/`, `src/ui/`)
-und **Werkstatt** (`src/tools/werkstatt/`). Jeder Lauf bekommt seine Dateiliste und darf daneben
-alles lesen, was er braucht. Tests unter `src/test/` liest er nur für die Frage, ob ein Kern ohne
+und **Werkstatt** (`src/tools/werkstatt/`). Jeder Lauf bekommt seine Dateiliste mit Skripten,
+Szenen und Resources und darf daneben alles lesen, was er braucht; `project.godot` geht an den Lauf
+**Kern** (Klaus, 2026-10-28, CHK007). Meldet ein Lauf unter „Unsicher“ Dateien, die er nicht
+geschafft hat, teilt Claude diesen Teil, etwa die Werkstatt in Ansichten und Rest, und lässt nur die
+fehlenden Dateien noch einmal prüfen (CHK011). Vor dem Start fragt Claude, ob 007 gemergt ist, und
+holt dann `main` mit Klaus' OK in den Branch (CHK008). Tests unter `src/test/` liest er nur für die Frage, ob ein Kern ohne
 Szene getestet wird; `src/addons/` nicht. Claude führt die drei Berichte zum Bestandsbericht
 `specs/008-architektur/bestandsbericht.md` zusammen, prüft jede Abweichung nach und zählt
 (Claude, 2026-10-28).
@@ -152,6 +163,10 @@ Stellen; der Prüfer bekommt sie nicht. Die Dateien liegen außerhalb von `src/`
 lädt (Claude, 2026-10-28).
 
 **Grund:** Wiederholbar: Wird der Prüfer später nachgeschärft, läuft dieselbe Probe noch einmal.
+Besteht er nicht, schärft Claude die Anweisung nach und wiederholt höchstens zweimal; danach
+entscheidet Klaus (CHK006). Dazu kommt eine **Planprobe**: Der Prüfer bekommt Plan, research.md,
+Datenmodell und Verträge von Feature 006 als Auftrag „Plan“; erwartet ist ein Bericht in der Form des
+Vertrags (Klaus, 2026-10-28, CHK005).
 Die erlaubte Stelle daneben zeigt, ob der Prüfer nach Regel oder nach Geschmack urteilt (FR-014).
 
 **Verworfen:** Verstöße in eine Kopie des echten Codes einbauen: aufwendiger, und die Kopie läge
@@ -160,11 +175,16 @@ irgendwo, wo man sie später nicht wiederfindet.
 ## R9 Die Behebung bleibt verhaltensgleich und wird gemessen
 
 **Entscheidung:** Vor Phase 5 hält Claude fest: Testzahl, Ausgabe der Startprobe, die Fahrpläne aus
-`fahrplan_ausgabe.gd` für die Seeds 1, 4711 und 99999 und einen Spielstand. Nach der Phase wird
+`fahrplan_ausgabe.gd` für die Seeds 1, 4711 und 99999 und zwei gesicherte Spielstände (Mittel, Seed
+4711, gespeichert 1987; Schwer mit einem Eingriff, gespeichert 1993). Nach der Phase lädt Claude
+beide mit einem kurzen Skript, Klaus einen davon von Hand (CHK013). Nach der Phase wird
 alles verglichen: Fahrpläne bytegleich, Startprobe still, Tests zweimal grün mit derselben Zahl
 plus den neuen, der Spielstand lädt. In 008 wird nur behoben, was ein System betrifft
 (Spec, Clarify); was mehrere Systeme umbaut, schreibt Claude als Eintrag nach
-`docs/features/Feature_Ideas.md`. Wird die Phase groß, teilt sie sich in zwei Teile (ki_dev,
+`docs/features/Feature_Ideas.md`. Ein System heißt: nur Dateien in einem der Ordner `core/`,
+`scenes/title/`, `scenes/game/`, `ui/` oder `tools/werkstatt/`, und keine Schnittstelle, die ein
+anderer Ordner nutzt (CHK012). Die Phase beginnt erst, wenn 007 gemergt und `main` im Branch ist
+(CHK019). Wird die Phase groß, teilt sie sich in zwei Teile (ki_dev,
 Punkt 4). Die Aufgaben der Phase entstehen erst nach Klaus' Entscheidungen zum Bestandsbericht
 (Claude, 2026-10-28).
 
@@ -204,7 +224,8 @@ die `/speckit-plan` und `/speckit-analyze` lesen.
 **Entscheidung:** Bei der Checkliste von 008 gibt es den Prüfer noch nicht; er entsteht erst in
 Phase 2. Stil- und Text-Prüfer laufen bei der Checkliste von 008 nicht, weil die Spec keine
 Wortlaute und keine Oberfläche festlegt. Der Architektur-Prüfer prüft zum ersten Mal echt in
-Phase 4 (Tests) und Phase 5 (Behebung) (Claude, 2026-10-28).
+Phase 5 (Behebung); Phase 4 ändert nur Tests, die ihn nicht auslösen (Claude, 2026-10-28; seit der
+Checkliste, CHK002). Die Planprüfung erprobt die Planprobe in Phase 2 (CHK005).
 
 **Grund:** Ein Prüfer, der sich selbst einführt, kann seinen eigenen Plan nicht prüfen. Die
 Fehlerprobe und die Bestandsprüfung ersetzen hier den Probelauf.

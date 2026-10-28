@@ -8,7 +8,7 @@ Datei: `docs/architektur-leitfaden.md` (research.md, R1). Schreibt Claude `[C]`,
 ```text
 # Architektur-Leitfaden
 Kopf: Zweck, Geltung, Stand, Verweis auf Verfassung und Quellen
-## So liest man eine Regel          # Teile einer Regel, Stände, Nummern
+## So liest man eine Regel          # Teile einer Regel, Stände, Nummern, Schwere der Befunde
 ## Godot-Prinzipien                 # AR-01 bis AR-05, je eine Regel, ggf. Unterregeln
 ## Muster                           # je Muster aus Nystrom, das das Spiel nutzt oder braucht
 ## Schichten                        # Kern, Oberfläche, Adventure, Wirtschaft, Werkzeuge
@@ -72,7 +72,14 @@ der Abschnitt nennt nur, welche Regeln dort anders gelten.
 | `src/…:Zeile` | AR-NN | … | Klaus, JJJJ-MM-TT |
 
 Dazu an der Stelle im Code: `# Ausnahme AR-NN: <Grund> (Klaus, JJJJ-MM-TT)` (R3). In einer Szene
-(`.tscn`) steht der Kommentar im Skript des Knotens, der die Ausnahme braucht.
+(`.tscn`) steht der Kommentar im Skript des Knotens, der die Ausnahme braucht. Hat die Stelle kein
+Skript, etwa ein Knoten ohne Skript oder eine Resource, reicht die Zeile in der Tabelle mit Datei und
+Knoten (CHK010).
+
+## Schwere
+
+Der Abschnitt „So liest man eine Regel“ übernimmt die Tabelle „Schwere“ aus dem Vertrag
+[architektur-pruefer.md](architektur-pruefer.md), damit Klaus und der Prüfer dieselbe sehen (CHK015).
 
 ## Geschichte
 

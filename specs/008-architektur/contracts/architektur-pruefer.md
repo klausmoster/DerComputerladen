@@ -64,9 +64,12 @@ Findet er nichts: „keine Befunde“ und die geprüften Regeln (FR-013).
 
 ## Aufruf durch Claude
 
-- Phase: aus `/dcl-phasenpruefung`, gleichzeitig mit Stil- und Text-Prüfer, wenn die Phase Code oder
-  Szenen ändert (FR-016).
+- Phase: aus `/dcl-phasenpruefung`, gleichzeitig mit Stil- und Text-Prüfer, wenn die Phase
+  Skripte, Szenen oder Resources des Spiels oder der Werkzeuge unter `src/` ändert; Tests allein
+  lösen ihn nicht aus (FR-016).
 - Plan: bei `/speckit-checklist`, gleichzeitig mit Stil- und Text-Prüfer (FR-017).
-- Bestand: dreimal gleichzeitig, je Schicht eine Dateiliste (R5).
+- Bestand: dreimal gleichzeitig, je Schicht eine Dateiliste mit Skripten, Szenen und Resources;
+  `project.godot` im Lauf Kern (R5).
+- Proben in Phase 2: Fehlerprobe (Auftrag Phase) und Planprobe am Plan von 006 (Auftrag Plan), R8.
 - Steht der Agent-Typ nicht bereit: allgemeiner Agent, der zuerst diese Datei liest; „nur lesen“
   steht ausdrücklich im Auftrag (`ki_pruefung.md`, „Die Prüfer“).
