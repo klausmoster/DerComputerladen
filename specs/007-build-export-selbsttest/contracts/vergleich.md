@@ -32,18 +32,19 @@ python3 -I tools/selbsttest/vergleich.py build/selbsttest/2026-10-28_14-03-12_wi
 - Vergleicht jedes Foto mit `referenz/macos/<kennung>.png` und schreibt `vergleich.md` in den Ordner
   des Laufs.
 - `--gegen <lauf>` vergleicht mit den Fotos eines anderen Laufs statt mit den Referenzbildern, etwa
-  zwei Läufe auf dem Mac (SC-002; Analyse, I5). Bis Phase 5 vergleicht Claude solche Läufe mit `cmp`
-  je Foto.
-- `--beleg` kopiert Protokoll, Bericht und Abweichungen nach `specs/007-…/belege/` (FR-020a).
+  2 Läufe auf dem Mac (SC-002; Analyse, I5). Der Bericht sagt dann: „Verglichen mit dem Lauf …;
+  seine Fotos gelten hier als Referenz.“
+- `--beleg` kopiert Protokoll, Bericht und Abweichungen nach `specs/007-build-export-selbsttest/belege/<system>_<lauf-id>/` (FR-020a).
 - `--referenz-erneuern <kennung …|alle>` übernimmt Fotos eines Laufs vom Mac als Referenzbilder; nur
-  nach Klaus' Abnahme (FR-020). Ohne Kennungen tut es nichts.
-- Exit 0, wenn alles `gleich` oder `nicht_vergleichbar` ist; 1 bei Abweichungen oder fehlenden
-  Bildern; 2 bei unlesbarem Eingang.
+  nach Klaus' Abnahme (FR-020). Ohne Kennungen bleiben die Referenzbilder, wie sie sind.
+- Exit 0, wenn alles „gleich“ oder „nicht vergleichbar“ ist; 1 bei Abweichungen oder fehlenden
+  Bildern; 2 bei unlesbarem oder abgelehntem Eingang, falschem Aufruf oder einem Bericht, der sich
+  nicht schreiben lässt.
 
 ## Vergleich
 
 - Pixel für Pixel in RGBA; ein Pixel weicht ab, wenn irgendein Kanal verschieden ist. Keine Toleranz.
-- Größe anders als 640 × 360: `abweichend` mit Vermerk „Größe“.
+- Größe anders als 640 × 360: „abweichend“ mit Vermerk „Größe“.
 - Bild mit markierten Abweichungen: das Foto in Graustufen, abweichende Pixel in `kassenrot`.
 - Ergebnisse je Schritt wie in [data-model.md](../data-model.md), „Vergleich“.
 
@@ -57,14 +58,14 @@ gleich: 36 · abweichend: 2 · nicht vergleichbar: 2 · Referenz fehlt: 0 · Fot
 | Schritt | Ergebnis | Pixel | Rechteck |
 |---|---|---|---|
 | titel.01_start | gleich | 0 | – |
-| laden.02_liste | abweichend | 112 | 280,140–420,152 |
+| laden.02_liste | abweichend | 112 | x 280–420, y 140–152 |
 ```
 
 Die Kopfzeile nimmt System, Grafikkarte und Grafikschnittstelle aus dem Protokoll.
 
 ## Prüfung (SC-008)
 
-- Zwei Läufe auf dem Mac: alles `gleich`.
-- Ein Foto in einer Kopie um einen Pixel geändert: genau dieser Pixel, Rechteck 1 × 1.
-- Ein Foto gelöscht: `foto_fehlt`; ein Referenzbild gelöscht: `referenz_fehlt`.
+- 2 Läufe auf dem Mac: alles „gleich“.
+- Ein Foto in einer Kopie um 1 Pixel geändert: genau dieser Pixel, Rechteck „x 300, y 200“.
+- Ein Foto gelöscht: „Foto fehlt“; ein Referenzbild gelöscht: „Referenz fehlt“.
 - Ein Zip mit `../` im Pfad: abgelehnt, Exit 2.

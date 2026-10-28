@@ -309,6 +309,8 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 007, Phase 4, 16 Texte der Zusammenfassung, 4 Fotos, 2 Fassungen für „Kopieren“ (2026-10-28) | Text | 2 | 2, davon 1 im Vertrag | 0 | 2 (eine dieselbe wie beim Stil: Tooltip am gesperrten Knopf) | 2 |
 | Feature 007, Phase 4, Nachprüfung des Geänderten (2026-10-28) | Stil | 0 | 0 | 0 | 2 (Beschreibung als Wert, Größe der Seitenüberschrift; von Claude entschieden: bleibt nach CHK034 und Vertrag) | 0 |
 | Feature 007, Phase 4, Nachprüfung des Geänderten (2026-10-28) | Text | 0 | 0 | 0 | 0 | 0 |
+| Feature 007, Phase 5, Vergleichswerkzeug: README, Ausgaben, 3 Berichte (2026-10-28) | Text | 5 | 5, dazu 1 Widerspruch im Vertrag | 0 | 4, davon 1 verworfen | 5 |
+| Feature 007, Phase 5, Nachprüfung des Geänderten (2026-10-28) | Text | 4 | 4, davon 3 im Vertrag oder in der README | 0 | 2, von Claude entschieden (Lauf-ID als Ordnername, Ergebniswörter in Anführungszeichen) | 4 |
 | Feature 006, Phase 7, Nachprüfung des Geänderten (2026-10-28) | Stil | 1 | 1 | 0 | 3 | 1 |
 | Feature 006, Phase 7, 24 Testmeldungen und 6 Stellen Doku (2026-10-28) | Text | 0 | 0 | 0 | 1 | 0 |
 

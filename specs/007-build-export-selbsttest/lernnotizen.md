@@ -453,3 +453,25 @@ nichts und haben deshalb keine Notiz.
 - **Das Feld** ist quadratisch und so hoch wie eine Zeile `werkzeug-text`, damit „!“ und „–“ neben
   der ersten Zeile stehen. Die Zeichen stehen als `ZEICHEN_FEHLER` und `ZEICHEN_NICHT_GELAUFEN` in
   `SelbsttestTexte`.
+
+## Phase 5
+
+### T035: `tools/selbsttest/vergleich.py`
+
+- **Vergleich ohne Toleranz.** Der Selbsttest fotografiert mit festem Seed, fester Zeit und ohne
+  Mauszeiger, und `titel` gleicht `titel_echtzeit` Byte für Byte (Phase 2). Auf demselben Rechner
+  muss deshalb jedes Pixel gleich sein; eine Toleranz würde genau die kleinen Fehler verdecken, die
+  ein anderer Grafiktreiber macht, etwa eine Kante, die einen Pixel versetzt ist. Was nach Zeit
+  rechnet, wie das versteckte Spiel, markiert das Protokoll als „nicht vergleichbar“; dort prüft
+  der Vergleich nur die Größe.
+- **Warum außerhalb von Godot.** Claude soll Läufe von Windows und Linux auswerten, ohne Godot und
+  ohne Fenster. Ein Python-Skript mit Standardbibliothek läuft überall, wo Python ist, und teilt
+  den PNG-Leser mit der Rasterfassung (`tools/raster/pngio.py`). Der schnelle Weg vergleicht erst
+  die rohen Zeilen; nur wenn sie verschieden sind, rechnet er Pixel für Pixel.
+- **`python3 -I`.** Der Schalter isoliert Python: Es lädt keine Module aus dem Ordner des Skripts
+  oder dem aktuellen Ordner und liest keine Umgebungsvariablen wie `PYTHONPATH`. Ein Zip von einem
+  fremden Rechner könnte sonst eine Datei `json.py` mitbringen, die beim `import json` liefe. Das
+  Skript holt `pngio` deshalb ausdrücklich über seinen eigenen Pfad.
+- **Pfade aus dem Zip hinaus.** Ein Eintrag wie `../ausbruch.txt` würde beim Entpacken neben den
+  Ordner geschrieben („Zip Slip“). `entpacke()` prüft alle Einträge, bevor es eine Datei schreibt,
+  und lehnt das ganze Zip ab; ebenso symbolische Links. Exit 2 heißt: dem Eingang nicht trauen.

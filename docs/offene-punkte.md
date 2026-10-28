@@ -12,6 +12,18 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Phase 5 (2026-10-28)
+
+- **Klaus:** Referenzlauf `2026-10-28_15-14-18` abgenommen; 35 vergleichbare Fotos liegen unter
+  `tools/selbsttest/referenz/macos/` (1,4 MB). Die beiden Fotos von Invaders sind nicht
+  vergleichbar und haben kein Referenzbild.
+- **Klaus, Style-Guide Version 61:** „Texte“ gilt auch für Python-Werkzeuge; englische Meldungen von
+  Python und argparse dürfen stehen; nie kürzen, auch nicht in Texten.
+- **Entscheidungen Claude:** Der Bericht nennt die Ergebnisse in Wörtern („nicht vergleichbar“), das
+  Rechteck als „x 280–420, y 140–152“; „Größe 320 × 180“ bleibt in der Spalte „Pixel“. Der Vergleich
+  dauert in reinem Python rund 10 s je Lauf, weil `pngio` die PNG selbst entpackt; für 37 Fotos
+  reicht das.
+
 ### Feature 007, Phase 4 (2026-10-28)
 
 - **Klaus:** Die Zusammenfassung wird nicht maximiert. Das Fenster behält Größe und Lage aus dem

@@ -298,21 +298,28 @@ Belege landen im Spec-Ordner (FR-018 bis FR-020a, SC-008; R17 bis R19; contracts
 **Independent Test**: Zwei Läufe auf dem Mac: alles gleich oder nicht vergleichbar; ein geänderter
 Pixel wird genau gefunden.
 
-- [ ] T035 [C] [US3] `tools/selbsttest/vergleich.py` und `tools/selbsttest/README.md` laut Vertrag:
+- [x] T035 [C] [US3] `tools/selbsttest/vergleich.py` und `tools/selbsttest/README.md` laut Vertrag:
   Zip oder Ordner, Schutz gegen Pfade aus dem Ordner hinaus, Ergebnisse `gleich`, `abweichend`,
   `nicht_vergleichbar`, `referenz_fehlt`, `foto_fehlt`, Bild mit markierten Pixeln in `kassenrot`,
   `vergleich.md`, `--gegen`, `--beleg`, `--referenz-erneuern`, Exit 0, 1, 2 (Analyse, I5). Proben aus dem Vertrag, „Prüfung“
   (SC-008).
-- [ ] T036 [C] [US3] Lernnotiz zu T035: Vergleich ohne Toleranz, warum außerhalb von Godot, `-I`.
-- [ ] T037 [K] [US3] Einen vollständigen Lauf auf dem Mac als Referenz abnehmen: Claude legt
+- [x] T036 [C] [US3] Lernnotiz zu T035: Vergleich ohne Toleranz, warum außerhalb von Godot, `-I`.
+- [x] T037 [K] [US3] Einen vollständigen Lauf auf dem Mac als Referenz abnehmen: Claude legt
   Protokoll und Fotos vor (FR-020).
-- [ ] T038 [C] [US3] Referenzbilder mit `--referenz-erneuern alle` nach
+- [x] T038 [C] [US3] Referenzbilder mit `--referenz-erneuern alle` nach
   `tools/selbsttest/referenz/macos/` übernehmen; zweiten Lauf dagegen vergleichen: alles `gleich`
   oder `nicht_vergleichbar`.
-- [ ] T038a [C] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`, Text-Prüfer über einen Bericht
+- [x] T038a [C] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`, Text-Prüfer über einen Bericht
   `vergleich.md` aus den Proben und die README gegen `Sprache.md` und `Werkzeuge.md` (Analyse, V2);
   vor Klaus' Abnahme.
-- [ ] T039 [K] [US3] Phase 5 abnehmen: Bericht der Proben, Referenzbilder, README.
+- [x] T039 [K] [US3] Phase 5 abnehmen: Bericht der Proben, Referenzbilder, README.
+
+Erledigt am 2026-10-28, von Klaus abgenommen: `tools/selbsttest/vergleich.py` mit README, Proben aus
+dem Vertrag alle bestanden (1 Pixel als „x 300, y 200“, Foto fehlt, Referenz fehlt, Größe, Zip mit
+`../` mit Exit 2); Referenzlauf `2026-10-28_15-14-18` von Klaus abgenommen, 35 Referenzbilder unter
+`tools/selbsttest/referenz/macos/`; zweiter Lauf 35 von 35 gleich, Beleg unter
+`belege/macos_2026-10-28_15-00-21/`. Phasenprüfung: Text 5 Befunde, Nachprüfung 4, alle behoben;
+Style-Guide Version 61.
 
 **Checkpoint**: Ein Foto eines anderen Rechners lässt sich bewerten.
 

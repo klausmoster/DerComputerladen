@@ -162,8 +162,8 @@ selbsttest/
 
 | Ergebnis je Schritt | Bedeutung |
 |---|---|
-| `gleich` | Foto und Referenzbild sind Pixel für Pixel gleich |
-| `abweichend` | Zahl der Pixel, die abweichen, das umschließende Rechteck und ein Bild mit markierten Pixeln |
-| `nicht_vergleichbar` | der Schritt ist als nicht vergleichbar markiert; nur Größe 640 × 360 geprüft |
-| `referenz_fehlt` | zum Foto gibt es kein Referenzbild |
-| `foto_fehlt` | zum Referenzbild gibt es kein Foto, etwa weil der Schritt nicht lief |
+| gleich | Foto und Referenzbild sind Pixel für Pixel gleich |
+| abweichend | Zahl der Pixel, die abweichen, das umschließende Rechteck und ein Bild mit markierten Pixeln |
+| nicht vergleichbar | der Schritt ist als nicht vergleichbar markiert; nur Größe 640 × 360 geprüft |
+| Referenz fehlt | zum Foto gibt es kein Referenzbild |
+| Foto fehlt | zum Referenzbild gibt es kein Foto, etwa weil der Schritt nicht lief |
