@@ -164,3 +164,28 @@ Geschrieben vom Godot-Agent, hier gekürzt.
 - **Test gegen Leichen:** Wird die Stelle in `werkstatt.gd` einmal behoben, wird
   `test_listen_ohne_leichen` rot und erinnert daran, den Eintrag zu streichen. So veraltet die Liste
   nicht still.
+
+## Phase 5
+
+### T035 `wege_nach_oben`: Knotenpfad oder Dateipfad
+
+Geschrieben vom Godot-Agent.
+
+- **Dasselbe `../`, zwei Bedeutungen.** In einem Knotenpfad heißt `../` „zum Eltern-Node“, also
+  genau der Griff nach oben, den AR-02 verbietet. In einem Dateipfad heißt es „ein Ordner höher“:
+  `path_join("../Resources")` in `selbsttest_system.gd` geht im App-Paket von `Contents/MacOS/` nach
+  `Contents/Resources/` und berührt keinen Node. Beides ist für den Test nur eine Zeichenkette;
+  ohne Unterschied meldet er einen Fehlalarm, und ein Test, der oft falsch rot ist, wird bald
+  übergangen.
+- **Der Code vor dem Anführungszeichen entscheidet.** `_lies()` merkt sich je Zeichenkette, wo ihr
+  öffnendes Anführungszeichen steht (`"oeffnet"`). `_knotenpfad` sucht in der Fassung `code`, in
+  der Zeichenketten leer, ihre Anführungszeichen aber stehen geblieben sind, jedes Anführungszeichen
+  direkt nach `^` oder `$` oder nach `NodePath(`, `get_node(`, `get_node_or_null(` und `has_node(`.
+  Diese Stellen kommen in ein Dictionary, das hier als Menge dient (GDScript hat keinen eigenen
+  Typ dafür); nur eine Zeichenkette, deren Anführungszeichen darin steht, zählt mit `../`.
+  `/root/` zählt weiter in jeder Zeichenkette ohne `://`, weil es im Spiel nichts anderes meint.
+- **Szenen brauchen das nicht.** In einer `.tscn` ist jeder Pfad ohne `://` ein Knotenpfad. Eine
+  Szene erkennt die Funktion am Kopf `[gd_scene`, so bleibt die Signatur aus dem Vertrag gleich, und
+  die Fehlerprobe zeigt mit demselben Text ohne Kopf, dass der Kopf entscheidet.
+- **Grenze:** `var ziel := "../Kasse"` und später `get_node(ziel)` misst der Test nicht; das sieht
+  der Prüfer. Der Test misst die Schreibweisen, die man direkt hinschreibt.

@@ -202,7 +202,7 @@ Die Behebungen stehen seit T028 fest (Klaus, 2026-10-28; `bestandsbericht.md`). 
 zwei Teile (ki_dev, Punkt 4): erst die kleinen Behebungen (T036a), dann Titel und Werkstatt (T036b);
 dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
 
-- [ ] T035 [C] [US5] Voraussetzung prüfen: 007 gemergt und `main` im Branch (CHK019); sonst wartet die
+- [x] T035 [C] [US5] Voraussetzung prüfen: 007 gemergt und `main` im Branch (CHK019); sonst wartet die
   Phase. Kam 007 erst nach der Bestandsprüfung herein: Bestandsprüfung über den Code, den 007
   mitbringt (`src/tools/selbsttest/` und geänderte Dateien), Abweichungen Klaus vorlegen, Listen in
   `test_architektur.gd` durch den Agent angleichen lassen (Analyse, I1); nach der Nachprüfung

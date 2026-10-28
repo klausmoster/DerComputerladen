@@ -8,15 +8,18 @@ extends GutTest
 ##   Engine.get_main_loop() und keinen globalen Zufall.
 ## - AR-03, Autoloads sparsam: In project.godot stehen genau die Autoloads aus AUTOLOADS, in dieser
 ##   Reihenfolge.
-## - AR-02, kein Weg nach oben: Kein Skript und keine Szene nennt einen Knotenpfad mit ../ oder
-##   /root/, außer an den Stellen in ERLAUBT_NACH_OBEN, BIS_BEHEBUNG und VORGEMERKT.
+## - AR-02, kein Weg nach oben: Kein Skript nennt /root/ oder einen Knotenpfad mit ../, keine Szene
+##   ../ oder /root/, außer an den Stellen in ERLAUBT_NACH_OBEN, BIS_BEHEBUNG und VORGEMERKT.
 ## - AR-14, das Spiel kennt die Werkzeuge nicht: Außerhalb von tools/ verweist nichts auf
 ##   res://tools/.
 ##
 ## Ein kleiner Leser trennt im Quelltext Code, Zeichenketten und Kommentare wie in test_texte.gd.
 ## Kommentare zählen nie, auch nicht die Zeichenketten in Doku-Kommentaren. Autoloads, get_tree()
 ## und Zufall zählen nur im Code, Knotenpfade nur in Zeichenketten, res://tools/ in Code und
-## Zeichenketten. Eine Zeichenkette mit :// ist ein Dateipfad wie res:// und kein Knotenpfad.
+## Zeichenketten. Eine Zeichenkette mit :// ist ein Dateipfad wie res:// und kein Knotenpfad. In
+## Skripten ist eine Zeichenkette nur dann ein Knotenpfad, wenn der Code davor es sagt: ^, $,
+## NodePath(, get_node(, get_node_or_null( oder has_node(; "../Resources" in path_join() ist ein
+## Dateipfad (Nachprüfung von 007, T035).
 ##
 ## Die Prüffunktionen nehmen einen Text, damit die Fehlerprobe sie an erfundenen Texten und an
 ## Kopien außerhalb des Projekts aufrufen kann. Der Test schreibt nichts.
@@ -33,6 +36,10 @@ const KERNE: Array[String] = [
 	"res://tools/werkstatt/catalog_editor.gd",
 	"res://tools/werkstatt/what_if_probe.gd",
 	"res://tools/werkstatt/zebra.gd",
+	"res://tools/selbsttest/selbsttest_ablage.gd",
+	"res://tools/selbsttest/selbsttest_lauf.gd",
+	"res://tools/selbsttest/selbsttest_protokoll.gd",
+	"res://tools/selbsttest/selbsttest_texte.gd",
 ]
 
 ## Die Autoloads in dieser Reihenfolge, wie im Leitfaden (AR-03).
@@ -46,7 +53,10 @@ const ERLAUBT_NACH_OBEN: Array[Dictionary] = [
 ]
 
 ## Abweichungen, die Phase 5 behebt. Wird mit Phase 5 leer.
-const BIS_BEHEBUNG: Array[Dictionary] = []
+const BIS_BEHEBUNG: Array[Dictionary] = [
+	{"datei": "res://tools/selbsttest/selbsttest_ergebnis.gd", "regel": "AR-02",
+		"grund": "B1: GameWindow über /root/; Naht kommt in T036a"},
+]
 
 ## Abweichungen, die Klaus als eigenes Feature vorgemerkt hat: {"datei": …, "regel": "AR-NN",
 ## "feature": Eintrag in Feature_Ideas.md}. Leert sich mit dem Feature, das sie behebt.
@@ -66,6 +76,10 @@ const KERN_BASIS: Array[String] = ["RefCounted", "Resource"]
 const GLOBALER_ZUFALL: Array[String] = [
 	"randi", "randf", "randi_range", "randf_range", "randfn", "randomize",
 ]
+## Was im Code direkt vor dem öffnenden Anführungszeichen einen Knotenpfad ankündigt (AR-02).
+const KNOTENPFAD_DAVOR: Array[String] = ["NodePath", "get_node", "get_node_or_null", "has_node"]
+## So beginnt jede Szene im Textformat; daran erkennt wege_nach_oben() eine Szene.
+const SZENENKOPF := "[gd_scene"
 ## Vor und nach einem ganzen Bezeichner steht weder Buchstabe noch Ziffer noch Unterstrich.
 ## \p{L} schließt Umlaute ein, anders als \b.
 const WORTANFANG := "(?<![\\p{L}\\p{N}_])"
@@ -87,6 +101,10 @@ var _szenenbaum := RegEx.create_from_string(WORTANFANG
 	+ "(get_tree|Engine\\s*\\.\\s*get_main_loop)\\s*\\(")
 var _zufall := RegEx.create_from_string(WORTANFANG + "(" + "|".join(GLOBALER_ZUFALL) + ")\\s*\\(")
 var _mischen := RegEx.create_from_string("\\.\\s*(shuffle|pick_random)\\s*\\(")
+## Das öffnende Anführungszeichen eines Knotenpfads im Code: direkt nach ^ oder $, oder als erstes
+## Argument von NodePath(, get_node(, get_node_or_null( oder has_node(.
+var _knotenpfad := RegEx.create_from_string("(?:[\\^$]|" + WORTANFANG
+	+ "(?:" + "|".join(KNOTENPFAD_DAVOR) + ")\\s*\\(\\s*)[\"']")
 
 
 # --- Die Regeln am Bestand -----------------------------------------------
@@ -339,6 +357,41 @@ func test_weg_nach_oben_faellt_auf() -> void:
 	assert_eq(in_der_szene, [6])
 
 
+func test_nur_knotenpfade_greifen_nach_oben() -> void:
+	# Arrange: Im Skript greifen die Knotenpfade in Zeile 3 bis 9 nach oben, /root/ als bloße
+	# Zeichenkette in Zeile 10. Die Dateipfade in Zeile 11 bis 13 sind erlaubt. In der Szene zählt
+	# ../ in Zeile 4 und 5 in jeder Zeichenkette; nur der Dateipfad in Zeile 6 nicht.
+	var skript := "extends Node\n" \
+		+ "func _ready() -> void:\n" \
+		+ "\tvar a := get_node(\"../Kasse\")\n" \
+		+ "\tvar b := get_node_or_null(\"../Kasse\")\n" \
+		+ "\tvar c := has_node(\"../Kasse\")\n" \
+		+ "\tvar d := $\"../Kasse\"\n" \
+		+ "\tvar e := ^\"../Kasse\"\n" \
+		+ "\tvar f := NodePath(\"../Kasse\")\n" \
+		+ "\tvar g := get_node( '../Lager' )\n" \
+		+ "\tvar h := \"/root/GameWindow\"\n" \
+		+ "\tvar i := OS.get_executable_path().get_base_dir().path_join(\"../Resources\")\n" \
+		+ "\tvar ordner := \"../daten\"\n" \
+		+ "\tvar j := load(\"res://../x\")\n"
+	var szene := "[gd_scene format=3]\n\n" \
+		+ "[node name=\"Regal\" type=\"Node\" parent=\".\"]\n" \
+		+ "node_path = NodePath(\"../Kasse\")\n" \
+		+ "text = \"../daten\"\n" \
+		+ "bild = \"res://../x\"\n"
+
+	# Act
+	var im_skript := wege_nach_oben(skript)
+	var in_der_szene := wege_nach_oben(szene)
+	# Ohne den Kopf [gd_scene liest die Funktion denselben Text als Skript.
+	var ohne_kopf := wege_nach_oben(szene.replace("[gd_scene format=3]", ""))
+
+	# Assert
+	assert_eq(im_skript, [3, 4, 5, 6, 7, 8, 9, 10])
+	assert_eq(in_der_szene, [4, 5])
+	assert_eq(ohne_kopf, [4])
+
+
 func test_verweis_auf_werkzeug_faellt_auf() -> void:
 	# Arrange: Verweise auf ein Werkzeug in Zeile 5 des Skripts und Zeile 3 der Szene. Der
 	# Doku-Kommentar, ein Kern unter core/ und ein Ordner, der nur ähnlich heißt, sind erlaubt.
@@ -413,16 +466,28 @@ func autoloads_aus(project_godot: String) -> Array[String]:
 	return namen
 
 
-## Zeilen mit ../ oder /root/ in einer Zeichenkette, sortiert (AR-02). Das sind die Knotenpfade in
-## get_node("…"), ^"…" und $"…" eines Skripts und in NodePath("…") einer Szene. Zeichenketten mit
-## :// sind Dateipfade wie res:// und zählen nicht.
+## Zeilen, in denen [param quelltext] nach oben greift, sortiert (AR-02). Zeichenketten mit :// sind
+## Dateipfade wie res:// und zählen nie.
+## - In einem Skript zählt /root/ in jeder Zeichenkette, ../ nur in einem Knotenpfad: einer
+##   Zeichenkette direkt nach ^ oder $ oder als Argument von NodePath(), get_node(),
+##   get_node_or_null() und has_node(). "../Resources" in path_join() ist ein Dateipfad.
+## - In einer Szene, einem Text, der mit [gd_scene beginnt, zählen ../ und /root/ in jeder
+##   Zeichenkette ohne ://, wie bisher.
 func wege_nach_oben(quelltext: String) -> Array[int]:
+	var gelesen := _lies(quelltext)
+	var ist_szene := quelltext.begins_with(SZENENKOPF)
+	var knotenpfade := {}
+	for fund in _knotenpfad.search_all(gelesen.code):
+		knotenpfade[fund.get_end() - 1] = true
 	var zeilen: Array[int] = []
-	for kette: Dictionary in _lies(quelltext).ketten:
+	for kette: Dictionary in gelesen.ketten:
 		var text: String = kette.text
 		if text.contains("://"):
 			continue
-		for muster in ["../", "/root/"]:
+		var gesucht: Array[String] = ["/root/"]
+		if ist_szene or knotenpfade.has(kette.oeffnet):
+			gesucht.push_front("../")
+		for muster in gesucht:
 			var stelle := text.find(muster)
 			while stelle != -1:
 				var zeile := _zeile(quelltext, kette.anfang + stelle)
@@ -452,7 +517,8 @@ func verweise_auf_werkzeuge(quelltext: String) -> Array[int]:
 ## - "code": Kommentare und der Inhalt jeder Zeichenkette sind Leerzeichen, die Anführungszeichen
 ##   bleiben stehen,
 ## - "ohne_kommentare": nur die Kommentare sind Leerzeichen,
-## - "ketten": je Zeichenkette ihr Inhalt ("text") und wo er im Quelltext beginnt ("anfang").
+## - "ketten": je Zeichenkette ihr Inhalt ("text"), wo er im Quelltext beginnt ("anfang") und wo
+##   das öffnende Anführungszeichen steht ("oeffnet").
 ## Zeilenumbrüche bleiben überall stehen; eine Stelle hat in allen Fassungen dieselbe Zeile. Ein #
 ## außerhalb einer Zeichenkette beginnt einen Kommentar bis zum Zeilenende, wie in test_texte.gd.
 func _lies(quelltext: String) -> Dictionary:
@@ -486,7 +552,7 @@ func _lies(quelltext: String) -> Dictionary:
 		var roh := kette.get_string()
 		var breite := 3 if roh.length() >= 6 and roh.begins_with(roh[0].repeat(3)) else 1
 		var inhalt := roh.substr(breite, roh.length() - 2 * breite)
-		ketten.append({"text": inhalt, "anfang": stelle + breite})
+		ketten.append({"text": inhalt, "anfang": stelle + breite, "oeffnet": stelle})
 		code.append(roh.left(breite) + _kein_umbruch.sub(inhalt, " ", true) + roh.right(breite))
 		ohne_kommentare.append(roh)
 		i = stelle + roh.length()
