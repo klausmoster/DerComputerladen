@@ -39,3 +39,6 @@
 - `/speckit-clarify` am 2026-10-28: vier Fragen, alle drei Vormerkungen geklärt (Vollbildtaste,
   Ablauf „Fenster“, Rückgabe der Ergebnisse), dazu das Aussehen der Zusammenfassung. Checkliste
   danach weiter 16/16.
+- Abgleich mit Klaus' Ablauf am 2026-10-28: Zeitraffer mit Echtzeit-Ablauf, Selbsttest zur
+  Endabnahme statt nach jeder Phase, ein Befehl für alle Builds, Rahmen für Szenarien (FR-003a,
+  FR-011a, FR-026a, SC-001 neu). Checkliste weiter 16/16.

@@ -12,6 +12,31 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Plan (2026-10-28)
+
+Eigene Entscheidungen von Claude in `specs/007-build-export-selbsttest/research.md`:
+- **Eigener Läufer statt GUT** (R1), Code unter `src/tools/selbsttest/`, damit der normale Export
+  ihn wie die Werkstatt weglässt; die Werkstatt kommt mit in die Selbsttest-App (R2).
+- **Ein Fahrer** zwischen Abläufen und Titel, damit Änderungen an der Oberfläche eine Stelle treffen
+  (R5).
+- **Höchstzeit 5 s je Schritt**, keine festen Wartezeiten, echte Fahrt des Communicators (R6).
+- **Feste Zeit `2026-10-26 20:40 UTC`, Seed 4711, Zeitzone UTC+1** im Selbsttest; dafür eine
+  Stellschraube in `SaveGame`, die einzige Änderung am Spielcode in Teil 1 (R7).
+- **Fotos vom versteckten Spiel sind „nicht vergleichbar“**, weil es nach Zeit rechnet (R7).
+- **Ein Protokoll als Text mit festen Schlüsseln**, kein JSON daneben (R9).
+- **ICO mit sechs Größen aus `make_icon.py`**, statt Godot die PNG verkleinern zu lassen (R14).
+- **F11, Alt+Enter und Ctrl+Cmd+F gelten auf jedem System** in einer Aktion (R15).
+- **Bauzeit = Änderungszeit des Pakets** (R21).
+- **Zeitraffer-Faktor 8** über `Engine.time_scale`; `fenster` läuft mit Faktor 1 (R24).
+- **`tools/build/baue_alles.sh` als Shell-Skript**, Zips unter `build/abnahme/`, mit `--nur macos`
+  für die Phasen vor Teil 2 (R26).
+- **Szenario-Rahmen** als `SelbsttestSzenario` mit Start, Entscheidungen und Prüfpunkten nach
+  Spieldatum (R27).
+- **Befund:** Auf Klaus' Mac fehlen die Export-Templates für Windows und Linux; Download in Phase 6
+  als `[K]`. `rcedit` wird nicht gebraucht.
+- **Zum Aufräumen:** Die Recherche hat unter `~/Library/Application Support/Godot/app_userdata/`
+  die Ordner `Probe` und `Probe Selbsttest` angelegt; sie können weg.
+
 ### Feature 007, Spec (2026-10-28)
 
 Eigene Entscheidungen von Claude in `specs/007-build-export-selbsttest/spec.md`, umgesetzt in der
@@ -25,7 +50,8 @@ Spec, von Klaus noch nicht bestätigt:
 - **„Beenden“ wird nicht ausgelöst,** nur geprüft, dass es da ist (FR-012).
 - **Fotos im Oberflächenraster 640 × 360,** nicht in Fenstergröße; die Vergrößerung prüft der
   Ablauf „Fenster“ (Assumptions).
-- **Höchstens 2 Minuten** für einen Lauf auf Klaus' Mac (SC-001).
+- ~~Höchstens 2 Minuten für einen Lauf~~: entfällt, Klaus will Zeitraffer und keine feste Grenze
+  (2026-10-28); SC-001 vergleicht jetzt Zeitraffer und Echtzeit.
 - **Linux nur x86_64** (FR-021).
 - **Der Abschnitt „Bedienung“ der Abläufe** prüft jede Eingabeart des Titels einmal (FR-011,
   Punkt 6).

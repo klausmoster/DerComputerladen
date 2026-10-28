@@ -66,6 +66,30 @@ Fragen aus `/speckit-clarify`, von Klaus einzeln als Auswahl beantwortet:
   Schritte und Systemdaten als Text in die Zwischenablage, für den schnellen Blick im Chat, bevor das
   Zip da ist (Klaus, nach Empfehlung). Verworfen: nur das Zip.
 
+### Abgleich mit Klaus' Ablauf 2026-10-28
+
+Nach dem Plan beschrieb Klaus den Ablauf, den er braucht: zur Validierung, etwa nach neuen Features,
+die App für drei Systeme in einem eigenen Modus bauen; das Spiel darf dabei viel schneller laufen;
+alle Features werden automatisch durchgespielt, gern auch länger, vielleicht mit leichteren
+Szenarien; heraus kommt ein Zip mit Prüfberichten und Bildschirmfotos. Die Abweichungen hat Claude
+einzeln als Auswahl gefragt:
+
+- Q: Wie schnell läuft der Selbsttest? → A: im Zeitraffer, dazu der Ablauf `titel` einmal in
+  normalem Tempo, damit Fehler, die nur bei echtem Tempo auftreten, nicht verdeckt werden; die
+  Grenze von 2 Minuten entfällt (Klaus, nach Empfehlung). Verworfen: nur Zeitraffer; normales
+  Tempo.
+- Klaus dazu: Der Selbsttest muss nicht nach jeder Phase laufen. Der Entwicklungsprozess bleibt, wie
+  er war; der Selbsttest gehört zur **Endabnahme** eines Features. Das ersetzt „Claude lässt ihn nach
+  jeder Phase laufen“ aus Story 5. Innerhalb von 007 läuft er natürlich dort, wo er gebaut wird.
+- Q: Gibt es einen Befehl, der für die Endabnahme alles baut? → A: ja: ein Skript baut für macOS,
+  Windows und Linux je Spiel und Selbsttest, prüft, dass im Spiel kein Testcode steckt, und legt je
+  System ein Zip zum Weitergeben ab (Klaus, nach Empfehlung). Verworfen: je Preset ein Befehl.
+- Q: Was bringt 007 an Szenarien mit? → A: nur den Rahmen: was ein Szenario ist (eigener Ablauf,
+  Spieluhr im Zeitraffer, feste Entscheidungen, Prüfpunkte mit Foto) und dass der Läufer es tragen
+  kann; das erste echte Szenario bringt das erste Feature, in dem man im Spielbildschirm etwas
+  bedienen kann (Klaus, nach Empfehlung). Verworfen: ein Probeszenario jetzt, weil der Selbsttest die
+  Spieluhr dafür an der Oberfläche vorbei starten müsste; keine Szenarien in 007.
+
 ## Begriffe
 
 - **Export:** aus dem Godot-Projekt eine fertige App bauen, die ohne Godot läuft, etwa
@@ -84,6 +108,15 @@ Fragen aus `/speckit-clarify`, von Klaus einzeln als Auswahl beantwortet:
   Foto.
 - **Foto:** ein Bild dessen, was das Spiel in diesem Moment zeigt, im Oberflächenraster 640 × 360,
   unabhängig davon, wie groß das Fenster ist.
+- **Zeitraffer:** Im Selbsttest läuft alles, was nach Zeit rechnet, schneller: die Fahrt des
+  Communicators, die Spieluhr, das versteckte Spiel. Fotos entstehen trotzdem erst, wenn alles
+  steht.
+- **Szenario:** ein Ablauf, der ein Spiel über längere Spielzeit im Zeitraffer spielt, mit festen
+  Entscheidungen und Prüfpunkten, etwa „Neues Spiel auf Leicht, bis 1987 jeden Monat Ware
+  nachbestellen; am 01.01.1987 prüfen: Kontostand im erwarteten Bereich, Foto“. Das erste kommt mit
+  einem späteren Feature.
+- **Endabnahme:** die Gesamtabnahme eines Features durch Klaus. Zu ihr gehört ab Feature 008 ein Lauf
+  des Selbsttests.
 - **Referenzbild:** das Foto eines Schritts, wie es auf macOS aussieht und als richtig abgenommen
   ist. Fotos von Windows und Linux werden damit Pixel für Pixel verglichen.
 - **Protokoll:** eine Textdatei je Lauf mit den Systemdaten des Rechners und dem Ergebnis jedes
@@ -96,7 +129,7 @@ Fragen aus `/speckit-clarify`, von Klaus einzeln als Auswahl beantwortet:
 ### User Story 1 - Der Selbsttest läuft auf dem Mac (Priority: P1)
 
 Klaus oder Claude baut die Selbsttest-App und startet sie per Doppelklick. Ein Fenster geht auf,
-der Titel erscheint, und die App spielt ihre Abläufe durch, ohne dass jemand etwas tut: Der
+der Titel erscheint, und die App spielt ihre Abläufe im Zeitraffer durch, ohne dass jemand etwas tut: Der
 Communicator fährt herein, „Neues Spiel“ wird gewählt, ein Grad, der Spielbildschirm erscheint,
 zurück zum Hauptmenü, das Spiel wird geladen und gelöscht, die drei grauen Knöpfe starten das
 versteckte Spiel und Esc beendet es wieder. Nach jedem Schritt prüft die App, ob zu sehen ist, was
@@ -206,23 +239,29 @@ Taskleiste das App-Symbol.
 
 ### User Story 5 - Der Selbsttest wächst mit jedem Feature (Priority: P3)
 
-Ab jetzt prüft der Selbsttest, was ein Feature an Sichtbarem dazubringt. Claude lässt ihn auf dem
-Mac nach jeder Phase laufen und meldet das Ergebnis mit der Bitte um Abnahme; die Phasenprüfung
-prüft, ob neue Seiten und Wege einen Ablauf haben.
+Ab jetzt prüft der Selbsttest, was ein Feature an Sichtbarem dazubringt. Er gehört zur Endabnahme:
+Vor der Gesamtabnahme bekommt das Feature seine Abläufe, Claude baut mit einem Befehl für alle drei
+Systeme, lässt den Selbsttest auf dem Mac laufen und legt das Ergebnis mit der Bitte um
+Gesamtabnahme vor; Klaus startet ihn auf Windows und Linux. Die Phasen davor laufen wie bisher, ohne
+Selbsttest (Klaus, 2026-10-28).
 
 **Why this priority**: Ein Selbsttest, der nicht mitwächst, prüft bald das falsche Spiel. Die
 Regel ändert aber die Arbeitsweise und damit Dokumente, über die nur Klaus entscheidet.
 
 **Independent Test**: Claude legt in der letzten Phase den Wortlaut für `ki_dev.md`, die Vorlage
-für Tasks und die Phasenprüfung vor. Klaus entscheidet je Datei; was er annimmt, steht danach
+für Tasks und die Prüfung vor. Klaus entscheidet je Datei; was er annimmt, steht danach
 dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Feature 008.
 
 **Acceptance Scenarios**:
 
 1. **Given** Klaus hat die Regel beschlossen, **When** `/speckit-tasks` ein neues Feature mit
-   Sichtbarem plant, **Then** enthält `tasks.md` die Aufgabe „[A] Selbsttest-Abläufe anpassen“.
-2. **Given** eine Phase ist gebaut, **When** Claude sie Klaus zur Abnahme vorlegt, **Then** nennt
-   die Bitte das Ergebnis des Selbsttests auf dem Mac mit Zahlen.
+   Sichtbarem plant, **Then** enthält `tasks.md` vor der Gesamtabnahme die Aufgabe „[A]
+   Selbsttest-Abläufe anpassen“.
+2. **Given** ein Feature ist fertig, **When** Claude es Klaus zur Gesamtabnahme vorlegt, **Then**
+   nennt die Bitte das Ergebnis des Selbsttests auf dem Mac mit Zahlen und den Weg für Windows und
+   Linux.
+3. **Given** eine Phase mitten im Feature, **When** Claude sie zur Abnahme vorlegt, **Then** gehört
+   kein Lauf des Selbsttests dazu.
 
 ---
 
@@ -269,6 +308,11 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   durchspielen und danach die Zusammenfassung zeigen. Während des Laufs MUSS der Fenstertitel den
   Fortschritt nennen, etwa „Selbsttest 12 von 40: Neues Spiel“; im Spielbild selbst erscheint
   nichts davon, damit die Fotos nur das Spiel zeigen.
+- **FR-003a**: Die App MUSS ihre Abläufe im Zeitraffer spielen: Alles, was im Spiel nach Zeit
+  rechnet, läuft um einen festen Faktor schneller, im Protokoll als `lauf.zeitraffer` genannt.
+  Höchstzeiten gelten in echter Zeit. Der Ablauf `titel` MUSS zusätzlich einmal in normalem Tempo
+  laufen (Ablauf `titel_echtzeit`), damit Fehler, die nur bei echtem Tempo auftreten, sichtbar
+  bleiben. Eine feste Obergrenze für die Dauer eines Laufs gibt es nicht.
 - **FR-004**: Alle Eingaben der Abläufe MÜSSEN als Maus- und Tastatureingaben durch dieselbe
   Eingabe des Spiels gehen, die auch echte Maus und Tastatur nutzen, im echten Fenster. Kein
   Schritt darf eine Seite, einen Knopf oder eine Funktion des Spiels direkt aufrufen, um eine
@@ -314,6 +358,12 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
      passt, und steht zentriert; auf Faktor 1 verkleinert und wieder vergrößert, bleibt das Bild
      ganzzahlig vergrößert, mittig und mit schwarzem Rand. Das Vollbild schaltet der Selbsttest
      nicht; Klaus prüft es von Hand nach der Quickstart-Anleitung.
+  8. **Titel in Echtzeit:** der Ablauf `titel` noch einmal, ohne Zeitraffer (FR-003a).
+- **FR-011a**: Der Läufer MUSS **Szenarien** tragen können: Abläufe, die ein Spiel über längere
+  Spielzeit im Zeitraffer spielen, mit festen Entscheidungen über die Oberfläche und Prüfpunkten, an
+  denen er Zustand prüft und fotografiert. 007 baut den Rahmen und beschreibt ihn so, dass ein
+  späteres Feature ein Szenario anlegen kann, ohne den Läufer zu ändern; ein Szenario selbst bringt
+  erst das erste Feature mit Bedienung im Spielbildschirm.
 - **FR-012**: „Beenden“ im Hauptmenü wird nicht ausgelöst, weil es den Selbsttest beenden würde;
   geprüft wird nur, dass der Eintrag da und verfügbar ist.
 
@@ -395,8 +445,13 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
 
 - **FR-026**: Das Feature MUSS in der Quickstart-Anleitung beschreiben, wie man den Selbsttest
   baut, startet und die Ergebnisse zurückgibt, für jedes der drei Systeme.
+- **FR-026a**: Ein Befehl MUSS für die Endabnahme alles bauen: für macOS, Windows und Linux je Spiel
+  und Selbsttest, mit der Prüfung, dass im Spiel kein Testcode steckt (SC-005), und je System einem
+  Zip zum Weitergeben. Scheitert ein Teil, MUSS der Befehl das mit System und Grund melden und mit
+  einem Fehlercode enden.
 - **FR-027**: In der letzten Phase MUSS Claude den Wortlaut der Regel aus Story 5 für `ki_dev.md`,
-  die Vorlage für Tasks und die Phasenprüfung vorschlagen. Geändert wird nur, was Klaus annimmt,
+  die Vorlage für Tasks und die Prüfung vorschlagen: Selbsttest zur Endabnahme, nicht nach jeder
+  Phase. Geändert wird nur, was Klaus annimmt,
   die Verfassung nur über `/speckit-constitution`.
 
 ### Key Entities
@@ -415,7 +470,9 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
 
 ### Measurable Outcomes
 
-- **SC-001**: Vom Doppelklick bis zur Zusammenfassung vergehen auf Klaus' Mac höchstens 2 Minuten.
+- **SC-001**: Der Ablauf `titel` braucht im Zeitraffer weniger als halb so lange wie
+  `titel_echtzeit`; Dauer je Schritt und gesamt stehen im Protokoll. Eine feste
+  Obergrenze gibt es nicht (Klaus, 2026-10-28).
 - **SC-002**: Zwei Läufe hintereinander auf demselben Mac liefern Fotos, die Pixel für Pixel
   gleich sind, und Protokolle, die sich nur in Datum, Uhrzeit und Dauern unterscheiden.
 - **SC-003**: Auf dem Mac sind in einem Lauf ohne Störung alle Schritte in Ordnung.
@@ -452,3 +509,5 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
 - Ob der Selbsttest auf GUT aufbaut oder einen eigenen kleinen Läufer bekommt und wie die Abläufe
   ihre Ziele finden, entscheidet der Plan.
 - Die Selbsttest-App ist ein Werkzeug für Klaus und Claude und wird nicht an Spieler gegeben.
+- Der Selbsttest gehört zur Endabnahme, nicht zu jeder Phase (Klaus, 2026-10-28). Innerhalb von 007
+  läuft er in den Phasen, die ihn bauen, weil er dort selbst das Prüfstück ist.
