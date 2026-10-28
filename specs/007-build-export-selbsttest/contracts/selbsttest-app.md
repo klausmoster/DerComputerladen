@@ -157,7 +157,7 @@ CHK028).
 
 **Fenster und Schrift**
 - Wie `werkstatt.gd`: `GameWindow` anhalten (`set_process(false)`,
-  `set_process_unhandled_input(false)`), `content_scale_mode = DISABLED`,
+  `set_process_input(false)`, seit Phase 6 fängt `GameWindow` das Kürzel in `_input()`), `content_scale_mode = DISABLED`,
   `content_scale_factor = DisplayServer.screen_get_scale()`. Das Fenster behält Größe und Lage aus
   dem Lauf und wird nicht maximiert (Klaus, Phase 4: eine reproduzierbare Fenstergröße für den
   Selbsttest; die Zusammenfassung steht einfach darin; ersetzt das Maximieren aus CHK016).

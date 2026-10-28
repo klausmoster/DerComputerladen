@@ -5,10 +5,10 @@ extends Node
 ## Das Spiel startet im Fenster. Gleich nach dem Start bekommt es den größten ganzzahligen
 ## Faktor, der samt Titelleiste auf seinen Bildschirm passt, und steht samt Titelleiste in der
 ## Mitte des nutzbaren Bereichs, also ohne Menüleiste und Dock.
-## Die Eingabe-Aktion `toggle_fullscreen` (Ctrl+Cmd+F) schaltet ins Vollbild und zurück, der
-## grüne Fensterknopf von macOS tut das ohne eigenen Code; zurück im Fenster bekommt das
-## Spiel wieder diese Größe. Kleiner als das Oberflächenraster bei Faktor 1 lässt es sich
-## nicht ziehen (FR-004, FR-013).
+## Die Eingabe-Aktion `toggle_fullscreen` (Ctrl+Cmd+F, F11 und Alt+Enter, auf jedem System)
+## schaltet ins Vollbild und zurück, der grüne Fensterknopf von macOS tut das ohne eigenen Code;
+## zurück im Fenster bekommt das Spiel wieder diese Größe. Kleiner als das Oberflächenraster bei
+## Faktor 1 lässt es sich nicht ziehen (FR-004, FR-013; Feature 007, R15).
 ##
 ## Läuft Godot headless (Tests, Startprobe), gibt es kein Fenster, und der Autoload tut
 ## nichts.
@@ -34,7 +34,7 @@ var _fit_msec := -1
 func _ready() -> void:
 	if DisplayServer.get_name() == "headless":
 		set_process(false)
-		set_process_unhandled_input(false)
+		set_process_input(false)
 		return
 	# Godot rechnet Fenstergrößen in Bildschirmpixeln. Auf einem Retina-Bildschirm sind
 	# 640 × 360 Pixel also 320 × 180 Punkte, wie FR-013 es verlangt.
@@ -68,12 +68,22 @@ func _process(_delta: float) -> void:
 			_fit_to_screen()
 
 
-## Hier kommt nur an, was die Oberfläche nicht verbraucht hat. Enter, Leertaste, Tab und
-## die Pfeiltasten bleiben beim Menü, Ctrl+Cmd+F kommt hier an.
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"toggle_fullscreen"):
+## _input() sieht jedes Ereignis vor der Oberfläche. Das Kürzel muss hier abgefangen werden:
+## Eine Aktion ohne Zusatztaste trifft auch ein Ereignis mit Alt, für Godot ist Alt+Enter also
+## auch ui_accept (Analyse, I2). Käme das Kürzel erst in _unhandled_input() an, hätte die
+## Oberfläche es vorher schon als Enter sehen können.
+##
+## exact_match = true verlangt genau die Zusatztasten der Aktion: Alt+Enter schaltet, Enter
+## allein und Shift+Alt+Enter nicht. Enter allein geht also weiter ans Menü.
+##
+## Als behandelt markiert wird jedes Ereignis des Kürzels, auch Loslassen und Wiederholung beim
+## Halten; geschaltet wird nur beim ersten Drücken.
+func _input(event: InputEvent) -> void:
+	if not event.is_action(&"toggle_fullscreen", true):
+		return
+	if event.is_action_pressed(&"toggle_fullscreen", false, true):
 		toggle_fullscreen()
-		get_viewport().set_input_as_handled()
+	get_viewport().set_input_as_handled()
 
 
 ## Wechselt vom Vollbild ins Fenster und umgekehrt.

@@ -248,7 +248,9 @@ func _on_key(key: InputEventKey) -> void:
 	# Kürzel und Vollbild gehen durch, auch in der Ergebnisanzeige, und führen dort nicht weiter.
 	if key.ctrl_pressed or key.meta_pressed or key.alt_pressed:
 		return
-	if InputMap.has_action(&"toggle_fullscreen") and key.is_action(&"toggle_fullscreen"):
+	# Genauer Vergleich: Beim Loslassen prüft Godot sonst keine Zusatztasten, und das Loslassen von
+	# Enter träfe die Aktion wie Alt+Enter (Feature 007, R15).
+	if InputMap.has_action(&"toggle_fullscreen") and key.is_action(&"toggle_fullscreen", true):
 		return
 	accept_event()
 	var is_new_press := key.pressed and not key.echo

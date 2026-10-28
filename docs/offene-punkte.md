@@ -12,6 +12,31 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Phase 6 (2026-10-28)
+
+- **Klaus:** Export-Templates 4.7.2 im Editor installiert; Windows-Symbol in 16 aus jedem zweiten
+  Bildpixel (Style-Guide Version 62). Direct3D-12-Dateien (Agility SDK) bringen die Templates nicht
+  mit; ob Windows trotzdem Direct3D 12 nutzt, zeigt `system.grafik_api` im Protokoll.
+- **Lücken aus der Phasenprüfung (Stil, ICO), von Klaus mit Empfehlung abgenommen (T049):**
+  - 48 mit ×2 füllt 93 % des Quadrats statt 70 % wie die anderen Größen. Empfehlung: so lassen, ×1
+    wäre mit 47 % zu klein; im Style-Guide als bewusste Ausnahme vermerken.
+  - Das 1024er Symbol für macOS sitzt 1 Bildpixel links von der Mitte (leere 19. Spalte), die ICO
+    mittig. Empfehlung: eigener kleiner Folgepunkt außerhalb von 007, weil er das Mac-Symbol und das
+    Liquid-Glass-Symbol ändert.
+  - Der Rand des abgerundeten Quadrats ist in allen Größen geglättet, wie im 1024er Symbol.
+    Empfehlung: so lassen; das Symbol steht im System neben anderen, nicht im VGA-Bild.
+- **Läufe auf anderen Rechnern (T047, T048):** Linux (AMD R7 200, RADV, Vulkan 1.3) 37 von 37,
+  35 Fotos gleich den Mac-Referenzen. Windows auf MacBook Pro 2015 mit Boot Camp (AMD R9 M370X):
+  Forward+ startet nicht, ohne Meldung; mit erzwungenem OpenGL 37 von 37 und 35 Fotos gleich.
+  Ein Windows-Lauf mit Vulkan oder Direct3D 12 steht aus (Beleg mit `hinweis.md`).
+- **Abweichung von FR-017, von Klaus mit Empfehlung abgenommen (T049):** Startet Direct3D 12 nur halb, zeigt Godot
+  keine Meldung. Empfehlung: so lassen und in quickstart.md erklären (erledigt); eine eigene Prüfung
+  beim Start wäre ein eigenes Feature.
+- **Renderer:** Ob das Spiel bei Forward+ bleibt oder auf Compatibility wechselt, klärt eine eigene
+  Sitzung („Renderer klären: Forward+ oder Compatibility“); bis dahin gilt CLAUDE.md.
+- **Agent:** `werkstatt.gd` und `selbsttest_ergebnis.gd` schalten `GameWindow` jetzt mit
+  `set_process_input(false)` ab; `invaders_page.gd` fragt das Vollbild-Kürzel mit `exact_match` ab.
+
 ### Feature 007, Phase 5 (2026-10-28)
 
 - **Klaus:** Referenzlauf `2026-10-28_15-14-18` abgenommen; 35 vergleichbare Fotos liegen unter

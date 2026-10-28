@@ -259,6 +259,12 @@ Kürzel deshalb in `_input()` ab, vor der Oberfläche, mit genauem Vergleich der
 markiert es als behandelt. Enter allein löst weiter aus. Das ist die zweite Änderung am Spielcode
 (Phase 6).
 
+**Nachtrag Phase 6:** In Godot 4.7.2 löst ein `Button` bei Alt+Enter auch mit dem alten Code nicht aus
+(Probe des Agents); der befürchtete Fehler trat im Menü also nicht auf. Der Umbau bleibt: Die
+Oberfläche sieht das Kürzel jetzt gar nicht mehr, was auch eigene Controls schützt. Ohne
+`exact_match` prüft Godot beim Loslassen keine Zusatztasten; `InvadersPage` fragt das Kürzel deshalb
+mit `exact_match` ab. `is_action_pressed(…, false, true)` reicht für den genauen Vergleich.
+
 **Verworfen:** Belegung je System über Overrides der Eingabe (`input/….windows`); nicht belegt, ob
 Godot Overrides für Eingabe-Aktionen anwendet, und mehr zu prüfen.
 

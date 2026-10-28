@@ -334,19 +334,19 @@ SC-009; R13 bis R15, R26; contracts/export.md).
 **Independent Test**: `tools/build/baue_alles.sh` endet mit Exit 0; auf je einem Windows- und
 Linux-Rechner läuft der Selbsttest bis zur Zusammenfassung; jedes Foto hat ein Vergleichsergebnis.
 
-- [ ] T040 [C] [US4] Download der Export-Templates 4.7.2 für Windows und Linux anfragen: Dateiname,
+- [x] T040 [C] [US4] Download der Export-Templates 4.7.2 für Windows und Linux anfragen: Dateiname,
   Quelle und Größe nennen (FR-024, R14).
-- [ ] T041 [K] [US4] Export-Templates installieren, etwa über den Export Template Manager des
+- [x] T041 [K] [US4] Export-Templates installieren, etwa über den Export Template Manager des
   Editors; Claude prüft danach den Ordner `~/Library/Application Support/Godot/export_templates/4.7.2.stable/`
   und ob die Direct3D-12-Dateien dabei sind.
-- [ ] T041a [C] [US4] Style-Guide ergänzen, Abschnitt „App-Symbol“ in `project/README.md`: Symbol
+- [x] T041a [C] [US4] Style-Guide ergänzen, Abschnitt „App-Symbol“ in `project/README.md`: Symbol
   für Windows als ICO mit 16, 32, 48, 64, 128 und 256 Pixeln; wie die kleinen Größen aus dem
   gerasterten Monitor entstehen, ganzzahlig und ohne Weichzeichnen (Analyse, V1).
-- [ ] T041b [K] [US4] Ergänzung aus T041a freigeben.
-- [ ] T042 [C] [US4] `tools/raster/make_icon.py` schreibt nach T041b zusätzlich
+- [x] T041b [K] [US4] Ergänzung aus T041a freigeben.
+- [x] T042 [C] [US4] `tools/raster/make_icon.py` schreibt nach T041b zusätzlich
   `src/assets/icon/app_icon.ico` mit 16, 32, 48, 64, 128 und 256 Pixeln als PNG-Einträge, die kleinen
   pixelgenau (R14); README in `tools/raster/` nachziehen; Lernnotiz.
-- [ ] T043 [A] [US4] Nach T042. `src/project.godot`: `rendering/rendering_device/fallback_to_opengl3 = false`
+- [x] T043 [A] [US4] Nach T042. `src/project.godot`: `rendering/rendering_device/fallback_to_opengl3 = false`
   (R13), `toggle_fullscreen` mit F11 und Alt+Enter dazu (R15); `src/core/game_window.gd` fängt das
   Kürzel in `_input()` ab, mit genauem Vergleich der Zusatztasten, `src/test/test_game_window.gd`:
   Alt+Enter im Menü schaltet nur das Vollbild und löst nichts aus, Enter allein löst aus (Analyse,
@@ -355,26 +355,37 @@ Linux-Rechner läuft der Selbsttest bis zur Zusammenfassung; jedes Foto hat ein 
   Versionsangaben, `embed_pck`, ohne Signatur, keine Zugangsdaten);
   `src/test/test_projekt_einstellungen.gd` für Renderer, Vollbildtasten und Overrides. Export ohne
   Warnung „Icon size … is missing“.
-- [ ] T044 [C] [US4] `tools/build/baue_alles.sh` laut contracts/export.md und R26: alle sechs
+- [x] T044 [C] [US4] `tools/build/baue_alles.sh` laut contracts/export.md und R26: alle sechs
   Presets, Prüfung SC-005 je System, Zips unter `build/abnahme/`, `ditto` für macOS, Ausführrecht
   für Linux, `--nur macos`, Exit 0 nur bei vollem Erfolg; Lernnotiz.
-- [ ] T045 [A] [US4] Lernnotizen zu T043: Renderer-Ausweichen, Eingabe-Aktionen mit mehreren Tasten,
+- [x] T045 [A] [US4] Lernnotizen zu T043: Renderer-Ausweichen, Eingabe-Aktionen mit mehreren Tasten,
   Presets für Windows und Linux.
-- [ ] T046 [C] [US4] Prüfen: Tests zweimal, Startprobe still, `baue_alles.sh` Exit 0, Selbsttest auf
+- [x] T046 [C] [US4] Prüfen: Tests zweimal, Startprobe still, `baue_alles.sh` Exit 0, Selbsttest auf
   dem Mac weiter grün und gleich den Referenzbildern, `export_presets.cfg` ohne Zugangsdaten.
-- [ ] T046a [C] [US4] `quickstart.md` nachziehen (FR-026; Analyse, U4): Godots Meldung „Unable to
+- [x] T046a [C] [US4] `quickstart.md` nachziehen (FR-026; Analyse, U4): Godots Meldung „Unable to
   initialize video driver“ ohne Vulkan oder Direct3D 12, die Warnung von macOS beim ersten Start einer
   unbekannten App, `chmod +x` unter Linux als Rückfall, Handtest des Vollbilds auf dem Mac
   (Ctrl+Cmd+F) neben F11 und Alt+Enter, der Bau mit `tools/build/baue_alles.sh`.
-- [ ] T047 [K] [US4] Selbsttest auf einem Windows- und einem Linux-Rechner starten nach quickstart.md;
+- [x] T047 [K] [US4] Selbsttest auf einem Windows- und einem Linux-Rechner starten nach quickstart.md;
   „Kopieren“ in den Chat, Zips nach `build/selbsttest/`; kurzer Blick: Symbol der `.exe` im Explorer,
   im Fenster und in der Taskleiste, Vollbild mit F11 und Alt+Enter hin und zurück, Fenstergröße.
-- [ ] T048 [C] [US4] Vergleichen mit `--beleg`, Belege unter `specs/007-build-export-selbsttest/belege/`;
+- [x] T048 [C] [US4] Vergleichen mit `--beleg`, Belege unter `specs/007-build-export-selbsttest/belege/`;
   Bericht an Klaus mit jeder Abweichung und Empfehlung (SC-009).
-- [ ] T048a [C] Phasenprüfung Phase 6 mit `/dcl-phasenpruefung`, Stil-Prüfer über eine Montage der
+- [x] T048a [C] Phasenprüfung Phase 6 mit `/dcl-phasenpruefung`, Stil-Prüfer über eine Montage der
   sechs Größen der ICO ×8 gegen den Abschnitt „App-Symbol“ nach T041b (Analyse, V1); vor Klaus'
   Abnahme.
-- [ ] T049 [K] [US4] Phase 6 abnehmen: Bericht, Belege, Entscheidung zu Abweichungen.
+- [x] T049 [K] [US4] Phase 6 abnehmen: Bericht, Belege, Entscheidung zu Abweichungen.
+
+Erledigt am 2026-10-28, von Klaus abgenommen, mit Claudes Empfehlungen: Export-Templates von Klaus
+installiert; ICO mit sechs Größen (16 aus jedem zweiten Bildpixel, Style-Guide Version 62); Renderer
+ohne Ausweichen auf OpenGL, Vollbild mit F11 und Alt+Enter über `_input()`; vier Presets für Windows
+und Linux; `tools/build/baue_alles.sh` baut alle sechs mit Exit 0, im Spiel kein Testcode. Zweimal
+1343 von 1343 Tests grün. Linux (AMD R7 200, Vulkan) 37 von 37, 35 Fotos gleich der Mac-Referenz.
+Windows auf MacBook Pro 2015 mit Boot Camp: Forward+ startet nicht, ohne Meldung; mit erzwungenem
+OpenGL 37 von 37, 35 Fotos gleich, Symbol und Vollbild von Hand geprüft; als vorläufig abgenommen,
+ein Windows-Lauf mit Vulkan oder Direct3D 12 steht aus. Fehlende Meldung in quickstart.md erklärt,
+ICO bei 48 und weicher Rand bleiben, Mac-Symbol neben der Mitte ist ein Folgepunkt außerhalb von 007.
+Renderer-Frage in eigener Sitzung.
 
 **Checkpoint**: Das Spiel läuft auf drei Systemen, belegt durch den Selbsttest.
 

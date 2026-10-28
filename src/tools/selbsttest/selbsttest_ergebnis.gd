@@ -152,7 +152,7 @@ func _richte_fenster_ein() -> void:
 	var game_window := get_node_or_null(^"/root/GameWindow")
 	if game_window != null:
 		game_window.set_process(false)
-		game_window.set_process_unhandled_input(false)
+		game_window.set_process_input(false)
 	var fenster := get_window()
 	fenster.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 	fenster.content_scale_factor = DisplayServer.screen_get_scale()

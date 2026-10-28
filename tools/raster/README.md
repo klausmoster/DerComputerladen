@@ -9,7 +9,7 @@ Python 3 mit Standardbibliothek; JPEG liest `sips` (macOS). Aufruf immer vom Rep
 | `make_palette.py` | erzeugt einmalig die Hauptpalette `docs/art/hauptpalette.gpl` und die Farbtafel `docs/art/hauptpalette.png` |
 | `rasterize.py` | verkleinert ein Bild per Flächenmittel auf die Endgröße und rechnet es ohne Dithering auf die Hauptpalette |
 | `cleanup.py` | räumt ein gerastertes Bild grob auf: Farbreste und Einzelpixel nach festen Regeln |
-| `make_icon.py` | baut das App-Symbol 1024 × 1024 und die Ebenen für Icon Composer aus dem Monitor im gerasterten Logo |
+| `make_icon.py` | baut das App-Symbol 1024 × 1024, die ICO für Windows und die Ebenen für Icon Composer aus dem Monitor im gerasterten Logo |
 | `pngio.py` | gemeinsamer Teil: PNG lesen (auch indiziert) und schreiben, Flächenmittel, Farbabstand in OKLab |
 
 ## Reihenfolge
@@ -61,6 +61,11 @@ Python 3 mit Standardbibliothek; JPEG liest `sips` (macOS). Aufruf immer vom Rep
    Ergebnis: `src/assets/icon/app_icon.png` und die Ebenen für Icon Composer in
    `docs/art/app_icon/`. Gibt es das Liquid-Glass-Symbol `src/assets/icon/app_icon.icon/`
    schon, bekommt es die neue Ebene `monitor.png` mit.
+
+   Dazu schreibt es `src/assets/icon/app_icon.ico` für Windows mit 16, 32, 48, 64, 128 und 256
+   Pixeln als PNG-Einträge. Jede Größe entsteht eigens aus dem Monitor ohne leere Ränder (18 × 16
+   Bildpixel), ganzzahlig und ohne Weichzeichnen: 32 mit ×1, 48 und 64 mit ×2, 128 mit ×4, 256 mit
+   ×8; in 16 steht er in halber Größe aus jedem zweiten Bildpixel (Style-Guide, App-Symbol).
 
 Warum Flächenmittel statt Nearest Neighbor: Die gemalten Pixel in den Leonardo-Bildern sind
 ungleich groß, Nearest Neighbor würde zufällige Pixel herausgreifen (Style-Guide,

@@ -364,7 +364,8 @@ nichts und haben deshalb keine Notiz.
   Das ist nur eine Einstellung am `Window`; Szenenbaum und Autoloads bleiben, wie sie sind.
 - **`GameWindow` anhalten statt umbauen.** Das Autoload prüft jedes Bild in `_process()`, ob das
   Fenster aus dem Vollbild kommt, und gäbe ihm dann die ganzzahlige Spielgröße. `set_process(false)`
-  und `set_process_unhandled_input(false)` schalten nur diesen einen Knoten still, ohne dass
+  und `set_process_input(false)` (bis Phase 5 `set_process_unhandled_input`) schalten nur diesen
+  einen Knoten still, ohne dass
   `GameWindow` vom Selbsttest wissen muss. Die Seite holt es über `/root/GameWindow`, wie die
   Werkstatt.
 - **Kein Maximieren (Klaus, 2026-10-28).** Anders als die Werkstatt behält das Fenster Größe und Lage
@@ -475,3 +476,89 @@ nichts und haben deshalb keine Notiz.
 - **Pfade aus dem Zip hinaus.** Ein Eintrag wie `../ausbruch.txt` würde beim Entpacken neben den
   Ordner geschrieben („Zip Slip“). `entpacke()` prüft alle Einträge, bevor es eine Datei schreibt,
   und lehnt das ganze Zip ab; ebenso symbolische Links. Exit 2 heißt: dem Eingang nicht trauen.
+
+## Phase 6
+
+### T042: ICO aus `tools/raster/make_icon.py`
+
+- **Was eine ICO ist.** Ein kleiner Kopf (Typ 1, Zahl der Bilder), dann je Bild ein Eintrag von 16
+  Bytes mit Breite, Höhe, Farbtiefe, Länge und Lage der Daten, dahinter die Bilder selbst. Seit
+  Windows Vista darf jedes Bild ein ganzes PNG sein. Breite und Höhe 256 passen nicht in ein Byte
+  und stehen deshalb als 0 im Eintrag. `write_ico()` baut das mit `struct.pack`, `pngio` liefert die
+  PNG über die neue Funktion `encode_png_rgba()` als Bytes.
+- **Warum jede Größe eigens.** Windows wählt je nach Ansicht 16, 32, 48 oder 256. Rechnet Godot oder
+  Windows die Größen aus einem großen Bild herunter, mischen sich benachbarte Pixel, und der Monitor
+  wird zu Brei. Mit ganzzahligem Zoom aus den Bildpixeln bleibt jede Kante scharf. Nur in 16 passt
+  der Monitor nicht; dort nimmt das Skript jedes zweite Bildpixel (Klaus' Wahl).
+- **Das 1024er Symbol bleibt Byte für Byte gleich.** Die ICO entsteht aus demselben Monitor, aber auf
+  ihn zugeschnitten (18 × 16 statt 19 × 16 mit leerer Spalte), damit er in jeder Größe mittig steht.
+
+### T043: Renderer, Vollbild-Kürzel und Presets für Windows und Linux
+
+- **Renderer-Ausweichen.** Forward+ zeichnet über Godots `RenderingDevice`: unter macOS mit Metal,
+  unter Windows mit Direct3D 12 (`rendering_device/driver.windows="d3d12"` in `project.godot`) oder
+  Vulkan, unter Linux mit Vulkan. Scheitert der Treiber, darf Godot innerhalb von Forward+ wechseln:
+  `fallback_to_vulkan` und `fallback_to_d3d12` stehen auf ihrer Vorgabe true und deshalb gar nicht in
+  der Datei. `fallback_to_opengl3` ist jetzt false. Mit true schaltete Godot still auf den Renderer
+  Compatibility mit OpenGL 3.3 um: andere Shader, andere Bilder, genau die Rücksicht, die Grundsatz I
+  ausschließt. Mit false zeigt Godot „Unable to initialize video driver“ und endet. Das ist ehrlicher
+  als ein Spiel, das anders aussieht als getestet. `test_projekt_einstellungen.gd` prüft alle drei
+  Werte; „nicht eingetragen“ sieht der Test nur an der Datei selbst, weil `ProjectSettings` für eine
+  fehlende Einstellung die Vorgabe liefert.
+- **Eine Aktion, mehrere Tasten.** Eine Eingabe-Aktion ist eine Liste von Ereignissen. Trifft ein
+  Ereignis eines davon, gilt die Aktion. `toggle_fullscreen` hat jetzt drei: Ctrl+Cmd+F, F11 und
+  Alt+Enter. In `project.godot` steht jedes als `Object(InputEventKey, …)`. `physical_keycode` meint
+  die Lage der Taste, gleich welches Tastaturlayout; `device: -1` heißt jedes Gerät. Die Zeilen hat
+  Godot selbst geschrieben (`ProjectSettings.save()` an einer Kopie), damit der Editor sie beim
+  nächsten Speichern nicht umformt.
+- **`exact_match`.** Ohne den Schalter vergleicht Godot großzügig: Die Zusatztasten der Aktion müssen
+  gedrückt sein, weitere stören nicht. Beim Loslassen prüft Godot sie gar nicht. Deshalb ist
+  Alt+Enter für Godot auch `ui_accept`, und das Loslassen von Enter allein trifft
+  `toggle_fullscreen`. Das zweite hat ein vorhandener Test der Invaders-Seite gefunden:
+  `InvadersPage._on_key()` ließ das Loslassen von Enter zum Bildschirm durch. `is_action(…, true)`
+  und `is_action_pressed(…, false, true)` verlangen genau die Zusatztasten der Aktion. Das reicht;
+  einen eigenen Vergleich der Zusatztasten braucht es nicht.
+- **`_input()` statt `_unhandled_input()`.** Ein Viewport reicht jedes Ereignis in fester
+  Reihenfolge weiter: zuerst `_input()` aller Knoten, dann die Oberfläche (`_gui_input()` des
+  Controls mit Fokus), zuletzt `_unhandled_input()`. `set_input_as_handled()` beendet den Weg.
+  `GameWindow._input()` nimmt das Kürzel also, bevor ein Menü es als Enter deuten kann. Markiert
+  werden auch Loslassen und Wiederholung, geschaltet wird nur beim ersten Drücken. In Godot 4.7.2 fragt
+  ein `Button` `ui_accept` selbst genau ab und hätte bei Alt+Enter ohnehin nicht ausgelöst; ein
+  Control, das großzügig fragt, schon. Die Folge an anderer Stelle: Werkstatt und Zusammenfassung
+  des Selbsttests halten `GameWindow` jetzt mit `set_process_input(false)` an. Das alte
+  `set_process_unhandled_input(false)` hätte das Kürzel dort nicht mehr abgeschaltet.
+- **Ein Spion im Test.** Headless meldet das Fenster immer „minimiert“, das Vollbild lässt sich so
+  nicht beobachten. `test_game_window.gd` hängt deshalb eine Unterklasse von `game_window.gd` in einen
+  eigenen Viewport, die `toggle_fullscreen()` nur zählt. Ihr `_ready()` ersetzt das geerbte; Godot 4
+  ruft das `_ready()` der Elternklasse nicht von selbst. Das Signal `gui_input` der gewählten
+  Menüzeile zeigt, ob die Oberfläche das Kürzel überhaupt sieht. Erst diese Prüfung fiel durch, als
+  das Kürzel probeweise wieder in `_unhandled_input()` stand.
+- **Presets für Windows und Linux.** `binary_format/embed_pck = true` hängt das Paket mit allen
+  Szenen und Skripten an die ausführbare Datei an. Weitergegeben wird dann eine Datei statt zwei, die
+  zusammenbleiben müssten. `application/modify_resources = true` lässt Godot Symbol und
+  Versionsangaben selbst in die `.exe` schreiben, ohne `rcedit`. Datei- und Produktversion bleiben
+  leer; dann nimmt Godot `application/config/version` und macht für Windows vier Zahlen daraus,
+  „0.1“ wird „0.1.0.0“. Eine `.ico` nimmt Godot, wie sie ist. Fehlt darin eine der Größen 16 bis 256,
+  warnt es „Icon size … is missing“. Eine PNG rechnete es selbst herunter, mit Weichzeichnen.
+- **Keine Geheimnisse in der Datei.** Optionen mit dem Merkmal `PROPERTY_USAGE_SECRET` schreibt Godot
+  nicht nach `export_presets.cfg`, sondern nach `.godot/export_credentials.cfg`, das nicht
+  versioniert wird; für Windows sind das `codesign/identity_type`, `codesign/identity` und
+  `codesign/password`. Die übrigen Optionen stehen in der Reihenfolge und mit den Vorgaben, die
+  Godot 4.7.2 selbst anlegt. Ermittelt ist das mit `EditorExportPlatform.create_preset()` in einem
+  Editor-Plugin eines Probeprojekts; die ausgeblendeten erweiterten Optionen kamen aus der Quelle von
+  4.7.2. Die Spiel-Presets sind wie `macOS` „runnable“, wie der Editor es beim ersten Preset einer
+  Plattform setzt; der Abschnitt `[runnable_presets]` nennt die Plattform, also `"Windows Desktop"`.
+
+### T044: `tools/build/baue_alles.sh`
+
+- **Ein Befehl, alle Systeme.** Godot exportiert headless mit `--export-release "<Preset>" <Ziel>`;
+  das Skript ruft das sechsmal und hält je Preset die Ausgabe in `build/logs/` fest. Es zählt nicht
+  auf den Exit-Code allein, sondern prüft auch, dass die Datei da ist, und behandelt die Warnung
+  „Icon size … is missing“ als Fehler.
+- **Prüfung auf Testcode (SC-005).** Im Paket stehen die Pfade der Dateien im Klartext. Steht
+  `selbsttest_laeufer` im Spiel, ist Testcode mitgekommen; steht er im Selbsttest nicht, wäre die
+  Prüfung ohne Aussage. `LC_ALL=C grep -a -c` liest die Binärdatei als Text.
+- **Packen.** `ditto -c -k` packt eine `.app` so, wie der Finder es täte, mit Rechten und Signatur;
+  ein gewöhnliches `zip` kann Teile davon verlieren. Für Windows und Linux packt `zip -r -X`, das die
+  Unix-Rechte mitnimmt; so bleibt die Linux-Datei nach dem Entpacken ausführbar. Ein Zip je System
+  enthält Spiel und Selbsttest, unter Windows samt den Dateien für Direct3D 12 daneben.

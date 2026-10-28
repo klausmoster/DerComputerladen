@@ -43,9 +43,9 @@ open "build/macos/Der Computerladen Selbsttest.app"
 
 1. Ein Fenster geht auf, der Titel erscheint, und die App spielt alle Abläufe im Zeitraffer durch,
    zum Schluss den Titel noch einmal in normalem Tempo. Der Fenstertitel
-   zählt mit, etwa „Selbsttest · Schritt 12 von 40: Neues Spiel“. Maus und Tastatur nicht anfassen müssen,
-   tun aber auch nichts.
-2. Am Ende steht die Zusammenfassung im Look der Werkzeuge, im maximierten Fenster: Summe,
+   zählt mit, etwa „Selbsttest · Schritt 12 von 37: Neues Spiel“. Maus und Tastatur muss man nicht
+   anfassen; tut man es doch, ändert das nichts. Ein Lauf dauert auf dem Mac rund 7 s.
+2. Am Ende steht die Zusammenfassung im Look der Werkzeuge, im selben Fenster wie der Lauf: Summe,
    fehlerhafte Schritte, Pfad, dazu
    „Kopieren“, „Ordner zeigen“ und „Beenden“. Erwartet: alle Schritte in Ordnung (SC-003); im
    Protokoll braucht `titel` weniger Zeit als `titel_echtzeit` (SC-001).
@@ -58,9 +58,8 @@ open "build/macos/Der Computerladen Selbsttest.app"
    python3 -I tools/selbsttest/vergleich.py "<Ordner des zweiten Laufs>" --gegen "<Ordner des ersten Laufs>"
    ```
 
-   Vor Phase 5 gibt es das Werkzeug noch nicht; dann vergleicht Claude die Fotos mit `cmp`.
-
    Erwartet: alles `gleich` oder `nicht vergleichbar` (SC-002, SC-008).
+   Gegen die Referenzbilder vom Mac, ohne `--gegen`, dasselbe.
 6. Echte Spielstände: vorher und nachher `ls -l` auf den Ordner des Spiels; unverändert (SC-006).
 7. Während eines Laufs in ein anderes Fenster klicken: Das Protokoll vermerkt den Fokusverlust beim
    Schritt.
@@ -83,12 +82,18 @@ Bauen auf dem Mac, alles mit einem Befehl:
 tools/build/baue_alles.sh
 ```
 
-Erwartet: je Preset „gebaut“, Exit 0, unter `build/abnahme/` je System ein Zip. Dann auf dem anderen
-Rechner:
+Erwartet: je Preset „gebaut“, je System „geprüft“ und „gepackt“, Exit 0. Unter `build/abnahme/`
+liegt je System ein Zip mit Spiel und Selbsttest: `0.1_windows.zip`, `0.1_linux.zip`, `0.1_macos.zip`.
+Mit `--nur macos` baut das Skript nur ein System. Dann auf dem anderen Rechner:
 
-1. Das Zip des Systems kopieren und entpacken, Selbsttest per Doppelklick starten. Windows warnt beim ersten Start über
-   SmartScreen: „Weitere Informationen“, dann „Trotzdem ausführen“. Unter Linux vorher die Datei
-   ausführbar machen.
+1. Das Zip des Systems kopieren und entpacken, `Der Computerladen Selbsttest` per Doppelklick
+   starten.
+   - **Windows:** SmartScreen warnt beim ersten Start einer unbekannten App: „Weitere Informationen“,
+     dann „Trotzdem ausführen“.
+   - **Linux:** Das Zip behält das Ausführrecht. Fehlt es doch, etwa nach dem Entpacken mit einem
+     anderen Programm: `chmod +x "Der Computerladen Selbsttest.x86_64"`.
+   - **macOS:** Beim ersten Start einer unbekannten App fragt macOS nach; im Finder mit Rechtsklick
+     „Öffnen“ wählen, oder unter Systemeinstellungen → Datenschutz & Sicherheit „Trotzdem öffnen“.
 2. Am Ende „Kopieren“ und den Text in den Chat einfügen; das Zip über „Ordner zeigen“ holen und auf
    dem Mac nach `build/selbsttest/` legen.
 3. Claude vergleicht und legt die Belege ab:
@@ -97,9 +102,28 @@ Rechner:
    python3 -I tools/selbsttest/vergleich.py build/selbsttest/<lauf>_windows.zip --beleg
    ```
 
-4. Von Hand, kurzer Blick: Symbol der .exe im Explorer, im Fenster und in der Taskleiste; Vollbild mit
-   F11 und mit Alt+Enter hin und zurück; danach steht das Fenster wieder in seiner Größe.
-5. Fehlt Vulkan oder Direct3D 12: Godots eigene Meldung erscheint, die App beendet sich (FR-017).
+4. Von Hand, kurzer Blick: Symbol der .exe im Explorer, im Fenster und in der Taskleiste; im Spiel
+   (nicht im Selbsttest) Vollbild mit F11 und mit Alt+Enter hin und zurück; danach steht das Fenster
+   wieder in seiner Größe. Alt+Enter löst dabei im Menü nichts aus.
+5. Fehlt Vulkan oder Direct3D 12, erscheint Godots eigene Meldung „Unable to initialize video
+   driver“, und die App beendet sich (FR-017). Auf OpenGL weicht das Spiel bewusst nicht aus (R13).
+   Startet Direct3D 12 nur halb, etwa auf Stufe 11_0 mit alten Treibern, kommt keine Meldung: Das
+   Fenster schließt sich still oder hängt. So war es auf einem MacBook Pro 2015 mit Boot Camp und AMD
+   Radeon R9 M370X. Klären lässt es sich mit einem Start aus der PowerShell:
+
+   ```powershell
+   & ".\Der Computerladen Selbsttest.exe" --rendering-driver vulkan
+   ```
+
+   Für eine Probe ohne Forward+ lässt sich OpenGL einmalig erzwingen; das prüft alles außer der
+   Darstellung mit Forward+ und gilt nicht als Abnahme des Renderers:
+
+   ```powershell
+   & ".\Der Computerladen Selbsttest.exe" --rendering-method gl_compatibility --rendering-driver opengl3
+   ```
+
+Auf dem Mac von Hand: im Spiel Vollbild mit Ctrl+Cmd+F hin und zurück, ebenso mit Option+Enter. F11
+fängt macOS meist selbst ab.
 
 ## Aufräumen
 
