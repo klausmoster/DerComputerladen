@@ -51,6 +51,7 @@ const ABLAUF_NAMEN := {
 	"loeschen": "Löschen",
 	"easter_egg": "Easter Egg",
 	"bedienung": "Bedienung",
+	"liste": "Liste",
 	"fenster": "Fenster",
 	"titel_echtzeit": "Titel in Echtzeit",
 }
@@ -63,9 +64,11 @@ const ABLAUF_NAMEN := {
 ## titel.01_start: so festgelegt in CHK030.
 const BESCHREIBUNG_TITEL_START := "Start, der Communicator fährt herein"
 ## titel.02_nicht_verfuegbar.
-const BESCHREIBUNG_TITEL_NICHT_VERFUEGBAR := "„%s“ wählen, ohne Spielstand nicht verfügbar"
+const BESCHREIBUNG_TITEL_NICHT_VERFUEGBAR := "Maus über „%s“ wählt, ohne Spielstand nicht verfügbar"
 ## titel.03_beenden_da.
-const BESCHREIBUNG_TITEL_BEENDEN_DA := "„%s“ wählen, ohne auszulösen"
+const BESCHREIBUNG_TITEL_BEENDEN_DA := "Maus über „%s“ wählt, ohne auszulösen"
+## titel.04_einstellungen.
+const BESCHREIBUNG_TITEL_EINSTELLUNGEN := "Maus über „%s“ wählt, noch nicht verfügbar"
 ## Zusatz zu einer Erwartung: Ein Schritt hat nichts ausgelöst. Immer so, nie „nicht ausgelöst“.
 const NICHTS_AUSGELOEST := "nichts ausgelöst"
 ## Die gewählte Zeile ist verfügbar, etwa „Beenden“ in titel.03.
@@ -74,6 +77,12 @@ const VERFUEGBAR := "verfügbar"
 ## (contracts/ablaeufe.md, „Gemeinsame Prüfungen“, „Verfügbarkeit“).
 const NICHT_VERFUEGBAR := "nicht verfügbar"
 
+## Beschreibungen, die in mehreren Abläufen gleich lauten; so steht jeder Wortlaut nur einmal.
+## %s ist ein Wortlaut aus TitleTexts. loeschen.01 und liste.01:
+const BESCHREIBUNG_KLICK_ZEIGT_LISTE := "Linksklick auf „%s“ zeigt die Liste der Spielstände"
+## laden.05, bedienung.05 und liste.03:
+const BESCHREIBUNG_KLICK_INS_HAUPTMENUE := "Linksklick auf „%s“ führt zurück ins Hauptmenü"
+
 ## neues_spiel.01_gradwahl bis neues_spiel.05_zum_hauptmenue. %s sind Wortlaute aus TitleTexts,
 ## der Grad aus Difficulty.label().
 const BESCHREIBUNG_NEUES_SPIEL_GRADWAHL := "Enter auf „%s“ öffnet die Gradwahl"
@@ -81,32 +90,37 @@ const BESCHREIBUNG_NEUES_SPIEL_ZURUECK_ESC := "Esc führt zurück ins Hauptmenü
 const BESCHREIBUNG_NEUES_SPIEL_GRADWAHL_KLICK := "Linksklick auf „%s“ öffnet die Gradwahl"
 const BESCHREIBUNG_NEUES_SPIEL_GRAD := "Enter auf %s beginnt ein neues Spiel"
 const BESCHREIBUNG_NEUES_SPIEL_ZUM_HAUPTMENUE := "Linksklick auf „%s“ speichert, der Titel kommt neu"
-## laden.01_weiterspielen bis laden.05_zurueck_2; der Spielstand heißt wie SaveGame.default_name().
+## laden.01_weiterspielen bis laden.04_zeile, laden.05 siehe oben; der Spielstand heißt wie
+## SaveGame.default_name().
 const BESCHREIBUNG_LADEN_WEITERSPIELEN := "Enter auf „%s“ setzt %s fort"
 const BESCHREIBUNG_LADEN_ZURUECK := "Enter auf „%s“ führt zurück ins Hauptmenü"
 const BESCHREIBUNG_LADEN_LISTE := "Enter auf „%s“ zeigt die Liste der Spielstände"
 const BESCHREIBUNG_LADEN_ZEILE := "Linksklick auf %s setzt es fort"
-const BESCHREIBUNG_LADEN_ZURUECK_2 := "Linksklick auf „%s“ führt zurück ins Hauptmenü"
-## loeschen.01_liste bis loeschen.06_loeschen.
-const BESCHREIBUNG_LOESCHEN_LISTE := "Linksklick auf „%s“ zeigt die Liste der Spielstände"
+## loeschen.02_loeschmodus bis loeschen.06_loeschen, loeschen.01 siehe oben.
 const BESCHREIBUNG_LOESCHEN_LOESCHMODUS := "Linksklick auf „%s“ schaltet den Löschmodus ein"
 const BESCHREIBUNG_LOESCHEN_RUECKFRAGE := "Linksklick auf %s im Löschmodus führt zur Rückfrage"
 const BESCHREIBUNG_LOESCHEN_ABBRECHEN := "Enter auf „%s“ führt zurück zur Liste, %s bleibt"
-const BESCHREIBUNG_LOESCHEN_RUECKFRAGE_2 := "Linksklick auf „%s“ und %s führt noch einmal zur Rückfrage"
+const BESCHREIBUNG_LOESCHEN_RUECKFRAGE_2 := "Linksklick auf %s im Löschmodus führt noch einmal zur Rückfrage"
 const BESCHREIBUNG_LOESCHEN_LOESCHEN := "Enter auf „%s“ löscht den letzten Spielstand"
 ## easter_egg.01_auswahl bis easter_egg.05_ende_esc.
-const BESCHREIBUNG_EASTER_EGG_AUSWAHL := "„%s“ wählen, hierher kehrt die Auswahl nach Invaders zurück"
+const BESCHREIBUNG_EASTER_EGG_AUSWAHL := "Pfeil runter bis „%s“ wählt, hierher kehrt die Auswahl nach Invaders zurück"
 const BESCHREIBUNG_EASTER_EGG_FALSCHE_FOLGE := "Gehäusetasten in falscher Folge starten Invaders nicht"
 const BESCHREIBUNG_EASTER_EGG_START := "Gehäusetasten links, Mitte, rechts starten Invaders"
 const BESCHREIBUNG_EASTER_EGG_SPIELEN := "Pfeil rechts fährt die Kanone, Leertaste schießt"
 const BESCHREIBUNG_EASTER_EGG_ENDE_ESC := "Esc beendet Invaders, „%s“ steht wieder da"
-## bedienung.01_pfeile bis bedienung.06_mausrad.
+## bedienung.01_pfeile bis bedienung.06_mausrad, bedienung.05 siehe oben.
 const BESCHREIBUNG_BEDIENUNG_PFEILE := "Pfeiltasten wählen, am Anfang geht es am Ende weiter"
 const BESCHREIBUNG_BEDIENUNG_TAB := "Tab wählt die nächste Zeile, Umschalt+Tab die vorige"
 const BESCHREIBUNG_BEDIENUNG_RECHTSKLICK := "Rechtsklick auf „%s“ wählt, ohne auszulösen"
 const BESCHREIBUNG_BEDIENUNG_LEERTASTE := "Leertaste auf „%s“ öffnet die Gradwahl"
-const BESCHREIBUNG_BEDIENUNG_ZURUECK_KLICK := "Linksklick auf „%s“ führt zurück ins Hauptmenü"
-const BESCHREIBUNG_BEDIENUNG_MAUSRAD := "Das Mausrad rollt die Liste um eine Zeile"
+const BESCHREIBUNG_BEDIENUNG_MAUSRAD := "Mausrad runter rollt die Liste um 1 Zeile"
+## liste.02_esc bis liste.06_loeschen, liste.01 und liste.03 siehe oben. %s sind Wortlaute aus TitleTexts, der
+## Spielstand heißt wie SaveGame.default_name(). Bei mehreren Eingaben nennt die Beschreibung die,
+## die den Zustand bewirkt (contracts/ablaeufe.md, „Beschreibung“).
+const BESCHREIBUNG_LISTE_ESC := "Esc in der Liste führt zurück ins Hauptmenü"
+const BESCHREIBUNG_LISTE_LOESCHMODUS_ESC := "Esc schaltet den Löschmodus aus, die Liste bleibt"
+const BESCHREIBUNG_LISTE_RUECKFRAGE_ESC := "Esc in der Rückfrage führt zurück zur Liste, %s bleibt"
+const BESCHREIBUNG_LISTE_LOESCHEN := "Linksklick auf „%s“ löscht %s, die Auswahl springt auf %s"
 ## fenster.01_start bis fenster.04_zurueck.
 const BESCHREIBUNG_FENSTER_START := "Start mit dem größten Faktor, der passt, Fenster mittig im nutzbaren Bereich"
 const BESCHREIBUNG_FENSTER_FAKTOR_1 := "Bild mit Faktor 1 ohne Rand"
@@ -221,7 +235,7 @@ const BESTAETIGUNG := "Kopiert."
 const BESTAETIGUNG_LINUX := "Kopiert. Erst einfügen, dann beenden."
 
 
-## „Selbsttest · Schritt 12 von 40: Neues Spiel“ (CHK035, R22).
+## „Selbsttest · Schritt 6 von 45: Neues Spiel“ (CHK035, R22).
 static func fenstertitel(nummer: int, gesamt: int, name_des_ablaufs: String) -> String:
 	return "Selbsttest · Schritt %d von %d: %s" % [nummer, gesamt, name_des_ablaufs]
 
@@ -232,7 +246,7 @@ static func ablauf_name(kennung: String) -> String:
 
 
 ## Die Summe, auf dem Bildschirm und hinter „ergebnis:“ im Protokoll (CHK033): „Alles in Ordnung:
-## 37 von 37 Schritten.“ oder „35 von 37 Schritten in Ordnung, 1 Fehler, 1 nicht gelaufen.“ Der
+## 45 von 45 Schritten.“ oder „43 von 45 Schritten in Ordnung, 1 Fehler, 1 nicht gelaufen.“ Der
 ## erste Teil steht immer, Fehler und nicht gelaufen entfallen bei 0.
 static func summe(anzahl_ok: int, anzahl_fehler: int, anzahl_nicht_gelaufen: int) -> String:
 	var gesamt := anzahl_ok + anzahl_fehler + anzahl_nicht_gelaufen

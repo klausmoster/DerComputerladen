@@ -155,7 +155,9 @@ func _richte_fenster_ein() -> void:
 		game_window.set_process_input(false)
 	var fenster := get_window()
 	fenster.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
-	fenster.content_scale_factor = DisplayServer.screen_get_scale()
+	# Unter Windows und X11 kennt screen_get_scale() die Skalierung nicht; SelbsttestSystem rechnet
+	# sie dort aus den dpi (Klaus, Phase 8).
+	fenster.content_scale_factor = SelbsttestSystem.bildschirm_skalierung()
 
 
 func _richte_knoepfe_ein() -> void:

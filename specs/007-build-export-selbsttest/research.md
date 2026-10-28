@@ -207,9 +207,9 @@ Abschnitt „Werkzeuge“ im Style-Guide für eine solche Seite noch nicht regel
 hinein (Grundsatz IV), als `[C]`-Aufgabe in Phase 4: Zeichen für Fehler und „nicht gelaufen“, keine
 Farbe für „in Ordnung“, gesperrte Knöpfe, mehrzeilige Listen, Bestätigung, Tooltip und Handzeiger
 für alle Werkzeuge, Umbruch, Geltung der Wortliste, Formen im Protokoll (Review CHK019, CHK020,
-CHK024 bis CHK027, CHK030, CHK039). Wie die Werkstatt maximiert die Seite das Fenster, hält
-`GameWindow` an und setzt die eingebaute Schrift auf einer Kopie des Themes (Review CHK016,
-CHK017).
+CHK024 bis CHK027, CHK030, CHK039). Die Seite hält `GameWindow` an und setzt die eingebaute Schrift
+auf einer Kopie des Themes (Review CHK016, CHK017). Anders als geplant maximiert sie das Fenster
+nicht, sondern bleibt im Fenster des Laufs (Klaus, Phase 4).
 
 ## R13 Renderer: kein Ausweichen auf OpenGL
 
@@ -311,6 +311,7 @@ dauern; der Selbsttest ruft sie in einem Thread auf, solange der erste Ablauf l�
 `selbsttest.gebaut` ist die Änderungszeit des Pakets: unter macOS die `.pck` in
 `Contents/Resources/`, unter Windows und Linux die ausführbare Datei mit eingebettetem Paket; sonst
 `unbekannt` (Claude, 2026-10-28). Godot kennt ohne Export-Plugin keine Bauzeit.
+Version 1 bis Phase 7; Version 2 seit Phase 8 mit `titel.04` und dem Ablauf `liste` (45 Schritte).
 
 ## R22 Fortschritt im Fenstertitel
 

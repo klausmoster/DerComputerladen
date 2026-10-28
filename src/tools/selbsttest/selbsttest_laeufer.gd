@@ -23,7 +23,7 @@ extends Node
 ## GameSession.
 
 ## Steht im Protokoll als selbsttest.version; steigt, wenn sich Abläufe ändern (R21).
-const VERSION := 1
+const VERSION := 2
 ## Der Titel, den jeder Ablauf ohne baut_auf frisch lädt.
 const TITEL := "res://scenes/title/title_screen.tscn"
 ## Nur unter diesem Ordner leert der Läufer Spielstände; echte liegen nie dort (FR-008).
@@ -38,6 +38,7 @@ const ABLAEUFE: Array[Script] = [
 	preload("res://tools/selbsttest/ablaeufe/ablauf_loeschen.gd"),
 	preload("res://tools/selbsttest/ablaeufe/ablauf_easter_egg.gd"),
 	preload("res://tools/selbsttest/ablaeufe/ablauf_bedienung.gd"),
+	preload("res://tools/selbsttest/ablaeufe/ablauf_liste.gd"),
 	preload("res://tools/selbsttest/ablaeufe/ablauf_fenster.gd"),
 	preload("res://tools/selbsttest/ablaeufe/ablauf_titel_echtzeit.gd"),
 ]

@@ -620,19 +620,22 @@ func test_ablauf_titel_hat_die_schritte_aus_dem_vertrag() -> void:
 
 	# Assert: Wortlaute ausgeschrieben, damit jede Änderung hier auffällt.
 	assert_eq(_feld(schritte, "kennung"), ["titel.01_start", "titel.02_nicht_verfuegbar",
-		"titel.03_beenden_da"])
+		"titel.03_beenden_da", "titel.04_einstellungen"])
 	assert_eq(_feld(schritte, "beschreibung"), ["Start, der Communicator fährt herein",
-		"„Weiterspielen“ wählen, ohne Spielstand nicht verfügbar",
-		"„Beenden“ wählen, ohne auszulösen"])
+		"Maus über „Weiterspielen“ wählt, ohne Spielstand nicht verfügbar",
+		"Maus über „Beenden“ wählt, ohne auszulösen",
+		"Maus über „Einstellungen“ wählt, noch nicht verfügbar"])
 	assert_eq(_feld(schritte, "eingaben_text"), ["keine", "Maus über „Weiterspielen“",
-		"Maus über „Beenden“"])
+		"Maus über „Beenden“", "Maus über „Einstellungen“"])
 	assert_eq(_feld(schritte, "erwartet_text"), [
 		"Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine",
 		"Menü steht: HAUPTMENÜ, „Weiterspielen“, nicht verfügbar, Hinweis „Noch kein Spiel "
 			+ "angefangen.“; nichts ausgelöst",
 		"Menü steht: HAUPTMENÜ, „Beenden“, verfügbar, Hinweis „Laden abschließen und zurück "
-			+ "zum Desktop.“; nichts ausgelöst"])
-	assert_eq(_feld(schritte, "foto_vergleichbar"), [true, true, true])
+			+ "zum Desktop.“; nichts ausgelöst",
+		"Menü steht: HAUPTMENÜ, „Einstellungen“, nicht verfügbar, Hinweis „Noch nichts "
+			+ "einzustellen. Kommt später.“; nichts ausgelöst"])
+	assert_eq(_feld(schritte, "foto_vergleichbar"), [true, true, true, true])
 
 
 func test_titel_in_echtzeit_hat_dieselben_schritte_ohne_zeitraffer() -> void:
@@ -646,7 +649,8 @@ func test_titel_in_echtzeit_hat_dieselben_schritte_ohne_zeitraffer() -> void:
 	assert_eq(echtzeit.zeitraffer, 1)
 	assert_eq(echtzeit.name, "Titel in Echtzeit")
 	assert_eq(_feld(schritte, "kennung"), ["titel_echtzeit.01_start",
-		"titel_echtzeit.02_nicht_verfuegbar", "titel_echtzeit.03_beenden_da"])
+		"titel_echtzeit.02_nicht_verfuegbar", "titel_echtzeit.03_beenden_da",
+		"titel_echtzeit.04_einstellungen"])
 	assert_eq(_feld(schritte, "erwartet_text"), _feld(titel.schritte(_fahrer), "erwartet_text"))
 
 

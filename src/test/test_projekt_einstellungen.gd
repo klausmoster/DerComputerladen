@@ -2,7 +2,7 @@ extends GutTest
 
 ## Prüft die Projekteinstellungen aus Feature 007 (contracts/export.md, „Projekteinstellungen in
 ## src/project.godot“): den Renderer ohne Ausweichen auf OpenGL (R13), die drei Vollbild-Kürzel
-## (R15) und die Overrides der Selbsttest-App (R3).
+## (R15), das Symbol des Fensters unter Windows (T059) und die Overrides der Selbsttest-App (R3).
 ##
 ## Gelesen wird über ProjectSettings und InputMap, also so, wie das Spiel die Werte beim Start
 ## bekommt. Nur „nicht eingetragen“ prüft der Test an der Datei selbst: ProjectSettings liefert
@@ -54,6 +54,18 @@ func test_alt_enter_ist_vollbild() -> void:
 
 func test_enter_allein_ist_kein_vollbild() -> void:
 	assert_false(_ist_vollbild(KEY_ENTER, {}), "Enter allein bleibt beim Menü.")
+
+
+# --- App-Symbol -----------------------------------------------------------
+
+func test_unter_windows_hat_das_fenster_das_symbol_aus_der_ico() -> void:
+	# Act
+	var pfad: String = ProjectSettings.get_setting("application/config/windows_native_icon")
+
+	# Assert (FR-022, Style-Guide „App-Symbol“; T059): dieselbe ICO wie im Export, mit jeder Größe
+	# eigens gerastert, statt dass Windows die PNG für Titelleiste und Taskleiste herunterrechnet.
+	assert_eq(pfad, "res://assets/icon/app_icon.ico")
+	assert_true(FileAccess.file_exists(pfad), "Die ICO liegt im Projekt.")
 
 
 # --- Overrides der Selbsttest-App -----------------------------------------

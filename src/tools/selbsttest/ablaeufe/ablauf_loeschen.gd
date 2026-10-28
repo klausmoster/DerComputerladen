@@ -35,7 +35,7 @@ func schritte(fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 		TitleTexts.LABEL_CANCEL)
 	return [
 		neuer_schritt("01_liste",
-			SelbsttestTexte.BESCHREIBUNG_LOESCHEN_LISTE % TitleTexts.LABEL_LOAD_GAME,
+			SelbsttestTexte.BESCHREIBUNG_KLICK_ZEIGT_LISTE % TitleTexts.LABEL_LOAD_GAME,
 			SelbsttestTexte.auf(SelbsttestTexte.LINKSKLICK,
 				SelbsttestTexte.zitat(TitleTexts.LABEL_LOAD_GAME)),
 			fahrer.klick_auf_eintrag.bind(hauptmenue, &"load_game",
@@ -62,8 +62,7 @@ func schritte(fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 			_pruefe_liste.bind(fahrer, angaben, true),
 			SelbsttestTexte.zustaende([liste_steht, SelbsttestTexte.spielstaende([spiel_1])])),
 		neuer_schritt("05_rueckfrage_2",
-			SelbsttestTexte.BESCHREIBUNG_LOESCHEN_RUECKFRAGE_2 % [TitleTexts.LABEL_DELETE_MODE,
-				spiel_1],
+			SelbsttestTexte.BESCHREIBUNG_LOESCHEN_RUECKFRAGE_2 % spiel_1,
 			SelbsttestTexte.eingaben([klick_loeschen, klick_spiel_1]),
 			_nacheinander.bind([
 				fahrer.klick_auf_eintrag.bind(liste, SelbsttestFahrer.ZEILE_LOESCHEN, loeschen),

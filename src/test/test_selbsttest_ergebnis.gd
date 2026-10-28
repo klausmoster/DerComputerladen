@@ -147,6 +147,17 @@ func test_abstaende_aus_dem_raster() -> void:
 	assert_eq(_knoten(&"Eintraege").get_theme_constant(&"separation"), 0)
 
 
+func test_die_liste_rollt_wie_das_formular_der_werkstatt() -> void:
+	# Arrange
+	await _zeige(_lauf_mit_fehlern())
+	var liste := _knoten(&"Liste") as ScrollContainer
+
+	# Assert (Style-Guide „Werkzeuge“, Abstände; T061): dieselbe Variante wie FormScroll in
+	# werkstatt.tscn, also 4 zwischen Inhalt und Rollbalken.
+	assert_eq(liste.theme_type_variation, &"FormScroll")
+	assert_eq(liste.get_theme_constant(&"scrollbar_h_separation"), 4)
+
+
 func test_mit_fehlern_feld_und_zeilen_je_eintrag() -> void:
 	# Arrange
 	await _zeige(_lauf_mit_fehlern())
@@ -571,7 +582,7 @@ func _lauf_mit_fehlern() -> SelbsttestLauf:
 func _lauf_ohne_schritte() -> SelbsttestLauf:
 	var lauf := SelbsttestLauf.new(START)
 	lauf.system = SYSTEM.duplicate()
-	lauf.version = 1
+	lauf.version = 2
 	return lauf
 
 

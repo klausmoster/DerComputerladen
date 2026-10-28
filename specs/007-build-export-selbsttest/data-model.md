@@ -49,7 +49,7 @@ heißt `unbekannt`, der Schlüssel fehlt nie.
 | `system.gpu_vendor` | `Apple` |
 | `system.gpu_driver` | Treiberversion, `unbekannt` wo nicht verfügbar |
 | `system.renderer` | `forward_plus` |
-| `system.grafik_api` | `Metal`, `Vulkan` oder `D3D12` |
+| `system.grafik_api` | `Metal`, `Vulkan`, `D3D12` oder `OpenGL` |
 | `system.grafik_api_version` | Version der Schnittstelle |
 | `system.bildschirm` | `3024x1964` |
 | `system.bildschirm_skalierung` | `2.0` |
@@ -98,7 +98,7 @@ Prüfpunkte heißen wie Schritte, `<szenario>.<nn>_<kurz>`, etwa `leicht_1987.03
 | Feld | Bedeutung |
 |---|---|
 | `kennung` | `<ablauf>.<nn>_<kurz>`, etwa `neues_spiel.04_grad_mittel`; zugleich Name des Fotos |
-| `beschreibung` | ein Satz, was der Schritt tut, beginnend mit der Eingabe, etwa „Enter auf ‚Neues Spiel‘ öffnet die Gradwahl“ (contracts/ablaeufe.md, „Beschreibung“) |
+| `beschreibung` | ein Satz, was der Schritt tut, beginnend mit der Eingabe, etwa „Enter auf „Neues Spiel“ öffnet die Gradwahl“ (contracts/ablaeufe.md, „Beschreibung“) |
 | `eingaben` | die Folge von Eingaben mit Ziel, etwa „Enter auf Mittel“, „Linksklick auf Gehäusetasten links, Mitte, rechts“; „keine“ ohne Eingabe; Vorbereitung als „Vorbereitung: …“, Fenstergröße als „Fenster auf …“ (Review CHK001) |
 | `erwartet` | der Zustand, auf den gewartet wird, als lesbarer Text und als Prüfung |
 | `hoechstzeit` | Millisekunden bis „Zeit abgelaufen“, Vorgabe 5000 (R6) |
@@ -143,7 +143,7 @@ Wohin eine Mauseingabe geht, gefunden über die Bedeutung, nicht über Koordinat
 | Knopf | Name im Bildschirm | „Zum Hauptmenü“ |
 
 Die Mitte des gefundenen Ziels wird aus seiner Lage im Oberflächenraster in Fensterpixel
-umgerechnet. Fehlt das Ziel, scheitert der Schritt mit „Ziel nicht gefunden: Hauptmenü, new_game“.
+umgerechnet. Fehlt das Ziel, scheitert der Schritt mit „Ziel nicht gefunden: HAUPTMENÜ, „Neues Spiel““.
 
 ## Ergebnis eines Laufs (Dateien)
 

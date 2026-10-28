@@ -211,6 +211,31 @@ func test_kuerzel_und_vollbild_gehen_durch() -> void:
 	assert_eq(_fertig, 0)
 
 
+func test_f11_geht_durch_das_loslassen_von_enter_nicht() -> void:
+	# Arrange (Feature 007, T043, T062): Ohne genauen Vergleich träfe schon das Loslassen von Enter
+	# die Aktion, denn beim Loslassen prüft Godot die Zusatztasten von Alt+Enter nicht.
+	_seite.start(SEED)
+	var loslassen := InputEventKey.new()
+	loslassen.keycode = KEY_ENTER
+	loslassen.physical_keycode = KEY_ENTER
+	assert_true(loslassen.is_action(&"toggle_fullscreen"), "Die Falle: ungenau trifft es.")
+	assert_false(loslassen.is_action(&"toggle_fullscreen", true), "Genau trifft es nicht.")
+
+	# Act
+	_druecke(KEY_F11)
+	_druecke(KEY_ENTER)
+
+	# Assert: F11 kommt mit Drücken und Loslassen beim Bildschirm an, Enter gar nicht.
+	assert_eq(_lauscher.ereignisse.size(), 2, "Durchgekommen: %s" % [_lauscher.ereignisse.map(
+		func(e: InputEvent) -> String: return e.as_text())])
+	if _lauscher.ereignisse.size() == 2:
+		assert_true(_lauscher.ereignisse[0].is_action_pressed(&"toggle_fullscreen", false, true),
+			"F11 ist toggle_fullscreen.")
+		assert_true(_lauscher.ereignisse[1].is_action_released(&"toggle_fullscreen", true),
+			"Das Loslassen von F11 geht mit durch.")
+	assert_eq(_fertig, 0)
+
+
 # --- Ereignisse und Töne --------------------------------------------------
 
 func test_alle_player_laufen_auf_effekte() -> void:

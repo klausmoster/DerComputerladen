@@ -53,7 +53,7 @@ src/test/
 
 ```gdscript
 class_name SelbsttestLaeufer extends Node
-const VERSION := 1
+const VERSION := 2
 signal fertig(lauf: SelbsttestLauf)
 func starte(lauf: SelbsttestLauf, ablaeufe: Array[SelbsttestAblauf]) -> void
 func schritt_kennung() -> String          # die laufende, für Logger und Fokus
@@ -64,7 +64,9 @@ func schritt_kennung() -> String          # die laufende, für Logger und Fokus
   bzw. `eingaben: Fenster`.
 - Je Ablauf ohne `baut_auf`: frischer Titel. Läuft ein Spiel, beendet der Läufer es mit
   `GameSession.leave()` (speichert in den Ordner des Selbsttests); dann Ordner leeren, Titel neu
-  laden, warten bis das Hauptmenü steht. Keine neue Funktion am Spiel (Analyse, I3).
+  laden; fertig ist die Vorbereitung, sobald der neue Titel im Baum steht. Hat der erste Schritt
+  Eingaben, wartet der Läufer vorher, bis der Communicator steht (Auslegungen aus Phase 2). Keine
+  neue Funktion am Spiel (Analyse, I3).
 - Je Ablauf: `Engine.time_scale` auf seinen Zeitraffer setzen (R24), danach wieder 1.
 - Meldungen (CHK007): Jede Warnung und jeder Fehler aus Godot zählt zum laufenden Schritt; eigene
   Fehler des Selbsttests stehen als `meldung: [selbsttest] …`.
@@ -89,7 +91,7 @@ var kennung: String
 var name: String
 var baut_auf: String = ""
 func schritte(fahrer: SelbsttestFahrer) -> Array[Dictionary]
-# je Schritt: {kennung, beschreibung, eingaben: Callable (await), erwartet: Callable -> String,
+# je Schritt: {kennung, beschreibung, eingaben_text, eingaben: Callable (await), erwartet: Callable -> String,
 #              erwartet_text, hoechstzeit_ms = 5000, foto_vergleichbar = true}
 ```
 
@@ -106,7 +108,7 @@ func entscheidungen(fahrer: SelbsttestFahrer) -> Array[Dictionary]   # {datum, e
 func pruefpunkte(fahrer: SelbsttestFahrer) -> Array[Dictionary]      # {kennung, datum, erwartet: Callable, erwartet_text}
 ```
 
-Der Läufer macht daraus Schritte: neues Spiel mit Grad und Seed, dann je Datum in Reihenfolge die
+`SelbsttestSzenario.schritte()` macht daraus Schritte, der Läufer spielt sie wie jeden Ablauf: neues Spiel mit Grad und Seed, dann je Datum in Reihenfolge die
 Uhr im Zeitraffer bis dahin laufen lassen, Entscheidung eingeben oder Prüfpunkt prüfen und
 fotografieren. Wie die Uhr läuft, sagt der Fahrer; heute kann er es nicht und meldet das als Fehler.
 `test_selbsttest_lauf.gd` prüft den Rahmen mit einem erfundenen Szenario ohne Fenster.
@@ -233,5 +235,14 @@ Zustände in der Form der Tabellen in [ablaeufe.md](ablaeufe.md) (CHK031, CHK032
 
 ## Was sich am Spiel ändert
 
-Nur `SaveGame`: eine statische Stellschraube für den Zeitzonenversatz, Vorgabe „wie der Rechner“.
-Ohne Selbsttest verhält sich das Spiel wie vorher; alle bisherigen Tests bleiben grün.
+- `SaveGame`: eine statische Stellschraube für den Zeitzonenversatz, Vorgabe „wie der Rechner“
+  (Phase 1).
+- `GameWindow`: Das Fenster steht samt Titelleiste mittig im nutzbaren Bereich,
+  `centered_position()` (Klaus, Phase 3); das Vollbild-Kürzel mit F11 und Alt+Enter fängt
+  `_input()` mit `exact_match` ab (Phase 6). Die Werkstatt schaltet dafür `set_process_input` ab.
+- `InvadersPage` fragt das Kürzel mit `exact_match` ab, sonst rutschte das Loslassen von Enter
+  durch (Phase 6).
+- Nur lesend: `SaveList.shows_scroll_mark_above()` für die Rollmarke (Phase 3).
+- `project.godot`: kein Ausweichen auf OpenGL (R13), Symbol für Windows aus der ICO.
+
+Sonst verhält sich das Spiel ohne Selbsttest wie vorher; alle bisherigen Tests bleiben grün.

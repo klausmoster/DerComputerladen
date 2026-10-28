@@ -1,7 +1,7 @@
 extends GutTest
 
-## Prüft die Abläufe „neues_spiel“, „laden“, „loeschen“, „easter_egg“, „bedienung“ und „fenster“
-## (Feature 007, T019, T021; contracts/ablaeufe.md): Kennungen, baut_auf, Beschreibungen, Eingaben
+## Prüft die Abläufe „neues_spiel“, „laden“, „loeschen“, „easter_egg“, „bedienung“, „liste“ und
+## „fenster“ (Feature 007, T019, T021, T058; contracts/ablaeufe.md): Kennungen, baut_auf, Beschreibungen, Eingaben
 ## und Erwartungen laut Vertrag, ausgeschrieben, damit jede Änderung hier auffällt; dazu Durchläufe
 ## im echten Titel und Spielbildschirm, ohne Fenster. „fenster“ braucht ein Fenster; hier stehen nur
 ## seine Wortlaute, laufen lässt ihn die App.
@@ -19,6 +19,7 @@ const ABLAUF_LOESCHEN := preload("res://tools/selbsttest/ablaeufe/ablauf_loesche
 const ABLAUF_EASTER_EGG := preload("res://tools/selbsttest/ablaeufe/ablauf_easter_egg.gd")
 const ABLAUF_BEDIENUNG := preload("res://tools/selbsttest/ablaeufe/ablauf_bedienung.gd")
 const ABLAUF_FENSTER := preload("res://tools/selbsttest/ablaeufe/ablauf_fenster.gd")
+const ABLAUF_LISTE := preload("res://tools/selbsttest/ablaeufe/ablauf_liste.gd")
 const SITZUNG := preload("res://core/game_session.gd")
 const ZEITLEISTE := preload("res://core/timeline.gd")
 const UHR := preload("res://core/game_clock.gd")
@@ -144,7 +145,7 @@ func test_loeschen_hat_die_schritte_aus_dem_vertrag() -> void:
 		"Linksklick auf „Löschen …“ schaltet den Löschmodus ein",
 		"Linksklick auf Spiel 1 im Löschmodus führt zur Rückfrage",
 		"Enter auf „Abbrechen“ führt zurück zur Liste, Spiel 1 bleibt",
-		"Linksklick auf „Löschen …“ und Spiel 1 führt noch einmal zur Rückfrage",
+		"Linksklick auf Spiel 1 im Löschmodus führt noch einmal zur Rückfrage",
 		"Enter auf „Spiel 1 löschen“ löscht den letzten Spielstand"])
 	assert_eq(_feld(schritte, "eingaben_text"), ["Linksklick auf „Spiel laden“",
 		"Linksklick auf „Löschen …“", "Linksklick auf Spiel 1", "Enter auf „Abbrechen“",
@@ -178,7 +179,7 @@ func test_easter_egg_hat_die_schritte_aus_dem_vertrag() -> void:
 	assert_eq(_feld(schritte, "kennung"), ["easter_egg.01_auswahl", "easter_egg.02_falsche_folge",
 		"easter_egg.03_start", "easter_egg.04_spielen", "easter_egg.05_ende_esc"])
 	assert_eq(_feld(schritte, "beschreibung"), [
-		"„Spiel laden“ wählen, hierher kehrt die Auswahl nach Invaders zurück",
+		"Pfeil runter bis „Spiel laden“ wählt, hierher kehrt die Auswahl nach Invaders zurück",
 		"Gehäusetasten in falscher Folge starten Invaders nicht",
 		"Gehäusetasten links, Mitte, rechts starten Invaders",
 		"Pfeil rechts fährt die Kanone, Leertaste schießt",
@@ -214,7 +215,7 @@ func test_bedienung_hat_die_schritte_aus_dem_vertrag() -> void:
 		"Rechtsklick auf „Neues Spiel“ wählt, ohne auszulösen",
 		"Leertaste auf „Neues Spiel“ öffnet die Gradwahl",
 		"Linksklick auf „Zurück“ führt zurück ins Hauptmenü",
-		"Das Mausrad rollt die Liste um eine Zeile"])
+		"Mausrad runter rollt die Liste um 1 Zeile"])
 	assert_eq(_feld(schritte, "eingaben_text"), [
 		"Pfeil runter, Pfeil hoch, Pfeil hoch, Pfeil hoch", "Tab, Umschalt+Tab",
 		"Rechtsklick auf „Neues Spiel“", "Leertaste auf „Neues Spiel“", "Linksklick auf „Zurück“",
@@ -228,6 +229,39 @@ func test_bedienung_hat_die_schritte_aus_dem_vertrag() -> void:
 		"Menü steht: HAUPTMENÜ, „Neues Spiel“",
 		"Liste oben bei Spiel 2, Rollmarke oben sichtbar; Menü steht: SPIELSTÄNDE, Spiel 2 mit "
 			+ "Mittel, 01.01.1985"])
+
+
+func test_liste_hat_die_schritte_aus_dem_vertrag() -> void:
+	# Act
+	var ablauf := ABLAUF_LISTE.new() as SelbsttestAblauf
+	var schritte := ablauf.schritte(_fahrer)
+
+	# Assert
+	assert_eq([ablauf.name, ablauf.baut_auf, ablauf.zeitraffer], ["Liste", "", 8])
+	assert_eq(_feld(schritte, "kennung"), ["liste.01_oeffnen", "liste.02_esc", "liste.03_zurueck",
+		"liste.04_loeschmodus_esc", "liste.05_rueckfrage_esc", "liste.06_loeschen"])
+	assert_eq(_feld(schritte, "beschreibung"), [
+		"Linksklick auf „Spiel laden“ zeigt die Liste der Spielstände",
+		"Esc in der Liste führt zurück ins Hauptmenü",
+		"Linksklick auf „Zurück“ führt zurück ins Hauptmenü",
+		"Esc schaltet den Löschmodus aus, die Liste bleibt",
+		"Esc in der Rückfrage führt zurück zur Liste, Spiel 1 bleibt",
+		"Linksklick auf „Spiel 1 löschen“ löscht Spiel 1, die Auswahl springt auf Spiel 2"])
+	assert_eq(_feld(schritte, "eingaben_text"), [
+		"Vorbereitung: 2 Spielstände; Linksklick auf „Spiel laden“",
+		"Esc",
+		"Linksklick auf „Spiel laden“, Linksklick auf „Zurück“",
+		"Linksklick auf „Spiel laden“, Linksklick auf „Löschen …“, Esc",
+		"Linksklick auf „Löschen …“, Linksklick auf Spiel 1, Esc",
+		"Linksklick auf „Löschen …“, Linksklick auf Spiel 1, Linksklick auf „Spiel 1 löschen“"])
+	assert_eq(_feld(schritte, "erwartet_text"), [
+		"Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985; Spielstände: Spiel 1, Spiel 2",
+		"Menü steht: HAUPTMENÜ, „Spiel laden“",
+		"Menü steht: HAUPTMENÜ, „Spiel laden“",
+		"Menü steht: SPIELSTÄNDE, „Löschen …“, verfügbar",
+		"Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985; Spielstände: Spiel 1, Spiel 2",
+		"Menü steht: SPIELSTÄNDE, Spiel 2 mit Mittel, 01.01.1985; Spielstände: Spiel 2"])
+	assert_eq(_feld(schritte, "foto_vergleichbar"), [true, true, true, true, true, true])
 
 
 func test_fenster_hat_die_schritte_aus_dem_vertrag() -> void:
@@ -256,7 +290,7 @@ func test_fenster_hat_die_schritte_aus_dem_vertrag() -> void:
 
 
 func test_keine_erwartung_der_uebrigen_sagt_nicht_ausgeloest_oder_endet_mit_punkt() -> void:
-	for skript: Script in [ABLAUF_EASTER_EGG, ABLAUF_BEDIENUNG, ABLAUF_FENSTER]:
+	for skript: Script in [ABLAUF_EASTER_EGG, ABLAUF_BEDIENUNG, ABLAUF_LISTE, ABLAUF_FENSTER]:
 		for schritt in (skript.new() as SelbsttestAblauf).schritte(_fahrer):
 			for schluessel: String in ["beschreibung", "eingaben_text", "erwartet_text"]:
 				var text: String = schritt[schluessel]
@@ -315,6 +349,41 @@ func test_bedienung_laeuft_durch_und_raeumt_die_spielstaende_weg() -> void:
 	assert_eq(fehler, PackedStringArray())
 	assert_eq(_fahrer.spielstaende(), PackedInt32Array(), "Die sieben sind wieder weg.")
 	assert_eq(_fahrer.beenden_ausgeloest(), 0)
+
+
+func test_liste_laeuft_durch_und_raeumt_die_spielstaende_weg() -> void:
+	# Arrange
+	SaveGame.time_zone_bias = 60
+	_wechsle(TITEL.resource_path)
+	await wait_process_frames(2)
+
+	# Act
+	var fehler := await _spiele(ABLAUF_LISTE.new())
+
+	# Assert
+	assert_eq(fehler, PackedStringArray())
+	assert_eq(_fahrer.spielstaende(), PackedInt32Array(), "Spiel 2 ist wieder weg.")
+	assert_eq(_fahrer.beenden_ausgeloest(), 0)
+	assert_false(_sitzung.is_running(), "Kein Weg der Liste setzt ein Spiel fort.")
+
+
+func test_liste_06_meldet_eine_falsche_auswahl_in_der_form_der_erwartung() -> void:
+	# Arrange: die Liste mit Spiel 1 und 2, aber Spiel 1 gewählt statt Spiel 2.
+	SaveGame.time_zone_bias = 60
+	_wechsle(TITEL.resource_path)
+	await wait_process_frames(2)
+	var ablauf := ABLAUF_LISTE.new() as SelbsttestAblauf
+	var schritte := ablauf.schritte(_fahrer)
+	await (schritte[0]["eingaben"] as Callable).call()
+
+	# Act
+	var gefunden: String = (schritte[5]["erwartet"] as Callable).call()
+	ablauf.aufraeumen(_fahrer)
+
+	# Assert: Erwartung und Befund beginnen gleich und gehen am Spielstand auseinander.
+	assert_string_starts_with(gefunden, "Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985, "
+		+ "Hinweis „")
+	assert_string_ends_with(gefunden, "; Spielstände: Spiel 1, Spiel 2")
 
 
 func test_bedienung_01_meldet_den_weg_in_der_form_der_erwartung() -> void:

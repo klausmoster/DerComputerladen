@@ -395,17 +395,17 @@ Renderer-Frage in eigener Sitzung.
 
 **Purpose**: Regel zur Arbeitsweise, Lückensuche, Gesamtabnahme, Doku, Tagebuch.
 
-- [ ] T050 [C] [US5] Regel vorschlagen (FR-027, R25, CHK003): Wortlaut für `docs/ki_workflow/ki_dev.md`
+- [x] T050 [C] [US5] Regel vorschlagen (FR-027, R25, CHK003): Wortlaut für `docs/ki_workflow/ki_dev.md`
   (Selbsttest zur Endabnahme, nicht nach jeder Phase; Bau mit `tools/build/baue_alles.sh`; wann auf
   Windows und Linux), für `.specify/templates/overrides/tasks-template.md` (Aufgabe „[A]
   Selbsttest-Abläufe anpassen“ vor der Gesamtabnahme) und für `docs/ki_workflow/ki_pruefung.md`
   (Abdeckung neuer Seiten und Wege bei der Lückensuche); gegebenenfalls Verfassung.
-- [ ] T051 [K] [US5] Je Datei entscheiden; die Verfassung nur über `/speckit-constitution`. Claude
+- [x] T051 [K] [US5] Je Datei entscheiden; die Verfassung nur über `/speckit-constitution`. Claude
   ändert danach, was angenommen ist.
-- [ ] T052 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
+- [x] T052 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
   Feature“), dazu Stil- und Text-Prüfer einmal über alles. Lücken werden eine eigene Phase mit
   Klaus' Freigabe; hat sie Sichtbares, endet sie mit eigener Phasenprüfung.
-- [ ] T053 [K] Gesamtabnahme nach dem ganzen Quickstart, die erste mit Selbsttest auf drei Systemen:
+- [x] T053 [K] Gesamtabnahme nach dem ganzen Quickstart, die erste mit Selbsttest auf drei Systemen:
   Claude baut mit `tools/build/baue_alles.sh`, lässt den Selbsttest auf dem Mac laufen und nennt das
   Ergebnis in der Bitte um Abnahme.
 - [ ] T054 [C] Doku nachziehen: `docs/features/Features.md` (007 fertig, System 11),
@@ -502,3 +502,40 @@ Grundsatz II):
   Endabnahme (R25).
 - Braucht der Agent einen Wert oder eine Regel, die der Style-Guide nach T028 nicht hat, hält er an
   und fragt (Grundsatz IV).
+
+---
+
+## Phase 8: Convergence
+
+Aus der Lückensuche T052 (2026-10-28): Spec gegen Code 13 Befunde (0 CRITICAL, 0 HIGH, 3 MEDIUM),
+Text 11 Befunde und 6 Lücken, Stil 4 Befunde und 5 Lücken; jeder von Claude nachgeprüft. Klaus hat
+das empfohlene Paket freigegeben und die Skalierung aus den dpi. Die Textbefunde in Doku, Verträgen,
+README und Bauskript hat Claude schon behoben.
+
+- [x] T057 [A] Schritt `titel.04_einstellungen` (Maus über „Einstellungen“: nicht verfügbar, Hinweis,
+  nichts ausgelöst), damit auch `titel_echtzeit.04` per FR-011.1 und Regel aus `ki_pruefung.md` (partial)
+- [x] T058 [A] Neuer Ablauf für die Wege in Liste und Rückfrage: Esc in der Liste, Zeile „Zurück“,
+  Löschmodus mit Esc beenden, Esc in der Rückfrage, Löschen mit 2 Spielständen (Auswahl springt
+  weiter); Vorbereitung mit 2 Spielständen per Regel aus `ki_pruefung.md` (missing)
+- [x] T059 [A] `application/config/windows_native_icon = res://assets/icon/app_icon.ico`, Test in
+  `test_projekt_einstellungen.gd` per FR-022 und Style-Guide „App-Symbol“ (partial)
+- [x] T060 [A] Skalierung unter Windows und X11 aus `screen_get_dpi() / 96`, gerundet auf 0,25, für
+  Zusammenfassung und `system.bildschirm_skalierung` per Style-Guide „Werkzeuge“, „Auflösung“, und
+  FR-013 (contradicts; Klaus)
+- [x] T061 [A] Liste der Zusammenfassung mit Variante `FormScroll` wie in der Werkstatt per Style-Guide
+  „Werkzeuge“, Abstände (partial)
+- [x] T062 [A] Test für `InvadersPage`: F11 geht durch, Loslassen von Enter nicht per T043 und
+  Analyse I2 (unrequested, ohne Test)
+- [x] T063 [A] Texte: Beschreibung von `bedienung.06` „Mausrad runter rollt die Liste um 1 Zeile“,
+  Kommentar „Schritt 6 von 37“ in `selbsttest_texte.gd`, Testmeldung mit 1318 × 742 in
+  `test_selbsttest_system.gd` per Style-Guide „Werkzeuge“, „Texte“ (partial)
+- [x] T064 [C] `tools/build/baue_alles.sh`: Fehler, wenn ein Paket fehlt, statt 0 Spuren per FR-026a,
+  SC-005 (partial)
+- [x] T065 [C] Doku auf den Stand nach Phase 3 bis 6: FR-002 und „Was sich am Spiel ändert“
+  (Fenstermitte, Vollbildtasten, lesende Abfragen), kein Maximieren (FR-015, R12, plan.md), FR-003a
+  mit `fenster`, FR-011a gegen Liste des Läufers, plan.md SC-001, Vertrag „Läufer“, „Ablauf“,
+  „Szenario“; im Vertrag `ablaeufe.md` die neuen Schritte und was ausdrücklich draußen bleibt per
+  F7, F9 bis F13 (contradicts)
+- [x] T066 [C] Prüfen: Tests zweimal, Startprobe, `baue_alles.sh`, Selbsttest auf dem Mac; neue
+  Fotos Klaus als Referenz vorlegen, dann `--referenz-erneuern` für die neuen Kennungen; Phasenprüfung
+  Text über die neuen Schritte

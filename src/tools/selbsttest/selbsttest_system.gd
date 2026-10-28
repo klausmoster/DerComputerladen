@@ -46,6 +46,14 @@ const LAUF_SCHLUESSEL: Array[String] = ["selbsttest.version", "lauf.start", "lau
 const GRAFIK_API := {"metal": "Metal", "vulkan": "Vulkan", "d3d12": "D3D12", "opengl3": "OpenGL"}
 ## Das Raster des Spiels, für den Faktor des Fensters.
 const RASTER := Vector2i(640, 360)
+## Die Display-Server, deren screen_get_scale() immer 1.0 liefert; dort kommt die Skalierung aus
+## den dpi (skalierung()). Namen wie DisplayServer.get_name().
+const SKALIERUNG_AUS_DPI: Array[String] = ["Windows", "X11"]
+## So viele dpi hat ein Bildschirm mit Skalierung 1 unter Windows und X11.
+const DPI_BEI_FAKTOR_1 := 96.0
+## Auf dieses Raster rundet skalierung() den Faktor aus den dpi: 1, 1,25, 1,5 … wie die Stufen in
+## den Anzeigeeinstellungen von Windows.
+const SKALIERUNG_SCHRITT := 0.25
 
 ## Schlüssel → Wert; null heißt „unbekannt“.
 var werte: Dictionary = {}
@@ -79,7 +87,7 @@ func erhebe() -> void:
 	var bildschirm := DisplayServer.window_get_current_screen()
 	if bildschirm >= 0:
 		werte["system.bildschirm"] = _mass(DisplayServer.screen_get_size(bildschirm))
-		werte["system.bildschirm_skalierung"] = DisplayServer.screen_get_scale(bildschirm)
+		werte["system.bildschirm_skalierung"] = bildschirm_skalierung(bildschirm)
 		werte["system.bildschirm_dpi"] = DisplayServer.screen_get_dpi(bildschirm)
 		werte["system.bildwiederholrate"] = _rate(
 			DisplayServer.screen_get_refresh_rate(bildschirm))
@@ -119,6 +127,25 @@ static func godot_version() -> String:
 	var info := Engine.get_version_info()
 	return "%d.%d.%d.%s.%s" % [info["major"], info["minor"], info["patch"], info["status"],
 		info["build"]]
+
+
+## Die Skalierung des Bildschirms [param bildschirm], wie der Selbsttest sie nimmt: für
+## system.bildschirm_skalierung und für content_scale_factor der Zusammenfassung. -1 heißt der
+## Bildschirm des Fensters. Gerechnet mit skalierung() aus dem, was der Display-Server meldet.
+static func bildschirm_skalierung(bildschirm: int = DisplayServer.SCREEN_OF_MAIN_WINDOW) -> float:
+	return skalierung(DisplayServer.get_name(), DisplayServer.screen_get_scale(bildschirm),
+		DisplayServer.screen_get_dpi(bildschirm))
+
+
+## Die Skalierung für den Display-Server [param server] (DisplayServer.get_name()) aus seinen
+## Angaben [param scale] (screen_get_scale()) und [param dpi] (screen_get_dpi()); ohne Fenster
+## prüfbar. Unter Windows und X11 liefert screen_get_scale() immer 1.0; dort zählen die dpi geteilt
+## durch 96, gerundet auf SKALIERUNG_SCHRITT und mindestens 1 (Klaus, Phase 8). macOS und Wayland
+## kennen die Skalierung selbst; dort bleibt [param scale].
+static func skalierung(server: String, scale: float, dpi: int) -> float:
+	if server not in SKALIERUNG_AUS_DPI:
+		return scale
+	return maxf(snappedf(dpi / DPI_BEI_FAKTOR_1, SKALIERUNG_SCHRITT), 1.0)
 
 
 ## Der ganzzahlige Faktor, mit dem das Raster 640 × 360 in ein Fenster der Größe [param fenster]

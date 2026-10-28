@@ -43,8 +43,8 @@ open "build/macos/Der Computerladen Selbsttest.app"
 
 1. Ein Fenster geht auf, der Titel erscheint, und die App spielt alle Abläufe im Zeitraffer durch,
    zum Schluss den Titel noch einmal in normalem Tempo. Der Fenstertitel
-   zählt mit, etwa „Selbsttest · Schritt 12 von 37: Neues Spiel“. Maus und Tastatur muss man nicht
-   anfassen; tut man es doch, ändert das nichts. Ein Lauf dauert auf dem Mac rund 7 s.
+   zählt mit, etwa „Selbsttest · Schritt 6 von 45: Neues Spiel“. Maus und Tastatur muss man nicht
+   anfassen; tut man es doch, ändert das nichts. Ein Lauf dauert auf dem Mac rund 5 bis 8 s.
 2. Am Ende steht die Zusammenfassung im Look der Werkzeuge, im selben Fenster wie der Lauf: Summe,
    fehlerhafte Schritte, Pfad, dazu
    „Kopieren“, „Ordner zeigen“ und „Beenden“. Erwartet: alle Schritte in Ordnung (SC-003); im
@@ -99,7 +99,7 @@ Mit `--nur macos` baut das Skript nur ein System. Dann auf dem anderen Rechner:
 3. Claude vergleicht und legt die Belege ab:
 
    ```bash
-   python3 -I tools/selbsttest/vergleich.py build/selbsttest/<lauf>_windows.zip --beleg
+   python3 -I tools/selbsttest/vergleich.py build/selbsttest/<lauf-id>_windows.zip --beleg
    ```
 
 4. Von Hand, kurzer Blick: Symbol der .exe im Explorer, im Fenster und in der Taskleiste; im Spiel
@@ -115,7 +115,7 @@ Mit `--nur macos` baut das Skript nur ein System. Dann auf dem anderen Rechner:
    & ".\Der Computerladen Selbsttest.exe" --rendering-driver vulkan
    ```
 
-   Für eine Probe ohne Forward+ lässt sich OpenGL einmalig erzwingen; das prüft alles außer der
+   Für eine Probe ohne Forward+ lässt sich Compatibility mit OpenGL einmalig erzwingen; das prüft alles außer der
    Darstellung mit Forward+ und gilt nicht als Abnahme des Renderers:
 
    ```powershell

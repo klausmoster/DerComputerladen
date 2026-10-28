@@ -125,6 +125,47 @@ func test_faktor_des_fensters() -> void:
 	# Act und Assert: wie Stretch „integer“
 	assert_eq(SelbsttestSystem.faktor(Vector2i(1920, 1080)), 3)
 	assert_eq(SelbsttestSystem.faktor(Vector2i(640, 360)), 1)
-	assert_eq(SelbsttestSystem.faktor(Vector2i(1317, 741)), 2, "Fenster „krumm“ aus ablaeufe.md")
+	assert_eq(SelbsttestSystem.faktor(Vector2i(1318, 742)), 2, "Fenster „krumm“ aus ablaeufe.md")
 	assert_eq(SelbsttestSystem.faktor(Vector2i(3840, 1000)), 2, "Die kleinere Achse zählt.")
 	assert_eq(SelbsttestSystem.faktor(Vector2i(300, 200)), 1, "Mindestens 1.")
+
+
+func test_skalierung_unter_windows_und_x11_aus_den_dpi() -> void:
+	# Act und Assert (T060): dpi / 96, auf 0,25 gerundet; screen_get_scale() meldet dort 1.0.
+	assert_eq(SelbsttestSystem.skalierung("Windows", 1.0, 96), 1.0)
+	assert_eq(SelbsttestSystem.skalierung("Windows", 1.0, 120), 1.25)
+	assert_eq(SelbsttestSystem.skalierung("Windows", 1.0, 144), 1.5)
+	assert_eq(SelbsttestSystem.skalierung("Windows", 1.0, 192), 2.0)
+	assert_eq(SelbsttestSystem.skalierung("X11", 1.0, 163), 1.75, "163 / 96 = 1,70")
+	assert_eq(SelbsttestSystem.skalierung("X11", 1.0, 110), 1.25, "110 / 96 = 1,15")
+	assert_eq(SelbsttestSystem.skalierung("X11", 1.0, 100), 1.0, "100 / 96 = 1,04")
+
+
+func test_skalierung_mindestens_1() -> void:
+	# Act und Assert: Ein kleiner Bildschirm oder eine fehlende Angabe verkleinert nie.
+	assert_eq(SelbsttestSystem.skalierung("X11", 1.0, 72), 1.0)
+	assert_eq(SelbsttestSystem.skalierung("Windows", 1.0, 0), 1.0)
+
+
+func test_skalierung_unter_macos_und_wayland_vom_system() -> void:
+	# Act und Assert: Dort kennt screen_get_scale() die Skalierung; die dpi zählen nicht.
+	assert_eq(SelbsttestSystem.skalierung("macOS", 2.0, 72), 2.0)
+	assert_eq(SelbsttestSystem.skalierung("Wayland", 1.5, 96), 1.5)
+	assert_eq(SelbsttestSystem.skalierung("headless", 1.0, 300), 1.0)
+
+
+func test_bildschirm_skalierung_im_protokoll_wie_fuer_die_zusammenfassung() -> void:
+	# Arrange
+	var system := SelbsttestSystem.new()
+	system.mit_treiber = false
+
+	# Act
+	system.erhebe()
+
+	# Assert: headless gibt es keinen Bildschirm, dann bleibt der Wert unbekannt; mit Bildschirm
+	# derselbe Wert, den die Zusammenfassung als content_scale_factor nimmt.
+	if DisplayServer.window_get_current_screen() < 0:
+		assert_null(system.werte["system.bildschirm_skalierung"])
+	else:
+		assert_eq(system.werte["system.bildschirm_skalierung"],
+			SelbsttestSystem.bildschirm_skalierung(DisplayServer.window_get_current_screen()))

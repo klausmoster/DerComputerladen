@@ -30,7 +30,8 @@ Verweis auf Spec oder Plan im Text; der Text landet so in `erwartet:` des Protok
   schon nennt („Maus über „Neues Spiel“, Enter“). Gehäusetasten heißen links, Mitte, rechts.
 - **Beschreibung** eines Schritts: beginnt mit der Eingabe und sagt, was sie bewirkt, etwa „Enter auf
   „Neues Spiel“ öffnet die Gradwahl“; ohne Eingabe, oder wenn das Fenster gestellt wird, sagt sie das
-  erwartete Ergebnis.
+  erwartete Ergebnis. Bei mehreren Eingaben nennt sie die, die den Zustand bewirkt; die übrigen
+  stehen in `eingaben:`. „Maus über „X““ heißt in der Beschreibung „Maus über „X“ wählt …“.
 - **Spielstände:** die Spielstände im Ordner des Selbsttests, als Liste der Namen, etwa
   `Spielstände: Spiel 1` oder `Spielstände: keine`.
 
@@ -41,6 +42,7 @@ Verweis auf Spec oder Plan im Text; der Text landet so in `erwartet:` des Protok
 | 01 | `start` | keine | Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine |
 | 02 | `nicht_verfuegbar` | Maus über „Weiterspielen“ | Menü steht: HAUPTMENÜ, „Weiterspielen“, nicht verfügbar, Hinweis „Noch kein Spiel angefangen.“; nichts ausgelöst |
 | 03 | `beenden_da` | Maus über „Beenden“ | Menü steht: HAUPTMENÜ, „Beenden“, verfügbar, Hinweis „Laden abschließen und zurück zum Desktop.“; nichts ausgelöst |
+| 04 | `einstellungen` | Maus über „Einstellungen“ | Menü steht: HAUPTMENÜ, „Einstellungen“, nicht verfügbar, Hinweis „Noch nichts einzustellen. Kommt später.“; nichts ausgelöst |
 
 ## neues_spiel
 
@@ -85,7 +87,7 @@ Name „Spiel laden“.
 | 04 | `spielen` | Pfeil rechts halten 0,5 s, Leertaste | Kanone weiter rechts als beim Start; ein Schuss unterwegs oder ein Treffer gezählt |
 | 05 | `ende_esc` | Esc | Menü steht: HAUPTMENÜ, „Spiel laden“, nicht verfügbar, Hinweis „Noch keine Spielstände.“; Spielstände: keine |
 
-Fotos von 03 und 04 sind nicht vergleichbar: Das versteckte Spiel rechnet nach Zeit (R7).
+Fotos von 03 und 04 sind nicht vergleichbar: Invaders rechnet nach Zeit (R7).
 
 ## bedienung
 
@@ -101,6 +103,25 @@ Fotos von 03 und 04 sind nicht vergleichbar: Das versteckte Spiel rechnet nach Z
 Für Schritt 06 legt der Selbsttest die sieben Spielstände über `SaveStore` an, mit fester Uhrzeit und
 festem Seed, lädt danach den Titel neu, damit „Spiel laden“ verfügbar ist (Analyse, U1), und räumt
 sie am Ende weg; im Protokoll `eingaben: Vorbereitung: 7 Spielstände; …` (Review CHK001).
+
+## liste
+
+Name „Liste“. Prüft die Wege in Liste und Rückfrage, die `laden` und `loeschen` nicht gehen
+(Lückensuche T052).
+
+| nn | Schritt | Eingabe | Erwartet |
+|---|---|---|---|
+| 01 | `oeffnen` | Vorbereitung: 2 Spielstände; Linksklick auf „Spiel laden“ | Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985; Spielstände: Spiel 1, Spiel 2 |
+| 02 | `esc` | Esc | Menü steht: HAUPTMENÜ, „Spiel laden“ |
+| 03 | `zurueck` | Linksklick auf „Spiel laden“, Linksklick auf „Zurück“ | Menü steht: HAUPTMENÜ, „Spiel laden“ |
+| 04 | `loeschmodus_esc` | Linksklick auf „Spiel laden“, Linksklick auf „Löschen …“, Esc | Menü steht: SPIELSTÄNDE, „Löschen …“, verfügbar |
+| 05 | `rueckfrage_esc` | Linksklick auf „Löschen …“, Linksklick auf Spiel 1, Esc | Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985; Spielstände: Spiel 1, Spiel 2 |
+| 06 | `loeschen` | Linksklick auf „Löschen …“, Linksklick auf Spiel 1, Linksklick auf „Spiel 1 löschen“ | Menü steht: SPIELSTÄNDE, Spiel 2 mit Mittel, 01.01.1985; Spielstände: Spiel 2 |
+
+Für Schritt 01 legt der Selbsttest 2 Spielstände über `SaveStore` an, wie bei `bedienung.06`, und
+lädt den Titel neu; `aufraeumen()` löscht nach dem Ablauf, was übrig ist. Esc und „Zurück“ wählen im
+Hauptmenü wieder „Spiel laden“; „verfügbar“ in 04 zeigt, dass der Löschmodus aus ist. 06 löscht per
+Linksklick, den Weg mit der Tastatur geht schon `loeschen.06`.
 
 ## fenster
 
@@ -140,8 +161,17 @@ Rahmen ohne Inhalt (Spec FR-011a, R27). Ein späteres Feature legt ein Szenario 
 `src/tools/selbsttest/szenarien/` an und trägt es in die Liste des Läufers ein; die Tabelle dazu hat
 die Spalten Spieldatum, Art (Entscheidung oder Prüfpunkt), Eingabe, Erwartet.
 
+## Bewusst ohne Schritt
+
+Diese Wege des Titels haben keinen Schritt (Klaus, Lückensuche T052): die Grade Leicht und Schwer
+(geprüft wird Mittel), beschädigte oder nicht fortsetzbare Zeilen der Liste, die Ergebnisanzeige von
+Invaders (sie hängt an Zeit), die Meldungen bei Fehlern (Löschen, Anlegen, Speichern), Pfeiltasten, Tab
+und Rechtsklick in der Liste, Mausrad hoch, Esc ohne Wirkung im Hauptmenü und im Spielbildschirm.
+„Beenden“ auszulösen und das Vollbild bleiben nach der Spec draußen. Kommt einer dieser Wege in einem
+Feature dazu oder ändert sich, bekommt er dort einen Schritt.
+
 ## Neue Abläufe
 
-Bringt ein Feature eine Seite, einen Weg oder eine Eingabe, bekommt es einen Ablauf oder Schritte in
+Bringt ein Feature Seiten, Wege, Texte oder Eingaben, bekommt es einen Ablauf oder Schritte in
 einem vorhandenen (Story 5). Ein neuer Ablauf beginnt beim frischen Titel; ein Schritt nennt Eingabe und
 erwarteten Zustand so, wie diese Tabellen es tun.

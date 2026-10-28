@@ -189,7 +189,7 @@ Spec Kit bleibt, wie es ist. Die Prüfer kommen an fünf Stellen dazu:
 | `/speckit-checklist` | Text- und Stil-Prüfer lesen die Wortlaute und Zustände aus Spec und Vertrag gegen den Style-Guide, bevor gebaut wird (Klaus, 2026-10-27). Checklisten für Stil und Texte prüfen, ob die Spec Sichtbares und Texte genau genug beschreibt. |
 | `/speckit-tasks` | Jede Phase mit Sichtbarem oder Texten endet mit der [C]-Aufgabe „Phasenprüfung“ vor Klaus' Abnahme. |
 | `/speckit-analyze` | Eine fehlende Phasenprüfung ist kritisch, denn sie verstößt gegen Grundsatz VI der Verfassung. |
-| `/speckit-converge` | Die Prüfer laufen bei der Lückensuche einmal über das ganze Feature. |
+| `/speckit-converge` | Die Prüfer laufen bei der Lückensuche einmal über das ganze Feature. Dazu prüft Claude, ob jede neue Seite, jeder neue Weg, Text und jede neue Eingabe einen Schritt im Selbsttest hat (Klaus, 2026-10-28, Feature 007). |
 
 - Eine neue Rolle in `tasks.md` gibt es nicht. Die Prüfer arbeiten Claude zu, und die
   Phasenprüfung ist eine [C]-Aufgabe.
@@ -312,6 +312,9 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 007, Phase 5, Vergleichswerkzeug: README, Ausgaben, 3 Berichte (2026-10-28) | Text | 5 | 5, dazu 1 Widerspruch im Vertrag | 0 | 4, davon 1 verworfen | 5 |
 | Feature 007, Phase 5, Nachprüfung des Geänderten (2026-10-28) | Text | 4 | 4, davon 3 im Vertrag oder in der README | 0 | 2, von Claude entschieden (Lauf-ID als Ordnername, Ergebniswörter in Anführungszeichen) | 4 |
 | Feature 007, Phase 6, ICO für Windows, Montage der sechs Größen ×8 (2026-10-28) | Stil | 0 | 0 | 0 | 3, zur Entscheidung bei Klaus | 0 |
+| Feature 007, Lückensuche über das ganze Feature (2026-10-28) | Stil | 4 | 4, davon 2 Folgepunkte außerhalb von 007 | 0 | 5 | 4 |
+| Feature 007, Lückensuche, rund 330 Texte (2026-10-28) | Text | 11 | 11 | 0 | 6 | 11 |
+| Feature 007, Phase 8, neue Schritte titel.04 und liste (2026-10-28) | Text | 4 | 4 | 0 | 2, eine als Regel in den Vertrag | 4 |
 | Feature 006, Phase 7, Nachprüfung des Geänderten (2026-10-28) | Stil | 1 | 1 | 0 | 3 | 1 |
 | Feature 006, Phase 7, 24 Testmeldungen und 6 Stellen Doku (2026-10-28) | Text | 0 | 0 | 0 | 1 | 0 |
 

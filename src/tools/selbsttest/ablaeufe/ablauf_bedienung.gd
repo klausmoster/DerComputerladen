@@ -70,7 +70,7 @@ func schritte(fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 			_pruefe_menue.bind(fahrer, gradwahl, &"medium"),
 			SelbsttestTexte.menue_steht_ohne_zeichen(TitleTexts.HEADER_DIFFICULTY, mittel)),
 		neuer_schritt("05_zurueck_klick",
-			SelbsttestTexte.BESCHREIBUNG_BEDIENUNG_ZURUECK_KLICK % TitleTexts.LABEL_BACK,
+			SelbsttestTexte.BESCHREIBUNG_KLICK_INS_HAUPTMENUE % TitleTexts.LABEL_BACK,
 			SelbsttestTexte.auf(SelbsttestTexte.LINKSKLICK,
 				SelbsttestTexte.zitat(TitleTexts.LABEL_BACK)),
 			fahrer.klick_auf_eintrag.bind(gradwahl, &"back",

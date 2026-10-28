@@ -562,3 +562,43 @@ nichts und haben deshalb keine Notiz.
   ein gewöhnliches `zip` kann Teile davon verlieren. Für Windows und Linux packt `zip -r -X`, das die
   Unix-Rechte mitnimmt; so bleibt die Linux-Datei nach dem Entpacken ausführbar. Ein Zip je System
   enthält Spiel und Selbsttest, unter Windows samt den Dateien für Direct3D 12 daneben.
+
+## Phase 8
+
+### T060: Skalierung aus den dpi
+
+- **Zwei Fragen an den Bildschirm.** `DisplayServer.screen_get_scale()` fragt das System nach seinem
+  Skalierungsfaktor. Das können in Godot 4.7 nur macOS (2.0 auf Retina) und Wayland; unter Windows
+  und X11 kommt immer 1.0 zurück. `screen_get_dpi()` gibt es auf allen Desktops, aber es misst etwas
+  anderes: Unter Windows meldet Godot die dpi, die Windows aus der eingestellten Skalierung macht
+  (125 % sind 120 dpi), unter X11 rechnet es aus Auflösung und Größe des Bildschirms in Millimetern,
+  also die echte Dichte. Unter macOS sind die dpi ungenau, sobald die Skalierung krumm ist; deshalb
+  bleibt es dort beim Faktor des Systems.
+- **Eine Funktion für beide Stellen.** `SelbsttestSystem.skalierung(server, scale, dpi)` ist statisch
+  und liest nichts selbst; so prüft der Test jeden Fall ohne Fenster. `bildschirm_skalierung()` holt
+  die drei Werte vom `DisplayServer` und gibt sie hinein. Protokoll (`system.bildschirm_skalierung`)
+  und Zusammenfassung (`content_scale_factor`) nehmen dieselbe Funktion; damit kann das Protokoll
+  nicht einen anderen Faktor nennen als den, mit dem die Seite gezeichnet ist.
+- **Warum `DisplayServer.get_name()` und nicht `OS.get_name()`.** Ob der Faktor fehlt, hängt am
+  Display-Server, nicht am System: Linux hat zwei, X11 und Wayland, und nur einer kennt den Faktor.
+  `OS.get_name()` sagt in beiden Fällen „Linux“. Unter Windows heißen beide gleich.
+- **Runden.** `snappedf(dpi / 96.0, 0.25)` rundet auf das nächste Vielfache von 0,25, wie die Stufen
+  in den Anzeigeeinstellungen von Windows; `maxf(…, 1.0)` hält einen kleinen oder unbekannten
+  Bildschirm bei 1. Die Werkstatt rechnet weiter mit `screen_get_scale()`.
+
+### T061: Variante `FormScroll`
+
+- **Eine Variante bringt alles mit.** `theme_type_variation = &"FormScroll"` gibt der Liste nicht nur
+  `scrollbar_h_separation = 4`, den Abstand zwischen Inhalt und Rollbalken, sondern auch das `panel`
+  der Variante, eine leere StyleBox mit 4 Innenabstand ringsum. Der Inhalt rückt also 4 nach innen,
+  wie das Formular der Werkstatt. Die Variante stand schon in der Kopie des Themes; die Szene nennt
+  sie nur.
+
+### T059: Symbol des Fensters unter Windows
+
+- **Zwei Symbole.** `application/icon` im Export-Preset schreibt das Symbol in die `.exe`; das zeigt
+  der Explorer. `application/config/windows_native_icon` in `project.godot` setzt Godot beim Start
+  über `DisplayServer.set_native_icon()` für das laufende Fenster: Titelleiste, Taskleiste, Alt+Tab.
+  Ohne die Einstellung nähme Godot dort die PNG aus `config/icon` und rechnete sie herunter. Die Zeile
+  hat wieder Godot geschrieben (`ProjectSettings.save()` an einer Kopie); sie steht gleich hinter
+  `config/icon`.

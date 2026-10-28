@@ -28,7 +28,7 @@ lauf.dauer_ms: 84213
 lauf.feste_zeit: 2026-10-26 21:40 UTC+01:00
 lauf.zeitraffer: 8
 lauf.abbruch: keiner
-selbsttest.version: 1
+selbsttest.version: 2
 selbsttest.gebaut: 2026-10-28 13:58
 computerladen.version: 0.1
 godot.version: 4.7.2.stable.official
@@ -88,7 +88,7 @@ summe.gesamt: 37
   `gefunden: unbekannt` (Phasenprüfung Phase 1, L3).
 - Die Maschinenform gilt nur für Messwerte: Systemdaten, Zeiten, Dauern. Texte aus den Abläufen in
   `beschreibung:`, `eingaben:` und `erwartet:` bleiben deutsch, Maße mit „ד, etwa „Fenster auf
-  1317 × 741“ (Phasenprüfung Phase 1, L1).
+  1318 × 742“ (Phasenprüfung Phase 1, L1).
 - Werte stehen ohne Schlusspunkt, nur `ergebnis:` ist ein Satz. Zeiten, Maße und Zahlen in
   Maschinenform: `2026-10-28 14:03:12`, `3024x1964`, `2.0` (Review CHK034, CHK039).
 - Ergebniszeile: `Alles in Ordnung: {n} von {n} Schritten.` oder

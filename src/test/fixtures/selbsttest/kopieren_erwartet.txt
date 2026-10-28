@@ -7,7 +7,7 @@ lauf.dauer_ms: 84213
 lauf.feste_zeit: 2026-10-26 21:40 UTC+01:00
 lauf.zeitraffer: 8
 lauf.abbruch: keiner
-selbsttest.version: 1
+selbsttest.version: 2
 selbsttest.gebaut: 2026-10-28 13:58
 computerladen.version: 0.1
 godot.version: 4.7.2.stable.official

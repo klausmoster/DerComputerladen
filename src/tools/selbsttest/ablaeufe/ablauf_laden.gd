@@ -57,7 +57,7 @@ func schritte(fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 			_pruefe_spielbildschirm.bind(fahrer, spiel_1),
 			spielbildschirm),
 		neuer_schritt("05_zurueck_2",
-			SelbsttestTexte.BESCHREIBUNG_LADEN_ZURUECK_2 % TitleTexts.LABEL_LEAVE,
+			SelbsttestTexte.BESCHREIBUNG_KLICK_INS_HAUPTMENUE % TitleTexts.LABEL_LEAVE,
 			SelbsttestTexte.auf(SelbsttestTexte.LINKSKLICK,
 				SelbsttestTexte.zitat(TitleTexts.LABEL_LEAVE)),
 			fahrer.klick_auf_knopf_hauptmenue.bind(knopf),

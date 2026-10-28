@@ -364,9 +364,9 @@ func test_die_liste_der_ablaeufe() -> void:
 		kennungen.append(ablauf.kennung)
 		baut_auf.append(ablauf.baut_auf)
 	assert_eq(kennungen, ["titel", "neues_spiel", "laden", "loeschen", "easter_egg", "bedienung",
-		"fenster", "titel_echtzeit"] as Array[String])
-	assert_eq(baut_auf, ["", "", "neues_spiel", "laden", "", "", "", ""] as Array[String])
-	assert_eq(SelbsttestLaeufer.VERSION, 1)
+		"liste", "fenster", "titel_echtzeit"] as Array[String])
+	assert_eq(baut_auf, ["", "", "neues_spiel", "laden", "", "", "", "", ""] as Array[String])
+	assert_eq(SelbsttestLaeufer.VERSION, 2, "Seit Phase 8 mit titel.04 und liste (R21).")
 
 
 func test_nach_jedem_ablauf_raeumt_er_auf_auch_nach_einem_fehler() -> void:

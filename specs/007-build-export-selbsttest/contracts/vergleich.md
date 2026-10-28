@@ -53,12 +53,12 @@ python3 -I tools/selbsttest/vergleich.py build/selbsttest/2026-10-28_14-03-12_wi
 ```text
 # Vergleich 2026-10-28_14-03-12 (Windows 11, NVIDIA GeForce RTX 3060, D3D12)
 
-gleich: 36 · abweichend: 2 · nicht vergleichbar: 2 · Referenz fehlt: 0 · Foto fehlt: 0
+gleich: 33 · abweichend: 2 · nicht vergleichbar: 2 · Referenz fehlt: 0 · Foto fehlt: 0
 
 | Schritt | Ergebnis | Pixel | Rechteck |
 |---|---|---|---|
 | titel.01_start | gleich | 0 | – |
-| laden.02_liste | abweichend | 112 | x 280–420, y 140–152 |
+| laden.03_liste | abweichend | 112 | x 280–420, y 140–152 |
 ```
 
 Die Kopfzeile nimmt System, Grafikkarte und Grafikschnittstelle aus dem Protokoll.

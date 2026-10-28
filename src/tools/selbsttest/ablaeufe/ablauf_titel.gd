@@ -3,7 +3,8 @@ extends SelbsttestAblauf
 ## Ablauf „titel“ (contracts/ablaeufe.md, „titel“; FR-011, Punkt 1): Der Titel erscheint, der
 ## Communicator fährt herein, das Hauptmenü steht mit „Neues Spiel“; „Weiterspielen“ ist ohne
 ## Spielstand nicht verfügbar und nennt den Grund; „Beenden“ ist verfügbar und löst beim Überfahren
-## nichts aus. Er beginnt beim frischen Titel, den der Läufer vorbereitet.
+## nichts aus; „Einstellungen“ ist noch nicht verfügbar und sagt, dass es später kommt. Er beginnt
+## beim frischen Titel, den der Läufer vorbereitet.
 ##
 ## Die Wortlaute aus dem Spiel kommen aus TitleTexts, die des Selbsttests aus SelbsttestTexte. Die
 ## Prüfungen sind eigene Methoden; bind() gibt ihnen den Fahrer mit, so wird jede zum Callable, das
@@ -21,6 +22,7 @@ func schritte(fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 	var hauptmenue := SelbsttestFahrer.SEITE_HAUPTMENUE
 	var weiterspielen := SelbsttestTexte.ziel(TitleTexts.HEADER_MAIN, TitleTexts.LABEL_CONTINUE)
 	var beenden := SelbsttestTexte.ziel(TitleTexts.HEADER_MAIN, TitleTexts.LABEL_QUIT)
+	var einstellungen := SelbsttestTexte.ziel(TitleTexts.HEADER_MAIN, TitleTexts.LABEL_SETTINGS)
 	return [
 		neuer_schritt("01_start", SelbsttestTexte.BESCHREIBUNG_TITEL_START,
 			SelbsttestTexte.EINGABEN_KEINE, _keine_eingabe,
@@ -41,6 +43,13 @@ func schritte(fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 			_pruefe_beenden_da.bind(fahrer),
 			SelbsttestTexte.zeile_ohne_ausloesen(TitleTexts.HEADER_MAIN, TitleTexts.LABEL_QUIT,
 				TitleTexts.HINT_QUIT, SelbsttestTexte.VERFUEGBAR)),
+		neuer_schritt("04_einstellungen",
+			SelbsttestTexte.BESCHREIBUNG_TITEL_EINSTELLUNGEN % TitleTexts.LABEL_SETTINGS,
+			SelbsttestTexte.maus_ueber(TitleTexts.LABEL_SETTINGS),
+			_maus_ueber.bind(fahrer, hauptmenue, &"settings", einstellungen),
+			_pruefe_einstellungen.bind(fahrer),
+			SelbsttestTexte.zeile_ohne_ausloesen(TitleTexts.HEADER_MAIN, TitleTexts.LABEL_SETTINGS,
+				TitleTexts.HINT_SETTINGS, SelbsttestTexte.NICHT_VERFUEGBAR)),
 	]
 
 
@@ -67,6 +76,16 @@ func _pruefe_beenden_da(fahrer: SelbsttestFahrer) -> String:
 	if fahrer.menue_steht(SelbsttestFahrer.SEITE_HAUPTMENUE, &"quit") \
 			and fahrer.gewaehlt_verfuegbar() \
 			and fahrer.hinweis_text() == TitleTexts.HINT_QUIT and fahrer.beenden_ausgeloest() == 0:
+		return ""
+	return fahrer.zustand()
+
+
+## 04: „Einstellungen“ gewählt, nicht verfügbar, mit dem Hinweis, dass es später kommt; nichts
+## ausgelöst, also weiter das Hauptmenü, kein Spielstand und kein Beenden.
+func _pruefe_einstellungen(fahrer: SelbsttestFahrer) -> String:
+	if fahrer.menue_steht(SelbsttestFahrer.SEITE_HAUPTMENUE, &"settings") \
+			and not fahrer.gewaehlt_verfuegbar() and fahrer.hinweis_text() == TitleTexts.HINT_SETTINGS \
+			and fahrer.spielstaende().is_empty() and fahrer.beenden_ausgeloest() == 0:
 		return ""
 	return fahrer.zustand()
 

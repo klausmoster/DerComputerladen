@@ -330,16 +330,20 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   und den Testabläufen baut. Sie trägt einen eigenen Namen, an dem sie vom Spiel zu unterscheiden
   ist, und kann neben dem Spiel auf demselben Rechner liegen.
 - **FR-002**: Der normale Export des Spiels MUSS Testabläufe, Tests und Werkstatt weglassen. Das
-  Spiel MUSS sich ohne Selbsttest genau wie vor diesem Feature verhalten.
+  Spiel MUSS sich ohne Selbsttest genau wie vor diesem Feature verhalten, mit drei gewollten
+  Ausnahmen: Das Fenster steht samt Titelleiste mittig im nutzbaren Bereich (Klaus, Phase 3), F11 und
+  Alt+Enter schalten das Vollbild (Clarify, Phase 6), und ohne Vulkan oder Direct3D 12 weicht es nicht
+  auf OpenGL aus (R13).
 - **FR-003**: Die Selbsttest-App MUSS nach dem Start ohne weiteres Zutun alle Abläufe nacheinander
   durchspielen und danach die Zusammenfassung zeigen. Während des Laufs MUSS der Fenstertitel den
-  Fortschritt nennen, etwa „Selbsttest · Schritt 12 von 40: Neues Spiel“; im Spielbild selbst erscheint
+  Fortschritt nennen, etwa „Selbsttest · Schritt 6 von 45: Neues Spiel“; im Spielbild selbst erscheint
   nichts davon, damit die Fotos nur das Spiel zeigen.
 - **FR-003a**: Die App MUSS ihre Abläufe im Zeitraffer spielen: Alles, was im Spiel nach Zeit
   rechnet, läuft um einen festen Faktor schneller, im Protokoll als `lauf.zeitraffer` genannt.
   Höchstzeiten gelten in echter Zeit. Der Ablauf `titel` MUSS zusätzlich einmal in normalem Tempo
   laufen (Ablauf `titel_echtzeit`), damit Fehler, die nur bei echtem Tempo auftreten, sichtbar
-  bleiben. Eine feste Obergrenze für die Dauer eines Laufs gibt es nicht.
+  bleiben. Auch `fenster` läuft in normalem Tempo, weil es Fenstergrößen misst (R24). Eine feste
+  Obergrenze für die Dauer eines Laufs gibt es nicht.
 - **FR-004**: Alle Eingaben der Abläufe MÜSSEN als Maus- und Tastatureingaben durch dieselbe
   Eingabe des Spiels gehen, die auch echte Maus und Tastatur nutzen, im echten Fenster. Kein
   Schritt darf eine Seite, einen Knopf oder eine Funktion des Spiels direkt aufrufen, um eine
@@ -394,7 +398,8 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
 - **FR-011a**: Der Läufer MUSS **Szenarien** tragen können: Abläufe, die ein Spiel über längere
   Spielzeit im Zeitraffer spielen, mit festen Entscheidungen über die Oberfläche und Prüfpunkten, an
   denen er Zustand prüft und fotografiert. 007 baut den Rahmen und beschreibt ihn so, dass ein
-  späteres Feature ein Szenario anlegen kann, ohne den Läufer zu ändern; ein Szenario selbst bringt
+  späteres Feature ein Szenario anlegen kann, ohne den Läufer zu ändern, außer einem Eintrag in
+  seiner Liste der Abläufe (`SelbsttestLaeufer.ABLAEUFE`); ein Szenario selbst bringt
   erst das erste Feature mit Bedienung im Spielbildschirm.
 - **FR-012**: „Beenden“ im Hauptmenü wird nicht ausgelöst, weil es den Selbsttest beenden würde;
   geprüft wird nur, dass der Eintrag da und verfügbar ist.
@@ -431,8 +436,8 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   „Kopieren“, „Ordner zeigen“ und „Beenden“. „Kopieren“ legt Summe, fehlerhafte Schritte mit allen
   Angaben aus FR-014 und die Systemdaten als Text in die Zwischenablage, sodass Klaus ihn in den
   Chat einfügen kann. Sie ist eine eigene Seite im Look der Werkzeuge aus dem
-  Style-Guide, wie die Werkstatt, nicht auf dem Communicator, und duzt. Wie die Werkstatt
-  maximiert sie das Fenster. Fehler und nicht gelaufene Schritte unterscheiden sich in Form und
+  Style-Guide, wie die Werkstatt, nicht auf dem Communicator, und duzt. Anders als die Werkstatt
+  bleibt sie im Fenster des Laufs, ohne Größe und Lage zu ändern (Klaus, Phase 4). Fehler und nicht gelaufene Schritte unterscheiden sich in Form und
   Zeichen. Passen nicht alle fehlerhaften Schritte auf die Seite, lässt sich die Liste scrollen.
   Aufbau, Schrift, Tasten und Wortlaute legt der Vertrag fest.
 - **FR-016**: Protokoll und Fotos MÜSSEN im eigenen Datenordner der Selbsttest-App liegen, je Lauf

@@ -50,14 +50,15 @@ mit `open` gestartet, dazu die Fehlerprobe (SC-004). Vergleich mit Proben (SC-00
 
 **Project Type**: Desktop-Spiel (Godot-Projekt unter `src/`) mit Werkzeugen unter `tools/`.
 
-**Performance Goals**: Zeitraffer 8; `titel` braucht weniger als halb so lange wie
-`titel_echtzeit` (SC-001); keine feste Obergrenze für einen Lauf; Höchstzeit je Schritt 5 s in echter
+**Performance Goals**: Zeitraffer 8; `titel` braucht weniger Zeit als `titel_echtzeit`
+(SC-001, seit der Analyse I1); keine feste Obergrenze für einen Lauf; Höchstzeit je Schritt 5 s in echter
 Zeit (R6, R24).
 
 **Constraints**:
 - Spiel ohne Selbsttest unverändert; alle bisherigen Tests grün; Änderungen am Spielcode sind nur die
-  Stellschraube für den Zeitzonenversatz in `SaveGame` (R7, Phase 1) und das Abfangen des
-  Vollbild-Kürzels in `GameWindow._input()` (R15, Phase 6; Analyse, I2).
+  Stellschraube für den Zeitzonenversatz in `SaveGame` (R7, Phase 1), die Fenstermitte in
+  `GameWindow` (Klaus, Phase 3), das Abfangen des Vollbild-Kürzels in `GameWindow._input()` und in
+  `InvadersPage` (R15, Phase 6; Analyse, I2) und die lesende Abfrage der Rollmarke in `SaveList`.
 - Normaler Export ohne Datei des Selbsttests (SC-005); echte Spielstände unberührt (SC-006).
 - Fotos pixelgleich über zwei Läufe auf dem Mac (SC-002).
 - Nur Desktop, Forward+; kein Ausweichen auf OpenGL (R13).
@@ -167,8 +168,8 @@ FR-013 bis FR-016, FR-019, FR-024, Story 5, Randfälle, SC-002 bis SC-004, Reihe
 research.md (R12), Datenmodell, Verträge (App: Zusammenfassung und Texte neu; Abläufe: Form der
 Spalte „Erwartet“; Protokoll: Beispiel und Formen) und Quickstart. Die wichtigsten:
 - **CHK001**: Vorbereiten eines Ablaufs und Fenstergröße sind die einzigen Schritte ohne Eingabe.
-- **CHK016, CHK017**: Die Zusammenfassung maximiert wie die Werkstatt, hält `GameWindow` an und
-  setzt die eingebaute Schrift.
+- **CHK016, CHK017**: Die Zusammenfassung hält `GameWindow` an und setzt die eingebaute Schrift; sie
+  bleibt im Fenster des Laufs, ohne zu maximieren (Klaus, Phase 4).
 - **CHK019, CHK020**: Fehler mit Feld „!“, nicht gelaufen mit Feld „–“, in Ordnung ohne Farbe;
   gesperrter Knopf bei nicht beschreibbarem Ordner.
 - **CHK029 bis CHK039**: `computerladen.version`, „Spiel laden“, eine Ergebniszeile, Gründe ohne

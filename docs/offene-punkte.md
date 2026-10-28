@@ -12,6 +12,32 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Abschluss (2026-10-28)
+
+- **Klaus:** Regel „Selbsttest zur Gesamtabnahme“ in `ki_dev.md` (Punkt 11), Aufgaben-Vorlage und
+  `ki_pruefung.md`; die Verfassung bleibt. Phase 8 aus der Lückensuche mit dem empfohlenen Paket;
+  Skalierung unter Windows und X11 aus den dpi; 8 neue Referenzbilder (Version 2 des Selbsttests,
+  45 Schritte).
+- **Entscheidungen Claude zu Lücken der Lückensuche:**
+  - Shell-Skripte unter `tools/` zählen wie Python-Werkzeuge; „Spiel“ als Name des Pakets im
+    Bauskript ist erlaubt. READMEs unter `tools/` zählen als Hilfe; Spec-Dokumente und Belege sind
+    frei.
+  - Beschreibung nennt die Seite mit ihrem Namen („Gradwahl“), die Erwartung mit ihrer Kopfzeile
+    („SCHWIERIGKEIT“). Zusatztasten heißen wie auf der Tastatur des Systems. „D3D12“ bleibt als
+    Messwert. Verschachtelte Anführungszeichen „„…““.
+  - Bildlaufleisten brauchen keinen Tooltip und keinen Handzeiger (Godots Standard).
+  - Bei mehreren Eingaben nennt die Beschreibung die entscheidende (Vertrag, „Beschreibung“).
+  - Diese Regeln kommen mit der nächsten Ergänzung des Style-Guides in „Werkzeuge“, „Texte“.
+- **Folgepunkte außerhalb von 007, mit Empfehlung:**
+  - Werkstatt: `raster-8` zwischen Knöpfen, Handzeiger an Knöpfen, Zeilenabstand 0 wie im
+    Selbsttest; dazu ein gemeinsames Theme für Werkzeuge statt zweier Kopien.
+  - Mac-Symbol: mittig setzen und für die icns Nearest statt Lanczos (`icon_interpolation`),
+    zusammen mit dem Punkt aus Phase 6.
+  - Linux-Symbol in kleinen Größen aus dem gerasterten Monitor, wie die ICO.
+  - Rangfolge der Texte in `werkzeug-titel`: Seitenüberschrift und Summe gleich groß wie
+    Bereichstitel.
+  - Windows-Lauf mit Vulkan oder Direct3D 12 (Windows bisher nur mit Compatibility belegt).
+
 ### Feature 007, Phase 6 (2026-10-28)
 
 - **Klaus:** Export-Templates 4.7.2 im Editor installiert; Windows-Symbol in 16 aus jedem zweiten

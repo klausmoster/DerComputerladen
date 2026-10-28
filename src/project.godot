@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 boot_splash/bg_color=Color(0.050980393, 0.09019608, 0.08627451, 1)
 boot_splash/show_image=false
 config/icon="res://assets/icon/app_icon.png"
+config/windows_native_icon="res://assets/icon/app_icon.ico"
 config/name.selbsttest="Der Computerladen Selbsttest"
 run/main_scene.selbsttest="res://tools/selbsttest/selbsttest_start.tscn"
 

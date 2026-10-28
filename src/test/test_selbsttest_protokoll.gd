@@ -299,10 +299,10 @@ func test_namen_der_ablaeufe() -> void:
 	# Act und Assert (data-model.md, „Ablauf“; CHK037)
 	var namen: Array[String] = []
 	for kennung: String in ["titel", "neues_spiel", "laden", "loeschen", "easter_egg", "bedienung",
-			"fenster", "titel_echtzeit"]:
+			"liste", "fenster", "titel_echtzeit"]:
 		namen.append(SelbsttestTexte.ablauf_name(kennung))
 	assert_eq(namen, ["Titel", "Neues Spiel", "Spiel laden", "Löschen", "Easter Egg", "Bedienung",
-		"Fenster", "Titel in Echtzeit"] as Array[String])
+		"Liste", "Fenster", "Titel in Echtzeit"] as Array[String])
 	assert_eq(SelbsttestTexte.ablauf_name("szenario_x"), "szenario_x")
 
 
@@ -313,7 +313,7 @@ func test_namen_der_ablaeufe() -> void:
 ## Fokusverlust; system.gpu_driver fehlt ganz. Mit [param mit_schritten] false ohne Abläufe.
 func _erfundener_lauf(mit_schritten: bool = true) -> SelbsttestLauf:
 	var lauf := SelbsttestLauf.new(START)
-	lauf.version = 1
+	lauf.version = 2
 	lauf.zeitraffer = 8
 	lauf.feste_zeit = FESTE_ZEIT
 	lauf.feste_zeitzone = 60

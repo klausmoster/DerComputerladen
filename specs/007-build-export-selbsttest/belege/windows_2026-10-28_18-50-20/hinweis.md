@@ -1,7 +1,7 @@
 # Hinweis zu diesem Lauf
 
 Gelaufen auf einem MacBook Pro mit Boot Camp, Windows 10 (10.0.19045), AMD Radeon R9 M370X mit
-Treiber 22.19.170.1536, **mit OpenGL statt Forward+**, von Hand gestartet mit
+Treiber 22.19.170.1536, **mit Compatibility und OpenGL statt Forward+**, von Hand gestartet mit
 `--rendering-method gl_compatibility --rendering-driver opengl3`.
 
 Mit Forward+ startet das Spiel auf diesem Rechner nicht: Der Treiber kann kein Vulkan, und Direct3D 12

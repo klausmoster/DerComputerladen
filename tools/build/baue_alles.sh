@@ -74,7 +74,7 @@ baue() {
         return 1
     fi
     if grep -q "Icon size" "$log"; then
-        echo "Fehler: $preset warnt „$(grep -m1 'Icon size' "$log")“"
+        echo "Fehler: $preset warnt „$(grep -m1 'Icon size' "$log")“."
         return 1
     fi
     echo "gebaut: $preset → $datei"
@@ -94,6 +94,11 @@ for system in "${SYSTEME[@]}"; do
     baue "${SPIEL_PRESET[$system]}" "${SPIEL_DATEI[$system]}" || { FEHLER=1; continue; }
     baue "${TEST_PRESET[$system]}" "${TEST_DATEI[$system]}" || { FEHLER=1; continue; }
 
+    if [[ ! -f "${SPIEL_PAKET[$system]}" || ! -f "${TEST_PAKET[$system]}" ]]; then
+        echo "Fehler: $system: Paket für die Prüfung auf Testcode fehlt, ${SPIEL_PAKET[$system]} oder ${TEST_PAKET[$system]}"
+        FEHLER=1
+        continue
+    fi
     im_spiel="$(spuren "${SPIEL_PAKET[$system]}")"
     im_test="$(spuren "${TEST_PAKET[$system]}")"
     if [[ "$im_spiel" -ne 0 ]]; then
@@ -102,7 +107,7 @@ for system in "${SYSTEME[@]}"; do
         continue
     fi
     if [[ "$im_test" -eq 0 ]]; then
-        echo "Fehler: $system: Kein Läufer im Selbsttest, die Prüfung auf Testcode ist ohne Aussage"
+        echo "Fehler: $system: Kein Läufer im Selbsttest, die Prüfung auf Testcode ist ohne Aussage."
         FEHLER=1
         continue
     fi
@@ -116,7 +121,7 @@ for system in "${SYSTEME[@]}"; do
         (cd "build/$system" && zip -q -r -X "../../$zip_datei" .)
     fi
     if [[ $? -ne 0 || ! -s "$zip_datei" ]]; then
-        echo "Fehler: $system: $zip_datei ließ sich nicht packen"
+        echo "Fehler: $system: $zip_datei ließ sich nicht packen."
         FEHLER=1
         continue
     fi
