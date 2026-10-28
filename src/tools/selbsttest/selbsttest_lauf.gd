@@ -43,7 +43,7 @@ class Schritt:
 	## Kennung des Ablaufs.
 	var ablauf: String = ""
 	var beschreibung: String = ""
-	## Die Eingaben in Worten, etwa „Maus über „Neues Spiel“, Enter“. Setzt der Läufer.
+	## Die Eingaben in Worten, etwa „Maus über „Neues Spiel“, Enter“; aus eingaben_text des Ablaufs.
 	var eingaben: String = ""
 	## Der erwartete Zustand in Worten, aus erwartet_text des Ablaufs.
 	var erwartet: String = ""
@@ -110,6 +110,7 @@ func plane(neuer_ablauf: SelbsttestAblauf, ablauf_schritte: Array[Dictionary]) -
 		neu.kennung = daten.get("kennung", "")
 		neu.ablauf = neuer_ablauf.kennung
 		neu.beschreibung = daten.get("beschreibung", "")
+		neu.eingaben = daten.get("eingaben_text", SelbsttestTexte.EINGABEN_KEINE)
 		neu.erwartet = daten.get("erwartet_text", "")
 		neu.hoechstzeit_ms = daten.get("hoechstzeit_ms", SelbsttestAblauf.HOECHSTZEIT_MS)
 		neu.foto_vergleichbar = daten.get("foto_vergleichbar", true)

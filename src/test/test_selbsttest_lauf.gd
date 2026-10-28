@@ -68,7 +68,8 @@ func test_planen_uebernimmt_die_angaben_des_schritts() -> void:
 	var lauf := SelbsttestLauf.new(START)
 	var ablauf := _ablauf("easter_egg")
 	var schritte: Array[Dictionary] = [ablauf.neuer_schritt("03_start", "Gehäusetasten 0, 1, 2",
-		_nichts, _passt, "Seite Invaders sichtbar und aktiv, Hinweis aus", false, 7000)]
+		"Linksklick auf Gehäusetaste 0, 1, 2", _nichts, _passt,
+		"Seite Invaders sichtbar und aktiv, Hinweis aus", false, 7000)]
 
 	# Act
 	lauf.plane(ablauf, schritte)
@@ -76,6 +77,7 @@ func test_planen_uebernimmt_die_angaben_des_schritts() -> void:
 	# Assert
 	var schritt := lauf.schritt("easter_egg.03_start")
 	assert_eq(schritt.beschreibung, "Gehäusetasten 0, 1, 2")
+	assert_eq(schritt.eingaben, "Linksklick auf Gehäusetaste 0, 1, 2")
 	assert_eq(schritt.erwartet, "Seite Invaders sichtbar und aktiv, Hinweis aus")
 	assert_false(schritt.foto_vergleichbar)
 	assert_eq(schritt.hoechstzeit_ms, 7000)
@@ -90,7 +92,7 @@ func test_zeitraffer_kommt_aus_dem_ablauf() -> void:
 
 	# Act
 	_plane(lauf, "titel", ["01_start"])
-	lauf.plane(echtzeit, [echtzeit.neuer_schritt("01_start", "", _nichts, _passt, "")])
+	lauf.plane(echtzeit, [echtzeit.neuer_schritt("01_start", "", "keine", _nichts, _passt, "")])
 
 	# Assert
 	assert_eq(lauf.schritt("titel.01_start").zeitraffer, 8)
@@ -324,12 +326,13 @@ func test_neuer_schritt_hat_die_schluessel_aus_dem_vertrag() -> void:
 	var ablauf := _ablauf("neues_spiel")
 
 	# Act
-	var schritt := ablauf.neuer_schritt("04_grad_mittel", "Enter", _nichts, _passt,
+	var schritt := ablauf.neuer_schritt("04_grad_mittel", "Enter", "Enter", _nichts, _passt,
 		"Communicator hinausgefahren; Spielbildschirm steht; Spielstände: Spiel 1")
 
 	# Assert
-	assert_eq(schritt.keys(), ["kennung", "beschreibung", "eingaben", "erwartet", "erwartet_text",
-		"hoechstzeit_ms", "foto_vergleichbar"])
+	assert_eq(schritt.keys(), ["kennung", "beschreibung", "eingaben_text", "eingaben", "erwartet",
+		"erwartet_text", "hoechstzeit_ms", "foto_vergleichbar"])
+	assert_eq(schritt["eingaben_text"], "Enter")
 	assert_eq(schritt["kennung"], "neues_spiel.04_grad_mittel")
 	assert_eq(schritt["hoechstzeit_ms"], 5000)
 	assert_true(schritt["foto_vergleichbar"])
@@ -358,11 +361,11 @@ class ErfundenerAblauf:
 		kennung = "erfunden"
 		name = "Erfunden"
 
-	func schritte(_fahrer: RefCounted) -> Array[Dictionary]:
+	func schritte(_fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 		var nichts := func() -> void: pass
 		var passt := func() -> String: return ""
-		return [neuer_schritt("01_eins", "eins", nichts, passt, "eins"),
-			neuer_schritt("02_zwei", "zwei", nichts, passt, "zwei")]
+		return [neuer_schritt("01_eins", "eins", "keine", nichts, passt, "eins"),
+			neuer_schritt("02_zwei", "zwei", "keine", nichts, passt, "zwei")]
 
 
 func _ablauf(kennung: String, baut_auf: String = "") -> SelbsttestAblauf:
@@ -377,8 +380,8 @@ func _plane(lauf: SelbsttestLauf, kennung: String, kurz: Array, baut_auf: String
 	var ablauf := _ablauf(kennung, baut_auf)
 	var schritte: Array[Dictionary] = []
 	for nn_kurz: String in kurz:
-		schritte.append(ablauf.neuer_schritt(nn_kurz, "Beschreibung %s" % nn_kurz, _nichts, _passt,
-			"Erwartet %s" % nn_kurz))
+		schritte.append(ablauf.neuer_schritt(nn_kurz, "Beschreibung %s" % nn_kurz, "keine", _nichts,
+			_passt, "Erwartet %s" % nn_kurz))
 	lauf.plane(ablauf, schritte)
 
 

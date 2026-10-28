@@ -11,9 +11,18 @@ extends RefCounted
 ## etwa im Test.
 ##
 ## Ein Schritt ist ein Dictionary mit den Schlüsseln aus dem Vertrag:
-## kennung, beschreibung, eingaben (Callable, mit await aufrufbar), erwartet (Callable, gibt ""
-## zurück, wenn der Zustand stimmt, sonst den gefundenen Zustand als Text), erwartet_text,
-## hoechstzeit_ms und foto_vergleichbar. neuer_schritt() baut es mit den Vorgaben.
+## kennung, beschreibung, eingaben_text (die Eingaben in Worten, für „eingaben:“ im Protokoll),
+## eingaben (Callable, mit await aufrufbar), erwartet (Callable, gibt "" zurück, wenn der Zustand
+## stimmt, sonst den gefundenen Zustand als Text), erwartet_text, hoechstzeit_ms und
+## foto_vergleichbar. neuer_schritt() baut es mit den Vorgaben.
+##
+## eingaben gibt "" oder nichts zurück, wenn alle Eingaben verschickt sind. Findet der Fahrer ein
+## Ziel nicht, gibt es den Text für „gefunden:“ zurück, etwa „Ziel nicht gefunden: HAUPTMENÜ,
+## „Neues Spiel““; dann scheitert der Schritt sofort, ohne zu warten.
+##
+## Sind die Callables Methoden des Ablaufs (etwa _pruefe_start.bind(fahrer)), merkt sich Godot darin
+## nur die Kennung des Ablaufs, keinen Verweis. Wer die Schritte benutzt, hält deshalb den Ablauf
+## selbst, wie der Läufer in seiner Liste; sonst ist er weg, bevor der erste Schritt läuft.
 
 ## Faktor für Engine.time_scale in Abläufen im Zeitraffer (R24).
 const ZEITRAFFER := 8
@@ -32,21 +41,23 @@ var zeitraffer: int = ZEITRAFFER
 
 
 ## Die Schritte in fester Reihenfolge. Die Basisklasse hat keine; jeder Ablauf überschreibt das.
-## [param _fahrer] ist der SelbsttestFahrer, über den die Schritte Ziele finden und Zustände lesen.
-## Den Fahrer gibt es erst ab Phase 2 (T013); bis dahin ist der Typ RefCounted, die Oberklasse
-## des Fahrers.
-func schritte(_fahrer: RefCounted) -> Array[Dictionary]:
+## [param _fahrer] ist der SelbsttestFahrer, über den die Schritte Ziele finden, Zustände lesen und
+## Eingaben schicken. Tests ohne Fenster geben null.
+func schritte(_fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 	return []
 
 
 ## Ein Schritt mit der Kennung „<ablauf>.<nn_kurz>“, etwa aus „01_gradwahl“ in „neues_spiel“
-## „neues_spiel.01_gradwahl“, und den Vorgaben für Höchstzeit und Foto.
-func neuer_schritt(nn_kurz: String, beschreibung: String, eingaben: Callable,
-		erwartet: Callable, erwartet_text: String, foto_vergleichbar: bool = true,
-		hoechstzeit_ms: int = HOECHSTZEIT_MS) -> Dictionary:
+## „neues_spiel.01_gradwahl“, und den Vorgaben für Höchstzeit und Foto. [param eingaben_text]
+## steht im Protokoll hinter „eingaben:“, etwa „Maus über „Neues Spiel“, Enter“; ohne Eingabe
+## SelbsttestTexte.EINGABEN_KEINE (Entscheidung Claude, research.md, „Auslegungen aus Phase 1“).
+func neuer_schritt(nn_kurz: String, beschreibung: String, eingaben_text: String,
+		eingaben: Callable, erwartet: Callable, erwartet_text: String,
+		foto_vergleichbar: bool = true, hoechstzeit_ms: int = HOECHSTZEIT_MS) -> Dictionary:
 	return {
 		"kennung": "%s.%s" % [kennung, nn_kurz],
 		"beschreibung": beschreibung,
+		"eingaben_text": eingaben_text,
 		"eingaben": eingaben,
 		"erwartet": erwartet,
 		"erwartet_text": erwartet_text,

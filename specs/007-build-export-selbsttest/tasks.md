@@ -122,24 +122,24 @@ FR-010, FR-003a; R3 bis R8, R22, R24; contracts/selbsttest-app.md, contracts/exp
 **Independent Test**: `Selbsttest macOS` bauen, mit `open` starten: Protokoll mit allen Schritten von
 `titel` und `titel_echtzeit` in Ordnung, Fotos beider Abläufe gleich.
 
-- [ ] T010 [K] [US2] Entscheiden, ob Klaus das Preset „Selbsttest macOS“ selbst im Export-Dialog des
+- [x] T010 [K] [US2] Entscheiden, ob Klaus das Preset „Selbsttest macOS“ selbst im Export-Dialog des
   Editors anlegt, um Presets und Feature-Tags zu lernen (plan.md, „Vorarbeiten“, 3). Sonst schreibt es
   der Agent in T011.
-- [ ] T011 [A] [US2] `src/project.godot`: Overrides `application/config/name.selbsttest` und
+- [x] T011 [A] [US2] `src/project.godot`: Overrides `application/config/name.selbsttest` und
   `application/run/main_scene.selbsttest` (R3); `src/export_presets.cfg`: Preset `Selbsttest macOS`
   laut contracts/export.md (Tag `selbsttest`, Bundle-ID `de.klausmoster.dercomputerladen.selbsttest`,
   Ausschluss `addons/gut/*, test/*`, Ziel `../build/macos/Der Computerladen Selbsttest.app`), keine
   Zugangsdaten. Das Preset `macOS` bleibt unverändert.
-- [ ] T012 [A] [US1] `src/tools/selbsttest/selbsttest_eingabe.gd` (`class_name SelbsttestEingabe`)
+- [x] T012 [A] [US1] `src/tools/selbsttest/selbsttest_eingabe.gd` (`class_name SelbsttestEingabe`)
   laut Vertrag: `device = 4711`, Filter über `DisplayServer.window_set_input_event_callback()`,
   `Input.use_accumulated_input = false`, Umrechnung mit `get_tree().root.get_final_transform()`,
   Drücken und Loslassen in zwei Bildern, vor jedem Klick eine Bewegung aufs Ziel (R4).
-- [ ] T013 [A] [US1] `src/tools/selbsttest/selbsttest_fahrer.gd` (`class_name SelbsttestFahrer`)
+- [x] T013 [A] [US1] `src/tools/selbsttest/selbsttest_fahrer.gd` (`class_name SelbsttestFahrer`)
   laut Vertrag: Ziele über Kennungen, Zustand lesen, Wortlaute aus `TitleTexts`, „Ziel nicht
   gefunden: …“ (FR-005, R5). `src/test/test_selbsttest_fahrer.gd`: jedes Ziel im echten Titel
   gefunden, ein fehlendes mit Namen gemeldet. Braucht der Fahrer eine neue Abfrage am Spiel, ist das
   eine eigene kleine Änderung mit Test und steht im Bericht.
-- [ ] T014 [A] [US1] `src/tools/selbsttest/selbsttest_laeufer.gd` (`class_name SelbsttestLaeufer`)
+- [x] T014 [A] [US1] `src/tools/selbsttest/selbsttest_laeufer.gd` (`class_name SelbsttestLaeufer`)
   und `src/tools/selbsttest/selbsttest_start.tscn`/`.gd` laut Vertrag: Ablage, Logger, Systemdaten,
   `GameSession` mit Ordner `user://selbsttest/spielstaende/`, fester Zeit `2026-10-26 20:40 UTC`,
   Seed 4711, Zeitzone UTC+1, eigener `quit_callback`, der erst schreibt und dann beendet (Analyse,
@@ -152,22 +152,30 @@ FR-010, FR-003a; R3 bis R8, R22, R24; contracts/selbsttest-app.md, contracts/exp
   `src/tools/selbsttest/ablaeufe/ablauf_titel.gd` und `ablauf_titel_echtzeit.gd` laut
   contracts/ablaeufe.md. Am Ende Protokoll, Ausgabe, Zip, dann beendet sich die App (die
   Zusammenfassung kommt in Phase 4).
-- [ ] T015 [A] [US1] Lernnotizen zu T011 bis T014: Feature-Tags und Overrides, `get_setting_with_override()`,
+- [x] T015 [A] [US1] Lernnotizen zu T011 bis T014: Feature-Tags und Overrides, `get_setting_with_override()`,
   Weg eines Ereignisses durch Godot, warum der Filter am Fenster sitzt, `Engine.time_scale`,
   `await` auf Bilder.
-- [ ] T016 [C] [US1] Prüfen: Tests zweimal, Startprobe still; App bauen und zweimal mit `open`
+- [x] T016 [C] [US1] Prüfen: Tests zweimal, Startprobe still; App bauen und zweimal mit `open`
   starten: alle Schritte in Ordnung (SC-003), Fotos beider Läufe und von `titel` und
   `titel_echtzeit` Byte für Byte gleich, verglichen mit `cmp` (SC-002, FR-011.8; Analyse, I5),
   `titel` schneller als `titel_echtzeit` (SC-001); Schließen des Fensters mitten im Lauf: Abbruch im
   Protokoll, Zip geschrieben (FR-010; Analyse, U2); echte Spielstände vorher und nachher gleich (SC-006); normales Spiel
   bauen und starten wie bisher; `export_presets.cfg` ohne Zugangsdaten. Restrisiken aus R4 im Lauf
   ansehen.
-- [ ] T017 [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, Text-Prüfer über Fenstertitel und
+- [x] T017 [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, Text-Prüfer über Fenstertitel und
   die Beschreibungen von `titel` im Protokoll eines echten Laufs, Maßstab wie T008; vor Klaus'
   Abnahme.
-- [ ] T018 [K] [US1] Phase 2 abnehmen: die App selbst starten und während des Laufs Maus und Tastatur
+- [x] T018 [K] [US1] Phase 2 abnehmen: die App selbst starten und während des Laufs Maus und Tastatur
   benutzen; der Lauf bleibt unberührt; einmal das Fenster mitten im Lauf schließen und das Protokoll
   ansehen (FR-010; Analyse, U2). Diff, Lernnotizen, Protokoll.
+
+Erledigt am 2026-10-28, von Klaus abgenommen: Preset „Selbsttest macOS“ und Overrides,
+`SelbsttestEingabe` (Filter am Fenster, Gerät 4711 bis zum Filter), `SelbsttestFahrer`,
+`SelbsttestLaeufer`, Startszene, Abläufe `titel` und `titel_echtzeit`. Zweimal 1258 von 1258 Tests grün
+(187 350 Prüfungen), Startprobe still; App zweimal 6 von 6 in Ordnung, Fotos Byte für Byte gleich,
+Abbruch beim Schließen mit Protokoll und Zip, echte Spielstände unverändert, normales Spiel ohne
+Läufer. Phasenprüfung: Text 6 Befunde, Nachprüfung 1, alle behoben; Vertrag titel und bedienung.03
+angeglichen. Auslegungen in research.md, „Auslegungen aus Phase 2“.
 
 **Checkpoint**: Der Selbsttest läuft im echten Fenster; ein Ablauf ist da.
 

@@ -75,8 +75,11 @@ Im Paket stehen die Pfade der enthaltenen Dateien im Klartext. Gesucht wird nach
 im Selbsttest steckt:
 
 ```bash
-grep -c "selbsttest_laeufer" "build/macos/Der Computerladen.app/Contents/Resources/Der Computerladen.pck"
+LC_ALL=C grep -a -c "selbsttest_laeufer" "build/macos/Der Computerladen.app/Contents/Resources/Der Computerladen.pck"
 ```
+
+`LC_ALL=C` und `-a` sind nötig: Ohne sie behandelt `grep` das Paket als Binärdatei und gibt nichts
+aus (Phase 2).
 
 Erwartet: `0` für das Spiel, mehr als `0` für den Selbsttest. Unter Windows und Linux dasselbe an der
 ausführbaren Datei mit eingebettetem Paket. Nach `tools/selbsttest` allein zu suchen reicht nicht: Der

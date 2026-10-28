@@ -20,6 +20,8 @@ Verweis auf Spec oder Plan im Text; der Text landet so in `erwartet:` des Protok
   dieser Zeile.
 - **Spielbildschirm steht:** aktuelle Szene ist der Spielbildschirm, „Zum Hauptmenü“ hat den Fokus,
   der Hinweis nennt das laufende Spiel.
+- **Verfügbarkeit:** Ist die gewählte Zeile nicht verfügbar, steht hinter ihr „nicht verfügbar“, auch
+  in `gefunden:`; „verfügbar“ steht nur dort, wo ein Schritt es ausdrücklich erwartet.
 - **Spielstände:** die Spielstände im Ordner des Selbsttests, als Liste der Namen, etwa
   `Spielstände: Spiel 1` oder `Spielstände: keine`.
 
@@ -28,8 +30,8 @@ Verweis auf Spec oder Plan im Text; der Text landet so in `erwartet:` des Protok
 | nn | Schritt | Eingabe | Erwartet |
 |---|---|---|---|
 | 01 | `start` | keine | Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine |
-| 02 | `nicht_verfuegbar` | Maus über „Weiterspielen“ | Zeile gewählt, Hinweis „Noch kein Spiel angefangen.“; nichts ausgelöst |
-| 03 | `beenden_da` | Maus über „Beenden“ | Zeile gewählt, verfügbar, Hinweis von „Beenden“; nicht ausgelöst |
+| 02 | `nicht_verfuegbar` | Maus über „Weiterspielen“ | Menü steht: HAUPTMENÜ, „Weiterspielen“, nicht verfügbar, Hinweis „Noch kein Spiel angefangen.“; nichts ausgelöst |
+| 03 | `beenden_da` | Maus über „Beenden“ | Menü steht: HAUPTMENÜ, „Beenden“, verfügbar, Hinweis „Laden abschließen und zurück zum Desktop.“; nichts ausgelöst |
 
 ## neues_spiel
 
@@ -80,7 +82,7 @@ Fotos von 03 und 04 sind nicht vergleichbar: Das versteckte Spiel rechnet nach Z
 |---|---|---|---|
 | 01 | `pfeile` | Pfeil runter, Pfeil hoch, Pfeil hoch | Auswahl wandert und läuft am Anfang ans Ende um |
 | 02 | `tab` | Tab, Umschalt+Tab | Auswahl eine Zeile weiter und zurück |
-| 03 | `rechtsklick` | Rechtsklick auf „Neues Spiel“ | Zeile gewählt, nichts ausgelöst |
+| 03 | `rechtsklick` | Rechtsklick auf „Neues Spiel“ | Menü steht: HAUPTMENÜ, „Neues Spiel“; nichts ausgelöst |
 | 04 | `leertaste` | Leertaste | Menü steht: SCHWIERIGKEIT, Mittel |
 | 05 | `zurueck_klick` | Linksklick auf „Zurück“ | Menü steht: HAUPTMENÜ, „Neues Spiel“ |
 | 06 | `mausrad` | Vorbereitung: sieben Spielstände; Linksklick auf „Spiel laden“, Mausrad runter | Liste scrollt um eine ganze Zeile, Marke oben sichtbar |

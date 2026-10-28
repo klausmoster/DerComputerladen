@@ -149,3 +149,110 @@ nichts und haben deshalb keine Notiz.
 - **Treiber mit Name.** `system.gpu_driver` ist „Name Version“, etwa „nvidia 550.54.14“: Unter
   Linux sagt der Name, ob der Treiber des Herstellers läuft.
 - **`godot.version` immer mit drei Zahlen**, auch bei einer Version x.y.0.
+
+## Phase 2
+
+### T011 Feature-Tag, Overrides und ein zweites Preset
+
+- **Feature-Tag.** Das Preset „Selbsttest macOS“ in `src/export_presets.cfg` trägt
+  `custom_features="selbsttest"`. Godot schreibt diesen Tag in die gebaute App; dort ist
+  `OS.has_feature("selbsttest")` wahr, im Editor und im Spiel nicht. Alles andere übernimmt das
+  Preset von „macOS“; nur Name, Bundle-ID, Ziel und Ausschluss weichen ab. „macOS“ selbst blieb Byte
+  für Byte gleich.
+- **Override mit Punkt.** In `src/project.godot` stehen `config/name.selbsttest` und
+  `run/main_scene.selbsttest`. Ein Schlüssel `einstellung.tag` ersetzt `einstellung`, wenn der Tag
+  gesetzt ist. Die Selbsttest-App heißt deshalb „Der Computerladen Selbsttest“, hat damit ihren
+  eigenen Datenordner (`app_userdata/Der Computerladen Selbsttest/`) und startet in
+  `tools/selbsttest/selbsttest_start.tscn`. Das Spiel enthält beide Zeilen auch, aber ohne Tag wirken
+  sie nicht. Es braucht also keinen Autoload und keine Zeile Code im Spiel.
+- **`get_setting()` gegen `get_setting_with_override()`.** `ProjectSettings.get_setting(
+  "application/config/name")` gibt auch in der Selbsttest-App „Der Computerladen“, den Grundwert.
+  Erst `get_setting_with_override()` beachtet den Tag. Godot selbst liest Name und Hauptszene mit
+  Override; der Code des Selbsttests braucht in Phase 2 keine überschriebene Einstellung. Wer später
+  eine liest, nimmt `get_setting_with_override()`.
+- **Ausschluss.** Das Preset „macOS“ schließt `tools/*` aus, der Selbsttest nur `addons/gut/*` und
+  `test/*`. Geprüft am Paket: Im Spiel steht `selbsttest_laeufer` 0-mal, im Selbsttest 4-mal.
+
+### T012 Der Weg eines Ereignisses und warum der Filter am Fenster sitzt
+
+- **Der Weg.** Das Betriebssystem meldet eine Taste. Der DisplayServer macht daraus ein `InputEvent`
+  und gibt es an `Input.parse_input_event()`; `Input` merkt sich den Zustand der Tasten und reicht
+  das Ereignis an den Empfang des Fensters weiter. Erst der gibt es mit `Window.push_input()` in den
+  Baum: Hover ausrechnen, dann `_input()`, dann die Oberfläche (`gui_input`, Fokus, Buttons), dann
+  `_unhandled_input()`.
+- **Warum am Fenster.** `SelbsttestEingabe.einschalten()` ersetzt mit
+  `DisplayServer.window_set_input_event_callback()` genau diesen Empfang. Echte Ereignisse kommen
+  dort an und gehen nicht weiter. Die eigenen kommen über denselben Weg wie echte, nämlich durch
+  `Input.parse_input_event()`, und tragen `device = 4711`, also lässt der Filter sie durch. Ein
+  Knoten mit `_input()` käme zu spät, denn Godot rechnet das Hover vor `_input()` aus.
+- **Godot 4.7 hat Geräte für Tastatur und Maus.** Echte Tasten tragen `device = 16`
+  (`InputEvent.DEVICE_ID_KEYBOARD`), die Maus `32` (`DEVICE_ID_MOUSE`). Die Aktionen `ui_accept`,
+  `ui_cancel`, `ui_focus_next` usw. gelten nur für Gerät 16. Eine Taste mit 4711 löste also kein
+  Enter aus. `fuer_das_spiel()` gibt deshalb jedem eigenen Ereignis beim Weiterreichen eine Kopie
+  mit dem echten Gerät. 4711 ist nur das Kennzeichen auf dem Weg bis zum Filter.
+- **Eine Lambda hält ihr Objekt fest.** Der Empfang ist `func(event): _empfange(event)`. Eine Lambda
+  in einem `RefCounted` hält einen Verweis auf `self`; solange Godot den Empfang aufbewahrt, bleibt
+  die Eingabe am Leben. Ein gewöhnliches Callable wie `_empfange` merkt sich nur die Kennung des
+  Objekts. Wäre das Objekt weg, käme keine Eingabe mehr an, auch keine echte.
+- **Zwei Bilder für einen Klick.** Drücken und Loslassen gehen in zwei Bildern hinaus
+  (`await viewport.get_tree().process_frame`). Vor jedem Klick kommt eine Bewegung aufs Ziel, damit
+  Hover und `mouse_entered` entstehen wie bei einer echten Hand. `Input.use_accumulated_input =
+  false`, weil Godot sonst Mausbewegungen eines Bilds zusammenfasst.
+
+### T013 Der Fahrer: Ziele über ihre Bedeutung
+
+- **Lesen, was da ist.** `SelbsttestFahrer` findet Einträge über `MainMenu.entries` und die Buttons
+  in `Rows`, Zeilen der Liste über das Label `Name`, Gehäusetasten unter `Communicator/Keys`, den
+  Knopf über `LeaveButton`. Er nutzt nur öffentliche Methoden und die Knotennamen der Szenen. Am
+  Spiel änderte sich nichts. Rückt ein Knopf, stimmt das Rechteck trotzdem, denn es wird zur
+  Laufzeit gelesen (`get_global_rect()`, im Raster 640 × 360).
+- **Steht der Communicator?** `is_in()` ist schon während der Fahrt herein wahr. Der Fahrer hört
+  deshalb auf `SceneTree.node_added`: Jeder neue Communicator wird gemerkt, bevor sein `_ready()`
+  läuft, und `slide_finished` sagt, wann er angekommen ist. So verpasst der Fahrer keine Fahrt, auch
+  nicht beim frischen Titel.
+- **Beenden abfangen.** Derselbe Weg gibt jedem neuen `TitleScreen` einen `quit_callback`, der nur
+  mitzählt. Löste „Beenden“ aus, stünde das im Schritt, statt dass die App mitten im Lauf zugeht.
+- **Callables mit `bind()`.** In `ablauf_titel.gd` sind die Prüfungen Methoden, und
+  `_pruefe_start.bind(fahrer)` macht daraus ein Callable mit dem Fahrer als Argument. Ein solches
+  Callable merkt sich das Objekt nur über dessen Kennung. Den Ablauf muss also jemand halten: in der
+  App die Liste des Läufers, im Test eine Variable.
+
+### T014 Läufer, Zeitraffer und `await` auf Bilder
+
+- **Ein Node an der Wurzel.** Die Startszene hängt den Läufer mit
+  `get_tree().root.add_child.call_deferred()` an die Wurzel. `change_scene_to_file()` tauscht nur
+  die laufende Szene aus; alles, was direkt an der Wurzel hängt, wie die Autoloads, bleibt. So
+  überlebt der Läufer jeden Wechsel zwischen Titel und Spielbildschirm.
+- **`Engine.time_scale`.** Der Läufer setzt vor jedem Ablauf `Engine.time_scale = 8` bzw. `1`. Godot
+  multipliziert damit das `delta` in `_process()`, Tweens und Timer, das Spiel merkt nichts davon.
+  Der Communicator begrenzt seinen Schritt je Bild (`MAX_STEP`); im Lauf fuhr er im Zeitraffer in
+  rund 100 ms herein, in Echtzeit in 210 ms. `Time.get_ticks_msec()` ist nicht skaliert. Daran messen
+  Höchstzeit und `dauer_ms`, also in echter Zeit.
+- **Warten ohne feste Zeit.** `_fuehre_aus()` prüft jedes Bild (`await get_tree().process_frame`),
+  bis die Prüfung `""` gibt oder 5000 ms echter Zeit vorbei sind. Eine feste Wartezeit wäre auf
+  langsamen Rechnern zu kurz und auf schnellen verschenkt.
+- **`await` auf das fertige Bild.** Das Foto entsteht nach `await RenderingServer.frame_post_draw`:
+  Das Signal kommt, wenn Godot das Bild fertig gemalt hat. Erst dann zeigt
+  `get_viewport().get_texture().get_image()` sicher den Zustand, der eben geprüft wurde. Mit Stretch
+  „viewport“ ist es immer 640 × 360, gleich wie groß das Fenster ist, und ohne Mauszeiger.
+- **Eine Kette von `await`.** `starte()` kehrt beim ersten Warten zurück; der Lauf läuft als
+  Koroutine weiter, Bild für Bild, während das Spiel normal läuft. Wird das Fenster geschlossen,
+  schreibt `_brich_ab()` sofort Protokoll, Ausgabe und Zip, denn danach gibt es kein nächstes Bild.
+  Die angehaltene Kette sieht beim Weiterlaufen `_abgebrochen` und hört auf. Läuft ein Spiel,
+  kommt das Schließen erst bei `GameSession` an. Sie speichert und ruft dann `quit_callback`, den
+  der Läufer auf `_brich_ab` gesetzt hat.
+- **Austauschbar für Tests.** Frischer Titel, Foto und Beenden sind Callables (`vorbereitung`,
+  `fotograf`, `beenden`), wie `quit_callback` in `GameSession`. So prüft
+  `test_selbsttest_laeufer.gd` Warten, Fehler, Abbruch und Schreiben ohne Fenster.
+
+### Auslegungen in T011 bis T014
+
+- **Frischer Titel bis „steht im Baum“.** Die Vorbereitung endet, sobald der neue Titel da ist. Die
+  Fahrt herein gehört zu Schritt 01 („Start, der Communicator fährt herein“); sonst zeigte
+  `dauer_ms` keinen Unterschied zwischen `titel` und `titel_echtzeit` (SC-001). Hat der erste Schritt
+  eines Ablaufs Eingaben, wartet der Läufer vorher, bis der Communicator steht.
+- **`eingaben` darf einen Text zurückgeben.** Findet der Fahrer ein Ziel nicht, gibt die Eingabe
+  „Ziel nicht gefunden: …“ zurück, und der Schritt scheitert sofort, ohne auf die Höchstzeit zu
+  warten.
+- **Ordner nicht beschreibbar.** Bis zur Zusammenfassung in Phase 4 gibt die Startszene die Meldung
+  mit `printerr()` aus und beendet die App mit Code 1.

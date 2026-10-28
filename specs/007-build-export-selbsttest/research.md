@@ -84,6 +84,13 @@ zeigte; ein Startparameter, weil ein Doppelklick keinen mitgibt.
 `warp_mouse` und ohne Fensterfokus (belegt). Ein früher Knoten mit `_input()` reicht nicht: Godot
 rechnet das Hover vor `_input()` aus, und Autoloads werden als letzte gefragt (belegt).
 
+**Nachtrag Phase 2:** Beim Weiterreichen an das Fenster bekommt ein eigenes Ereignis das Gerät, das
+Godot 4.7 echten Ereignissen gibt: `InputEvent.DEVICE_ID_KEYBOARD` (16) für Tasten,
+`DEVICE_ID_MOUSE` (32) für die Maus. Die Aktionen `ui_accept`, `ui_cancel`, `ui_focus_*` gelten nur
+für Gerät 16; mit 4711 löste Enter nichts aus (belegt mit Probe und Test). 4711 ist damit nur das
+Kennzeichen bis zum Filter. Weitergereicht wird an das Fenster selbst (`push_input()`), das ist
+die Wurzel des Baums.
+
 **Restrisiken, geprüft in Phase 2:**
 - Echte Tasten ändern trotzdem den Zustand von `Input`, etwa `is_key_pressed()`. Das Spiel fragt
   diesen Zustand nirgends ab (geprüft am 2026-10-28: kein `Input.is_…`, `Input.get_…` oder
@@ -411,6 +418,38 @@ Vom Agent bei T001 bis T006 ausgelegt, von Claude geprüft und angenommen (2026-
 - **Entscheidung Claude für Phase 2:** Der Text für `eingaben:` kommt als eigener Schlüssel
   `eingaben_text` in das Schritt-Dictionary (`neuer_schritt()`), nicht aus einem Mitschreiben der
   Eingabe; so steht im Protokoll, was der Ablauf meint, etwa „Maus über „Neues Spiel“, Enter“.
+
+## Auslegungen aus Phase 2
+
+Vom Agent bei T011 bis T015 ausgelegt, von Claude geprüft und angenommen (2026-10-28):
+- Die Beschreibungen von `titel.02` und `titel.03` stehen nicht im Vertrag; die Tabelle in
+  ablaeufe.md hat keine Spalte dafür. Sie lauten „„Weiterspielen“ wählen, ohne Spielstand nicht
+  verfügbar“ und „„Beenden“ wählen, ohne auszulösen“, Wortlaut der Einträge aus `TitleTexts`.
+  Fest war nur `titel.01`, „Start, der Communicator fährt herein“ (CHK030).
+- Die Vorbereitung endet, sobald der neue Titel im Baum steht, nicht erst, wenn das Menü steht. Die
+  Fahrt herein gehört so zu Schritt 01, und SC-001 bleibt messbar. Hat der erste Schritt eines
+  Ablaufs Eingaben, wartet der Läufer vorher, bis der Communicator steht. Auch der erste Ablauf
+  lädt den Titel neu, damit beide Abläufe gleich beginnen.
+- Findet der Fahrer ein Ziel nicht, gibt `eingaben` den Text „Ziel nicht gefunden: …“ zurück, und
+  der Schritt scheitert sofort, ohne die Höchstzeit abzuwarten.
+- `neuer_schritt()` nimmt `eingaben_text` als dritten Parameter; die Tests aus Phase 1 sind
+  angepasst, die Fixtures unverändert.
+- Kennungen des Fahrers ohne Vorbild im Spiel: `slot_<nummer>` für Zeilen der Liste, `leave` für
+  den Knopf „Zum Hauptmenü“.
+- Der Fahrer gibt jedem neuen Titel einen `quit_callback`, der nur mitzählt. So lässt sich „nicht
+  ausgelöst“ prüfen, ohne dass die App mitten im Lauf zugeht.
+- Meldungen während der Vorbereitung zählen zum ersten Schritt des Ablaufs.
+- Ist der Ordner nicht beschreibbar, gibt die Startszene bis Phase 4 die Meldung mit `printerr()`
+  aus und beendet mit Code 1.
+- Prüfbefehl in export.md: `LC_ALL=C grep -a -c` statt `grep -c`, sonst keine Ausgabe.
+- **Neues Restrisiko für Phase 3:** `Control.set_default_cursor_shape()` schickt Godot eine eigene
+  Mausbewegung an der echten Zeigerposition, am Filter vorbei (`control.cpp` 4.7.2). Das passiert,
+  wenn sich die Zeigerform eines Controls unter dem echten Zeiger ändert. `SaveList._refresh_rows()`
+  tut das; der echte Zeiger könnte so in der Liste eine Zeile wählen. Im Titel tritt es nicht auf.
+  Phase 3 prüft es mit dem Ablauf `laden`.
+- **Beobachtung Claude bei T016:** Schließen etwa 0,4 s nach dem Start, bevor der Läufer läuft,
+  wurde nicht beachtet; der Lauf lief durch. Zwischen 0,6 und 0,75 s brach er wie verlangt ab.
+  Vermutlich kommt die Anfrage, bevor Godot sie annehmen kann; es betrifft nicht den Lauf selbst.
 
 ## Für Klaus zum Aufräumen
 

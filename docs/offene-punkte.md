@@ -12,6 +12,28 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Phase 2 (2026-10-28)
+
+Lücken aus der Phasenprüfung (Text-Prüfer), von Claude entschieden:
+- **Englische Fehlernamen von Godot** (`error_string()`) dürfen in Meldungen des Selbsttests stehen,
+  etwa „titel.01_start.png ließ sich nicht schreiben: File: Can't open“. Sie sind Daten der Engine
+  wie Testausgaben; übersetzt wären sie geraten. Kommt mit T027 als Satz in den Abschnitt
+  „Werkzeuge“.
+- **Seite ohne Kopfzeile** heißt im Protokoll nach ihrem Knoten, heute nur „Seite Invaders
+  sichtbar“, wie im Vertrag. Bekommt eine neue Seite keine Kopfzeile, nennt ihr Vertrag den Namen.
+- Verworfen: Großer Anfang bei satzartigen Meldungen ist keine Lücke (ein Satz ohne Schlusspunkt
+  bleibt ein Satz, CHK034); „Ordner“ in der Meldung zum fremden Ordner ist richtig, sie nennt einen
+  Pfad, nicht die Spielstände.
+- **Klaus:** Bei titel.02 und titel.03 heißt `erwartet:` jetzt „Menü steht: …“ wie `gefunden:`,
+  Hinweis ausgeschrieben, überall „nichts ausgelöst“ (contracts/ablaeufe.md).
+- **Nachprüfung, von Claude entschieden:** „nicht verfügbar“ steht in `erwartet:` und `gefunden:`,
+  „verfügbar“ nur, wo ein Schritt es erwartet; bedienung.03 heißt jetzt auch „Menü steht: …;
+  nichts ausgelöst“. Offen, nicht dringend: „Seite Invaders“ steht im Vertrag nicht in Versalien,
+  weil die Seite keine Kopfzeile hat; Empfehlung, so lassen (Name, keine Kopfzeile).
+- **Für T018:** Ein Lauf dauert nur etwa 0,5 s nach rund 0,7 s Start; Maus und Tastatur während des
+  Laufs und Schließen mitten im Lauf sind von Hand kaum zu treffen. Claude hat das Schließen mit
+  einem Beenden-Befehl zu drei Zeitpunkten probiert (research.md, „Auslegungen aus Phase 2“).
+
 ### Feature 007, Phase 1 (2026-10-28)
 
 - **Testläufe aus Worktrees teilen sich `user://`:** Alle Checkouts des Projekts heißen „Der

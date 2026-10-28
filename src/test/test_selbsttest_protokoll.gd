@@ -230,9 +230,9 @@ func test_foto_nicht_vergleichbar_und_abbruch() -> void:
 	ablauf.kennung = "easter_egg"
 	var nichts := func() -> void: pass
 	var passt := func() -> String: return ""
-	lauf.plane(ablauf, [ablauf.neuer_schritt("03_start", "Gehäusetasten 0, 1, 2", nichts, passt,
-		"Seite Invaders sichtbar und aktiv, Hinweis aus", false),
-		ablauf.neuer_schritt("04_spielen", "Pfeil rechts halten, Leertaste", nichts, passt, "x",
+	lauf.plane(ablauf, [ablauf.neuer_schritt("03_start", "Gehäusetasten 0, 1, 2", "", nichts,
+		passt, "Seite Invaders sichtbar und aktiv, Hinweis aus", false),
+		ablauf.neuer_schritt("04_spielen", "Pfeil rechts halten, Leertaste", "", nichts, passt, "x",
 		false)] as Array[Dictionary])
 	lauf.melde_ok("easter_egg.03_start", 210)
 
@@ -245,7 +245,7 @@ func test_foto_nicht_vergleichbar_und_abbruch() -> void:
 	assert_true(text.contains("\nlauf.abbruch: easter_egg.04_spielen\n"))
 	assert_true(text.contains("\nschritt: easter_egg.04_spielen\nablauf: easter_egg\n"
 		+ "status: NICHT_GELAUFEN\ngefunden: Fenster geschlossen\n"))
-	assert_true(text.contains("\neingaben: unbekannt\n"), "Eingaben setzt der Läufer.")
+	assert_true(text.contains("\neingaben: unbekannt\n"), "Ohne Eingaben in Worten: unbekannt.")
 
 
 # --- Wortlaute -----------------------------------------------------------------------------------
@@ -345,21 +345,20 @@ func _erfundener_lauf(mit_schritten: bool = true) -> SelbsttestLauf:
 	var titel := SelbsttestAblauf.new()
 	titel.kennung = "titel"
 	lauf.plane(titel, [titel.neuer_schritt("01_start", "Start, der Communicator fährt herein",
-		nichts, passt, "Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine")]
+		"keine", nichts, passt, "Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine")]
 		as Array[Dictionary])
 	var neues_spiel := SelbsttestAblauf.new()
 	neues_spiel.kennung = "neues_spiel"
 	lauf.plane(neues_spiel, [
-		neues_spiel.neuer_schritt("01_gradwahl", "Enter auf „Neues Spiel“", nichts, passt,
+		neues_spiel.neuer_schritt("01_gradwahl", "Enter auf „Neues Spiel“",
+			"Maus über „Neues Spiel“, Enter", nichts, passt,
 			"Menü steht: SCHWIERIGKEIT, Mittel"),
-		neues_spiel.neuer_schritt("02_zurueck_esc", "Esc", nichts, passt,
+		neues_spiel.neuer_schritt("02_zurueck_esc", "Esc", "Esc", nichts, passt,
 			"Menü steht: HAUPTMENÜ, „Neues Spiel“"),
 	] as Array[Dictionary])
 
-	lauf.schritt("titel.01_start").eingaben = "keine"
 	lauf.melde_ok("titel.01_start", 1712)
 	lauf.vermerke_fokusverlust("neues_spiel.01_gradwahl", 2210)
-	lauf.schritt("neues_spiel.01_gradwahl").eingaben = "Maus über „Neues Spiel“, Enter"
 	lauf.melde_fehler("neues_spiel.01_gradwahl",
 		"Zeit abgelaufen, zuletzt: Menü steht: SCHWIERIGKEIT, Leicht", 5003, PackedStringArray([
 			"WARNING: Seite fehlt · at: _ready (res://scenes/title/title_screen.gd:42)",
@@ -377,8 +376,8 @@ func _lauf_nur_ok(anzahl: int) -> SelbsttestLauf:
 	var nichts := func() -> void: pass
 	var passt := func() -> String: return ""
 	for i in anzahl:
-		schritte.append(ablauf.neuer_schritt("%02d_schritt" % (i + 1), "Schritt", nichts, passt,
-			"Menü steht: HAUPTMENÜ"))
+		schritte.append(ablauf.neuer_schritt("%02d_schritt" % (i + 1), "Schritt", "keine", nichts,
+			passt, "Menü steht: HAUPTMENÜ"))
 	lauf.plane(ablauf, schritte)
 	for schritt in lauf.schritte:
 		lauf.melde_ok(schritt.kennung, 100)
