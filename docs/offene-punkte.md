@@ -12,6 +12,31 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Spec (2026-10-28)
+
+Eigene Entscheidungen von Claude in `specs/007-build-export-selbsttest/spec.md`, umgesetzt in der
+Spec, von Klaus noch nicht bestätigt:
+- **Ein Fehler beendet nur seinen Ablauf:** Der Rest des Ablaufs gilt als „nicht gelaufen“, der
+  nächste beginnt beim frischen Titel (FR-009). So zieht ein Fehler keine Folgefehler nach sich.
+- **Feste Uhrzeit und fester Seed im Selbsttest** (FR-008), weil Hinweise wie „Gespielt am …“ die
+  Fotos sonst bei jedem Lauf ändern.
+- **Echte Maus und Tastatur sind während des Laufs abgeschaltet,** Schließen des Fensters bricht ab
+  (FR-010).
+- **„Beenden“ wird nicht ausgelöst,** nur geprüft, dass es da ist (FR-012).
+- **Fotos im Oberflächenraster 640 × 360,** nicht in Fenstergröße; die Vergrößerung prüft der
+  Ablauf „Fenster“ (Assumptions).
+- **Höchstens 2 Minuten** für einen Lauf auf Klaus' Mac (SC-001).
+- **Linux nur x86_64** (FR-021).
+- **Der Abschnitt „Bedienung“ der Abläufe** prüft jede Eingabeart des Titels einmal (FR-011,
+  Punkt 6).
+- **Fortschritt im Fenstertitel** (FR-003, aus `/speckit-clarify`), nicht im Spielbild, damit die
+  Fotos nur das Spiel zeigen.
+- **`rcedit` wird vermutlich nicht gebraucht:** Nach Claudes Wissen setzt Godot seit 4.1 Symbol und
+  Versionsangaben einer Windows-App selbst. Der Plan prüft das in der Doku von 4.7, bevor ein
+  Download angefragt wird.
+- **Befund am Rande:** Ohne Einstellung weicht Godot heute still auf einen einfacheren Renderer aus,
+  wenn Vulkan oder Direct3D 12 fehlt. Klaus hat entschieden, das abzuschalten (Spec, Clarifications).
+
 ### Feature 005, Phase 5 (2026-10-27)
 
 Aus der Phasenprüfung (Stil- und Text-Prüfer, von Claude nachgeprüft):

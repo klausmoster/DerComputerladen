@@ -25,7 +25,7 @@ Die Nummer ist Teil der `feature_id` (`SS-NN`) und stabil.
 | 08 | Qualität & Risiko | Idee |
 | 09 | Adventure-Layer | Idee (Orte, Dialoge, Interaktion) |
 | 10 | Präsentation & UI | In Arbeit (Feature 001: Start bis zum Hauptmenü; Feature 004: Blätter im Titel, Liste der Spielstände, leerer Spielbildschirm; Feature 005: Titel auf dem Communicator; Feature 006: Gehäusetasten und Spiel auf der Anzeige) |
-| 11 | Infrastruktur | In Arbeit (Feature 004: Spielstände anlegen, fortsetzen, löschen; Feature 006: Ton mit Kanal `Effekte` und erzeugten Klängen); Build Idee |
+| 11 | Infrastruktur | In Arbeit (Feature 004: Spielstände anlegen, fortsetzen, löschen; Feature 006: Ton mit Kanal `Effekte` und erzeugten Klängen; Feature 007: Build & Export mit Selbsttest, in Arbeit) |
 
 01–08 entsprechen den Kernsystemen aus dem GDD. 09–11 stehen dort verstreut bzw.
 unter „Offene Fragen", sind aber eigene Systeme.
@@ -43,6 +43,7 @@ unter „Offene Fragen", sind aber eigene Systeme.
 | 004 | [Neues Spiel starten](../../specs/004-neues-spiel/spec.md), System 11 und 01, Pilot der Prüf-Agents | fertig | tasks |
 | 005 | [Communicator als Steuerelement](../../specs/005-communicator/spec.md), System 10, Titel auf dem Communicator | fertig | tasks |
 | 006 | [Easter Egg 01: Space Invaders](../../specs/006-easter-egg-space-invaders/spec.md), System 10 und 11, Spiel auf der Anzeige des Communicators, erster Ton | fertig | tasks |
+| 007 | [Build & Export mit Selbsttest](../../specs/007-build-export-selbsttest/spec.md), System 11, Selbsttest-App auf macOS, Exporte für Windows und Linux | in Arbeit | specify |
 
 Diese Tabelle wird derzeit von Hand gepflegt. Ab etwa zehn Features lohnt ein
 Generator, der sie aus dem Frontmatter baut — gleiches Prinzip wie
