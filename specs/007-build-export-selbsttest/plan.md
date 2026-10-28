@@ -55,8 +55,9 @@ mit `open` gestartet, dazu die Fehlerprobe (SC-004). Vergleich mit Proben (SC-00
 Zeit (R6, R24).
 
 **Constraints**:
-- Spiel ohne Selbsttest unverändert; alle bisherigen Tests grün; einzige Änderung am Spielcode ist die
-  Stellschraube für den Zeitzonenversatz in `SaveGame` (R7).
+- Spiel ohne Selbsttest unverändert; alle bisherigen Tests grün; Änderungen am Spielcode sind nur die
+  Stellschraube für den Zeitzonenversatz in `SaveGame` (R7, Phase 1) und das Abfangen des
+  Vollbild-Kürzels in `GameWindow._input()` (R15, Phase 6; Analyse, I2).
 - Normaler Export ohne Datei des Selbsttests (SC-005); echte Spielstände unberührt (SC-006).
 - Fotos pixelgleich über zwei Läufe auf dem Mac (SC-002).
 - Nur Desktop, Forward+; kein Ausweichen auf OpenGL (R13).
@@ -173,6 +174,34 @@ Spalte „Erwartet“; Protokoll: Beispiel und Formen) und Quickstart. Die wicht
 - **CHK029 bis CHK039**: `computerladen.version`, „Spiel laden“, eine Ergebniszeile, Gründe ohne
   „gescheitert“, Fenstertitel mit „Schritt“, Maschinenform im Protokoll.
 
+## Änderungen nach der Analyse
+
+Aus `/speckit-analyze` am 2026-10-28 mit 19 Befunden (2 kritisch, 2 hoch, 9 mittel, 6 niedrig),
+gelesen von einem unabhängigen Prüfer; Claude hat alle nachgeprüft, I1 und I2 am Code
+(`communicator.gd`, `MAX_STEP`; Godots Regel für Aktionen ohne Zusatztaste). Klaus hat alle
+Empfehlungen freigegeben.
+- **V1** (kritisch): Phase 6 zeigt das App-Symbol in sechs Größen. Vor T042 kommt die Regel dafür in
+  den Abschnitt „App-Symbol“ des Style-Guides (T041a, T041b); vor der Abnahme prüft der
+  Stil-Prüfer eine Montage (T048a).
+- **V2** (kritisch): Phase 5 schreibt Werkzeugtexte; Phasenprüfung mit dem Text-Prüfer (T038a).
+- **I1** (hoch): Der Communicator begrenzt seinen Schritt; SC-001 verlangt nur noch „schneller“,
+  R24 nennt die Grenze. `dauer_ms` zählt bei Schritten ohne Eingabe ab Beginn des Schritts.
+- **I2** (hoch): Alt+Enter trifft auch `ui_accept`; `GameWindow` fängt das Kürzel in `_input()` ab
+  (R15, FR-023, T043).
+- **I3**: Frischer Titel über `leave()` und Ordner leeren; ob der Communicator steht, erkennt der
+  Fahrer am Signal `slide_finished`. Keine weitere Änderung am Spiel.
+- **I4**: In den Phasen 1 bis 3 sind CHK030 und CHK039 Maßstab der Text-Prüfer.
+- **I5**: Bis Phase 5 vergleicht Claude Fotos mit `cmp`; `vergleich.py` bekommt `--gegen <lauf>`.
+- **I6, U1, U2, U3, U5, U6, U7, M1, M2, I7, I8, A1**: Zeitpunkt von `system.fenster`, Titel neu
+  laden nach der Vorbereitung in `bedienung.06`, eigener `quit_callback` und Schließtest,
+  „ausschalten“ heißt durchreichen, kopierter Text bei nicht beschreibbarem Ordner, `.gitkeep`,
+  `zeitraffer:` je Schritt, „scrollt“, 37 Schritte im Beispiel, sechs Fehler in R23, T043 nach T042,
+  Probe des kopierten Texts in T032.
+- **U4**: Neue Aufgabe „Quickstart nachziehen“ (T046a).
+
+Eingearbeitet in Spec (Clarifications „Analyse 2026-10-28“, FR-023, SC-001, Story 1), research.md
+(R4, R15, R23, R24), Datenmodell, Verträge, Quickstart und tasks.md.
+
 ## Prüfer je Phase
 
 Jede Phase mit Sichtbarem oder Texten endet mit der `[C]`-Aufgabe „Phasenprüfung“ durch
@@ -184,6 +213,6 @@ Jede Phase mit Sichtbarem oder Texten endet mit der `[C]`-Aufgabe „Phasenprüf
 | 2 Fenster | Fenstertitel, Beschreibungen des Ablaufs `titel` | Text | `Sprache.md`; Protokoll eines echten Laufs |
 | 3 Abläufe | Beschreibungen und Erwartungen aller Abläufe | Text | wie Phase 2 |
 | 4 Zusammenfassung | eine sichtbare Seite und ihre Texte | Stil, Text | Abschnitt „Werkzeuge“, `tokens.json`, `Sprache.md`; Bildschirmfotos: alles in Ordnung, mit Fehlern, Ordner nicht beschreibbar |
-| 5 Vergleich | Bericht für Claude und Klaus, kein Text im Spiel | keine; Klaus nimmt ab | – |
-| 6 Windows, Linux | App-Symbol (aus vorhandenem Bild), Vollbildtasten | keine; Klaus sieht auf beiden Systemen hin | Quickstart |
+| 5 Vergleich | Texte eines Werkzeugs: Bericht `vergleich.md` und README (Analyse, V2) | Text | `Sprache.md`, `Werkzeuge.md`; ein Bericht aus den Proben |
+| 6 Windows, Linux | App-Symbol in sechs Größen (Analyse, V1), Vollbildtasten | Stil | Abschnitt „App-Symbol“ nach der Ergänzung; Montage der sechs Größen ×8 |
 | 7 Abschluss | Doku | bei der Lückensuche Stil und Text einmal über das ganze Feature | wie 4 |

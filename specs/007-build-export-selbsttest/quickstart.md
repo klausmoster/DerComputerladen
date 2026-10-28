@@ -48,15 +48,17 @@ open "build/macos/Der Computerladen Selbsttest.app"
 2. Am Ende steht die Zusammenfassung im Look der Werkzeuge, im maximierten Fenster: Summe,
    fehlerhafte Schritte, Pfad, dazu
    „Kopieren“, „Ordner zeigen“ und „Beenden“. Erwartet: alle Schritte in Ordnung (SC-003); im
-   Protokoll braucht `titel` weniger als halb so lange wie `titel_echtzeit` (SC-001).
+   Protokoll braucht `titel` weniger Zeit als `titel_echtzeit` (SC-001).
 3. „Ordner zeigen“ zeigt das Zip des Laufs im Finder, markiert; daneben der Ordner des Laufs mit
    `protokoll.txt`, `ausgabe.txt`, `fotos/` (SC-007).
 4. „Kopieren“ und in einen Texteditor einfügen: Kopf, Systemdaten, Summe, keine Schritte mit `OK`.
 5. Ein zweiter Lauf: neuer Ordner, alter bleibt. Vergleich der beiden Läufe:
 
    ```bash
-   python3 -I tools/selbsttest/vergleich.py "<Ordner des zweiten Laufs>"
+   python3 -I tools/selbsttest/vergleich.py "<Ordner des zweiten Laufs>" --gegen "<Ordner des ersten Laufs>"
    ```
+
+   Vor Phase 5 gibt es das Werkzeug noch nicht; dann vergleicht Claude die Fotos mit `cmp`.
 
    Erwartet: alles `gleich` oder `nicht vergleichbar` (SC-002, SC-008).
 6. Echte Spielstände: vorher und nachher `ls -l` auf den Ordner des Spiels; unverändert (SC-006).

@@ -106,6 +106,14 @@ Text-Prüfer; von Klaus am 2026-10-28 alle nach Vorschlag freigegeben. Die wicht
   Schrift, Zeichen und Tasten dem Vertrag (CHK017 bis CHK028).
 - Wortlaute und Formate wie im Vertrag (CHK029 bis CHK039); der Ablauf heißt „Spiel laden“.
 
+### Analyse 2026-10-28
+
+Aus `/speckit-analyze`, gelesen von einem unabhängigen Prüfer: 19 Befunde (2 kritisch, 2 hoch, 9
+mittel, 6 niedrig); Claude hat alle nachgeprüft, Klaus hat am 2026-10-28 alle Empfehlungen
+freigegeben. Für die Spec: SC-001 verlangt nur noch, dass der Zeitraffer schneller ist (I1);
+Alt+Enter darf im Menü nichts auslösen (I2, FR-023); das Beispiel in Story 1 nennt 37 Schritte (M2).
+Alle Befunde stehen in plan.md, „Änderungen nach der Analyse“.
+
 ## Begriffe
 
 - **Export:** aus dem Godot-Projekt eine fertige App bauen, die ohne Godot läuft, etwa
@@ -149,7 +157,7 @@ der Titel erscheint, und die App spielt ihre Abläufe im Zeitraffer durch, ohne 
 Communicator fährt herein, „Neues Spiel“ wird gewählt, ein Grad, der Spielbildschirm erscheint,
 zurück zum Hauptmenü, das Spiel wird geladen und gelöscht, die drei grauen Knöpfe starten das
 versteckte Spiel und Esc beendet es wieder. Nach jedem Schritt prüft die App, ob zu sehen ist, was
-zu sehen sein soll, und macht ein Foto. Am Ende zeigt sie eine Zusammenfassung, etwa „24 von 24
+zu sehen sein soll, und macht ein Foto. Am Ende zeigt sie eine Zusammenfassung, etwa „Alles in Ordnung: 37 von 37
 Schritten in Ordnung“, und sagt, wo Protokoll und Fotos liegen.
 
 **Why this priority**: Das ist der Kern des Features. Tests ohne Fenster sehen nicht alles; in
@@ -462,7 +470,8 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
 - **FR-023**: Fenster und Skalierung MÜSSEN unter Windows und Linux wie auf dem Mac gelten:
   ganzzahliger Faktor beim Start, zentriert, Mindestgröße 640 × 360. Das Vollbild MUSS sich auf
   allen drei Systemen per Tastatur hin und zurück schalten lassen: auf dem Mac mit Ctrl+Cmd+F, unter
-  Windows und Linux mit F11 und mit Alt+Enter.
+  Windows und Linux mit F11 und mit Alt+Enter. Das Kürzel schaltet nur das Vollbild und löst im
+  Menü nichts aus, auch nicht Alt+Enter auf einem gewählten Eintrag (Analyse, I2).
 - **FR-024**: Was der Export für Windows und Linux braucht, heute die vollständigen
   Export-Templates 4.7.2, MUSS dokumentiert sein; ein Download geschieht nur mit Klaus' Erlaubnis, mit Dateiname, Quelle
   und Größe.
@@ -498,8 +507,9 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
 
 ### Measurable Outcomes
 
-- **SC-001**: Der Ablauf `titel` braucht im Zeitraffer weniger als halb so lange wie
-  `titel_echtzeit`; Dauer je Schritt und gesamt stehen im Protokoll. Eine feste
+- **SC-001**: Der Ablauf `titel` braucht im Zeitraffer weniger Zeit als `titel_echtzeit` (Analyse,
+  I1: Der Communicator begrenzt seinen Schritt je Bild, der Zeitraffer wirkt bei ihm nur etwa
+  doppelt); Dauer je Schritt und gesamt stehen im Protokoll. Eine feste
   Obergrenze gibt es nicht (Klaus, 2026-10-28).
 - **SC-002**: Zwei Läufe hintereinander auf demselben Mac liefern Fotos, die Pixel für Pixel
   gleich sind, und Protokolle, die sich nur in Zeiten, Dauern, Pfaden und Fokusverlusten

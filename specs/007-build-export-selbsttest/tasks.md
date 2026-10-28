@@ -22,7 +22,8 @@ Vergleich, Phase 6 Windows und Linux, Phase 7 Abschluss. Umgesetzt wird nach Ver
 Grundsatz II: eine Phase nach der anderen, nur auf Klaus' Auftrag, `/speckit-implement` nie. Jede
 Phase endet mit Klaus' Abnahme; jede Phase mit Sichtbarem oder Texten hat davor die [C]-Aufgabe
 „Phasenprüfung“ (plan.md, „Prüfer je Phase“). Kürzel wie „CHK016“ verweisen auf die Checkliste
-[review.md](checklists/review.md), „R7“ auf [research.md](research.md).
+[review.md](checklists/review.md), „R7“ auf [research.md](research.md). Nach der Analyse kamen T038a,
+T041a, T041b, T046a und T048a dazu (plan.md, „Änderungen nach der Analyse“).
 
 ## Format: `[ID] [Besitzer] [P?] [Story] Beschreibung`
 
@@ -72,7 +73,8 @@ erwartete Protokoll und den erwarteten Text für „Kopieren“.
   für Zeiten und Maße (CHK033, CHK034, CHK039). `src/test/test_selbsttest_protokoll.gd` vergleicht
   einen erfundenen Lauf mit je einem Schritt `OK`, `FEHLER`, `NICHT_GELAUFEN` Byte für Byte mit
   `src/test/fixtures/selbsttest/protokoll_erwartet.txt` und `kopieren_erwartet.txt`; dazu „Alles in
-  Ordnung“ mit 1 und 40 Schritten.
+  Ordnung“ mit 1 und 37 Schritten und der Text bei nicht beschreibbarem Ordner gegen
+  `kopieren_nicht_beschreibbar.txt` (Analyse, U5). Je Schritt eine Zeile `zeitraffer:` (U7).
 - [ ] T003 [A] [P] [US1] `src/tools/selbsttest/selbsttest_system.gd` (`class_name
   SelbsttestSystem`): alle Schlüssel aus data-model.md, „Systemdaten“, mit `computerladen.version`
   (CHK029); Treiberinfo unter Windows und Linux in einem Thread (R20). `src/test/test_selbsttest_system.gd`:
@@ -94,7 +96,8 @@ erwartete Protokoll und den erwarteten Text für „Kopieren“.
   Kopie: Reihenfolge der Schlüssel, Dativ, fehlender Schlüssel, falscher Zeitzonenversatz; die Tests
   finden jeden.
 - [ ] T008 [C] Phasenprüfung Phase 1 mit `/dcl-phasenpruefung`, Text-Prüfer über die Protokolle aus
-  den Fixtures und `SelbsttestTexte` (plan.md, „Prüfer je Phase“); vor Klaus' Abnahme
+  den Fixtures und `SelbsttestTexte` (plan.md, „Prüfer je Phase“); Maßstab zusätzlich CHK030 und
+  CHK039 aus review.md, bis sie in Phase 4 im Style-Guide stehen (Analyse, I4); vor Klaus' Abnahme
   (`docs/ki_workflow/ki_pruefung.md`).
 - [ ] T009 [K] [US1] Phase 1 abnehmen: Diff, Lernnotizen, Testergebnis, ein Beispielprotokoll.
 
@@ -132,7 +135,10 @@ FR-010, FR-003a; R3 bis R8, R22, R24; contracts/selbsttest-app.md, contracts/exp
 - [ ] T014 [A] [US1] `src/tools/selbsttest/selbsttest_laeufer.gd` (`class_name SelbsttestLaeufer`)
   und `src/tools/selbsttest/selbsttest_start.tscn`/`.gd` laut Vertrag: Ablage, Logger, Systemdaten,
   `GameSession` mit Ordner `user://selbsttest/spielstaende/`, fester Zeit `2026-10-26 20:40 UTC`,
-  Seed 4711, Zeitzone UTC+1; Läufer an die Wurzel; frischer Titel als `Vorbereitung` (CHK001);
+  Seed 4711, Zeitzone UTC+1, eigener `quit_callback`, der erst schreibt und dann beendet (Analyse,
+  U2); Läufer an die Wurzel; frischer Titel als `Vorbereitung` über `leave()` und Ordner leeren
+  (CHK001; Analyse, I3); Fahrer verfolgt `slide_finished` (I3); `dauer_ms` ohne Eingabe ab Beginn
+  des Schritts (I1);
   `Engine.time_scale` 8 bzw. 1 je Ablauf (R24); Warten auf Zustände bis 5000 ms echter Zeit (R6);
   Foto nach `frame_post_draw` (R8); Fenstertitel `Selbsttest · Schritt {n} von {gesamt}: {ablauf}`
   (CHK035); Fokusverluste; Schließen bricht ab und schreibt noch. Abläufe
@@ -144,14 +150,17 @@ FR-010, FR-003a; R3 bis R8, R22, R24; contracts/selbsttest-app.md, contracts/exp
   `await` auf Bilder.
 - [ ] T016 [C] [US1] Prüfen: Tests zweimal, Startprobe still; App bauen und zweimal mit `open`
   starten: alle Schritte in Ordnung (SC-003), Fotos beider Läufe und von `titel` und
-  `titel_echtzeit` Byte für Byte gleich (SC-002, FR-011.8), `titel` weniger als halb so lange wie
-  `titel_echtzeit` (SC-001); echte Spielstände vorher und nachher gleich (SC-006); normales Spiel
+  `titel_echtzeit` Byte für Byte gleich, verglichen mit `cmp` (SC-002, FR-011.8; Analyse, I5),
+  `titel` schneller als `titel_echtzeit` (SC-001); Schließen des Fensters mitten im Lauf: Abbruch im
+  Protokoll, Zip geschrieben (FR-010; Analyse, U2); echte Spielstände vorher und nachher gleich (SC-006); normales Spiel
   bauen und starten wie bisher; `export_presets.cfg` ohne Zugangsdaten. Restrisiken aus R4 im Lauf
   ansehen.
 - [ ] T017 [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, Text-Prüfer über Fenstertitel und
-  die Beschreibungen von `titel` im Protokoll eines echten Laufs; vor Klaus' Abnahme.
+  die Beschreibungen von `titel` im Protokoll eines echten Laufs, Maßstab wie T008; vor Klaus'
+  Abnahme.
 - [ ] T018 [K] [US1] Phase 2 abnehmen: die App selbst starten und während des Laufs Maus und Tastatur
-  benutzen; der Lauf bleibt unberührt (FR-010). Diff, Lernnotizen, Protokoll.
+  benutzen; der Lauf bleibt unberührt; einmal das Fenster mitten im Lauf schließen und das Protokoll
+  ansehen (FR-010; Analyse, U2). Diff, Lernnotizen, Protokoll.
 
 **Checkpoint**: Der Selbsttest läuft im echten Fenster; ein Ablauf ist da.
 
@@ -176,23 +185,24 @@ findet alle sechs eingebauten Fehler (SC-004).
 ### Teil 2: Easter Egg, Bedienung, Fenster, Szenarien
 
 - [ ] T021 [A] [US1] `ablauf_easter_egg.gd` (Fotos von 03 und 04 nicht vergleichbar, R7),
-  `ablauf_bedienung.gd` (sieben Spielstände als `Vorbereitung` über `SaveStore`, danach weggeräumt;
-  CHK001), `ablauf_fenster.gd` (Zeitraffer 1, Fenster über `get_window().size`, Prüfung über
+  `ablauf_bedienung.gd` (sieben Spielstände als `Vorbereitung` über `SaveStore`, danach Titel neu
+  laden, am Ende weggeräumt; CHK001; Analyse, U1), `ablauf_fenster.gd` (Zeitraffer 1, Fenster über `get_window().size`, Prüfung über
   `GameWindow.best_factor()` und `get_final_transform()`, `eingaben: Fenster`; R16).
 - [ ] T022 [A] [US1] `src/tools/selbsttest/ablaeufe/selbsttest_szenario.gd` (`class_name
   SelbsttestSzenario`) laut Vertrag, „Szenario“, und der leere Ordner
-  `src/tools/selbsttest/szenarien/`; Test mit einem erfundenen Szenario ohne Fenster in
+  `src/tools/selbsttest/szenarien/` mit `.gitkeep` (Analyse, U6); Test mit einem erfundenen Szenario ohne Fenster in
   `src/test/test_selbsttest_lauf.gd`; ohne Bedienung der Uhr meldet der Fahrer „Die Uhr lässt sich im
   Spielbildschirm noch nicht bedienen“ (R27).
 - [ ] T023 [A] [US1] Lernnotizen zu T019 bis T022: abhängige Abläufe, Vorbereitung statt Eingabe,
   Fenster und `get_final_transform()`, Rahmen für Szenarien.
-- [ ] T024 [C] [US1] Prüfen: Tests zweimal, Startprobe still, zwei Läufe der App mit gleichen Fotos;
+- [ ] T024 [C] [US1] Prüfen: Tests zweimal, Startprobe still, zwei Läufe der App mit gleichen Fotos
+  (`cmp`); der Eingabe-Filter wirkt noch nach dem Ablauf `fenster` (Analyse, U3);
   **Fehlerprobe** (SC-004): in einer Kopie des Projekts im Scratchpad je ein Fehler in Titel,
   Gradwahl, Liste, Rückfrage, Easter Egg und Fenster, Selbsttest daraus bauen und laufen lassen; jeder
   Fehler steht im passenden Schritt. Dazu SC-010: Claude ordnet die sechs Protokolle ohne weitere
   Angaben den eingebauten Fehlern zu.
 - [ ] T025 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, Text-Prüfer über Beschreibungen und
-  Erwartungen aller Abläufe im Protokoll eines echten Laufs; vor Klaus' Abnahme.
+  Erwartungen aller Abläufe im Protokoll eines echten Laufs, Maßstab wie T008; vor Klaus' Abnahme.
 - [ ] T026 [K] [US1] Phase 3 abnehmen: Protokoll eines vollständigen Laufs, Ergebnis der Fehlerprobe,
   Diff, Lernnotizen.
 
@@ -233,7 +243,9 @@ Meldung.
 - [ ] T031 [C] [US2] SC-005 belegen: Spiel und Selbsttest für macOS bauen, nach `selbsttest_laeufer`
   in beiden `.pck` suchen (contracts/export.md); im Spiel 0, im Selbsttest mehr als 0.
 - [ ] T032 [C] [US1] Prüfen: Tests zweimal, Startprobe still, ein Lauf bis zur Zusammenfassung,
-  „Ordner zeigen“ und „Kopieren“ selbst ausprobieren, Fotos aus T029 ansehen.
+  „Ordner zeigen“ und „Kopieren“ selbst ausprobieren, Fotos aus T029 ansehen; nach dem Maximieren
+  kommen echte Eingaben an (Analyse, U3); SC-010 mit dem kopierten Text der Fehlerprobe wiederholen
+  (A1).
 - [ ] T033 [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`, Stil- und Text-Prüfer mit den Fotos
   aus T029 gegen `Werkzeuge.md` nach T028, `tokens.json`, `Sprache.md`; vor Klaus' Abnahme.
 - [ ] T034 [K] [US1] Phase 4 abnehmen: App starten, Lauf bis zur Zusammenfassung, die drei Knöpfe.
@@ -254,7 +266,7 @@ Pixel wird genau gefunden.
 - [ ] T035 [C] [US3] `tools/selbsttest/vergleich.py` und `tools/selbsttest/README.md` laut Vertrag:
   Zip oder Ordner, Schutz gegen Pfade aus dem Ordner hinaus, Ergebnisse `gleich`, `abweichend`,
   `nicht_vergleichbar`, `referenz_fehlt`, `foto_fehlt`, Bild mit markierten Pixeln in `kassenrot`,
-  `vergleich.md`, `--beleg`, `--referenz-erneuern`, Exit 0, 1, 2. Proben aus dem Vertrag, „Prüfung“
+  `vergleich.md`, `--gegen`, `--beleg`, `--referenz-erneuern`, Exit 0, 1, 2 (Analyse, I5). Proben aus dem Vertrag, „Prüfung“
   (SC-008).
 - [ ] T036 [C] [US3] Lernnotiz zu T035: Vergleich ohne Toleranz, warum außerhalb von Godot, `-I`.
 - [ ] T037 [K] [US3] Einen vollständigen Lauf auf dem Mac als Referenz abnehmen: Claude legt
@@ -262,6 +274,9 @@ Pixel wird genau gefunden.
 - [ ] T038 [C] [US3] Referenzbilder mit `--referenz-erneuern alle` nach
   `tools/selbsttest/referenz/macos/` übernehmen; zweiten Lauf dagegen vergleichen: alles `gleich`
   oder `nicht_vergleichbar`.
+- [ ] T038a [C] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`, Text-Prüfer über einen Bericht
+  `vergleich.md` aus den Proben und die README gegen `Sprache.md` und `Werkzeuge.md` (Analyse, V2);
+  vor Klaus' Abnahme.
 - [ ] T039 [K] [US3] Phase 5 abnehmen: Bericht der Proben, Referenzbilder, README.
 
 **Checkpoint**: Ein Foto eines anderen Rechners lässt sich bewerten.
@@ -282,11 +297,18 @@ Linux-Rechner läuft der Selbsttest bis zur Zusammenfassung; jedes Foto hat ein 
 - [ ] T041 [K] [US4] Export-Templates installieren, etwa über den Export Template Manager des
   Editors; Claude prüft danach den Ordner `~/Library/Application Support/Godot/export_templates/4.7.2.stable/`
   und ob die Direct3D-12-Dateien dabei sind.
-- [ ] T042 [C] [P] [US4] `tools/raster/make_icon.py` schreibt zusätzlich
+- [ ] T041a [C] [US4] Style-Guide ergänzen, Abschnitt „App-Symbol“ in `project/README.md`: Symbol
+  für Windows als ICO mit 16, 32, 48, 64, 128 und 256 Pixeln; wie die kleinen Größen aus dem
+  gerasterten Monitor entstehen, ganzzahlig und ohne Weichzeichnen (Analyse, V1).
+- [ ] T041b [K] [US4] Ergänzung aus T041a freigeben.
+- [ ] T042 [C] [US4] `tools/raster/make_icon.py` schreibt nach T041b zusätzlich
   `src/assets/icon/app_icon.ico` mit 16, 32, 48, 64, 128 und 256 Pixeln als PNG-Einträge, die kleinen
   pixelgenau (R14); README in `tools/raster/` nachziehen; Lernnotiz.
-- [ ] T043 [A] [US4] `src/project.godot`: `rendering/rendering_device/fallback_to_opengl3 = false`
-  (R13), `toggle_fullscreen` mit F11 und Alt+Enter dazu (R15); `src/export_presets.cfg`: Presets
+- [ ] T043 [A] [US4] Nach T042. `src/project.godot`: `rendering/rendering_device/fallback_to_opengl3 = false`
+  (R13), `toggle_fullscreen` mit F11 und Alt+Enter dazu (R15); `src/core/game_window.gd` fängt das
+  Kürzel in `_input()` ab, mit genauem Vergleich der Zusatztasten, `src/test/test_game_window.gd`:
+  Alt+Enter im Menü schaltet nur das Vollbild und löst nichts aus, Enter allein löst aus (Analyse,
+  I2); `src/export_presets.cfg`: Presets
   `Windows`, `Selbsttest Windows`, `Linux`, `Selbsttest Linux` laut contracts/export.md (Symbol,
   Versionsangaben, `embed_pck`, ohne Signatur, keine Zugangsdaten);
   `src/test/test_projekt_einstellungen.gd` für Renderer, Vollbildtasten und Overrides. Export ohne
@@ -298,11 +320,18 @@ Linux-Rechner läuft der Selbsttest bis zur Zusammenfassung; jedes Foto hat ein 
   Presets für Windows und Linux.
 - [ ] T046 [C] [US4] Prüfen: Tests zweimal, Startprobe still, `baue_alles.sh` Exit 0, Selbsttest auf
   dem Mac weiter grün und gleich den Referenzbildern, `export_presets.cfg` ohne Zugangsdaten.
+- [ ] T046a [C] [US4] `quickstart.md` nachziehen (FR-026; Analyse, U4): Godots Meldung „Unable to
+  initialize video driver“ ohne Vulkan oder Direct3D 12, die Warnung von macOS beim ersten Start einer
+  unbekannten App, `chmod +x` unter Linux als Rückfall, Handtest des Vollbilds auf dem Mac
+  (Ctrl+Cmd+F) neben F11 und Alt+Enter, der Bau mit `tools/build/baue_alles.sh`.
 - [ ] T047 [K] [US4] Selbsttest auf einem Windows- und einem Linux-Rechner starten nach quickstart.md;
   „Kopieren“ in den Chat, Zips nach `build/selbsttest/`; kurzer Blick: Symbol der `.exe` im Explorer,
   im Fenster und in der Taskleiste, Vollbild mit F11 und Alt+Enter hin und zurück, Fenstergröße.
 - [ ] T048 [C] [US4] Vergleichen mit `--beleg`, Belege unter `specs/007-build-export-selbsttest/belege/`;
   Bericht an Klaus mit jeder Abweichung und Empfehlung (SC-009).
+- [ ] T048a [C] Phasenprüfung Phase 6 mit `/dcl-phasenpruefung`, Stil-Prüfer über eine Montage der
+  sechs Größen der ICO ×8 gegen den Abschnitt „App-Symbol“ nach T041b (Analyse, V1); vor Klaus'
+  Abnahme.
 - [ ] T049 [K] [US4] Phase 6 abnehmen: Bericht, Belege, Entscheidung zu Abweichungen.
 
 **Checkpoint**: Das Spiel läuft auf drei Systemen, belegt durch den Selbsttest.
@@ -355,7 +384,8 @@ Grundsatz II):
 - **Phase 3** (alle Abläufe): nach Phase 2; Teil 2 erst nach Claudes Prüfung von Teil 1.
 - **Phase 4** (Zusammenfassung): nach Phase 3; T029 erst nach T028.
 - **Phase 5** (Vergleich): nach Phase 4, weil die Referenzbilder aus einem vollständigen Lauf kommen.
-- **Phase 6** (Windows, Linux): nach Phase 5; T043 und T044 erst nach T041; T047 erst nach T046.
+- **Phase 6** (Windows, Linux): nach Phase 5; T042 erst nach T041b; T043 erst nach T041 und T042;
+  T044 erst nach T043; T047 erst nach T046 und T046a.
 - **Phase 7** (Abschluss): nach Phase 6; T056 vor dem Merge, der Merge nur auf Klaus' Wort.
 
 ### User Story Dependencies
@@ -374,7 +404,8 @@ Grundsatz II):
 ### Parallel Opportunities
 
 - T003 und T004 in Phase 1 berühren eigene Dateien und hängen nur am Vertrag.
-- T042 (ICO) kann neben T043 laufen, sobald die Templates da sind.
+- T041a und T042 (Style-Guide und ICO) brauchen die Templates nicht und können neben T040 und T041
+  laufen; T043 wartet auf die ICO (Analyse, I8).
 - Sonst keine: Läufer, Fahrer und Abläufe bauen aufeinander auf.
 
 ---
@@ -405,7 +436,8 @@ Grundsatz II):
   `Godot --headless --path src --import` auf; `.uid` und `.import` werden committet.
 - **Feste Größen** für jeden Auftrag an den Agent:
   - Ohne Selbsttest verhält sich das Spiel wie vorher; alle bisherigen Tests laufen unverändert
-    grün (FR-002). Einzige Änderung am Spielcode in Teil 1 ist der Zeitzonenversatz in `SaveGame`.
+    grün (FR-002). Änderungen am Spielcode: der Zeitzonenversatz in `SaveGame` (Phase 1) und das
+    Abfangen des Vollbild-Kürzels in `GameWindow` (Phase 6).
   - Das Preset `macOS` bleibt bis Phase 6 unverändert; das normale Paket enthält keine Datei unter
     `tools/selbsttest/` (SC-005).
   - Die Startprobe mit `-d` bleibt still.

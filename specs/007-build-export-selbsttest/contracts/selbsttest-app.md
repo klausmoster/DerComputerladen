@@ -23,7 +23,7 @@ src/tools/selbsttest/
 │   ├── ablauf_titel.gd, ablauf_neues_spiel.gd, ablauf_laden.gd, ablauf_loeschen.gd,
 │   ├── ablauf_easter_egg.gd, ablauf_bedienung.gd, ablauf_fenster.gd, ablauf_titel_echtzeit.gd
 │   └── selbsttest_szenario.gd      class_name SelbsttestSzenario: Rahmen für Szenarien (R27)
-├── szenarien/                      leer bis zum ersten Szenario
+├── szenarien/                      leer bis zum ersten Szenario, mit `.gitkeep` (Analyse, U6)
 ├── selbsttest_ergebnis.tscn / .gd  Zusammenfassung im Look der Werkzeuge
 └── selbsttest_texte.gd             class_name SelbsttestTexte: alle Texte des Selbsttests
 src/core/save/save_game.gd          geändert: Stellschraube für den Zeitzonenversatz (R7)
@@ -62,8 +62,9 @@ func schritt_kennung() -> String          # die laufende, für Logger und Fokus
 - Vorbereitung und Fenster (CHK001): Frischer Titel, angelegte Spielstände und gesetzte
   Fenstergrößen gehen nicht über Eingaben; das Protokoll nennt sie mit `eingaben: Vorbereitung`
   bzw. `eingaben: Fenster`.
-- Je Ablauf ohne `baut_auf`: frischer Titel (Ordner leeren, laufendes Spiel ohne Speichern beenden,
-  Titel neu laden, warten bis das Hauptmenü steht).
+- Je Ablauf ohne `baut_auf`: frischer Titel. Läuft ein Spiel, beendet der Läufer es mit
+  `GameSession.leave()` (speichert in den Ordner des Selbsttests); dann Ordner leeren, Titel neu
+  laden, warten bis das Hauptmenü steht. Keine neue Funktion am Spiel (Analyse, I3).
 - Je Ablauf: `Engine.time_scale` auf seinen Zeitraffer setzen (R24), danach wieder 1.
 - Meldungen (CHK007): Jede Warnung und jeder Fehler aus Godot zählt zum laufenden Schritt; eigene
   Fehler des Selbsttests stehen als `meldung: [selbsttest] …`.
@@ -71,9 +72,13 @@ func schritt_kennung() -> String          # die laufende, für Logger und Fokus
   5000 ms vorbei, Foto, Ergebnis mit Dauer und Meldungen. Scheitert ein Schritt, gelten die übrigen
   seines Ablaufs und die Abläufe, die darauf aufbauen, als `NICHT_GELAUFEN`.
 - Fokus: `NOTIFICATION_APPLICATION_FOCUS_OUT` vermerkt `fokus.verlust` mit Schritt und Zeit.
-- Fenster schließen während des Laufs (`NOTIFICATION_WM_CLOSE_REQUEST`): Abbruch vermerken, Protokoll, Ausgabe und Zip
-  schreiben, beenden. `GameSession` speichert beim Schließen wie immer, aber in den Ordner des
-  Selbsttests.
+- Fenster schließen während des Laufs (`NOTIFICATION_WM_CLOSE_REQUEST`): Abbruch vermerken,
+  Protokoll, Ausgabe und Zip schreiben, beenden. Weil `GameSession` beim Schließen selbst beendet,
+  solange ein Spiel läuft, setzt der Läufer `GameSession.quit_callback` auf eine eigene Funktion, die
+  erst schreibt und dann `get_tree().quit()` ruft (Analyse, U2). `GameSession` speichert dabei wie
+  immer, in den Ordner des Selbsttests.
+- `dauer_ms` zählt ab der ersten Eingabe, bei Schritten ohne Eingabe ab Beginn des Schritts
+  (Analyse, I1).
 - Am Ende: Protokoll, Ausgabe, Zip; Eingabe-Filter aus, Logger ab; Szene der Zusammenfassung.
 
 ## Ablauf
@@ -115,7 +120,7 @@ func spielbildschirm() -> GameScreen
 func sichtbare_seite() -> Control
 func gewaehlter_eintrag() -> StringName              # Kennung der Zeile mit Fokus
 func hinweis_text() -> String
-func communicator_steht() -> bool
+func communicator_steht() -> bool                    # Endlage und keine Fahrt; über slide_finished verfolgt
 func spielstaende() -> PackedInt32Array              # Nummern im Ordner des Selbsttests
 func ziel_eintrag(seite: StringName, kennung: StringName) -> Rect2   # leer, wenn nicht da
 func ziel_zeile(nummer: int) -> Rect2
@@ -125,7 +130,8 @@ func fehlt(beschreibung: String) -> String           # „Ziel nicht gefunden: �
 ```
 
 Alle Rechtecke im Raster 640 × 360; die Umrechnung in Fensterpixel macht `SelbsttestEingabe`.
-Liest nur, was Seiten und Communicator ohnehin anbieten; braucht der Fahrer eine neue Abfrage am
+Ob der Communicator steht, verfolgt der Fahrer über das Signal `slide_finished`: `is_in()` ist schon
+während der Fahrt herein wahr (Analyse, I3). Liest nur, was Seiten und Communicator ohnehin anbieten; braucht der Fahrer eine neue Abfrage am
 Spiel, ist das eine eigene, kleine Änderung mit Test und steht im Bericht des Agents.
 
 ## Eingabe
@@ -134,7 +140,7 @@ Spiel, ist das eine eigene, kleine Änderung mit Test und steht im Bericht des A
 class_name SelbsttestEingabe extends RefCounted
 const DEVICE := 4711
 func einschalten(fenster: Window) -> void
-func ausschalten() -> void
+func ausschalten() -> void                               # reicht danach alles durch (Analyse, U3)
 func maus_zu(punkt_raster: Vector2) -> void               # MouseMotion
 func klick(punkt_raster: Vector2, taste := MOUSE_BUTTON_LEFT) -> void   # Bewegung, Drücken, nächstes Bild Loslassen
 func rad(punkt_raster: Vector2, richtung: MouseButton) -> void

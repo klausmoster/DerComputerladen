@@ -31,6 +31,9 @@ python3 -I tools/selbsttest/vergleich.py build/selbsttest/2026-10-28_14-03-12_wi
 - Liest `protokoll.txt` und daraus `foto_vergleichbar` je Schritt.
 - Vergleicht jedes Foto mit `referenz/macos/<kennung>.png` und schreibt `vergleich.md` in den Ordner
   des Laufs.
+- `--gegen <lauf>` vergleicht mit den Fotos eines anderen Laufs statt mit den Referenzbildern, etwa
+  zwei Läufe auf dem Mac (SC-002; Analyse, I5). Bis Phase 5 vergleicht Claude solche Läufe mit `cmp`
+  je Foto.
 - `--beleg` kopiert Protokoll, Bericht und Abweichungen nach `specs/007-…/belege/` (FR-020a).
 - `--referenz-erneuern <kennung …|alle>` übernimmt Fotos eines Laufs vom Mac als Referenzbilder; nur
   nach Klaus' Abnahme (FR-020). Ohne Kennungen tut es nichts.

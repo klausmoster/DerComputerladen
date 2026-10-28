@@ -33,7 +33,10 @@ Spec FR-001, FR-002, FR-017, FR-021 bis FR-025, SC-005. Entscheidungen in
 | `rendering/rendering_device/fallback_to_vulkan`, `fallback_to_d3d12` | `true` (Vorgabe, nicht eingetragen) | 2 |
 | `input/toggle_fullscreen` | Ctrl+Cmd+F wie bisher, dazu F11 und Alt+Enter | 2 |
 
-`test_projekt_einstellungen.gd` prüft diese Werte. Die Werkstatt lädt ihre Einstellungen weiter
+`test_projekt_einstellungen.gd` prüft diese Werte. Dazu fängt `src/core/game_window.gd` das Kürzel in
+`_input()` ab statt in `_unhandled_input()`, mit genauem Vergleich der Zusatztasten, und markiert es als
+behandelt: Alt+Enter schaltet nur das Vollbild und löst im Menü nichts aus, Enter allein löst weiter
+aus (R15; Analyse, I2). `test_game_window.gd` prüft beides mit erfundenen Tastenereignissen. Die Werkstatt lädt ihre Einstellungen weiter
 selbst; ihr Fenster ist vom Vollbild-Kürzel nicht betroffen, weil sie `GameWindow` abschaltet.
 
 ## App-Symbol für Windows

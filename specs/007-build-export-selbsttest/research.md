@@ -94,6 +94,12 @@ rechnet das Hover vor `_input()` aus, und Autoloads werden als letzte gefragt (b
   Protokoll (FR-013), der Schritt kann dann scheitern; das ist gewollt sichtbar.
 - Das Signal `Window.window_input` feuert für die Ereignisse des Selbsttests nicht. Das Spiel nutzt
   es nicht.
+- Den ursprünglichen Empfang des Fensters gibt Godot nicht heraus; „ausschalten“ heißt deshalb:
+  alles durchreichen. Ob Godot den Empfang bei Größen- oder Moduswechseln neu setzt, prüft Claude in
+  Phase 3 (Ablauf `fenster`) und Phase 4 (Maximieren) (Analyse, U3).
+- Beim Schließen beendet `GameSession` das Programm selbst, solange ein Spiel läuft. Der Läufer
+  setzt deshalb einen eigenen `quit_callback`, der erst Protokoll, Ausgabe und Zip schreibt und dann
+  beendet (Analyse, U2).
 
 **Verworfen:** Knoten mit `_input()` und `set_input_as_handled()`; echte Eingaben nur erkennen und
 melden statt fernhalten, weil Spec FR-010 das Fernhalten verlangt.
@@ -237,8 +243,14 @@ widerspricht Klaus' Entscheidung und Grundsatz I und wurde nicht übernommen.
 
 **Entscheidung:** Die Aktion `toggle_fullscreen` bekommt zu Ctrl+Cmd+F die Tasten F11 und Alt+Enter
 (Spec, Clarify). Alle drei gelten auf jedem System; unter macOS fängt das System F11 meist selbst ab,
-unter Windows tut Ctrl+Win+F nichts im Spiel Störendes (Claude, 2026-10-28). Eine Aktion für alle
-Systeme hält `GameWindow` unverändert.
+unter Windows tut Ctrl+Win+F nichts im Spiel Störendes (Claude, 2026-10-28).
+
+**Änderung nach der Analyse (I2, Klaus, 2026-10-28):** Godot lässt Alt+Enter auch als `ui_accept`
+gelten, weil eine Aktion ohne Zusatztaste auch ein Ereignis mit Alt trifft. Der gewählte Menüeintrag
+löste dann aus, und `GameWindow._unhandled_input()` sähe das Ereignis nie. `GameWindow` fängt das
+Kürzel deshalb in `_input()` ab, vor der Oberfläche, mit genauem Vergleich der Zusatztasten, und
+markiert es als behandelt. Enter allein löst weiter aus. Das ist die zweite Änderung am Spielcode
+(Phase 6).
 
 **Verworfen:** Belegung je System über Overrides der Eingabe (`input/….windows`); nicht belegt, ob
 Godot Overrides für Eingabe-Aktionen anwendet, und mehr zu prüfen.
@@ -299,8 +311,9 @@ im Spielbild, damit die Fotos nur das Spiel zeigen.
   die Einstellungen aus R13 und R15; der Fahrer findet jedes Ziel im echten Titel und meldet ein
   fehlendes mit Namen.
 - Im echten Fenster: die Selbsttest-App selbst, gebaut und per `open` gestartet, mit der
-  Fehlerprobe aus SC-004 (Fehler in einer Kopie: falsch vorgewählte Zeile, fehlende Seite, Liste
-  ohne Spielstand, Gehäusetasten vertauscht).
+  Fehlerprobe aus SC-004, je ein Fehler in einer Kopie: Titel (falsch vorgewählte Zeile), Gradwahl
+  (fehlende Seite), Liste (ohne Spielstand), Rückfrage (falsche Vorwahl), Easter Egg (Gehäusetasten
+  vertauscht), Fenster (falscher Startfaktor) (Analyse, I7).
 - `export.md` nennt die Prüfung, dass das normale Paket keine Datei des Selbsttests enthält (SC-005).
 
 ## R24 Zeitraffer über `Engine.time_scale`
@@ -316,6 +329,12 @@ und Dauern misst der Läufer mit `Time.get_ticks_msec()`, das nicht skaliert ist
 (R6), deshalb bleiben sie gleich. Faktor 8 hält jede Fahrt über mehrere Bilder, sodass Zwischenlagen
 noch durchlaufen werden; ein höherer Faktor würde Bewegungen in ein, zwei Bildern abschließen und
 mehr verdecken.
+
+**Grenze (Analyse, I1):** Der Communicator stellt seine Fahrt selbst weiter und begrenzt den Schritt
+je Bild auf 1/30 s (`Communicator.MAX_STEP`), das versteckte Spiel auf vier Schritte je Bild. Im
+Zeitraffer fährt der Communicator deshalb bei 60 Bildern je Sekunde nur etwa doppelt so schnell. Die
+Grenzen bleiben, sie halten die Bewegung glatt; SC-001 verlangt nur, dass der Zeitraffer schneller
+ist.
 
 **Vermutung, geprüft in Phase 2:** `GameWindow` rechnet mit `Time.get_ticks_msec()`, ist also nicht
 betroffen; der Ablauf `fenster` läuft dennoch mit Faktor 1, weil er Fenster des Systems abwartet.

@@ -11,7 +11,7 @@ Ein Start der Selbsttest-App bis zur Zusammenfassung.
 | Feld | Bedeutung |
 |---|---|
 | `id` | Datum und Uhrzeit des Starts, lokal, `JJJJ-MM-TT_hh-mm-ss`; Name des Ordners und des Zips |
-| `system` | die Systemdaten (unten), einmal beim Start erhoben, die Fenstergröße nach dem Ablauf „Fenster“ |
+| `system` | die Systemdaten (unten), einmal beim Start erhoben, auch die Fenstergröße (Analyse, I6) |
 | `zeitraffer` | der Faktor der Abläufe im Zeitraffer |
 | `ablaeufe` | die Abläufe in fester Reihenfolge, je mit ihren Schritten und Ergebnissen |
 | `fokusverluste` | je Verlust: Schritt-Kennung und Zeit seit dem Start in Millisekunden |
@@ -110,7 +110,8 @@ Prüfpunkte heißen wie Schritte, `<szenario>.<nn>_<kurz>`, etwa `leicht_1987.03
 |---|---|
 | `status` | `OK`, `FEHLER` oder `NICHT_GELAUFEN` |
 | `gefunden` | bei `FEHLER`: der tatsächliche Zustand, lesbar, oder „Zeit abgelaufen, zuletzt: …“; bei `NICHT_GELAUFEN` der Grund, etwa „Fehler in Schritt …“ |
-| `dauer_ms` | von der ersten Eingabe bis zum Erreichen des Zustands oder zum Abbruch |
+| `dauer_ms` | von der ersten Eingabe, bei Schritten ohne Eingabe vom Beginn des Schritts, bis zum Erreichen des Zustands oder zum Abbruch (Analyse, I1) |
+| `zeitraffer` | Faktor, mit dem der Schritt lief, im Protokoll je Schritt (Analyse, U7) |
 | `foto` | Dateiname, `<kennung>.png`; auch bei `FEHLER` wird fotografiert, bei `NICHT_GELAUFEN` nicht |
 | `meldungen` | Fehler und Warnungen, die Godot oder das Spiel während des Schritts ausgegeben haben |
 

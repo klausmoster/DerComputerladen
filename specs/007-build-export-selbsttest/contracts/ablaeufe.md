@@ -83,10 +83,11 @@ Fotos von 03 und 04 sind nicht vergleichbar: Das versteckte Spiel rechnet nach Z
 | 03 | `rechtsklick` | Rechtsklick auf „Neues Spiel“ | Zeile gewählt, nichts ausgelöst |
 | 04 | `leertaste` | Leertaste | Menü steht: SCHWIERIGKEIT, Mittel |
 | 05 | `zurueck_klick` | Linksklick auf „Zurück“ | Menü steht: HAUPTMENÜ, „Neues Spiel“ |
-| 06 | `mausrad` | Vorbereitung: sieben Spielstände; Linksklick auf „Spiel laden“, Mausrad runter | Liste rollt um eine ganze Zeile, Rollmarke oben sichtbar |
+| 06 | `mausrad` | Vorbereitung: sieben Spielstände; Linksklick auf „Spiel laden“, Mausrad runter | Liste scrollt um eine ganze Zeile, Marke oben sichtbar |
 
 Für Schritt 06 legt der Selbsttest die sieben Spielstände über `SaveStore` an, mit fester Uhrzeit und
-festem Seed, und räumt sie danach weg; im Protokoll `eingaben: Vorbereitung, …` (Review CHK001).
+festem Seed, lädt danach den Titel neu, damit „Spiel laden“ verfügbar ist (Analyse, U1), und räumt
+sie am Ende weg; im Protokoll `eingaben: Vorbereitung, …` (Review CHK001).
 
 ## fenster
 

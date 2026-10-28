@@ -20,7 +20,7 @@ Funktion; sie dürfen sich nur darin unterscheiden, dass „Kopieren“ die Schr
 
 ```text
 # Der Computerladen Selbsttest
-ergebnis: 38 von 40 Schritten in Ordnung, 1 Fehler, 1 nicht gelaufen.
+ergebnis: 35 von 37 Schritten in Ordnung, 1 Fehler, 1 nicht gelaufen.
 
 # Lauf
 lauf.start: 2026-10-28 14:03:12
@@ -50,6 +50,7 @@ eingaben: keine
 erwartet: Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine
 status: OK
 dauer_ms: 1712
+zeitraffer: 8
 foto: titel.01_start.png
 foto_vergleichbar: ja
 
@@ -61,6 +62,7 @@ erwartet: Menü steht: SCHWIERIGKEIT, Mittel
 status: FEHLER
 gefunden: Zeit abgelaufen, zuletzt: Menü steht: SCHWIERIGKEIT, Leicht
 dauer_ms: 5003
+zeitraffer: 8
 foto: neues_spiel.01_gradwahl.png
 foto_vergleichbar: ja
 meldung: WARNING: … (je Meldung eine Zeile, in der Reihenfolge des Auftretens)
@@ -71,10 +73,10 @@ status: NICHT_GELAUFEN
 gefunden: Fehler in Schritt neues_spiel.01_gradwahl
 
 # Summe
-summe.ok: 38
+summe.ok: 35
 summe.fehler: 1
 summe.nicht_gelaufen: 1
-summe.gesamt: 40
+summe.gesamt: 37
 ```
 
 - Bei `NICHT_GELAUFEN` stehen nur `schritt`, `ablauf`, `status` und `gefunden` mit dem Grund.
@@ -92,6 +94,9 @@ summe.gesamt: 40
 Derselbe Aufbau, mit diesen Unterschieden:
 - Unter `# Schritte` stehen nur Schritte mit `FEHLER` oder `NICHT_GELAUFEN`.
 - Am Ende steht `ordner: <absoluter Pfad des Laufs>`.
+- Ist der Ordner nicht beschreibbar, besteht der Text aus Kopf, `# Lauf`, `# System` und
+  `meldung: Kein Protokoll: In <pfad> lässt sich nicht schreiben`; ohne Schritte und Summe (Analyse,
+  U5). Erwartung in `src/test/fixtures/selbsttest/kopieren_nicht_beschreibbar.txt`.
 
 So erkennt Claude im Chat Systemdaten, Ergebnis und jeden Fehler ohne Rückfrage; für die Fotos braucht
 es das Zip.
