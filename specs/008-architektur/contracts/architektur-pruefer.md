@@ -32,8 +32,8 @@ Ohne `Bash`, `Edit`, `Write` und `Agent` kann er nichts ändern und keine Agents
    - Bestand: jede genannte Datei; im Bericht jede Datei unter „Geprüft“.
    - Tests nur darauf, ob sie einen Kern ohne Szene testen; `src/addons/` nie.
 5. **Ausnahmen:** Eine Stelle mit Kommentar `# Ausnahme AR-NN: …` **und** Zeile in der Tabelle
-   „Ausnahmen“ ist eine begründete Ausnahme. Fehlt eins von beiden, ist es ein Befund mit dem Hinweis,
-   was fehlt.
+   „Ausnahmen“ ist eine begründete Ausnahme. Hat die Stelle kein Skript, reicht die Zeile mit Datei und
+   Knoten. Fehlt sonst eins von beiden, ist es ein Befund mit dem Hinweis, was fehlt.
 6. **Lücken:** Regelt der Leitfaden etwas nicht, ist es eine Lücke im Leitfaden, kein Befund.
 7. **Kein Geschmack:** Jeder Befund zitiert eine Regel. Was Tests messen, lässt du aus.
 8. **Abgrenzung:** Ob der Code das Richtige tut, prüft Claude gegen Spec und Vertrag; wie es aussieht
@@ -71,5 +71,7 @@ Findet er nichts: „keine Befunde“ und die geprüften Regeln (FR-013).
 - Bestand: dreimal gleichzeitig, je Schicht eine Dateiliste mit Skripten, Szenen und Resources;
   `project.godot` im Lauf Kern (R5).
 - Proben in Phase 2: Fehlerprobe (Auftrag Phase) und Planprobe am Plan von 006 (Auftrag Plan), R8.
+  Der Auftrag zur Fehlerprobe nennt keine Regel als von Tests gemessen, damit die Probe auch nach
+  Phase 4 dieselben Befunde erwartet; die Lösung darf der Prüfer nicht lesen.
 - Steht der Agent-Typ nicht bereit: allgemeiner Agent, der zuerst diese Datei liest; „nur lesen“
   steht ausdrücklich im Auftrag (`ki_pruefung.md`, „Die Prüfer“).

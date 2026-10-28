@@ -68,7 +68,7 @@ fehlt einer, ist es ein Befund (Claude, 2026-10-28).
 
 **Grund:** Der Kommentar erklärt die Stelle dem, der sie liest, wie heute `@warning_ignore` mit
 Grund. Die Tabelle zeigt alle Ausnahmen auf einen Blick; wachsen sie bei einer Regel, ist die Regel
-zu prüfen. Die Tests lesen dieselben Stellen über ihre Liste `ERLAUBT` (R6).
+zu prüfen. Die Tests lesen dieselben Stellen über ihre Liste `ERLAUBT_NACH_OBEN` (R6).
 
 **Verworfen:** nur der Kommentar (keine Übersicht); nur die Tabelle (die Stelle selbst schweigt).
 
@@ -77,7 +77,7 @@ zu prüfen. Die Tests lesen dieselben Stellen über ihre Liste `ERLAUBT` (R6).
 **Entscheidung:** `.claude/agents/architektur-pruefer.md` mit `tools: Read, Grep, Glob` und
 `model: inherit`. Anders als die beiden anderen liest er seinen Maßstab selbst. Claude gibt ihm
 einen von drei Aufträgen:
-- **Phase:** die geänderten Skripte und Szenen einer Phase, mit dem Vertrag des Features;
+- **Phase:** die geänderten Skripte, Szenen und Resources einer Phase, mit dem Vertrag des Features;
 - **Plan:** `plan.md`, `research.md`, `data-model.md` und `contracts/` bei `/speckit-checklist`;
 - **Bestand:** eine Liste von Dateien, ohne Diff.
 
@@ -125,9 +125,9 @@ das prüft Claude am zusammengeführten Bericht gegen `find`.
 2. **Genau diese Autoloads:** Die Autoloads in `project.godot` sind die aus dem Leitfaden, in dieser
    Reihenfolge.
 3. **Kein Weg nach oben:** Kein Skript und keine Szene greift über `../` oder `/root/` nach oben,
-   außer an Stellen in `ERLAUBT`.
+   außer an Stellen in `ERLAUBT_NACH_OBEN`.
 
-Jede Liste `ERLAUBT` nennt je Eintrag Datei, Regel und Grund; ein eigener Test meldet Einträge, die
+Die Liste `ERLAUBT_NACH_OBEN` nennt je Eintrag Datei, Regel und Grund; ein eigener Test meldet Einträge, die
 es nicht mehr gibt, wie in `test_texte.gd`. Abweichungen, die Phase 5 behebt, stehen bis dahin in
 einer zweiten Liste `BIS_BEHEBUNG`, die mit Phase 5 leer wird. Jede Prüfung bekommt eine Fehlerprobe
 (Claude, 2026-10-28; welche Regeln messbar sind, entscheidet Klaus mit dem Leitfaden).
@@ -158,8 +158,10 @@ ohne Netz).
 
 **Entscheidung:** Für SC-002 legt Claude unter `specs/008-architektur/fehlerprobe/` kleine Skripte
 und Szenen als Text an, eine Datei je Godot-Prinzip. Jede enthält genau einen Verstoß und daneben
-eine ähnliche, erlaubte Stelle. Eine Liste `fehlerprobe/LOESUNG.md` nennt Verstöße und erlaubte
-Stellen; der Prüfer bekommt sie nicht. Die Dateien liegen außerhalb von `src/`, damit Godot sie nicht
+eine ähnliche, erlaubte Stelle. Die Lösung `specs/008-architektur/fehlerprobe-loesung.md` nennt
+Verstöße und erlaubte Stellen; sie liegt außerhalb des Ordners der Probe, und der Auftrag verbietet
+ausdrücklich, sie zu lesen (Analyse, U5). Der Auftrag nennt keine Regel als von Tests gemessen, damit
+die Probe auch nach Phase 4 dieselben fünf Befunde erwartet (Analyse, A4). Die Dateien liegen außerhalb von `src/`, damit Godot sie nicht
 lädt (Claude, 2026-10-28).
 
 **Grund:** Wiederholbar: Wird der Prüfer später nachgeschärft, läuft dieselbe Probe noch einmal.
@@ -182,8 +184,8 @@ alles verglichen: Fahrpläne bytegleich, Startprobe still, Tests zweimal grün m
 plus den neuen, der Spielstand lädt. In 008 wird nur behoben, was ein System betrifft
 (Spec, Clarify); was mehrere Systeme umbaut, schreibt Claude als Eintrag nach
 `docs/features/Feature_Ideas.md`. Ein System heißt: nur Dateien in einem der Ordner `core/`,
-`scenes/title/`, `scenes/game/`, `ui/` oder `tools/werkstatt/`, und keine Schnittstelle, die ein
-anderer Ordner nutzt (CHK012). Die Phase beginnt erst, wenn 007 gemergt und `main` im Branch ist
+`scenes/title/`, `scenes/game/`, `ui/`, `tools/werkstatt/` oder `tools/selbsttest/` (aus 007), und
+keine Schnittstelle, die ein anderer Ordner nutzt (CHK012; Analyse, I1). Die Phase beginnt erst, wenn 007 gemergt und `main` im Branch ist
 (CHK019). Wird die Phase groß, teilt sie sich in zwei Teile (ki_dev,
 Punkt 4). Die Aufgaben der Phase entstehen erst nach Klaus' Entscheidungen zum Bestandsbericht
 (Claude, 2026-10-28).

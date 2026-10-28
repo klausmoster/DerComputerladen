@@ -93,15 +93,22 @@ liefert einen Bericht in der Form des Vertrags; Vorlage und Skill nennen Code al
   Kopf mit `tools: Read, Grep, Glob`, `model: inherit`; Anweisung mit den Punkten 1 bis 8; Bericht mit
   fünf Abschnitten; Tabelle „Schwere“.
 - [ ] T009 [C] [US2] Fehlerprobe unter `specs/008-architektur/fehlerprobe/` (R8): fünf Dateien als
-  Text, je ein Verstoß gegen AR-01 bis AR-05 und daneben eine ähnliche, erlaubte Stelle; dazu
-  `LOESUNG.md` mit Verstößen und erlaubten Stellen.
+  Text, je ein Verstoß gegen AR-01 bis AR-05 und daneben eine ähnliche, erlaubte Stelle; dazu die
+  Lösung `specs/008-architektur/fehlerprobe-loesung.md` außerhalb des Ordners der Probe (Analyse, U5).
 - [ ] T010 [C] [US2] Fehlerprobe laufen lassen. Der neue Agent-Typ steht erst in einer neuen Sitzung
   bereit; deshalb ein allgemeiner Agent, der zuerst die Datei des Prüfers liest, mit „nur lesen“ im
-  Auftrag (CHK018). `LOESUNG.md` bekommt er nicht. Ergebnis gegen `LOESUNG.md`; besteht er nicht,
+  Auftrag (CHK018). Der Auftrag verbietet, die Lösung zu lesen, und nennt keine Regel als von Tests
+  gemessen (Analyse, U5, A4). Ergebnis gegen die Lösung; besteht er nicht,
   Anweisung nachschärfen und höchstens zweimal wiederholen, dann entscheidet Klaus (SC-002, CHK006).
 - [ ] T011 [C] [US3] Planprobe (CHK005): Plan, research.md, data-model.md und contracts/ von
   `specs/006-easter-egg-space-invaders/` als Auftrag „Plan“; Bericht nachprüfen.
+Vor T012 bis T016 sieht Claude nach dem Stand von 007, das dieselben Dateien in seinem Abschluss
+ändert (Analyse, I2). Ist 007 gemergt, holt Claude `main` mit Klaus' OK zuerst herein
+(`sync_with_base_branch`) und sieht die Tasks auf die Regel „[A] Selbsttest-Abläufe anpassen“ aus 007
+durch; sonst löst Claude die Konflikte beim späteren Hereinholen.
+
 - [ ] T012 [P] [C] [US2] `docs/ki_workflow/ki_pruefung.md` nach contracts/arbeitsweise.md: Stand,
+  Grundsatz 5 und der Satz unter der Auswertung des Pilots (Analyse, C13),
   „Wer prüft was“, Schaubild, „Die Prüfer“, „Nicht vorgesehen“ mit „bis 2026-10-28“ und Grund,
   „Maßstäbe“, Ablauf, „Anbindung an Spec Kit“; Zeilen im „Nachmessen“ für T010 und T011.
 - [ ] T013 [P] [C] [US2] `docs/ki_workflow/ki_dev.md` (Punkt 8, Schaubild „Ablauf je Feature“) und
@@ -138,7 +145,8 @@ Schwere, Claudes Urteil und Klaus' Entscheidung (quickstart.md, Phase 3).
   (`sync_with_base_branch`), Tests zweimal und Startprobe. Wenn nein: im Bericht vermerken (CHK008).
 - [ ] T023 [C] [US4] Dateilisten für die drei Läufe aus `find`: Kern (`src/core/` und
   `src/project.godot`), Spiel und Oberfläche (`src/scenes/`, `src/ui/`, `src/default_bus_layout.tres`),
-  Werkstatt (`src/tools/werkstatt/`); je Skripte, Szenen und Resources, ohne `addons/` und `test/` (R5).
+  Werkzeuge (`src/tools/werkstatt/` und, wenn 007 im Branch ist, `src/tools/selbsttest/`); je Skripte,
+  Szenen und Resources, ohne `addons/` und `test/` (R5; Analyse, I1).
 - [ ] T024 [C] [US4] Drei Läufe gleichzeitig, Auftrag „Bestand“, je mit Leitfaden und Liste. Meldet
   ein Lauf ungelesene Dateien, diesen Teil teilen und nur das Fehlende wiederholen (CHK011).
 - [ ] T025 [C] [US4] Jede Abweichung nachprüfen, bestätigt oder verworfen mit Grund; die drei Berichte
@@ -150,8 +158,9 @@ Schwere, Claudes Urteil und Klaus' Entscheidung (quickstart.md, Phase 3).
 - [ ] T027 [K] [US4] Entscheidungen zu Abweichungen und Lücken.
 - [ ] T028 [C] [US4] Einarbeiten: Ausnahmen in die Tabelle des Leitfadens; geänderte Regeln mit
   „Geschichte“; Einträge in `docs/features/Feature_Ideas.md` für große Umbauten; die Listen `KERNE`,
-  `ERLAUBT_NACH_OBEN` und `BIS_BEHEBUNG` in contracts/architektur-tests.md; die Behebungen als
-  Aufgaben in Phase 5 dieser Datei; Zählung der drei Läufe in `ki_pruefung.md`, „Nachmessen“.
+  `ERLAUBT_NACH_OBEN`, `BIS_BEHEBUNG` und `VORGEMERKT` in contracts/architektur-tests.md; die
+  Behebungen als Aufgaben in Phase 5 dieser Datei; Zählung der drei Läufe in `ki_pruefung.md`,
+  „Nachmessen“. Danach Spec, Tasks und Verträge auf die neuen Aufgaben abgleichen (Analyse, U18).
 - [ ] T029 [C] [US4] Lernnotiz Phase 3: was der Bestand über den Aufbau zeigt, an den
   aufschlussreichsten Abweichungen und Ausnahmen.
 - [ ] T030 [K] [US4] Abnahme Phase 3.
@@ -193,18 +202,23 @@ Die einzelnen Behebungen ergänzt Claude in T028 nach Klaus' Entscheidungen; wir
 teilt sie sich in zwei Teile (ki_dev, Punkt 4).
 
 - [ ] T035 [C] [US5] Voraussetzung prüfen: 007 gemergt und `main` im Branch (CHK019); sonst wartet die
-  Phase. Ausgangsmessung festhalten: Testzahl, Startprobe, Fahrpläne für die Seeds 1, 4711 und 99999;
-  zwei Spielstände anlegen und sichern (Mittel, Seed 4711, gespeichert 1987; Schwer mit einem
-  Eingriff, gespeichert 1993; CHK013).
+  Phase. Kam 007 erst nach der Bestandsprüfung herein: Bestandsprüfung über den Code, den 007
+  mitbringt (`src/tools/selbsttest/` und geänderte Dateien), Abweichungen Klaus vorlegen, Listen in
+  `test_architektur.gd` durch den Agent angleichen lassen (Analyse, I1). Ausgangsmessung festhalten:
+  Testzahl, Startprobe, Fahrpläne für die Seeds 1, 4711 und 99999 nach `vorher/` im Scratchpad;
+  zwei Spielstände per Skript in `user://test_008_behebung/` anlegen (Mittel, Seed 4711, gespeichert
+  1987; Schwer mit einem Eingriff, gespeichert 1993; CHK013), nicht im echten Ordner; Klaus bitten,
+  für die Handprobe selbst einen Spielstand anzulegen (Analyse, U14, U15).
 - [ ] T036 [A] [US5] Behebungen laut `bestandsbericht.md`, je eigene Aufgabe aus T028; dazu die
   Kommentare `# Ausnahme AR-NN: …` an den Stellen der begründeten Ausnahmen; `BIS_BEHEBUNG` leeren;
   Lernnotiz.
-- [ ] T037 [C] [US5] Vergleich nach R9: Fahrpläne mit `cmp`, Startprobe, Tests zweimal, beide
-  Spielstände mit einem kurzen Skript laden; Code lesen.
+- [ ] T037 [C] [US5] Vergleich nach R9: Fahrpläne `vorher/` gegen `nachher/` mit `cmp`, Startprobe,
+  Tests zweimal, beide Spielstände aus `user://test_008_behebung/` mit einem kurzen Skript laden;
+  Code lesen.
 - [ ] T038 [C] [US5] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Architektur-Prüfer über das
   Geänderte, Maßstab Leitfaden und Bestandsbericht; Stil nur, wenn sich wider Erwarten Sichtbares
   ändert; danach Nachprüfung des Betroffenen.
-- [ ] T039 [K] [US5] Abnahme Phase 5 von Hand: einen der beiden Spielstände fortsetzen, ein neues
+- [ ] T039 [K] [US5] Abnahme Phase 5 von Hand: den eigenen Spielstand von vor der Phase fortsetzen, ein neues
   Spiel beginnen, die drei grauen Knöpfe drücken, die Werkstatt öffnen und einen Lauf simulieren.
 
 **Checkpoint**: Der Bestand folgt dem Leitfaden, bis auf begründete Ausnahmen und vorgemerkte Features.
@@ -221,8 +235,8 @@ teilt sie sich in zwei Teile (ki_dev, Punkt 4).
 - [ ] T041 [K] Gesamtabnahme nach dem ganzen Quickstart.
 - [ ] T042 [C] Doku nachziehen: `docs/features/Features.md` (008 fertig, System 11);
   `docs/features/Feature_Ideas.md` (11-06 gebaut); `docs/offene-punkte.md`; in `ki_pruefung.md` die
-  Auswertung der Läufe aus 008 und die Notiz, dass SC-006 und SC-007 im nächsten Feature mit Code
-  nachgetragen werden.
+  Auswertung der Läufe aus 008 und die Notiz, dass SC-005, SC-006 und SC-007 im nächsten Feature
+  mit Code nachgetragen werden (Analyse, C16).
 - [ ] T043 [C] Spielbeschreibung prüfen (die letzte Aufgabe vor dem Tagebuch, nach der
   Gesamtabnahme und vor dem Merge; `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“): Claude
   gleicht `docs/spielbeschreibung/` mit dem Code ab und legt Klaus eine Liste vor, welche Dateien

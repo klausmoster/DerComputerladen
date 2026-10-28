@@ -95,8 +95,10 @@ specs/008-architektur/
 │   ├── architektur-tests.md     # test_architektur.gd
 │   └── arbeitsweise.md          # Verfassung, ki_workflow, Skill, Vorlage, Godot-Agent
 ├── checklists/
-│   └── requirements.md          # Qualitätsprüfung der Spec
-├── fehlerprobe/                 # Phase 2: fünf Proben und LOESUNG.md
+│   ├── requirements.md          # Qualitätsprüfung der Spec
+│   └── review.md                # Review der Anforderungen, 19 Punkte, freigegeben
+├── fehlerprobe/                 # Phase 2: fünf Proben
+├── fehlerprobe-loesung.md       # Phase 2: Lösung, außerhalb des Ordners der Probe
 ├── bestandsbericht.md           # Phase 3
 ├── tasks.md                     # Aufgaben je Phase (/speckit-tasks)
 └── lernnotizen.md               # entsteht bei der Umsetzung
@@ -133,8 +135,9 @@ Keine Einträge, die Prüfung der Verfassung zeigt keine Verstöße.
 
 ## Ausnahmen vom Leitfaden
 
-Keine; den Leitfaden gibt es noch nicht. Der Abschnitt steht hier, weil künftige Pläne ihn haben
-(Vertrag [arbeitsweise.md](contracts/arbeitsweise.md)).
+Keine; den Leitfaden gibt es noch nicht. Der Abschnitt steht hier, weil künftige Pläne ihn haben;
+verlangt wird er von Grundsatz VI in der Fassung 2.3.0 (Vertrag [arbeitsweise.md](contracts/arbeitsweise.md)),
+nicht von einer Plan-Vorlage (Analyse, C6).
 
 ## Vorarbeiten vor dem Bauen
 
@@ -158,6 +161,33 @@ streng nacheinander (Grundsatz II).
 | 6 | Abschluss: Lückensuche mit `/speckit-converge`, der Architektur-Prüfer einmal über das ganze Feature; Gesamtabnahme; Zählung und Auswertung in `ki_pruefung.md` (SC-007 vorbereitet); `Features.md`; Spielbeschreibung prüfen (`architektur.md`, `build-und-tests.md`, README) und Klaus vorlegen; Tagebuch. Merge erst nach 007 | – |
 
 Phase 2 hängt an 1, Phase 3 an 2, Phase 4 an 3 (Listen), Phase 5 an 3 und 4 und an 007.
+
+## Änderungen nach der Analyse
+
+Aus `/speckit-analyze`, gelesen von einem unabhängigen Prüfer, von Claude nachgeprüft; Klaus hat am
+2026-10-28 alle 18 Empfehlungen freigegeben. Keiner kritisch, keiner gegen die Verfassung; die
+Zahlen in research.md hat der Prüfer am Code bestätigt.
+
+| ID | Schwere | Befund | Änderung |
+|---|---|---|---|
+| I1 | hoch | Der Code von 007 (`src/tools/selbsttest/`) fehlt in Bestand, FR-027 und Tests | Selbsttest zählt als Werkzeug; Lauf „Werkzeuge“ in T023; Ordner in FR-027 und R9; in T035 Nachprüfung über den Code von 007 und Angleichen der Testlisten |
+| I2 | mittel | 007 ändert dieselben Dateien der Arbeitsweise wie Phase 2 | vor T012 Stand von 007 prüfen, gemergt ⇒ `main` zuerst herein; danach Tasks auf die Regel „[A] Selbsttest-Abläufe anpassen“ durchsehen |
+| I3 | mittel | Ausnahme ohne Skript widersprüchlich | Datenmodell, Prüfer-Vertrag Punkt 5, Begriffe der Spec an CHK010 angeglichen |
+| A4 | mittel | Fehlerprobe erwartet Befunde zu Gemessenem | der Auftrag zur Fehlerprobe nennt keine Regel als gemessen |
+| U5 | mittel | Lösung im Ordner der Probe | `fehlerprobe-loesung.md` daneben, Lesen im Auftrag verboten |
+| C6 | mittel | Plan-Vorlage fehlt | FR-021 eingeschränkt; „Ausnahmen vom Leitfaden“ verlangt Grundsatz VI |
+| U7 | mittel | keine Liste für vorgemerkte Abweichungen | `VORGEMERKT` im Test-Vertrag und Datenmodell |
+| I8 | niedrig | SC-005 ohne Teil-Wiederholungen | SC-005 ergänzt |
+| I9 | niedrig | drei Namen für eine Liste | überall `ERLAUBT_NACH_OBEN` |
+| I10 | niedrig | R4 ohne Resources | R4 ergänzt |
+| I11 | niedrig | Spec sagt „Kopie“, R8 verwirft sie | Unabhängiger Test von US2 angeglichen |
+| I12 | niedrig | Reihenfolge ohne Tests | Annahme ergänzt |
+| C13 | niedrig | zwei weitere Stellen in `ki_pruefung.md` | in den Vertrag arbeitsweise.md aufgenommen |
+| U14 | niedrig | Fahrpläne vorher und nachher in einer Datei | getrennte Ordner im Scratchpad |
+| U15 | niedrig | Ort der Spielstände offen | per Skript in `user://test_008_behebung/`; Klaus legt für die Handprobe selbst einen an |
+| C16 | niedrig | SC-005 ohne Task | in T042 |
+| I17 | niedrig | `review.md` fehlt in der Struktur | ergänzt |
+| U18 | niedrig | Platzhalter bis T028 | nach T028 Spec, Tasks und Verträge abgleichen (in T028) |
 
 ## Änderungen nach der Checkliste
 

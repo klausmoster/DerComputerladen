@@ -25,9 +25,10 @@ Einzelheiten stehen in den Verträgen; hier nur die Prüfungen.
 ## Phase 2: Prüfer und Fehlerprobe
 
 1. `.claude/agents/architektur-pruefer.md` hat nur `Read, Grep, Glob` (FR-010).
-2. Fehlerprobe: Claude gibt dem Prüfer `specs/008-architektur/fehlerprobe/` ohne `LOESUNG.md`.
+2. Fehlerprobe: Claude gibt dem Prüfer `specs/008-architektur/fehlerprobe/`; die Lösung
+   `fehlerprobe-loesung.md` liegt daneben, und der Auftrag verbietet, sie zu lesen.
    Erwartet: fünf Befunde, je einer zu AR-01 bis AR-05, und keiner an den erlaubten Stellen (SC-002).
-   Claude vergleicht mit `LOESUNG.md` und trägt das Ergebnis in `ki_pruefung.md` ein. Besteht er
+   Claude vergleicht mit der Lösung und trägt das Ergebnis in `ki_pruefung.md` ein. Besteht er
    nicht: Anweisung nachschärfen, höchstens zweimal wiederholen, dann entscheidet Klaus.
 3. Planprobe: Plan, research.md, Datenmodell und Verträge von 006 als Auftrag „Plan“. Erwartet: ein
    Bericht in der Form des Vertrags, jeder Ort ein Abschnitt (Spec, US3).
@@ -37,8 +38,8 @@ Einzelheiten stehen in den Verträgen; hier nur die Prüfungen.
 
 ## Phase 3: Bestandsprüfung
 
-0. Vorher: Ist 007 gemergt, ist `main` mit Klaus' OK im Branch; sonst sagt der Bericht, dass 007
-   fehlt.
+0. Vorher: Ist 007 gemergt, ist `main` mit Klaus' OK im Branch, und `src/tools/selbsttest/` gehört
+   zum Lauf Werkzeuge; sonst sagt der Bericht, dass 007 fehlt, und Phase 5 prüft es nach.
 1. `specs/008-architektur/bestandsbericht.md` nennt jede Datei (SC-003). Claude vergleicht:
 
    ```bash
@@ -61,22 +62,24 @@ Architektur-Prüfer nicht aus (FR-016).
 ## Phase 5: Behebung
 
 Die Phase beginnt erst, wenn 007 gemergt und `main` im Branch ist. Vor der Phase hält Claude fest
-und sichert zwei Spielstände (Mittel, Seed 4711, 1987; Schwer mit einem Eingriff, 1993); nach der
-Phase vergleicht Claude:
+und legt zwei Spielstände per Skript in `user://test_008_behebung/` an (Mittel, Seed 4711, 1987;
+Schwer mit einem Eingriff, 1993), nicht im echten Ordner; Klaus legt für die Probe von Hand selbst
+einen Spielstand an. Die Fahrpläne gehen in den Scratchpad, vorher nach `vorher/`, nachher nach
+`nachher/` (`$SCRATCH` steht für den Scratchpad der Sitzung); nach der Phase vergleicht Claude:
 
 ```bash
-for s in 1 4711 99999; do /Applications/Godot.app/Contents/MacOS/Godot --headless --no-header --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed $s > /tmp/fahrplan_$s.txt; done
+for s in 1 4711 99999; do /Applications/Godot.app/Contents/MacOS/Godot --headless --no-header --path src -s res://tools/werkstatt/fahrplan_ausgabe.gd -- --seed $s > "$SCRATCH/nachher/fahrplan_$s.txt"; done
 ```
 
 ```bash
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path src -d --quit-after 60
 ```
 
-- Fahrpläne bytegleich mit vorher (`cmp`), Startprobe Exit 0 und still, Tests zweimal grün,
+- Fahrpläne bytegleich mit vorher (`cmp` je Seed `vorher/` gegen `nachher/`), Startprobe Exit 0 und still, Tests zweimal grün,
   `BIS_BEHEBUNG` leer (SC-004).
 - Der Prüfer meldet an den behobenen Stellen nichts mehr.
-- Beide gesicherten Spielstände laden mit einem kurzen Skript wie vorher.
-- Von Hand, Klaus: das Spiel starten, einen der beiden Spielstände fortsetzen, ein neues Spiel
+- Beide Spielstände aus `user://test_008_behebung/` laden mit einem kurzen Skript wie vorher.
+- Von Hand, Klaus: das Spiel starten, den eigenen Spielstand von vor der Phase fortsetzen, ein neues Spiel
   beginnen, die drei grauen Knöpfe drücken, die Werkstatt öffnen und einen Lauf simulieren. Alles
   wie vorher.
 

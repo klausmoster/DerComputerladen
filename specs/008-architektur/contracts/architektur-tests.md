@@ -27,6 +27,10 @@ const ERLAUBT_NACH_OBEN: Array[Dictionary] = []
 
 ## Abweichungen, die Phase 5 behebt. Wird mit Phase 5 leer.
 const BIS_BEHEBUNG: Array[Dictionary] = []
+
+## Abweichungen, die Klaus als eigenes Feature vorgemerkt hat: {"datei": …, "regel": "AR-NN",
+## "feature": Eintrag in Feature_Ideas.md}. Leert sich mit dem Feature, das sie behebt.
+const VORGEMERKT: Array[Dictionary] = []
 ```
 
 ## Prüffunktionen
@@ -49,8 +53,8 @@ Kommentare und Zeichenketten in Doku-Kommentaren zählen nicht als Treffer; der 
 |---|---|
 | `test_kerne_ohne_node` | jedes Skript in `core/timeline/`, `core/save/` und `KERNE`: `kern_verstoesse` leer |
 | `test_genau_diese_autoloads` | `autoloads_aus(project.godot) == AUTOLOADS` |
-| `test_kein_weg_nach_oben` | alle Skripte und Szenen unter `src/` ohne `addons/` und `test/`: Treffer nur an Stellen in `ERLAUBT_NACH_OBEN` oder `BIS_BEHEBUNG` |
-| `test_listen_ohne_leichen` | jeder Eintrag in `KERNE`, `ERLAUBT_NACH_OBEN` und `BIS_BEHEBUNG` zeigt auf eine Datei und Stelle, die es gibt und die noch trifft |
+| `test_kein_weg_nach_oben` | alle Skripte und Szenen unter `src/` ohne `addons/` und `test/`: Treffer nur an Stellen in `ERLAUBT_NACH_OBEN`, `BIS_BEHEBUNG` oder `VORGEMERKT` |
+| `test_listen_ohne_leichen` | jeder Eintrag in `KERNE`, `ERLAUBT_NACH_OBEN`, `BIS_BEHEBUNG` und `VORGEMERKT` zeigt auf eine Datei und Stelle, die es gibt und die noch trifft |
 | `test_ausnahmen_wie_im_leitfaden` | jeder Eintrag in `ERLAUBT_NACH_OBEN` steht in der Tabelle „Ausnahmen“ von `docs/architektur-leitfaden.md`; der Test liest die Datei über `ProjectSettings.globalize_path("res://")` und `..` |
 
 Testnamen und Meldungen deutsch; jede Meldung nennt Datei, Zeile und AR-Nummer.

@@ -92,6 +92,20 @@ wichtigsten für die Spec:
 - SC-002, SC-005, SC-006 und SC-007 sind genauer gefasst (CHK004, CHK006, CHK016).
 Alle Punkte stehen in plan.md, „Änderungen nach der Checkliste“.
 
+### Analyse 2026-10-28
+
+Aus `/speckit-analyze`, gelesen von einem unabhängigen Prüfer: 18 Befunde, keiner kritisch; Claude
+hat jeden nachgeprüft, Klaus hat am 2026-10-28 alle Empfehlungen freigegeben. Für die Spec:
+- Der Selbsttest aus Feature 007 unter `src/tools/selbsttest/` zählt als Werkzeug: Der Prüfer
+  prüft ihn, die Bestandsprüfung umfasst ihn, und er ist ein eigener Ordner im Sinne von FR-027
+  (I1).
+- 007 ändert dieselben Dateien der Arbeitsweise wie 008; vor Phase 2 wird nach seinem Stand gesehen
+  (I2).
+- Eine begründete Ausnahme ohne Skript braucht nur die Zeile in der Tabelle (I3, wie CHK010).
+- FR-021 nennt die Stellen, die den Prüfer einplanen; eine eigene Plan-Vorlage gibt es nicht (C6).
+- SC-005 erlaubt die Teil-Wiederholungen der Bestandsprüfung (I8).
+Alle Befunde stehen in plan.md, „Änderungen nach der Analyse“.
+
 ## Begriffe
 
 - **Architektur:** wie der Code aufgeteilt ist und wer wen kennt, nicht was er tut. Beispiel: Dass
@@ -117,8 +131,9 @@ Alle Punkte stehen in plan.md, „Änderungen nach der Checkliste“.
   und Schwere.
 - **Lücke im Leitfaden:** eine Frage zur Architektur, die der Leitfaden nicht beantwortet.
   Entscheidet Klaus.
-- **Begründete Ausnahme:** eine Stelle, die eine Regel bewusst verletzt und den Grund an der Stelle
-  oder im Plan nennt. Kein Befund.
+- **Begründete Ausnahme:** eine Stelle, die eine Regel bewusst verletzt, mit Grund an der Stelle und
+  einer Zeile in der Tabelle „Ausnahmen“ des Leitfadens; hat die Stelle kein Skript, reicht die Zeile.
+  Im Plan steht eine geplante Ausnahme unter „Ausnahmen vom Leitfaden“. Kein Befund.
 - **Bestandsprüfung:** der einmalige Lauf des Prüfers über den Code, der vor dem Leitfaden
   entstanden ist.
 - **Abweichung:** ein Befund aus der Bestandsprüfung, also im alten Code.
@@ -167,8 +182,9 @@ Leitfaden. Claude prüft jeden Befund nach, bevor Klaus ihn sieht.
 sie sich über mehrere Features ausbreiten. Gleiche Priorität wie Story 1, denn ein Leitfaden, den
 niemand prüft, veraltet still.
 
-**Independent Test**: Eine Fehlerprobe: In einer Kopie absichtlich je einen Verstoß gegen jedes
-Godot-Prinzip einbauen, etwa einen Baustein, der den, der ihn einsetzt, direkt aufruft. Der Prüfer
+**Independent Test**: Eine Fehlerprobe: kleine Probedateien außerhalb des Spiels mit je einem
+absichtlichen Verstoß gegen jedes Godot-Prinzip, etwa einem Baustein, der den, der ihn einsetzt,
+direkt aufruft. Der Prüfer
 findet sie, ohne die erlaubten Stellen daneben als Befund zu melden.
 
 **Acceptance Scenarios**:
@@ -355,8 +371,10 @@ still, Fahrpläne bytegleich, Titel, Spielstände und Easter Egg wie vorher bedi
   Maßstab, Zeitpunkte, Abgrenzung zu Claudes Prüfung und zu `/code-review`. Die bisherige Festlegung
   „kein eigener Code-Prüfer“ bleibt mit Datum sichtbar, mit dem Grund für die Änderung: Der neue
   Prüfer hat einen eigenen schriftlichen Maßstab.
-- **FR-021**: Der Ablauf der Phasenprüfung und die Vorlagen für Plan und Aufgaben MÜSSEN den
-  Architektur-Prüfer kennen, so dass er in jedem neuen Feature von selbst eingeplant wird.
+- **FR-021**: Der Skill der Phasenprüfung, die Aufgaben-Vorlage, die Verfassung und
+  `ki_pruefung.md` MÜSSEN den Architektur-Prüfer kennen, so dass er in jedem neuen Feature von selbst
+  eingeplant wird. Eine eigene Plan-Vorlage gibt es nicht: Den Abschnitt „Prüfer je Phase“ schreibt
+  Claude nach `ki_pruefung.md`, „Ausnahmen vom Leitfaden“ verlangt die Verfassung.
 - **FR-022**: Der Godot-Agent MUSS den Leitfaden vor jeder Aufgabe lesen.
 - **FR-023**: Grundsatz VI der Verfassung MUSS in 008 so erweitert werden, dass er Code-Phasen, den
   Architektur-Prüfer und den Leitfaden als Maßstab nennt. Den Wortlaut beschließt Klaus über
@@ -376,7 +394,7 @@ still, Fahrpläne bytegleich, Titel, Spielstände und Easter Egg wie vorher bedi
   werden, ohne das Verhalten des Spiels zu ändern. In 008 gehört dazu nur, was ein System betrifft;
   was mehrere Systeme umbaut, kommt als eigenes Feature nach `docs/features/Feature_Ideas.md`. Ein
   System betrifft eine Behebung, wenn sie nur Dateien in einem der Ordner `core/`, `scenes/title/`,
-  `scenes/game/`, `ui/` oder `tools/werkstatt/` ändert und keine Schnittstelle, die ein anderer
+  `scenes/game/`, `ui/`, `tools/werkstatt/` oder `tools/selbsttest/` (aus Feature 007) ändert und keine Schnittstelle, die ein anderer
   Ordner nutzt: Signal, öffentliche Methode oder Autoload.
 - **FR-028**: Nach der Behebung MÜSSEN alle Tests zweimal grün laufen, die Startprobe still sein, die
   Fahrpläne bytegleich bleiben und vorhandene Spielstände wie vorher laden. Belegt wird das an zwei
@@ -411,8 +429,8 @@ still, Fahrpläne bytegleich, Titel, Spielstände und Easter Egg wie vorher bedi
   einen Befund, alle Tests laufen zweimal grün mit derselben Zahl an Prüfungen, und die Fahrpläne
   für die Seeds 1, 4711 und 99999 sind bytegleich mit vorher.
 - **SC-005**: In Features nach 008 kostet eine Phasenprüfung für die Architektur höchstens einen
-  Prüfer-Lauf und eine Nachprüfung je Phase. Die Bestandsprüfung ist ausgenommen; sie hat drei Läufe
-  und je eine Nachprüfung.
+  Prüfer-Lauf und eine Nachprüfung je Phase. Die Bestandsprüfung ist ausgenommen; sie hat drei Läufe,
+  je eine Nachprüfung und, wo ein Lauf nicht alles schafft, Teil-Wiederholungen nur über das Fehlende.
 - **SC-006**: Im ersten Feature nach 008, das Code baut, wird der Prüfer beim Plan und in jeder
   Code-Phase eingeplant, ohne dass jemand daran erinnern muss. In 008 belegen das die
   Aufgaben-Vorlage und der Skill der Phasenprüfung; das Ergebnis im nächsten Feature trägt Claude in
@@ -425,13 +443,16 @@ still, Fahrpläne bytegleich, Titel, Spielstände und Easter Egg wie vorher bedi
 ## Assumptions
 
 - **Reihenfolge:** Erst entsteht der Leitfaden mit Klaus' Entscheidungen, dann der Prüfer, dann die
-  Fehlerprobe, dann die Bestandsprüfung, dann die Behebung. Jeder Schritt endet mit Klaus' Abnahme.
+  Fehlerprobe, dann die Bestandsprüfung, dann die Tests, dann die Behebung. Jeder Schritt endet mit Klaus' Abnahme.
 - **Bestand:** Die Bestandsprüfung läuft über den Stand von `main` zu ihrem Beginn. Vor Phase 3
   fragt Claude, ob Feature 007 gemergt ist; wenn ja, holt Claude `main` mit Klaus' OK in den Branch,
   und der Code von 007 gehört dazu. Wenn nein, sagt der Bericht, dass 007 fehlt.
 - **Merge:** 008 wird erst nach 007 gemergt, sonst kollidieren `Features.md` und
   `Feature_Ideas.md`. Die Behebung (Phase 5) beginnt erst, wenn 007 gemergt und `main` im Branch ist,
-  weil 007 dieselben Skripte ändern kann.
+  weil 007 dieselben Skripte ändern kann. 007 ändert in seinem Abschluss auch `ki_dev.md`,
+  `ki_pruefung.md` und die Aufgaben-Vorlage, also dieselben Dateien wie 008 in Phase 2; vor Phase 2
+  sieht Claude deshalb nach dem Stand von 007. Kommt 007 erst nach der Bestandsprüfung herein, prüft
+  der Prüfer seinen Code in Phase 5 nach.
 - **Quellen:** „Game Programming Patterns“ ist frei online lesbar; die Best Practices der
   Godot-Doku 4.7, Ron Gilberts Texte zu SCUMM und Thimbleweed Park und die „Friday Facts“ zu
   Factorio sind öffentlich. Die Recherche dazu kommt nach `docs/recherche/` und in `research.md`

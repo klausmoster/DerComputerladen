@@ -27,6 +27,9 @@ steht im Leitfaden.
 ## `docs/ki_workflow/ki_pruefung.md`
 
 - „Stand“: Feature 008 bringt den dritten Prüfer.
+- Grundsatz 5 („am Ende jeder Phase, die Sichtbares oder Texte ändert“) und der Satz unter der
+  Auswertung des Pilots („läuft nur in Phasen, die Sichtbares oder Texte ändern“): beide um „oder
+  Code“ ergänzt (Analyse, C13).
 - „Wer prüft was“: Zeile „Architektur-Prüfer | beim Plan und am Ende jeder Phase mit Code | Aufbau:
   wer wen kennt, wo Logik und Daten liegen | Architektur-Leitfaden“.
 - Schaubild „Regel → Test oder Prüfer“ bleibt; „Eine Regel aus dem Style-Guide“ wird „aus einem

@@ -9,7 +9,7 @@ flowchart LR
     R --> V["Vorbild / Muster"]
     L --> A["Ausnahmen-Tabelle"]
     A -.->|"Kommentar an der Stelle"| C["Code"]
-    A -.->|"ERLAUBT"| T["test_architektur.gd"]
+    A -.->|"ERLAUBT_NACH_OBEN"| T["test_architektur.gd"]
     R -->|"Prüfweise: Test"| T
     R -->|"Prüfweise: Prüfer"| P["Architektur-Prüfer"]
     P --> B["Bericht: Befunde,<br/>Ausnahmen, Lücken"]
@@ -43,9 +43,16 @@ Name (deutsch und englisch), Kern, Godot-Entsprechung, wo im Spiel, Regeln (AR-N
 
 ## Begründete Ausnahme
 
-Ort (Datei, Zeile), Regel, Grund, Freigabe (Klaus, Datum). Gültig nur mit Kommentar an der Stelle
-**und** Zeile in der Tabelle (research.md, R3). Für Regeln mit Test zusätzlich ein Eintrag in
-`ERLAUBT_*` im Test.
+Ort (Datei, Zeile oder Knoten), Regel, Grund, Freigabe (Klaus, Datum). Gültig mit Kommentar an der
+Stelle **und** Zeile in der Tabelle; hat die Stelle kein Skript, etwa ein Knoten ohne Skript oder eine
+Resource, reicht die Zeile mit Datei und Knoten (research.md, R3; CHK010). Für Regeln mit Test
+zusätzlich ein Eintrag in `ERLAUBT_NACH_OBEN` im Test.
+
+## Vorgemerkte Abweichung
+
+Eine bestätigte Abweichung, die Klaus als eigenes Feature vormerkt: Ort, Regel, Verweis auf den
+Eintrag in `docs/features/Feature_Ideas.md`. Für Regeln mit Test ein Eintrag in `VORGEMERKT` im Test;
+er verschwindet mit dem Feature, das die Abweichung behebt.
 
 ## Befund
 
