@@ -25,9 +25,17 @@ const VERSION := 1
 const TITEL := "res://scenes/title/title_screen.tscn"
 ## Nur unter diesem Ordner leert der Läufer Spielstände; echte liegen nie dort (FR-008).
 const EIGENER_ORDNER := "user://selbsttest/"
-## Die Abläufe in ihrer Reihenfolge. titel_echtzeit läuft als letzter (contracts/ablaeufe.md).
+## Die Abläufe in der Reihenfolge des Vertrags; wer auf einem anderen aufbaut, kommt gleich nach
+## ihm. titel_echtzeit läuft als letzter (contracts/ablaeufe.md).
+## Szenarien kommen später als Skripte aus szenarien/ vor titel_echtzeit dazu (R27).
 const ABLAEUFE: Array[Script] = [
 	preload("res://tools/selbsttest/ablaeufe/ablauf_titel.gd"),
+	preload("res://tools/selbsttest/ablaeufe/ablauf_neues_spiel.gd"),
+	preload("res://tools/selbsttest/ablaeufe/ablauf_laden.gd"),
+	preload("res://tools/selbsttest/ablaeufe/ablauf_loeschen.gd"),
+	preload("res://tools/selbsttest/ablaeufe/ablauf_easter_egg.gd"),
+	preload("res://tools/selbsttest/ablaeufe/ablauf_bedienung.gd"),
+	preload("res://tools/selbsttest/ablaeufe/ablauf_fenster.gd"),
 	preload("res://tools/selbsttest/ablaeufe/ablauf_titel_echtzeit.gd"),
 ]
 
@@ -139,6 +147,10 @@ func _laufe() -> void:
 				return
 			if lauf.ist_offen(daten["kennung"]):
 				await _fuehre_aus(ablauf, daten, frisch and daten["kennung"] == erster)
+		if _abgebrochen:
+			return
+		if fahrer != null:
+			ablauf.aufraeumen(fahrer)
 		Engine.time_scale = 1.0
 		# Die Treiberversion liest unter Windows und Linux ein Thread; nach dem ersten Ablauf ist
 		# sie längst da (R20).

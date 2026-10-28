@@ -242,8 +242,8 @@ func test_in_der_liste_steht_der_spielstand_ohne_und_zurueck_mit_anfuehrungszeic
 	var loeschen := _fahrer.zustand()
 
 	# Assert
-	assert_eq(spielstand, "Menü steht: SPIELSTÄNDE, Spiel 1, Hinweis „Steht am 01.01.1985. "
-		+ "Gespielt am 26.10.2026, 21:40 Uhr.“; Spielstände: Spiel 1")
+	assert_eq(spielstand, "Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985, Hinweis „Steht "
+		+ "am 01.01.1985. Gespielt am 26.10.2026, 21:40 Uhr.“; Spielstände: Spiel 1")
 	assert_eq(loeschen, "Menü steht: SPIELSTÄNDE, „Löschen …“, Hinweis „Einen Spielstand löschen. "
 		+ "Vorher kommt eine Rückfrage.“; Spielstände: Spiel 1")
 
@@ -286,7 +286,11 @@ func test_die_gehaeusetasten_werden_gefunden_und_starten_das_easter_egg() -> voi
 
 	# Assert
 	assert_eq(_fahrer.sichtbare_seite().name, SelbsttestFahrer.SEITE_INVADERS)
-	assert_eq(_fahrer.zustand(), "Seite Invaders sichtbar; Spielstände: keine")
+	assert_eq(_fahrer.zustand(), "Seite Invaders sichtbar und aktiv, Hinweis aus; Spielstände: keine")
+	assert_true(_fahrer.invaders_aktiv())
+	assert_eq(_fahrer.kanone_x(), InvadersGame.CANNON_START_X)
+	assert_false(_fahrer.schuss_unterwegs())
+	assert_eq(_fahrer.treffer(), 0)
 
 
 func test_der_knopf_zum_hauptmenue_wird_gefunden() -> void:
@@ -320,6 +324,292 @@ func test_beenden_wird_abgefangen_und_gezaehlt() -> void:
 	# Assert: Der Titel ruft den quit_callback des Fahrers statt get_tree().quit().
 	assert_eq(_fahrer.beenden_ausgeloest(), 1)
 	assert_string_contains(_fahrer.zustand(), "; „Beenden“ ausgelöst; ")
+
+
+func test_die_zeile_eines_spielstands_nennt_grad_und_spieldatum_wie_sie_dastehen() -> void:
+	# Arrange
+	_lege_an(1)
+	await _zeige_titel()
+	await _eingabe.klick(_fahrer.ziel_eintrag(SelbsttestFahrer.SEITE_HAUPTMENUE, &"load_game")
+		.get_center())
+
+	# Act
+	var angaben := _fahrer.zeile_angaben()
+	await _eingabe.maus_zu(_fahrer.ziel_eintrag(SelbsttestFahrer.SEITE_SPIELSTAENDE,
+		SelbsttestFahrer.ZEILE_ZURUECK).get_center())
+
+	# Assert: gelesen aus den Spalten der Zeile; ohne Spielstand in der Zeile leer.
+	assert_eq(angaben, "Mittel, 01.01.1985")
+	assert_eq(_fahrer.zeile_angaben(), "")
+	assert_eq(_fahrer.kopfzeile(), "SPIELSTÄNDE")
+
+
+func test_im_loeschmodus_ist_loeschen_nicht_verfuegbar_auch_in_gefunden() -> void:
+	# Arrange
+	_lege_an(1)
+	await _zeige_titel()
+	await _eingabe.klick(_fahrer.ziel_eintrag(SelbsttestFahrer.SEITE_HAUPTMENUE, &"load_game")
+		.get_center())
+	var vorher := _fahrer.gewaehlt_verfuegbar()
+
+	# Act
+	var antwort: String = await _fahrer.klick_auf_eintrag(SelbsttestFahrer.SEITE_SPIELSTAENDE,
+		SelbsttestFahrer.ZEILE_LOESCHEN, "SPIELSTÄNDE, „Löschen …“")
+
+	# Assert: „nicht verfügbar“ steht wie im Menü hinter der Zeile (Verfügbarkeit im Vertrag).
+	assert_eq(antwort, "")
+	assert_true(vorher, "Spiel 1 ist fortsetzbar.")
+	assert_false(_fahrer.gewaehlt_verfuegbar())
+	assert_eq(_fahrer.kopfzeile(), "WELCHES LÖSCHEN?")
+	assert_eq(_fahrer.zustand(), "Menü steht: WELCHES LÖSCHEN?, „Löschen …“, nicht verfügbar, "
+		+ "Hinweis „Wähl oben den Spielstand, der weg soll. Esc bricht ab.“; Spielstände: Spiel 1")
+
+
+func test_hinausgefahren_gilt_nach_der_fahrt_hinaus_bis_zum_naechsten_communicator() -> void:
+	# Arrange
+	await _zeige_titel()
+	var communicator := _titel.get_node("Communicator") as Communicator
+	var vorher := _fahrer.hinausgefahren()
+
+	# Act
+	communicator.slide_out()
+	var danach := _fahrer.hinausgefahren()
+	_titel.queue_free()
+	await wait_process_frames(1)
+	var ohne_titel := _fahrer.hinausgefahren()
+	await _zeige_titel()
+
+	# Assert
+	assert_false(vorher)
+	assert_true(danach)
+	assert_true(ohne_titel, "Der Titel ist weg, die Fahrt bleibt vermerkt.")
+	assert_false(_fahrer.hinausgefahren(), "Ein neuer Communicator beginnt von vorn.")
+
+
+func test_spielbildschirm_steht_mit_dem_laufenden_spiel() -> void:
+	# Arrange
+	assert_eq(_sitzung.start_new(Difficulty.Level.MITTEL), OK)
+	var spiel := SPIELBILDSCHIRM.instantiate() as GameScreen
+	spiel.session = _sitzung
+	_viewport.add_child(spiel)
+	_fahrer.szene = spiel
+	await wait_process_frames(1)
+
+	# Assert
+	assert_eq(_fahrer.laufendes_spiel(), "Spiel 1")
+	assert_true(_fahrer.spielbildschirm_steht("Spiel 1"))
+	assert_false(_fahrer.spielbildschirm_steht("Spiel 2"))
+	assert_false(_fahrer.spielbildschirm_steht(""))
+	assert_eq(_fahrer.zustand(), "Spielbildschirm steht, Hinweis „Speichert Spiel 1 und führt ins "
+		+ "Hauptmenü.“; Spielstände: Spiel 1")
+	assert_eq(_sitzung.leave(), OK)
+
+
+func test_pfeil_runter_bis_waehlt_den_eintrag_und_meldet_einen_fehlenden() -> void:
+	# Arrange: „Neues Spiel“ ist vorgewählt.
+	await _zeige_titel()
+
+	# Act
+	var antwort: String = await _fahrer.pfeil_runter_bis(SelbsttestFahrer.SEITE_HAUPTMENUE, &"quit",
+		"HAUPTMENÜ, „Beenden“")
+	var fehlt: String = await _fahrer.pfeil_runter_bis(SelbsttestFahrer.SEITE_HAUPTMENUE,
+		&"gibt_es_nicht", "HAUPTMENÜ, „Gibt es nicht“")
+
+	# Assert
+	assert_eq(antwort, "")
+	assert_eq(_fahrer.gewaehlter_eintrag(), &"quit")
+	assert_eq(_fahrer.beenden_ausgeloest(), 0)
+	assert_eq(fehlt, "Ziel nicht gefunden: HAUPTMENÜ, „Gibt es nicht“")
+
+
+func test_klicks_ohne_ziel_nennen_was_gesucht_war() -> void:
+	# Arrange: im Titel gibt es keine Liste und keinen Spielbildschirm.
+	await _zeige_titel()
+	_eingabe.merke_beginn()
+
+	# Act
+	var zeile: String = await _fahrer.klick_auf_zeile(1, "SPIELSTÄNDE, Spiel 1")
+	var knopf: String = await _fahrer.klick_auf_knopf_hauptmenue("Spielbildschirm, „Zum Hauptmenü“")
+
+	# Assert
+	assert_eq(zeile, "Ziel nicht gefunden: SPIELSTÄNDE, Spiel 1")
+	assert_eq(knopf, "Ziel nicht gefunden: Spielbildschirm, „Zum Hauptmenü“")
+	assert_eq(_eingabe.erste_eingabe_ms(), -1, "Ohne Ziel geht keine Eingabe hinaus.")
+
+
+func test_das_versteckte_spiel_nach_esc_ist_nicht_mehr_aktiv() -> void:
+	# Arrange: gestartet, dann die Partie beendet, ohne die Seite zu schließen.
+	await _zeige_titel()
+	for index in 3:
+		await _eingabe.klick(_fahrer.ziel_gehaeusetaste(index).get_center())
+	var seite := _fahrer.invaders()
+
+	# Act
+	seite.game().state = InvadersGame.State.LOST
+
+	# Assert
+	assert_false(_fahrer.invaders_aktiv())
+	assert_string_starts_with(_fahrer.zustand(), "Seite Invaders sichtbar und nicht aktiv, ")
+
+
+func test_ohne_versteckes_spiel_gibt_es_keine_kanone() -> void:
+	# Arrange
+	await _zeige_titel()
+
+	# Assert
+	assert_null(_fahrer.invaders())
+	assert_false(_fahrer.invaders_aktiv())
+	assert_eq(_fahrer.kanone_x(), -1)
+	assert_false(_fahrer.schuss_unterwegs())
+	assert_eq(_fahrer.treffer(), 0)
+
+
+func test_gewaehlter_text_steht_wie_die_zeile() -> void:
+	# Arrange
+	await _zeige_titel()
+
+	# Act
+	var neues_spiel := _fahrer.gewaehlter_text()
+	await _fahrer.taste(KEY_TAB, true)
+
+	# Assert: Umschalt+Tab geht eine Zeile hoch.
+	assert_eq(neues_spiel, "Neues Spiel")
+	assert_eq(_fahrer.gewaehlter_text(), "Weiterspielen")
+
+
+func test_vorbereitung_legt_spielstaende_an_und_raeumt_nur_sie_weg() -> void:
+	# Arrange: Spiel 9 lag schon da und bleibt.
+	SaveGame.time_zone_bias = 60
+	_lege_an(9)
+
+	# Act
+	var antwort := _fahrer.lege_spielstaende_an(3)
+	var angelegt := _fahrer.spielstaende()
+	_fahrer.raeume_spielstaende_weg()
+
+	# Assert: „zuletzt gespielt“ fest, Spiel 1 ganz oben, dann je eine Stunde früher.
+	assert_eq(antwort, "")
+	assert_true(angelegt.has(9))
+	assert_eq(Array(angelegt).filter(func(nummer: int) -> bool: return nummer != 9), [1, 2, 3])
+	assert_eq(_fahrer.spielstaende(), PackedInt32Array([9]))
+
+
+func test_titel_neu_laden_wartet_bis_das_hauptmenue_steht() -> void:
+	# Arrange: Der Test wechselt selbst, wie die App es mit change_scene_to_file() täte.
+	await _zeige_titel()
+	var alt := _titel
+	_fahrer.szenenwechsel = func(_pfad: String) -> void:
+		alt.queue_free()
+		_zeige_titel.call_deferred()
+
+	# Act
+	var antwort: String = await _fahrer.lade_titel_neu()
+
+	# Assert
+	assert_eq(antwort, "")
+	assert_ne(_fahrer.titel(), alt)
+	assert_true(_fahrer.menue_steht(SelbsttestFahrer.SEITE_HAUPTMENUE, &"new_game"))
+
+
+func test_spielbildschirm_ohne_fokus_steht_nicht() -> void:
+	# Arrange
+	assert_eq(_sitzung.start_new(Difficulty.Level.MITTEL), OK)
+	var spiel := SPIELBILDSCHIRM.instantiate() as GameScreen
+	spiel.session = _sitzung
+	_viewport.add_child(spiel)
+	_fahrer.szene = spiel
+	await wait_process_frames(1)
+
+	# Act: „Zum Hauptmenü“ verliert den Fokus.
+	_viewport.gui_release_focus()
+
+	# Assert: „steht“ nur mit Fokus (B4).
+	assert_false(_fahrer.spielbildschirm_steht("Spiel 1"))
+	assert_eq(_fahrer.zustand(), "Spielbildschirm, „Zum Hauptmenü“ ohne Fokus, Hinweis „Speichert "
+		+ "Spiel 1 und führt ins Hauptmenü.“; Spielstände: Spiel 1")
+	assert_eq(_sitzung.leave(), OK)
+
+
+func test_eine_fehlende_gehaeusetaste_heisst_nach_ihrer_lage() -> void:
+	# Arrange: ohne Titel gibt es keine Gehäusetasten.
+	_eingabe.merke_beginn()
+
+	# Act
+	var antwort: String = await _fahrer.klick_auf_gehaeusetasten([2, 0])
+
+	# Assert (B11)
+	assert_eq(antwort, "Ziel nicht gefunden: Gehäusetaste rechts")
+	assert_eq(_eingabe.erste_eingabe_ms(), -1)
+
+
+func test_die_uhr_laesst_sich_noch_nicht_bedienen() -> void:
+	# Act
+	var antwort := _fahrer.uhr_bis(GameDate.new(1987, 3, 1))
+
+	# Assert
+	assert_eq(antwort, "Die Uhr lässt sich im Spielbildschirm noch nicht bedienen")
+
+
+func test_liste_oben_und_marke_nach_dem_mausrad() -> void:
+	# Arrange: sieben Spielstände, die Anzeige zeigt fünf.
+	SaveGame.time_zone_bias = 60
+	assert_eq(_fahrer.lege_spielstaende_an(7), "")
+	await _zeige_titel()
+	await _fahrer.klick_auf_eintrag(SelbsttestFahrer.SEITE_HAUPTMENUE, &"load_game", "")
+	var vorher := [_fahrer.liste_oben(), _fahrer.marke_oben()]
+
+	# Act
+	var antwort: String = await _fahrer.mausrad_auf_zeile(1, MOUSE_BUTTON_WHEEL_DOWN, "")
+
+	# Assert
+	assert_eq(antwort, "")
+	assert_eq(vorher, ["Spiel 1", false])
+	assert_eq(_fahrer.liste_oben(), "Spiel 2")
+	assert_true(_fahrer.marke_oben())
+	assert_eq(_fahrer.gewaehlter_eintrag(), &"slot_2")
+
+
+func test_fenster_text_ohne_rand_mit_rand_und_krumm() -> void:
+	# Act
+	var faktor_1 := SelbsttestFahrer.fenster_text(Vector2i(640, 360), Transform2D.IDENTITY)
+	var start := SelbsttestFahrer.fenster_text(Vector2i(3200, 1800),
+		Transform2D(0.0, Vector2(5, 5), 0.0, Vector2.ZERO))
+	var krumm := SelbsttestFahrer.fenster_text(Vector2i(1317, 741),
+		Transform2D(0.0, Vector2(2, 2), 0.0, Vector2(18, 10)))
+	var seitlich := SelbsttestFahrer.fenster_text(Vector2i(1317, 741),
+		Transform2D(0.0, Vector2(2, 2), 0.0, Vector2(0, 10)))
+	var gestreckt := SelbsttestFahrer.fenster_text(Vector2i(1600, 900),
+		Transform2D(0.0, Vector2(2.5, 2.5), 0.0, Vector2.ZERO))
+
+	# Assert
+	assert_eq(faktor_1, "Fenster 640 × 360, Bild Faktor 1, ohne Rand")
+	assert_eq(start, "Fenster 3200 × 1800, Bild Faktor 5, ohne Rand")
+	assert_eq(krumm, "Fenster 1317 × 741, Bild Faktor 2, mittig, Rand ringsum, ganze Pixel")
+	assert_eq(seitlich, "Fenster 1317 × 741, Bild Faktor 2, nicht mittig, Rand links 0, "
+		+ "rechts 37, oben 10, unten 11, ganze Pixel")
+	assert_eq(gestreckt, "Fenster 1600 × 900, Bild Faktor 2,5, ohne Rand, keine ganzen Pixel")
+
+
+func test_versatz_misst_den_rahmen_samt_titelleiste_im_nutzbaren_bereich() -> void:
+	# Arrange: wie am Mac gemessen, nutzbar ab y 60 mit 1914 Höhe, Rahmen 3200 × 1864.
+	var nutzbar := Rect2i(0, 60, 3840, 1914)
+
+	# Assert: vor Feature 007 stand der Rahmen bei y 116, mittig wäre 85.
+	assert_eq(SelbsttestFahrer.versatz_zur_mitte(nutzbar, Rect2i(320, 85, 3200, 1864)),
+		Vector2i.ZERO)
+	assert_eq(SelbsttestFahrer.versatz_zur_mitte(nutzbar, Rect2i(320, 116, 3200, 1864)),
+		Vector2i(0, 31))
+
+
+func test_lage_text_auf_einen_pixel_genau() -> void:
+	# Assert
+	assert_eq(SelbsttestFahrer.lage_text(Vector2i(1, -1)),
+		"mittig im nutzbaren Bereich, auf 1 Pixel genau")
+	assert_eq(SelbsttestFahrer.lage_text(Vector2i(0, 2)),
+		"0 Pixel rechts, 2 Pixel unter der Mitte des nutzbaren Bereichs")
+	assert_eq(SelbsttestFahrer.lage_text(Vector2i(-12, -3)),
+		"12 Pixel links, 3 Pixel über der Mitte des nutzbaren Bereichs",
+		"Negativer Versatz heißt links und über (B8).")
 
 
 # --- Ablauf „titel“ über den Fahrer ---------------------------------------------------------------

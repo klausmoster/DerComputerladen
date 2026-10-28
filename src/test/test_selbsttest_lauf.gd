@@ -3,7 +3,8 @@ extends GutTest
 ## Prüft SelbsttestLauf und die Basisklasse SelbsttestAblauf (Feature 007, T001; data-model.md,
 ## „Lauf“, „Ablauf“ und „Schritt“; FR-009, FR-010; CHK006, CHK038): Kennung des Laufs, Planen,
 ## Ergebnisse je Schritt, Summe, Fokusverluste und Abbruch, und die Regeln für nicht gelaufene
-## Schritte. Alles ohne Fenster, mit erfundenen Abläufen; die Callables der Schritte tun nichts.
+## Schritte. Dazu der Rahmen für Szenarien mit einem erfundenen Szenario (T022, R27). Alles ohne
+## Fenster, mit erfundenen Abläufen; die Callables der Schritte tun nichts.
 ##
 ## Die Gründe stehen hier als ganze Texte, nicht als Aufrufe von SelbsttestTexte: So fällt jede
 ## Änderung an einem Wortlaut hier auf.
@@ -67,8 +68,9 @@ func test_planen_uebernimmt_die_angaben_des_schritts() -> void:
 	# Arrange
 	var lauf := SelbsttestLauf.new(START)
 	var ablauf := _ablauf("easter_egg")
-	var schritte: Array[Dictionary] = [ablauf.neuer_schritt("03_start", "Gehäusetasten 0, 1, 2",
-		"Linksklick auf Gehäusetaste 0, 1, 2", _nichts, _passt,
+	var schritte: Array[Dictionary] = [ablauf.neuer_schritt("03_start",
+		"Gehäusetasten links, Mitte, rechts", "Linksklick auf Gehäusetasten links, Mitte, rechts",
+		_nichts, _passt,
 		"Seite Invaders sichtbar und aktiv, Hinweis aus", false, 7000)]
 
 	# Act
@@ -76,8 +78,8 @@ func test_planen_uebernimmt_die_angaben_des_schritts() -> void:
 
 	# Assert
 	var schritt := lauf.schritt("easter_egg.03_start")
-	assert_eq(schritt.beschreibung, "Gehäusetasten 0, 1, 2")
-	assert_eq(schritt.eingaben, "Linksklick auf Gehäusetaste 0, 1, 2")
+	assert_eq(schritt.beschreibung, "Gehäusetasten links, Mitte, rechts")
+	assert_eq(schritt.eingaben, "Linksklick auf Gehäusetasten links, Mitte, rechts")
 	assert_eq(schritt.erwartet, "Seite Invaders sichtbar und aktiv, Hinweis aus")
 	assert_false(schritt.foto_vergleichbar)
 	assert_eq(schritt.hoechstzeit_ms, 7000)
@@ -126,12 +128,13 @@ func test_fehler_setzt_den_rest_des_ablaufs_auf_nicht_gelaufen() -> void:
 	lauf.melde_ok("neues_spiel.01_gradwahl", 900)
 
 	# Act
-	lauf.melde_fehler("neues_spiel.02_zurueck_esc", "Ziel nicht gefunden: Hauptmenü, new_game", 12)
+	lauf.melde_fehler("neues_spiel.02_zurueck_esc",
+		"Ziel nicht gefunden: HAUPTMENÜ, „Neues Spiel“", 12)
 
 	# Assert
 	var fehler := lauf.schritt("neues_spiel.02_zurueck_esc")
 	assert_eq(fehler.status, SelbsttestLauf.Status.FEHLER)
-	assert_eq(fehler.gefunden, "Ziel nicht gefunden: Hauptmenü, new_game")
+	assert_eq(fehler.gefunden, "Ziel nicht gefunden: HAUPTMENÜ, „Neues Spiel“")
 	assert_true(fehler.gelaufen(), "Auch bei FEHLER gibt es ein Foto.")
 	var rest := lauf.schritt("neues_spiel.03_gradwahl_klick")
 	assert_eq(rest.status, SelbsttestLauf.Status.NICHT_GELAUFEN)
@@ -351,7 +354,117 @@ func test_abgeleiteter_ablauf_liefert_seine_schritte() -> void:
 	assert_eq(schritte[1]["kennung"], "erfunden.02_zwei")
 
 
+# --- Szenario (R27) ------------------------------------------------------------------------------
+
+func test_szenario_macht_aus_start_entscheidungen_und_pruefpunkten_schritte_nach_datum() -> void:
+	# Arrange
+	var szenario := ErfundenesSzenario.new()
+
+	# Act
+	var schritte := szenario.schritte(SelbsttestFahrer.new(get_tree()))
+
+	# Assert: erst der Start, dann nach Datum; am selben Tag die Entscheidung vor dem Prüfpunkt.
+	assert_true(szenario is SelbsttestAblauf, "Ein Szenario ist ein Ablauf.")
+	assert_eq(_feld(schritte, "kennung"), ["leicht_1987.00_start",
+		"leicht_1987.01_entscheidung", "leicht_1987.02_lager", "leicht_1987.03_kontostand"])
+	assert_eq(_feld(schritte, "beschreibung"), ["Spiel 1 beginnt mit Leicht, Seed 4711",
+		"Entscheidung am 01.03.1985", "Prüfpunkt am 01.03.1985", "Prüfpunkt am 01.03.1987"])
+	assert_eq(_feld(schritte, "eingaben_text"), ["Vorbereitung: Spiel 1 mit Leicht, Seed 4711",
+		"Uhr bis 01.03.1985, Linksklick auf „Bestellen“", "Uhr bis 01.03.1985",
+		"Uhr bis 01.03.1987"])
+	assert_eq(_feld(schritte, "erwartet_text"), [
+		"Spielbildschirm steht, Hinweis „Speichert Spiel 1 und führt ins Hauptmenü.“",
+		"keine", "Lager voll", "Kontostand 1000 DM"], "Ohne Erwartung „keine“ (Lücke 5).")
+
+
+func test_szenario_ohne_bedienung_der_uhr_scheitert_beim_ersten_datum() -> void:
+	# Arrange: Der Start gelang; das erste Datum braucht die Uhr.
+	var szenario := ErfundenesSzenario.new()
+	var schritte := szenario.schritte(SelbsttestFahrer.new(get_tree()))
+	var lauf := SelbsttestLauf.new(START)
+	lauf.plane(szenario, schritte)
+	lauf.melde_ok("leicht_1987.00_start", 300)
+
+	# Act: wie der Läufer, ohne Fenster
+	var antwort: Variant = await (schritte[1]["eingaben"] as Callable).call()
+	lauf.melde_fehler("leicht_1987.01_entscheidung", antwort, 0)
+
+	# Assert
+	assert_eq(antwort, "Die Uhr lässt sich im Spielbildschirm noch nicht bedienen")
+	assert_eq(szenario.entschieden, 0, "Ohne Uhr geht die Entscheidung nicht hinaus.")
+	assert_eq(lauf.schritt("leicht_1987.03_kontostand").status,
+		SelbsttestLauf.Status.NICHT_GELAUFEN)
+	assert_eq(lauf.schritt("leicht_1987.03_kontostand").gefunden,
+		"Fehler in Schritt leicht_1987.01_entscheidung")
+	assert_eq(lauf.summe_text(), "1 von 4 Schritten in Ordnung, 1 Fehler, 2 nicht gelaufen.")
+
+
+func test_entscheidung_ohne_eingaben_text_nennt_nur_die_uhr() -> void:
+	# Arrange
+	var szenario := ErfundenesSzenario.new()
+	szenario.ohne_text = true
+
+	# Act
+	var schritte := szenario.schritte(null)
+
+	# Assert (B17)
+	assert_eq(schritte[1]["eingaben_text"], "Uhr bis 01.03.1985")
+
+
+func test_szenario_ohne_eintraege_hat_nur_den_start() -> void:
+	# Arrange
+	var szenario := SelbsttestSzenario.new()
+	szenario.kennung = "leer"
+
+	# Act
+	var schritte := szenario.schritte(null)
+
+	# Assert
+	assert_eq(_feld(schritte, "kennung"), ["leer.00_start"])
+	assert_eq(szenario.grad, Difficulty.Level.MITTEL)
+
+
 # --- Hilfen --------------------------------------------------------------------------------------
+
+## Ein Szenario, wie ein späteres Feature es unter szenarien/ anlegt: Leicht, Seed 4711, eine
+## Entscheidung und zwei Prüfpunkte, absichtlich nicht nach Datum geordnet.
+class ErfundenesSzenario:
+	extends SelbsttestSzenario
+
+	var entschieden := 0
+	var ohne_text := false
+
+	func _init() -> void:
+		kennung = "leicht_1987"
+		name = "Leicht bis 1987"
+		grad = Difficulty.Level.LEICHT
+		seed = 4711
+
+	func entscheidungen(_fahrer: SelbsttestFahrer) -> Array[Dictionary]:
+		var entscheidung := {"datum": GameDate.new(1985, 3, 1), "eingaben": _entscheide}
+		if not ohne_text:
+			entscheidung["eingaben_text"] = "Linksklick auf „Bestellen“"
+		return [entscheidung]
+
+	func pruefpunkte(_fahrer: SelbsttestFahrer) -> Array[Dictionary]:
+		var passt := func() -> String: return ""
+		return [{"kennung": "03_kontostand", "datum": GameDate.new(1987, 3, 1), "erwartet": passt,
+			"erwartet_text": "Kontostand 1000 DM"},
+			{"kennung": "02_lager", "datum": GameDate.new(1985, 3, 1), "erwartet": passt,
+			"erwartet_text": "Lager voll"}]
+
+	func _entscheide() -> String:
+		entschieden += 1
+		return ""
+
+
+## Die Werte von [param schluessel] aus allen [param schritte].
+static func _feld(schritte: Array[Dictionary], schluessel: String) -> Array:
+	var werte := []
+	for schritt in schritte:
+		werte.append(schritt[schluessel])
+	return werte
+
 
 ## Ein Ablauf wie die echten ab Phase 2: erbt und überschreibt schritte().
 class ErfundenerAblauf:

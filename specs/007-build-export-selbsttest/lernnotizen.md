@@ -256,3 +256,98 @@ nichts und haben deshalb keine Notiz.
   warten.
 - **Ordner nicht beschreibbar.** Bis zur Zusammenfassung in Phase 4 gibt die Startszene die Meldung
   mit `printerr()` aus und beendet die App mit Code 1.
+
+## Phase 3
+
+### T019 Abhängige Abläufe und Eingaben als Methoden des Fahrers
+
+- **`baut_auf` statt frischem Titel.** `laden` hat `baut_auf = "neues_spiel"`, `loeschen` hat
+  `baut_auf = "laden"`. Für solche Abläufe lädt der Läufer keinen frischen Titel; sie beginnen dort,
+  wo der Vorgänger aufhörte, im Hauptmenü auf „Weiterspielen“ mit Spiel 1 im Ordner. Dessen letzter
+  Schritt hat genau diesen Zustand geprüft. Scheitert `neues_spiel`, gelten beide als nicht gelaufen
+  („Fehler in Ablauf neues_spiel“); das regelt `SelbsttestLauf`, nicht der Ablauf.
+- **`bind()` auf Methoden des Fahrers.** `fahrer.taste.bind(KEY_ENTER)` oder
+  `fahrer.klick_auf_zeile.bind(1, …)` sind fertige Eingaben, ohne eigene Methode im Ablauf. Ein
+  solches Callable merkt sich nur die Kennung des Fahrers; das geht, weil der Läufer Fahrer und
+  Abläufe hält. Eine Methode mit `await` wird beim Aufruf zur Koroutine, deshalb ruft
+  `_nacheinander()` in `selbsttest_ablauf.gd` jede Eingabe mit `await` auf und hört beim ersten
+  Text auf, etwa „Ziel nicht gefunden: …“.
+- **Der Befund in der Form der Erwartung.** Wo die Erwartung mehr sagt als der Fahrer liest,
+  setzt die Prüfung des Schritts den Befund in derselben Folge zusammen, etwa
+  „Communicator nicht hinausgefahren; Spielbildschirm steht, …“ in `neues_spiel.04`. So stehen
+  `erwartet:` und `gefunden:` im Protokoll Wort für Wort untereinander.
+- **`mouse_entered` gegen `gui_input`.** Das Hauptmenü wählt eine Zeile über `mouse_entered`, die
+  Liste über jede Mausbewegung in `gui_input`. Ändert ein Control unter dem ruhenden echten Zeiger
+  seine Zeigerform (`mouse_default_cursor_shape`), schickt Godot eine eigene Bewegung am Filter
+  vorbei. Eine Probe zeigte: Sie löst `mouse_entered` aus, aber kein `gui_input`. Die Liste wählt
+  dadurch nichts; das Menü setzt die Zeigerform nur an Buttons, die noch nicht im Baum hängen.
+  Drei Läufe mit dem echten Zeiger auf „Zurück“, Spiel 1 und „Löschen …“ waren in Ordnung. Setzt
+  ein späteres Feature die Zeigerform an einem Menü-Button im Baum, kann der echte Zeiger dort eine
+  Zeile wählen.
+
+### T021 Vorbereitung statt Eingabe, Fenster und `get_final_transform()`
+
+- **Vorbereitung.** `bedienung.06` braucht sieben Spielstände. Die legt der Fahrer mit
+  `lege_spielstaende_an()` über `SaveStore` an, wie `GameSession.start_new()` es täte, mit fester
+  Zeit und festem Seed; danach lädt `lade_titel_neu()` den Titel, damit „Spiel laden“ verfügbar
+  ist. Das geht nicht über Eingaben, deshalb steht im Protokoll
+  `eingaben: Vorbereitung: 7 Spielstände; …`. `dauer_ms` und die Höchstzeit zählen erst ab der
+  ersten Eingabe, dem Klick.
+- **Aufräumen nach dem Ablauf.** `SelbsttestAblauf.aufraeumen()` ruft der Läufer nach jedem Ablauf,
+  auch wenn ein Schritt scheiterte. `bedienung` löscht dort genau die Spielstände, die der Fahrer
+  angelegt hat, `fenster` stellt Größe und Lage zurück, falls ein Schritt dazwischen scheiterte.
+- **Szenenwechsel als Callable.** `lade_titel_neu()` wechselt über `fahrer.szenenwechsel`, ungültig
+  heißt `change_scene_to_file()`. So läuft dieselbe Vorbereitung im Test in einem eigenen Viewport,
+  wie `scene_callback` im Titel.
+- **`get_final_transform()`.** Mit Stretch „viewport“ rendert Godot das Raster 640 × 360 und setzt
+  es vergrößert ins Fenster. `get_tree().root.get_final_transform()` sagt, wie: Skalierung ist der
+  Faktor, `origin` der Versatz, also der Rand links und oben. `SelbsttestFahrer.fenster_text()`
+  rechnet daraus „Bild Faktor 2, mittig, Rand ringsum, ganze Pixel“. Die Fenstergröße stellt der
+  Fahrer mit `get_window().size` ein, nicht über Eingaben; Größe ziehen ist Sache des Systems.
+- **Bildschirmpixel und Punkte.** Godot rechnet Fenster in Pixeln, macOS auf einem Retina-Bildschirm
+  in Punkten zu 2 Pixeln. Aus 1317 × 741 machte macOS deshalb 1316 × 740. `fenster.03` nimmt jetzt
+  1318 × 742: krumm, aber gerade, und damit auf jedem System genau so zu setzen.
+- **Warum `move_to_center()` nicht reichte (Änderung am Spiel).** `Window.move_to_center()` mittet die
+  Fläche des Fensters ohne Titelleiste auf dem ganzen Bildschirm, Menüleiste und Dock eingeschlossen.
+  Am Mac stand das Fenster so 63 Pixel unter der Mitte des freien Platzes; das fand `fenster.01`.
+  `GameWindow._fit_to_screen()` rechnet die Lage jetzt selbst: `centered_position()` stellt den
+  Rahmen (`window_get_size_with_decorations()`) mittig in `screen_get_usable_rect()` und gibt die
+  Lage der Fläche zurück, also um den Versatz zwischen Rahmen und Fläche verschoben
+  (`window_get_position_with_decorations()`), unter macOS die Titelleiste. Die Funktion ist
+  statisch wie `best_factor()`, so prüft `test_game_window.gd` sie ohne Fenster. Der Selbsttest
+  misst unabhängig davon am Rahmen (`SelbsttestFahrer.versatz_zur_mitte()`), damit er nicht nur
+  nachrechnet, was das Spiel ohnehin tut.
+- **Fester globaler Würfel.** Das versteckte Spiel nimmt seinen Seed aus `randi()`. Die Startszene
+  ruft deshalb `seed(4711)`. Im Zeitraffer macht das Spiel je Bild genau 4 Schritte (die Grenze in
+  `InvadersPage.advance()`), so fallen die Bomben in jedem Lauf gleich. Die Fotos von
+  `easter_egg.03` und `.04` bleiben trotzdem nicht vergleichbar: Wie viele Bilder das Halten der
+  Pfeiltaste dauert, hängt von der Bildrate ab.
+
+### T022 Rahmen für Szenarien
+
+- **Ein Szenario ist ein Ablauf.** `SelbsttestSzenario` erbt von `SelbsttestAblauf` und baut in
+  `schritte()` aus Grad, Seed, `entscheidungen()` und `pruefpunkte()` gewöhnliche Schritte: erst
+  „00_start“, dann nach Spieldatum, am selben Tag erst Entscheidungen, dann Prüfpunkte. Der Läufer
+  spielt sie wie jeden anderen Ablauf; er braucht dafür keine Zeile mehr.
+- **`sort_custom()` ist nicht stabil.** Godot garantiert bei gleichem Schlüssel keine Reihenfolge.
+  Jeder Termin bekommt deshalb seine Stelle in der Liste mit, und `_frueher()` vergleicht zuletzt
+  danach.
+- **Die Uhr fragt der Fahrer.** `uhr_bis()` gibt heute
+  „Die Uhr lässt sich im Spielbildschirm noch nicht bedienen“ zurück. Das ist ein Text für
+  `gefunden:`, also scheitert der Schritt sofort, und der Rest gilt als nicht gelaufen. Das erste
+  Feature mit Bedienung der Uhr baut sie dort ein; Szenarien und Läufer bleiben, wie sie sind.
+- **Start als Vorbereitung.** Die Oberfläche kann keinen Seed wählen; `starte_spiel()` beginnt das
+  Spiel deshalb über `GameSession.start_new(grad, seed)` und wechselt zum Spielbildschirm.
+
+### Auslegungen in T019 bis T022
+
+- **Erwartungen in der Form des Befunds**, wo der Vertrag nur beschreibt; Claude hat die Tabellen
+  von `neues_spiel`, `laden` und `loeschen` danach angeglichen. Für Teil 2 siehe den Bericht zu
+  T021: `easter_egg`, `bedienung` und `fenster` warten auf dieselbe Angleichung.
+- **`bedienung.01` mit viermal Pfeil**, sonst läuft die Auswahl ohne Spielstand nicht um.
+- **`fenster.01` misst das Fenster samt Titelleiste** gegen die Mitte des nutzbaren Bereichs, auf
+  1 Pixel genau (Klaus). Zuerst scheiterte der Schritt, weil `GameWindow` auf dem ganzen Bildschirm
+  mittete; Klaus hat entschieden, das Spiel zu richten.
+- **`fenster.01` wartet auch, bis der Communicator steht.** Der Schritt hat keine Eingabe, also wartet
+  der Läufer nicht von sich aus; ohne das zeigten die Fotos von 01 bis 04 die Fahrt herein, in jedem
+  Lauf an anderer Stelle.

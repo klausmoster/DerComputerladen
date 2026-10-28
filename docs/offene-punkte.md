@@ -12,6 +12,33 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Phase 3 (2026-10-28)
+
+- **Klaus:** Der Selbsttest fand, dass `GameWindow` das Fenster mittig auf dem ganzen Bildschirm
+  stellt, nicht im nutzbaren Bereich ohne Menüleiste und Dock (bei Klaus 63 Pixel zu tief). Das Spiel
+  wird gerichtet: Fenster samt Titelleiste mittig im nutzbaren Bereich.
+- **Entscheidungen Claude:** Der Vertrag übernimmt die Auslegungen des Agents zu allen Abläufen
+  (Erwartungen in der Form des Befunds). `bedienung.01` mit vier Pfeiltasten, weil ohne Spielstand
+  „Neues Spiel“ vorgewählt ist. `fenster.03` mit 1318 × 742 statt 1317 × 741, weil macOS bei
+  Skalierung 2 nur ganze Punkte setzt. Zeilen mit Spielstand stehen in `erwartet:` mit Grad und
+  Spieldatum; „Linksklick auf Spiel 1“ ohne „Zeile“.
+- **Fehlerprobe (T024, SC-004, SC-010):** Ein eigener Agent baute verdeckt je einen Fehler in Titel,
+  Gradwahl, Liste, Rückfrage, Easter Egg und Fenster in sechs Kopien. Jeder Fehler stand im passenden
+  Schritt; Claude ordnete alle sechs Protokolle ohne Schlüssel richtig zu.
+- **Filter nach `fenster` (Analyse, U3) nicht automatisch prüfbar:** Echte Mausereignisse lassen
+  sich ohne Bedienungshilfen-Recht nicht erzeugen; die Probe mit `CGEvent` kam nicht an. Klaus prüft
+  es bei der Abnahme von Hand (Maus und Tasten während des ganzen Laufs).
+- **Lücken aus der Phasenprüfung, von Claude entschieden:** Ziffern bei Maß und Anzahl im Werkzeug
+  („7 Spielstände“), „ein/eine“ als Wort; Lage mit Richtungen statt Vorzeichen; Einheiten „0,5 s“ und
+  „Pixel“ bleiben; Fehlertexte des Spiels in „gefunden:“ in Anführungszeichen mit ihrem Punkt;
+  `erwartet: keine` bei einer Entscheidung ohne Erwartung; „Seed“ als Fachwort; Ziele in „Ziel nicht
+  gefunden“ nur mit dem Namen der Zeile. Kommt mit T027 in den Abschnitt „Werkzeuge“.
+- **Klaus:** 19 Textbefunde, Vertrag überall angeglichen (Eingaben mit Ziel, Gehäusetasten links,
+  Mitte, rechts, „Rollmarke“, „Invaders“).
+- **Restrisiko Zeigerform** aus Phase 2: tritt in `laden` und `loeschen` nicht auf, auch mit dem echten
+  Zeiger auf der Liste (drei Läufe). Bleibt ein Risiko, falls das Spiel später die Zeigerform an
+  einem Menü-Button setzt, der schon im Baum hängt.
+
 ### Feature 007, Phase 2 (2026-10-28)
 
 Lücken aus der Phasenprüfung (Text-Prüfer), von Claude entschieden:

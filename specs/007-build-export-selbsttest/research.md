@@ -451,6 +451,29 @@ Vom Agent bei T011 bis T015 ausgelegt, von Claude geprüft und angenommen (2026-
   wurde nicht beachtet; der Lauf lief durch. Zwischen 0,6 und 0,75 s brach er wie verlangt ab.
   Vermutlich kommt die Anfrage, bevor Godot sie annehmen kann; es betrifft nicht den Lauf selbst.
 
+## Auslegungen aus Phase 3
+
+Vom Agent bei T019 bis T022 ausgelegt, von Claude geprüft und in den Vertrag übernommen (2026-10-28):
+- Wo eine Zelle der Spalte „Erwartet“ nur beschrieb, steht sie jetzt in der Form des Befunds, etwa
+  „Spielbildschirm steht, Hinweis „Speichert Spiel 1 und führt ins Hauptmenü.““ statt „Spielbildschirm
+  steht mit Spiel 1“. Der Befund beginnt wie die Erwartung, etwa „Seite Invaders nicht sichtbar, …“.
+- „Verfügbarkeit“ gilt auch für Zeilen der Liste: eine Zeile mit gesperrtem Knopf ist nicht verfügbar.
+- „Enter auf „Weiterspielen““ schickt nur Enter auf die Vorwahl; so prüft der Schritt die Vorwahl mit.
+  „Pfeil runter bis …“ drückt höchstens einmal je Zeile und scheitert sofort, wenn die Auswahl hängt.
+- `easter_egg.03` „aktiv“ heißt: Seite hat den Fokus, die Partie läuft. `easter_egg.04` misst „beim
+  Start“ unmittelbar vor dem Halten der Taste. Die Startszene ruft `seed(4711)`, weil Invaders seinen
+  Seed aus `randi()` nimmt; die Fotos von 03 und 04 waren damit gleich, bleiben aber „nicht
+  vergleichbar“ (R7).
+- `bedienung.06`: sieben Spielstände, Spiel 1 zur festen Zeit, jedes weitere eine Stunde früher, alle
+  Mittel, erster Tag, Seed 4711. Weggeräumt wird in `SelbsttestAblauf.aufraeumen()` nach dem Ablauf,
+  auch nach einem Fehler; ebenso stellt `fenster` dort Größe und Lage vom Start wieder her.
+- `fenster.01` misst den Rahmen samt Titelleiste gegen die Mitte von `screen_get_usable_rect()`, mit
+  eigener Rechnung im Fahrer, nicht mit der Funktion des Spiels.
+- Szenario: `00_start` ist eine Vorbereitung über `GameSession.start_new(grad, seed)`, weil die
+  Oberfläche keinen Seed wählen kann; Entscheidungen ohne Kennung heißen `nn_entscheidung`.
+- Am Spiel: `SaveList.shows_scroll_mark_above()` (nur lesend) und `GameWindow.centered_position()`
+  (Klaus: Fenster samt Titelleiste mittig im nutzbaren Bereich).
+
 ## Für Klaus zum Aufräumen
 
 Die Versuche des Agents haben unter `~/Library/Application Support/Godot/app_userdata/` die Ordner

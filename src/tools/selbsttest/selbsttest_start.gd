@@ -46,6 +46,9 @@ func _ready() -> void:
 	var wuerfel := RandomNumberGenerator.new()
 	wuerfel.seed = SEED
 	GameSession.rng = wuerfel
+	# Auch Godots globaler Würfel startet fest: Das versteckte Spiel nimmt seinen Seed aus randi().
+	# Im Zeitraffer macht es je Bild genau 4 Schritte, so fallen die Bomben in jedem Lauf gleich.
+	seed(SEED)
 	SaveGame.time_zone_bias = ZEITZONE_MINUTEN
 
 	var eingabe := SelbsttestEingabe.new()

@@ -230,10 +230,10 @@ func test_foto_nicht_vergleichbar_und_abbruch() -> void:
 	ablauf.kennung = "easter_egg"
 	var nichts := func() -> void: pass
 	var passt := func() -> String: return ""
-	lauf.plane(ablauf, [ablauf.neuer_schritt("03_start", "Gehäusetasten 0, 1, 2", "", nichts,
-		passt, "Seite Invaders sichtbar und aktiv, Hinweis aus", false),
-		ablauf.neuer_schritt("04_spielen", "Pfeil rechts halten, Leertaste", "", nichts, passt, "x",
-		false)] as Array[Dictionary])
+	lauf.plane(ablauf, [ablauf.neuer_schritt("03_start", "Gehäusetasten links, Mitte, rechts", "",
+		nichts, passt, "Seite Invaders sichtbar und aktiv, Hinweis aus", false),
+		ablauf.neuer_schritt("04_spielen", "Pfeil rechts halten 0,5 s, Leertaste", "", nichts, passt,
+		"x", false)] as Array[Dictionary])
 	lauf.melde_ok("easter_egg.03_start", 210)
 
 	# Act
@@ -284,8 +284,10 @@ func test_wortlaute_fuer_gefunden_und_gruende() -> void:
 	# Act und Assert (CHK034)
 	assert_eq(SelbsttestTexte.zeit_abgelaufen("Menü steht: SCHWIERIGKEIT, Leicht"),
 		"Zeit abgelaufen, zuletzt: Menü steht: SCHWIERIGKEIT, Leicht")
-	assert_eq(SelbsttestTexte.ziel_nicht_gefunden("Hauptmenü, new_game"),
-		"Ziel nicht gefunden: Hauptmenü, new_game")
+	assert_eq(SelbsttestTexte.ziel_nicht_gefunden("HAUPTMENÜ, „Neues Spiel“"),
+		"Ziel nicht gefunden: HAUPTMENÜ, „Neues Spiel“")
+	assert_eq(SelbsttestTexte.spielstaende_anzahl(1), "1 Spielstand", "Zahlwort nach der Zahl (N5).")
+	assert_eq(SelbsttestTexte.spielstaende_anzahl(7), "7 Spielstände")
 	assert_eq(SelbsttestTexte.fehler_in_schritt("titel.01_start"), "Fehler in Schritt titel.01_start")
 	assert_eq(SelbsttestTexte.fehler_in_ablauf("neues_spiel"), "Fehler in Ablauf neues_spiel")
 	assert_eq(SelbsttestTexte.FENSTER_GESCHLOSSEN, "Fenster geschlossen")

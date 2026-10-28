@@ -3,7 +3,8 @@ extends Node
 ## Autoload GameWindow: Fenster, Vollbild und Mindestgröße des Spielfensters.
 ##
 ## Das Spiel startet im Fenster. Gleich nach dem Start bekommt es den größten ganzzahligen
-## Faktor, der samt Titelleiste auf seinen Bildschirm passt, und steht dort in der Mitte.
+## Faktor, der samt Titelleiste auf seinen Bildschirm passt, und steht samt Titelleiste in der
+## Mitte des nutzbaren Bereichs, also ohne Menüleiste und Dock.
 ## Die Eingabe-Aktion `toggle_fullscreen` (Ctrl+Cmd+F) schaltet ins Vollbild und zurück, der
 ## grüne Fensterknopf von macOS tut das ohne eigenen Code; zurück im Fenster bekommt das
 ## Spiel wieder diese Größe. Kleiner als das Oberflächenraster bei Faktor 1 lässt es sich
@@ -99,15 +100,33 @@ static func best_factor(usable: Vector2i, decorations: Vector2i) -> int:
 	return maxi(mini(factors.x, factors.y), 1)
 
 
+## Wohin die Fläche des Fensters gehört, damit es samt Rahmen mittig in [param usable] steht,
+## dem nutzbaren Bereich des Bildschirms. [param frame_size] ist die Größe mit Rahmen,
+## [param frame_offset] der Versatz von der Ecke des Rahmens zur Ecke der Fläche, unter macOS die
+## Titelleiste oben. Alle Werte sind Bildschirmpixel. Ist der Rahmen größer als der Bereich, steht
+## er an dessen linker oberer Ecke, damit die Titelleiste erreichbar bleibt.
+static func centered_position(usable: Rect2i, frame_size: Vector2i,
+		frame_offset: Vector2i) -> Vector2i:
+	# Ganzzahlig geteilt wie in best_factor(): Ein halbes Pixel Rest fällt nach links oben.
+	@warning_ignore("integer_division")
+	var margin := (usable.size - frame_size) / 2
+	return usable.position + margin.maxi(0) + frame_offset
+
+
 ## Setzt das Fenster auf den größten Faktor, der samt Titelleiste auf den Bildschirm passt,
-## auf dem es gerade liegt, und stellt es dort in die Mitte.
+## auf dem es gerade liegt, und stellt es samt Titelleiste in die Mitte des nutzbaren Bereichs.
+##
+## Window.move_to_center() reicht dafür nicht: Es mittet die Fläche ohne Titelleiste auf dem
+## ganzen Bildschirm, Menüleiste und Dock eingeschlossen. Unter macOS stand das Fenster so 63
+## Pixel tiefer als die Mitte des freien Platzes (Feature 007, Selbsttest „fenster“).
 func _fit_to_screen() -> void:
 	var window := get_window()
 	var id := window.get_window_id()
 	var screen := DisplayServer.window_get_current_screen(id)
-	var usable := DisplayServer.screen_get_usable_rect(screen).size
+	var usable := DisplayServer.screen_get_usable_rect(screen)
 	# Im Vollbild hat das Fenster keine Titelleiste. Gemessen wird deshalb erst nach dem
 	# Übergang, wenn sie wieder da ist.
 	var decorations := DisplayServer.window_get_size_with_decorations(id) - window.size
-	window.size = BASE_SIZE * best_factor(usable, decorations)
-	window.move_to_center()
+	var frame_offset := window.position - DisplayServer.window_get_position_with_decorations(id)
+	window.size = BASE_SIZE * best_factor(usable.size, decorations)
+	window.position = centered_position(usable, window.size + decorations, frame_offset)

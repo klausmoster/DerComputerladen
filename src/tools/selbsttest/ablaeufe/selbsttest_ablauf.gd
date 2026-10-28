@@ -64,3 +64,31 @@ func neuer_schritt(nn_kurz: String, beschreibung: String, eingaben_text: String,
 		"hoechstzeit_ms": hoechstzeit_ms,
 		"foto_vergleichbar": foto_vergleichbar,
 	}
+
+
+## Räumt nach dem letzten Schritt weg, was der Ablauf vorbereitet hat, etwa die Spielstände von
+## „bedienung“ (CHK001). Der Läufer ruft es nach jedem Ablauf, auch wenn ein Schritt scheiterte,
+## nur nach einem Abbruch nicht; dann leert der nächste Start den Ordner. Die Basisklasse hat nichts
+## wegzuräumen.
+func aufraeumen(_fahrer: SelbsttestFahrer) -> void:
+	pass
+
+
+# --- Hilfen für Schritte --------------------------------------------------------------------------
+
+## Mehrere Eingaben eines Schritts, etwa „Maus über „Neues Spiel“, Enter“: ruft die Callables in
+## [param folge] nacheinander mit await auf. Gibt eine "" oder nichts zurück, kommt die nächste;
+## gibt eine einen Text zurück, etwa „Ziel nicht gefunden: …“, endet die Folge damit, und keine
+## weitere Eingabe geht hinaus. Ohne Typ der Elemente, weil bind() ein gewöhnliches Array mitgibt.
+func _nacheinander(folge: Array) -> String:
+	for eingabe: Callable in folge:
+		var antwort: Variant = await eingabe.call()
+		if antwort is String and not (antwort as String).is_empty():
+			return antwort
+	return ""
+
+
+## Prüfung „Menü steht“ (contracts/ablaeufe.md, „Gemeinsame Prüfungen“): "" wenn auf
+## [param seite] die Zeile [param zeile] steht, sonst der Zustand, den der Fahrer liest.
+func _pruefe_menue(fahrer: SelbsttestFahrer, seite: StringName, zeile: StringName) -> String:
+	return "" if fahrer.menue_steht(seite, zeile) else fahrer.zustand()

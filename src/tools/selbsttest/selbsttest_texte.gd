@@ -74,6 +74,73 @@ const VERFUEGBAR := "verfügbar"
 ## (contracts/ablaeufe.md, „Gemeinsame Prüfungen“, „Verfügbarkeit“).
 const NICHT_VERFUEGBAR := "nicht verfügbar"
 
+## neues_spiel.01_gradwahl bis neues_spiel.05_zum_hauptmenue. %s sind Wortlaute aus TitleTexts,
+## der Grad aus Difficulty.label().
+const BESCHREIBUNG_NEUES_SPIEL_GRADWAHL := "Enter auf „%s“ öffnet die Gradwahl"
+const BESCHREIBUNG_NEUES_SPIEL_ZURUECK_ESC := "Esc führt zurück ins Hauptmenü"
+const BESCHREIBUNG_NEUES_SPIEL_GRADWAHL_KLICK := "Linksklick auf „%s“ öffnet die Gradwahl"
+const BESCHREIBUNG_NEUES_SPIEL_GRAD := "Enter auf %s beginnt ein neues Spiel"
+const BESCHREIBUNG_NEUES_SPIEL_ZUM_HAUPTMENUE := "Linksklick auf „%s“ speichert, der Titel kommt neu"
+## laden.01_weiterspielen bis laden.05_zurueck_2; der Spielstand heißt wie SaveGame.default_name().
+const BESCHREIBUNG_LADEN_WEITERSPIELEN := "Enter auf „%s“ setzt %s fort"
+const BESCHREIBUNG_LADEN_ZURUECK := "Enter auf „%s“ führt zurück ins Hauptmenü"
+const BESCHREIBUNG_LADEN_LISTE := "Enter auf „%s“ zeigt die Liste der Spielstände"
+const BESCHREIBUNG_LADEN_ZEILE := "Linksklick auf %s setzt es fort"
+const BESCHREIBUNG_LADEN_ZURUECK_2 := "Linksklick auf „%s“ führt zurück ins Hauptmenü"
+## loeschen.01_liste bis loeschen.06_loeschen.
+const BESCHREIBUNG_LOESCHEN_LISTE := "Linksklick auf „%s“ zeigt die Liste der Spielstände"
+const BESCHREIBUNG_LOESCHEN_LOESCHMODUS := "Linksklick auf „%s“ schaltet den Löschmodus ein"
+const BESCHREIBUNG_LOESCHEN_RUECKFRAGE := "Linksklick auf %s im Löschmodus führt zur Rückfrage"
+const BESCHREIBUNG_LOESCHEN_ABBRECHEN := "Enter auf „%s“ führt zurück zur Liste, %s bleibt"
+const BESCHREIBUNG_LOESCHEN_RUECKFRAGE_2 := "Linksklick auf „%s“ und %s führt noch einmal zur Rückfrage"
+const BESCHREIBUNG_LOESCHEN_LOESCHEN := "Enter auf „%s“ löscht den letzten Spielstand"
+## easter_egg.01_auswahl bis easter_egg.05_ende_esc.
+const BESCHREIBUNG_EASTER_EGG_AUSWAHL := "„%s“ wählen, hierher kehrt die Auswahl nach Invaders zurück"
+const BESCHREIBUNG_EASTER_EGG_FALSCHE_FOLGE := "Gehäusetasten in falscher Folge starten Invaders nicht"
+const BESCHREIBUNG_EASTER_EGG_START := "Gehäusetasten links, Mitte, rechts starten Invaders"
+const BESCHREIBUNG_EASTER_EGG_SPIELEN := "Pfeil rechts fährt die Kanone, Leertaste schießt"
+const BESCHREIBUNG_EASTER_EGG_ENDE_ESC := "Esc beendet Invaders, „%s“ steht wieder da"
+## bedienung.01_pfeile bis bedienung.06_mausrad.
+const BESCHREIBUNG_BEDIENUNG_PFEILE := "Pfeiltasten wählen, am Anfang geht es am Ende weiter"
+const BESCHREIBUNG_BEDIENUNG_TAB := "Tab wählt die nächste Zeile, Umschalt+Tab die vorige"
+const BESCHREIBUNG_BEDIENUNG_RECHTSKLICK := "Rechtsklick auf „%s“ wählt, ohne auszulösen"
+const BESCHREIBUNG_BEDIENUNG_LEERTASTE := "Leertaste auf „%s“ öffnet die Gradwahl"
+const BESCHREIBUNG_BEDIENUNG_ZURUECK_KLICK := "Linksklick auf „%s“ führt zurück ins Hauptmenü"
+const BESCHREIBUNG_BEDIENUNG_MAUSRAD := "Das Mausrad rollt die Liste um eine Zeile"
+## fenster.01_start bis fenster.04_zurueck.
+const BESCHREIBUNG_FENSTER_START := "Start mit dem größten Faktor, der passt, Fenster mittig im nutzbaren Bereich"
+const BESCHREIBUNG_FENSTER_FAKTOR_1 := "Bild mit Faktor 1 ohne Rand"
+const BESCHREIBUNG_FENSTER_KRUMM := "Bild mit ganzem Faktor mittig im krummen Fenster, Rand ringsum"
+const BESCHREIBUNG_FENSTER_ZURUECK := "Bild mit dem Startfaktor ohne Rand, Fenster wieder in Startgröße und -lage"
+## Schritte eines Szenarios (R27): Start mit Grad und Seed, Entscheidung und Prüfpunkt an einem
+## Spieldatum, etwa „Prüfpunkt am 01.03.1987“.
+const BESCHREIBUNG_SZENARIO_START := "%s beginnt mit %s, Seed %d"
+const BESCHREIBUNG_SZENARIO_ENTSCHEIDUNG := "Entscheidung am %s"
+const BESCHREIBUNG_SZENARIO_PRUEFPUNKT := "Prüfpunkt am %s"
+
+## Eingaben in Worten, für „eingaben:“ und die Beschreibungen (contracts/selbsttest-app.md,
+## „Texte“: Tasten heißen Enter, Esc, Tab, Umschalt+Tab, Leertaste, Pfeil runter).
+const TASTE_ENTER := "Enter"
+const TASTE_ESC := "Esc"
+const TASTE_PFEIL_RUNTER := "Pfeil runter"
+const TASTE_PFEIL_HOCH := "Pfeil hoch"
+const TASTE_PFEIL_RECHTS := "Pfeil rechts"
+const TASTE_TAB := "Tab"
+const TASTE_UMSCHALT_TAB := "Umschalt+Tab"
+const TASTE_LEERTASTE := "Leertaste"
+const LINKSKLICK := "Linksklick"
+const RECHTSKLICK := "Rechtsklick"
+const MAUSRAD_RUNTER := "Mausrad runter"
+## Ein Szenario beginnt sein Spiel als Vorbereitung: „Spiel 1 mit Leicht, Seed 4711“.
+const SZENARIO_SPIEL := "%s mit %s, Seed %d"
+## erwartet: eines Schritts, der nichts prüft, etwa einer Entscheidung im Szenario ohne Erwartung.
+const ERWARTET_KEINE := "keine"
+## „Fenster auf die Startgröße“ in fenster.04.
+const FENSTER_AUF_STARTGROESSE := "Fenster auf die Startgröße"
+## Ein Ziel, das keine Seite mit Kopfzeile hat, etwa der Knopf „Zum Hauptmenü“: „Spielbildschirm,
+## „Zum Hauptmenü““ in „Ziel nicht gefunden: …“.
+const ZIEL_SPIELBILDSCHIRM := "Spielbildschirm"
+
 # --- Zustände, wie der Fahrer sie liest -----------------------------------------------------------
 # In der Form der Spalte „Erwartet“ (CHK031, CHK032); sie landen in „gefunden:“.
 
@@ -82,6 +149,8 @@ const ZUSTAND_COMMUNICATOR_FAEHRT := "Communicator nicht in Endlage"
 const ZUSTAND_KEINE_SEITE := "keine Seite sichtbar"
 const ZUSTAND_KEINE_ZEILE := "keine Zeile gewählt"
 const ZUSTAND_SPIELBILDSCHIRM := "Spielbildschirm steht"
+## Der Spielbildschirm ohne Fokus auf „Zum Hauptmenü“; dann steht er nicht (B4).
+const ZUSTAND_SPIELBILDSCHIRM_OHNE_FOKUS := "Spielbildschirm, „%s“ ohne Fokus"
 ## Wie der Vertrag es bei easter_egg.03 schreibt.
 const ZUSTAND_KEIN_HINWEIS := "Hinweis aus"
 ## Seite ohne Kopfzeile, etwa das versteckte Spiel; %s ist der Name des Knotens.
@@ -89,6 +158,38 @@ const ZUSTAND_SEITE := "Seite %s sichtbar"
 ## Ein Eintrag hat ausgelöst, etwa „Beenden“, das der Selbsttest abfängt, statt sich zu beenden;
 ## %s ist der Wortlaut aus TitleTexts.
 const ZUSTAND_AUSGELOEST := "„%s“ ausgelöst"
+## Wie der Vertrag es bei neues_spiel.04 und neues_spiel.05 schreibt; der Fahrer weiß es über
+## slide_finished.
+const ZUSTAND_HINAUSGEFAHREN := "Communicator hinausgefahren"
+const ZUSTAND_NICHT_HINAUSGEFAHREN := "Communicator nicht hinausgefahren"
+const ZUSTAND_TITEL_NEU := "Titel neu"
+## Eine Seite ohne Kopfzeile, die nicht zu sehen ist oder spielt, etwa das versteckte Spiel; %s ist
+## der Name des Knotens (easter_egg.02, easter_egg.03).
+const ZUSTAND_SEITE_NICHT_SICHTBAR := "Seite %s nicht sichtbar"
+const ZUSTAND_SEITE_AKTIV := "Seite %s sichtbar und aktiv"
+const ZUSTAND_SEITE_NICHT_AKTIV := "Seite %s sichtbar und nicht aktiv"
+## Das versteckte Spiel nach easter_egg.04.
+const ZUSTAND_KANONE_RECHTS := "Kanone weiter rechts als beim Start"
+const ZUSTAND_KANONE_NICHT_RECHTS := "Kanone nicht weiter rechts als beim Start"
+const ZUSTAND_SCHUSS := "ein Schuss unterwegs"
+const ZUSTAND_TREFFER := "ein Treffer gezählt"
+const ZUSTAND_KEIN_SCHUSS := "kein Schuss unterwegs und kein Treffer gezählt"
+## Rollen der Liste (bedienung.06): oberste Zeile und Rollmarke oben.
+const ZUSTAND_LISTE_OBEN := "Liste oben bei %s"
+const ZUSTAND_MARKE_OBEN := "Rollmarke oben sichtbar"
+const ZUSTAND_KEINE_MARKE_OBEN := "Rollmarke oben nicht sichtbar"
+## Fenster und Bild (fenster.01 bis fenster.04). Maße deutsch mit „ד (Phasenprüfung Phase 1, L1).
+const ZUSTAND_OHNE_RAND := "ohne Rand"
+const ZUSTAND_MITTIG := "mittig"
+const ZUSTAND_NICHT_MITTIG := "nicht mittig"
+const ZUSTAND_RAND_RINGSUM := "Rand ringsum"
+const ZUSTAND_RAND := "Rand links %d, rechts %d, oben %d, unten %d"
+const ZUSTAND_GANZE_PIXEL := "ganze Pixel"
+const ZUSTAND_KEINE_GANZEN_PIXEL := "keine ganzen Pixel"
+const ZUSTAND_LAGE_MITTIG := "mittig im nutzbaren Bereich, auf 1 Pixel genau"
+## „0 Pixel rechts, 2 Pixel unter der Mitte des nutzbaren Bereichs“; links und über bei negativem
+## Versatz, siehe lage_daneben().
+const ZUSTAND_LAGE_DANEBEN := "%d Pixel %s, %d Pixel %s der Mitte des nutzbaren Bereichs"
 
 # --- Eigene Fehler des Läufers (meldung: [selbsttest] …, CHK007) ---------------------------------
 
@@ -156,7 +257,8 @@ static func systemzeile(system: Dictionary) -> String:
 	return "%s %s · %s · %s" % teile
 
 
-## Erste Zeile eines Eintrags der Liste: „neues_spiel.01_gradwahl · Enter auf „Neues Spiel““.
+## Erste Zeile eines Eintrags der Liste: „neues_spiel.01_gradwahl · Enter auf „Neues Spiel“ öffnet
+## die Gradwahl“.
 static func eintrag(kennung: String, beschreibung: String) -> String:
 	return "%s · %s" % [kennung, beschreibung]
 
@@ -191,7 +293,7 @@ static func zeit_abgelaufen(zustand: String) -> String:
 	return "Zeit abgelaufen, zuletzt: %s" % zustand
 
 
-## gefunden bei FEHLER, wenn der Fahrer ein Ziel nicht findet, etwa „Hauptmenü, new_game“.
+## gefunden bei FEHLER, wenn der Fahrer ein Ziel nicht findet, etwa „HAUPTMENÜ, „Neues Spiel““.
 static func ziel_nicht_gefunden(ziel: String) -> String:
 	return "Ziel nicht gefunden: %s" % ziel
 
@@ -264,7 +366,159 @@ static func hinweis(text: String) -> String:
 
 ## Eingabe „Maus über „Weiterspielen““.
 static func maus_ueber(eintrag: String) -> String:
-	return "Maus über „%s“" % eintrag
+	return "Maus über %s" % zitat(eintrag)
+
+
+## Ein Menüeintrag in Anführungszeichen: „„Neues Spiel““. Grade und Spielstände stehen ohne.
+static func zitat(eintrag: String) -> String:
+	return "„%s“" % eintrag
+
+
+## Eine Eingabe auf ein Ziel: „Enter auf „Weiterspielen““, „Linksklick auf Spiel 1“.
+## [param ziel] steht schon in seiner Form, mit zitat() oder ohne.
+static func auf(eingabe: String, ziel: String) -> String:
+	return "%s auf %s" % [eingabe, ziel]
+
+
+## Eine Taste, bis ein Ziel gewählt ist: „Pfeil runter bis „Spiel laden““.
+static func bis(eingabe: String, ziel: String) -> String:
+	return "%s bis %s" % [eingabe, ziel]
+
+
+## Eine gehaltene Taste: „Pfeil rechts halten 0,5 s“; [param ms] in Millisekunden, deutsch mit
+## Komma.
+static func halten(taste: String, ms: int) -> String:
+	return "%s halten %s s" % [taste, str(ms / 1000.0).replace(".", ",")]
+
+
+## Gehäusetasten nach Index von links ab 0, mit ihrer Lage: „Gehäusetasten Mitte, links, rechts“.
+static func gehaeusetasten(folge: Array[int]) -> String:
+	var lagen := PackedStringArray()
+	for index in folge:
+		lagen.append(_lage_der_taste(index))
+	return "Gehäusetasten %s" % ", ".join(lagen)
+
+
+## Eine Gehäusetaste, etwa in „Ziel nicht gefunden: Gehäusetaste rechts“.
+static func gehaeusetaste(index: int) -> String:
+	return "Gehäusetaste %s" % _lage_der_taste(index)
+
+
+## Eine Vorbereitung vor den Eingaben: „Vorbereitung: 7 Spielstände; Linksklick auf …“ (CHK001);
+## ohne [param danach] nur „Vorbereitung: …“.
+static func vorbereitung(was: String, danach: String = "") -> String:
+	if danach.is_empty():
+		return "%s: %s" % [EINGABEN_VORBEREITUNG, was]
+	return "%s: %s; %s" % [EINGABEN_VORBEREITUNG, was, danach]
+
+
+## Eine Eingabe über einem Ziel: „Mausrad runter über Spiel 1“.
+static func ueber(eingabe: String, ziel: String) -> String:
+	return "%s über %s" % [eingabe, ziel]
+
+
+## Erwartung von easter_egg.04: „Kanone weiter rechts als beim Start; ein Schuss unterwegs oder
+## ein Treffer gezählt“.
+static func kanone_und_schuss() -> String:
+	return zustaende([ZUSTAND_KANONE_RECHTS, "%s oder %s" % [ZUSTAND_SCHUSS, ZUSTAND_TREFFER]])
+
+
+## „0 Pixel rechts, 2 Pixel unter der Mitte des nutzbaren Bereichs“ für [param versatz] in Pixeln;
+## ein negativer Versatz heißt links und über.
+static func lage_daneben(versatz: Vector2i) -> String:
+	return ZUSTAND_LAGE_DANEBEN % [absi(versatz.x), "links" if versatz.x < 0 else "rechts",
+		absi(versatz.y), "über" if versatz.y < 0 else "unter"]
+
+
+## „Spielbildschirm, „Zum Hauptmenü“ ohne Fokus, Hinweis „…““: Der Spielbildschirm ist da, aber
+## sein Knopf hat nicht den Fokus, also steht er nicht (B4, N3). Den Wortlaut des Knopfs gibt
+## TitleTexts.
+static func spielbildschirm_ohne_fokus(hinweis_text: String) -> String:
+	return "%s, %s" % [ZUSTAND_SPIELBILDSCHIRM_OHNE_FOKUS % TitleTexts.LABEL_LEAVE,
+		hinweis(hinweis_text)]
+
+
+## Was bedienung.06 vorbereitet: „1 Spielstand“, „7 Spielstände“, Zahlwort nach der Zahl wie bei
+## den Schritten (N5).
+static func spielstaende_anzahl(anzahl: int) -> String:
+	return "%d %s" % [anzahl, "Spielstand" if anzahl == 1 else "Spielstände"]
+
+
+## Ein Text aus dem Spiel in „gefunden:“, etwa eine Meldung von SaveStore, in Anführungszeichen;
+## so behält er seinen Schlusspunkt (CHK034).
+static func meldung_des_spiels(text: String) -> String:
+	return "„%s“" % text
+
+
+## Die Uhr im Zeitraffer bis zu einem Spieldatum laufen lassen, als Eingabe eines Szenarios: „Uhr
+## bis 01.03.1987“.
+static func uhr_bis(datum: String) -> String:
+	return "Uhr bis %s" % datum
+
+
+## Eine Fenstergröße als Eingabe: „Fenster auf 1318 × 742“.
+static func fenster_auf(groesse: Vector2i) -> String:
+	return "%s auf %d × %d" % [EINGABEN_FENSTER, groesse.x, groesse.y]
+
+
+## „Auswahl wandert: „Spiel laden“, „Neues Spiel“, …“: die gewählten Zeilen nach jeder Taste.
+static func auswahl_wandert(zeilen: PackedStringArray) -> String:
+	var zitiert := PackedStringArray()
+	for zeile in zeilen:
+		zitiert.append(zitat(zeile))
+	return "Auswahl wandert: %s" % ", ".join(zitiert)
+
+
+## „Liste oben bei Spiel 2, Rollmarke oben sichtbar“.
+static func liste_oben(spielstand: String, marke_oben: bool) -> String:
+	return "%s, %s" % [ZUSTAND_LISTE_OBEN % spielstand,
+		ZUSTAND_MARKE_OBEN if marke_oben else ZUSTAND_KEINE_MARKE_OBEN]
+
+
+## „Fenster 3200 × 1800, Bild Faktor 5“ und was folgt, etwa „ohne Rand“. Ein Faktor, der keine
+## ganze Zahl ist, steht deutsch mit Komma, etwa „2,5“: Er ist Teil eines Zustands, kein Messwert
+## der Systemdaten (Phasenprüfung Phase 3, B7).
+static func fenster(groesse: Vector2i, faktor: float, teile: PackedStringArray) -> String:
+	var zahl := str(int(faktor)) if is_equal_approx(faktor, roundf(faktor)) \
+		else str(faktor).replace(".", ",")
+	var text := "Fenster %d × %d, Bild Faktor %s" % [groesse.x, groesse.y, zahl]
+	return text if teile.is_empty() else "%s, %s" % [text, ", ".join(teile)]
+
+
+## Mehrere Eingaben eines Schritts nacheinander: „Maus über „Neues Spiel“, Enter“.
+static func eingaben(teile: PackedStringArray) -> String:
+	return ", ".join(teile)
+
+
+## Mehrere Zustände eines Schritts: „Communicator hinausgefahren; Spielbildschirm steht;
+## Spielstände: Spiel 1“.
+static func zustaende(teile: PackedStringArray) -> String:
+	return "; ".join(teile)
+
+
+## „Spielbildschirm steht, Hinweis „Speichert Spiel 1 und führt ins Hauptmenü.““ (contracts/
+## ablaeufe.md, „Spielbildschirm steht“: Der Hinweis nennt das laufende Spiel.)
+static func spielbildschirm(hinweis_text: String) -> String:
+	return "%s, %s" % [ZUSTAND_SPIELBILDSCHIRM, hinweis(hinweis_text)]
+
+
+## „Titel neu, Menü steht: …“: Der Titel ist nach dem Spielbildschirm neu erschienen.
+static func titel_neu(zustand: String) -> String:
+	return "%s, %s" % [ZUSTAND_TITEL_NEU, zustand]
+
+
+## Was eine Zeile der Liste in den Spalten Grad und Spieldatum zeigt: „Mittel, 01.01.1985“, bei
+## einem Spielstand, der sich nicht fortsetzen lässt, sein Zustand.
+static func angaben(teile: PackedStringArray) -> String:
+	return ", ".join(teile)
+
+
+## Eine Zeile der Liste mit ihren Angaben: „Spiel 1 mit Mittel, 01.01.1985“; ohne Angaben nur der
+## Name.
+static func zeile_mit_angaben(spielstand: String, p_angaben: String) -> String:
+	if p_angaben.is_empty():
+		return spielstand
+	return "%s mit %s" % [spielstand, p_angaben]
 
 
 ## Eine Datei des Laufs, etwa ein Foto, ließ sich nicht schreiben: Dateiname und Grund.
@@ -275,3 +529,8 @@ static func nicht_geschrieben(datei: String, grund: String) -> String:
 ## „von 1 Schritt“, „von 2 Schritten“: Dativ, nach der Zahl.
 static func _von_schritten(anzahl: int) -> String:
 	return "von %d %s" % [anzahl, "Schritt" if anzahl == 1 else "Schritten"]
+
+
+## links, Mitte, rechts für die Gehäusetasten 0, 1, 2; eine weitere heißt nach ihrem Index.
+static func _lage_der_taste(index: int) -> String:
+	return ["links", "Mitte", "rechts"][index] if index >= 0 and index < 3 else str(index)

@@ -325,12 +325,34 @@ func test_die_liste_der_ablaeufe() -> void:
 	# Act
 	var ablaeufe := SelbsttestLaeufer.ablaeufe()
 
-	# Assert: titel_echtzeit als letzter (contracts/ablaeufe.md)
+	# Assert: in der Reihenfolge des Vertrags, titel_echtzeit als letzter (contracts/ablaeufe.md);
+	# wer auf einem anderen aufbaut, steht gleich hinter ihm.
 	var kennungen: Array[String] = []
+	var baut_auf: Array[String] = []
 	for ablauf in ablaeufe:
 		kennungen.append(ablauf.kennung)
-	assert_eq(kennungen, ["titel", "titel_echtzeit"] as Array[String])
+		baut_auf.append(ablauf.baut_auf)
+	assert_eq(kennungen, ["titel", "neues_spiel", "laden", "loeschen", "easter_egg", "bedienung",
+		"fenster", "titel_echtzeit"] as Array[String])
+	assert_eq(baut_auf, ["", "", "neues_spiel", "laden", "", "", "", ""] as Array[String])
 	assert_eq(SelbsttestLaeufer.VERSION, 1)
+
+
+func test_nach_jedem_ablauf_raeumt_er_auf_auch_nach_einem_fehler() -> void:
+	# Arrange: der zweite Ablauf scheitert; aufgeräumt wird trotzdem.
+	_laeufer.fahrer = SelbsttestFahrer.new(get_tree())
+	var falsch := func() -> String: return "falsch"
+	var titel := _ablauf("titel", [_schritt("01_start")]) as ErfundenerAblauf
+	var bedienung := _ablauf("bedienung", [_schritt("01_pfeile", Callable(), falsch, 50),
+		_schritt("02_tab")]) as ErfundenerAblauf
+
+	# Act
+	await _laufe([titel, bedienung])
+
+	# Assert
+	assert_eq(titel.aufgeraeumt, 1)
+	assert_eq(bedienung.aufgeraeumt, 1)
+	assert_eq(_lauf.summe_text(), "1 von 3 Schritten in Ordnung, 1 Fehler, 1 nicht gelaufen.")
 
 
 # --- Hilfen ---------------------------------------------------------------------------------------
@@ -389,6 +411,10 @@ class ErfundenerAblauf:
 	extends SelbsttestAblauf
 
 	var vorlagen: Array = []
+	var aufgeraeumt := 0
+
+	func aufraeumen(_fahrer: SelbsttestFahrer) -> void:
+		aufgeraeumt += 1
 
 	func schritte(_fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 		var liste: Array[Dictionary] = []

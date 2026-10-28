@@ -98,8 +98,8 @@ Prüfpunkte heißen wie Schritte, `<szenario>.<nn>_<kurz>`, etwa `leicht_1987.03
 | Feld | Bedeutung |
 |---|---|
 | `kennung` | `<ablauf>.<nn>_<kurz>`, etwa `neues_spiel.04_grad_mittel`; zugleich Name des Fotos |
-| `beschreibung` | ein Satz, was der Schritt tut, etwa „Enter auf ‚Neues Spiel‘“ |
-| `eingaben` | die Folge von Eingaben, etwa „Enter“, „Linksklick auf Gehäusetaste 2“; `Vorbereitung` oder `Fenster` für Schritte ohne Eingabe (Review CHK001) |
+| `beschreibung` | ein Satz, was der Schritt tut, beginnend mit der Eingabe, etwa „Enter auf ‚Neues Spiel‘ öffnet die Gradwahl“ (contracts/ablaeufe.md, „Beschreibung“) |
+| `eingaben` | die Folge von Eingaben mit Ziel, etwa „Enter auf Mittel“, „Linksklick auf Gehäusetasten links, Mitte, rechts“; „keine“ ohne Eingabe; Vorbereitung als „Vorbereitung: …“, Fenstergröße als „Fenster auf …“ (Review CHK001) |
 | `erwartet` | der Zustand, auf den gewartet wird, als lesbarer Text und als Prüfung |
 | `hoechstzeit` | Millisekunden bis „Zeit abgelaufen“, Vorgabe 5000 (R6) |
 | `foto_vergleichbar` | ob das Foto auf jedem Rechner gleich sein muss; nein nur, wo das Bild von der Bildrate abhängt (R7) |

@@ -303,6 +303,8 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 007, Phase 1, rund 115 Texte des Selbsttests und drei erwartete Protokolle (2026-10-28) | Text | 1 (im Vertrag, nicht im Code) | 1 | 0 | 4 | 1 |
 | Feature 007, Phase 2, Fenstertitel, 7 Wortlaute der Schritte, Zustände des Fahrers, zwei echte Protokolle (2026-10-28) | Text | 6 | 6, davon 3 im Vertrag (Klaus: angleichen) | 0 | 4, davon 2 verworfen | 6 |
 | Feature 007, Phase 2, Nachprüfung des Geänderten (2026-10-28) | Text | 1 | 1 (Vertrag ergänzt, im Sinn von Klaus' Angleichen) | 0 | 0 | 1 |
+| Feature 007, Phase 3, 31 Schritte (93 Werte), rund 85 neue Texte, Literale der Abläufe (2026-10-28) | Text | 19 | 19, davon 8 mit Änderung am Vertrag (Klaus: angleichen) | 0 | 7 | 19 |
+| Feature 007, Phase 3, Nachprüfung des Geänderten (2026-10-28) | Text | 7 | 7, davon 3 im Vertrag oder Datenmodell | 0 | 1 (Form der Beschreibung, von Claude in den Vertrag) | 7 |
 | Feature 006, Phase 7, Nachprüfung des Geänderten (2026-10-28) | Stil | 1 | 1 | 0 | 3 | 1 |
 | Feature 006, Phase 7, 24 Testmeldungen und 6 Stellen Doku (2026-10-28) | Text | 0 | 0 | 0 | 1 | 0 |
 

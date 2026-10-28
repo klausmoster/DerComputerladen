@@ -43,8 +43,9 @@ stateDiagram-v2
 ```
 
 - **Start im Fenster.** Im ersten Bild bekommt es den größten ganzzahligen Faktor f, bei dem
-  f · 640 × f · 360 samt Titelleiste auf den aktuellen Bildschirm passt, mindestens 1, und wird
-  zentriert (`best_factor()`). Dasselbe geschieht bei jeder Rückkehr aus dem Vollbild, nach dem
+  f · 640 × f · 360 samt Titelleiste auf den aktuellen Bildschirm passt, mindestens 1 (`best_factor()`),
+  und steht samt Titelleiste mittig im nutzbaren Bereich, also ohne Menüleiste und Dock
+  (`centered_position()`; seit Feature 007, vorher mittig auf dem ganzen Bildschirm). Dasselbe geschieht bei jeder Rückkehr aus dem Vollbild, nach dem
   Übergang von macOS (bis 1 s Wartezeit).
 - **Vollbild** über die Aktion `toggle_fullscreen` (Ctrl+Cmd+F, physische Taste F) oder den
   grünen Knopf.

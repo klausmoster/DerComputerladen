@@ -191,35 +191,45 @@ findet alle sechs eingebauten Fehler (SC-004).
 
 ### Teil 1: Spielstände
 
-- [ ] T019 [A] [US1] `ablauf_neues_spiel.gd`, `ablauf_laden.gd` (Name „Spiel laden“, CHK037),
+- [x] T019 [A] [US1] `ablauf_neues_spiel.gd`, `ablauf_laden.gd` (Name „Spiel laden“, CHK037),
   `ablauf_loeschen.gd` unter `src/tools/selbsttest/ablaeufe/` laut contracts/ablaeufe.md, mit
   `baut_auf` und der Form der Spalte „Erwartet“ (CHK031, CHK032).
-- [ ] T020 [C] [US1] Prüfen von Teil 1: Tests zweimal, App bauen und laufen lassen, Protokoll und
+- [x] T020 [C] [US1] Prüfen von Teil 1: Tests zweimal, App bauen und laufen lassen, Protokoll und
   Fotos lesen.
 
 ### Teil 2: Easter Egg, Bedienung, Fenster, Szenarien
 
-- [ ] T021 [A] [US1] `ablauf_easter_egg.gd` (Fotos von 03 und 04 nicht vergleichbar, R7),
+- [x] T021 [A] [US1] `ablauf_easter_egg.gd` (Fotos von 03 und 04 nicht vergleichbar, R7),
   `ablauf_bedienung.gd` (sieben Spielstände als `Vorbereitung` über `SaveStore`, danach Titel neu
   laden, am Ende weggeräumt; CHK001; Analyse, U1), `ablauf_fenster.gd` (Zeitraffer 1, Fenster über `get_window().size`, Prüfung über
   `GameWindow.best_factor()` und `get_final_transform()`, `eingaben: Fenster`; R16).
-- [ ] T022 [A] [US1] `src/tools/selbsttest/ablaeufe/selbsttest_szenario.gd` (`class_name
+- [x] T022 [A] [US1] `src/tools/selbsttest/ablaeufe/selbsttest_szenario.gd` (`class_name
   SelbsttestSzenario`) laut Vertrag, „Szenario“, und der leere Ordner
   `src/tools/selbsttest/szenarien/` mit `.gitkeep` (Analyse, U6); Test mit einem erfundenen Szenario ohne Fenster in
   `src/test/test_selbsttest_lauf.gd`; ohne Bedienung der Uhr meldet der Fahrer „Die Uhr lässt sich im
   Spielbildschirm noch nicht bedienen“ (R27).
-- [ ] T023 [A] [US1] Lernnotizen zu T019 bis T022: abhängige Abläufe, Vorbereitung statt Eingabe,
+- [x] T023 [A] [US1] Lernnotizen zu T019 bis T022: abhängige Abläufe, Vorbereitung statt Eingabe,
   Fenster und `get_final_transform()`, Rahmen für Szenarien.
-- [ ] T024 [C] [US1] Prüfen: Tests zweimal, Startprobe still, zwei Läufe der App mit gleichen Fotos
+- [x] T024 [C] [US1] Prüfen: Tests zweimal, Startprobe still, zwei Läufe der App mit gleichen Fotos
   (`cmp`); der Eingabe-Filter wirkt noch nach dem Ablauf `fenster` (Analyse, U3);
   **Fehlerprobe** (SC-004): in einer Kopie des Projekts im Scratchpad je ein Fehler in Titel,
   Gradwahl, Liste, Rückfrage, Easter Egg und Fenster, Selbsttest daraus bauen und laufen lassen; jeder
   Fehler steht im passenden Schritt. Dazu SC-010: Claude ordnet die sechs Protokolle ohne weitere
   Angaben den eingebauten Fehlern zu.
-- [ ] T025 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, Text-Prüfer über Beschreibungen und
+- [x] T025 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, Text-Prüfer über Beschreibungen und
   Erwartungen aller Abläufe im Protokoll eines echten Laufs, Maßstab wie T008; vor Klaus' Abnahme.
-- [ ] T026 [K] [US1] Phase 3 abnehmen: Protokoll eines vollständigen Laufs, Ergebnis der Fehlerprobe,
+- [x] T026 [K] [US1] Phase 3 abnehmen: Protokoll eines vollständigen Laufs, Ergebnis der Fehlerprobe,
   Diff, Lernnotizen.
+
+Erledigt am 2026-10-28, von Klaus abgenommen: Abläufe `neues_spiel`, `laden`, `loeschen`, `easter_egg`,
+`bedienung`, `fenster` und der Rahmen `SelbsttestSzenario`; ein Lauf hat 37 Schritte. Am Spiel:
+`GameWindow.centered_position()` (Klaus: Fenster samt Titelleiste mittig im nutzbaren Bereich, vorher
+63 Pixel zu tief) und die lesende Abfrage `SaveList.shows_scroll_mark_above()`. Zweimal 1300 von 1300
+Tests grün (187 714 Prüfungen), Startprobe still; App zweimal 37 von 37, Fotos gleich, Abbruch mit
+Protokoll und Zip, echte Spielstände unverändert. Fehlerprobe verdeckt: 6 von 6 Fehlern im passenden
+Schritt, von Claude ohne Schlüssel richtig zugeordnet (SC-004, SC-010). Phasenprüfung: Text 19
+Befunde, Nachprüfung 7, alle behoben; Vertrag angeglichen (Klaus). Auslegungen in research.md,
+„Auslegungen aus Phase 3“.
 
 **Checkpoint**: Der Selbsttest deckt das ganze heutige Spiel ab.
 

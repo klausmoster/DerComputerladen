@@ -4,9 +4,11 @@ extends GutTest
 ## Oberflächenrasters 640 × 360, der samt Titelleiste in den nutzbaren Bereich des
 ## Bildschirms passt, mindestens 1.
 ##
-## `best_factor()` ist eine reine Funktion: Sie bekommt die Maße und rechnet. Die Tests
-## brauchen deshalb weder ein Fenster noch den Autoload `GameWindow`, sie rufen die
-## Funktion am Skript auf.
+## Dazu die Lage: samt Titelleiste mittig im nutzbaren Bereich (Feature 007, Klaus).
+##
+## `best_factor()` und `centered_position()` sind reine Funktionen: Sie bekommen die Maße und
+## rechnen. Die Tests brauchen deshalb weder ein Fenster noch den Autoload `GameWindow`, sie
+## rufen die Funktionen am Skript auf.
 ##
 ## Alle Maße sind Bildschirmpixel. Die Titelleiste von macOS ist 28 Punkte hoch, auf einem
 ## Retina-Bildschirm also 56 Pixel.
@@ -52,6 +54,39 @@ func test_zu_kleine_flaeche_ergibt_faktor_1() -> void:
 
 	# Assert
 	assert_eq(factor, 1, "Der Faktor ist immer mindestens 1.")
+
+
+# --- Lage im nutzbaren Bereich -------------------------------------------
+
+func test_4k_mit_dock_steht_samt_titelleiste_mittig_im_nutzbaren_bereich() -> void:
+	# Arrange: gemessen am Mac (Feature 007): 3840 × 2160, Menüleiste 60, Dock unten, also nutzbar
+	# ab y 60 mit 1914 Höhe; Fläche 3200 × 1800 bei Faktor 5, Titelleiste 64.
+	var nutzbar := Rect2i(0, 60, 3840, 1914)
+	var rahmen := Vector2i(3200, 1864)
+
+	# Act
+	var lage := WINDOW.centered_position(nutzbar, rahmen, _titelleiste(64))
+
+	# Assert: Rahmen oben bei 60 + (1914 − 1864) / 2 = 85, die Fläche 64 darunter.
+	assert_eq(lage, Vector2i(320, 149))
+
+
+func test_der_rest_eines_ungeraden_randes_faellt_nach_links_oben() -> void:
+	# Act
+	var lage := WINDOW.centered_position(Rect2i(10, 25, 1281, 781), Vector2i(1280, 776),
+		_titelleiste(56))
+
+	# Assert
+	assert_eq(lage, Vector2i(10, 83), "Je ein halbes Pixel Rest bleibt rechts und unten.")
+
+
+func test_ist_der_rahmen_zu_gross_steht_er_links_oben_im_nutzbaren_bereich() -> void:
+	# Act: Faktor 1 passt nicht einmal; die Titelleiste muss trotzdem erreichbar bleiben.
+	var lage := WINDOW.centered_position(Rect2i(0, 50, 600, 300), Vector2i(640, 416),
+		_titelleiste(56))
+
+	# Assert
+	assert_eq(lage, Vector2i(0, 106))
 
 
 # --- Helfer ---------------------------------------------------------------
