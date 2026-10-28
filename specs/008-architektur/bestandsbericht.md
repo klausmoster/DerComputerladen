@@ -4,7 +4,7 @@ Feature 008, Phase 3 (T022 bis T026). Der Architektur-Prüfer hat den ganzen Cod
 Werkstatt gegen den Leitfaden geprüft, in drei Läufen gleichzeitig (research.md, R5). Claude hat
 jeden Befund am Code nachgesehen. **Klaus hat am 2026-10-28 alle Abweichungen und Lücken wie
 empfohlen entschieden (T027);** eingearbeitet in T028: Lücken und Ausnahme im Leitfaden, Listen im
-Vertrag der Tests, Aufgaben T036a und T036b, Einträge 11-07 und 11-08 in `Feature_Ideas.md`.
+Vertrag der Tests, Aufgaben T036a und T036b, Einträge 11-09 und 11-10 in `Feature_Ideas.md`.
 
 - **Stand:** `feature/008-architektur` nach Phase 2 (`dbf7efc`), Code wie `main` nach Feature 006
   (`528442e`). **Feature 007 fehlt:** Es ist nicht gemergt; sein Code unter `src/tools/selbsttest/`

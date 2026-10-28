@@ -19,6 +19,7 @@ Written in English. A German translation comes at some point later, not during d
 | [06-feature-004-new-game.md](06-feature-004-new-game.md) | 2026-10-26 to 2026-10-27 | Saves, game session, Spec Kit for good, pocket device research and spike, reviewers as a principle |
 | [07-feature-005-communicator.md](07-feature-005-communicator.md) | 2026-10-27 | Title screen on the device, LCD colour, T-02, G-03, Claude in Leonardo |
 | [08-feature-006-easter-egg.md](08-feature-006-easter-egg.md) | 2026-10-27 to 2026-10-28 | Hidden game on the LCD, secret case keys, first sound, gap search |
+| [09-feature-007-build-selftest.md](09-feature-007-build-selftest.md) | 2026-10-28 | One command builds three systems, self-test app, pixel-exact comparison, Windows icon, renderer finding |
 
 ## Entry format
 
@@ -81,3 +82,4 @@ into the merge. One entry per real decision, not per commit. Rule:
 - [2026-10-27 · The version line moves to the sky](07-feature-005-communicator.md#2026-10-27--the-version-line-moves-to-the-sky-graphics)
 - [2026-10-27 · Secret keys that give nothing away](08-feature-006-easter-egg.md#2026-10-27--secret-keys-that-give-nothing-away-game-content-graphics)
 - [2026-10-27 · Pixel patterns in one colour, not images](08-feature-006-easter-egg.md#2026-10-27--pixel-patterns-in-one-colour-not-images-graphics)
+- [2026-10-28 · A Windows icon with six sizes, each from the pixels](09-feature-007-build-selftest.md#2026-10-28--a-windows-icon-with-six-sizes-each-from-the-pixels-graphics)

@@ -7,8 +7,15 @@ Fläche von 1024 × 1024 nach Apples Symbolraster für macOS gesetzt: ein abgeru
 824 × 824 mit 100 Rand. Bei Zoom 32 wird ein Bildpixel in der Symbolgröße 32 × 32 genau ein
 Bildschirmpixel, in 64, 128, 256 und 512 ein ganzzahliges Vielfaches.
 
+Für Windows entsteht dazu eine ICO mit 16, 32, 48, 64, 128 und 256 Pixeln (Style-Guide, App-Symbol).
+Jede Größe wird eigens aus dem Monitor gerechnet, ganzzahlig und ohne Weichzeichnen: 32 mit ×1,
+48 und 64 mit ×2, 128 mit ×4, 256 mit ×8. In 16 passt der Monitor nicht hinein; dort steht er in
+halber Größe aus jedem zweiten Bildpixel. Godot würde ein PNG selbst herunterrechnen und dabei die
+Pixel verwischen.
+
 Ergebnis:
   src/assets/icon/app_icon.png        das Symbol, 1024 × 1024, RGBA
+  src/assets/icon/app_icon.ico        das Symbol für Windows, sechs Größen als PNG-Einträge
   docs/art/app_icon/monitor.png       Ebene für Icon Composer: der Monitor freigestellt
   docs/art/app_icon/grundfarbe.png    Ebene für Icon Composer: die ganze Fläche in `nacht`
   src/assets/icon/app_icon.icon/Assets/monitor.png
@@ -20,6 +27,7 @@ Aufruf vom Repo-Root:
 import argparse
 import math
 import os
+import struct
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -30,6 +38,8 @@ CANVAS = 1024
 BODY = (100, 100, 924, 924)
 RADIUS = 185.4
 NACHT = (0x18, 0x23, 0x3B)
+# Größen der ICO und die Vergrößerung des Monitors in jeder; 0 heißt halbe Größe.
+ICO_GROESSEN = ((16, 0), (32, 1), (48, 2), (64, 2), (128, 4), (256, 8))
 
 
 def is_reddish(rgb):
@@ -60,15 +70,59 @@ def backdrop_mask(pixels, width, height):
     return mask
 
 
-def body_coverage(x, y):
-    """Wie viel von Pixel (x, y) im abgerundeten Quadrat liegt, 0 bis 1, mit weicher Kante."""
-    x0, y0, x1, y1 = BODY
+def body_coverage(x, y, size=CANVAS):
+    """Wie viel von Pixel (x, y) im abgerundeten Quadrat liegt, 0 bis 1, mit weicher Kante; bei
+    [size] kleiner als CANVAS ist das Quadrat im selben Verhältnis kleiner."""
+    scale = size / CANVAS
+    x0, y0, x1, y1 = (v * scale for v in BODY)
+    radius = RADIUS * scale
     cx, cy = x + 0.5, y + 0.5
-    # Abstand zum inneren Rechteck, um das die Ecken mit RADIUS herumlaufen
-    nx = min(max(cx, x0 + RADIUS), x1 - RADIUS)
-    ny = min(max(cy, y0 + RADIUS), y1 - RADIUS)
+    # Abstand zum inneren Rechteck, um das die Ecken mit radius herumlaufen
+    nx = min(max(cx, x0 + radius), x1 - radius)
+    ny = min(max(cy, y0 + radius), y1 - radius)
     distance = math.hypot(cx - nx, cy - ny)
-    return min(max(RADIUS + 0.5 - distance, 0.0), 1.0)
+    return min(max(radius + 0.5 - distance, 0.0), 1.0)
+
+
+def crop(monitor, width, height):
+    """Der Monitor ohne leere Ränder: (Pixel, Breite, Höhe)."""
+    xs = [i % width for i, p in enumerate(monitor) if p is not None]
+    ys = [i // width for i, p in enumerate(monitor) if p is not None]
+    x0, x1, y0, y1 = min(xs), max(xs) + 1, min(ys), max(ys) + 1
+    return [monitor[y * width + x] for y in range(y0, y1) for x in range(x0, x1)], x1 - x0, y1 - y0
+
+
+def ico_image(monitor, width, height, size, zoom):
+    """Eine Größe der ICO: der Monitor ×zoom mittig auf dem Quadrat in `nacht`; zoom 0 heißt
+    jedes zweite Bildpixel."""
+    if zoom == 0:
+        monitor = [monitor[y * width + x] for y in range(0, height, 2) for x in range(0, width, 2)]
+        width, height, zoom = (width + 1) // 2, (height + 1) // 2, 1
+    left, top = (size - width * zoom) // 2, (size - height * zoom) // 2
+    pixels = []
+    for y in range(size):
+        for x in range(size):
+            mx, my = (x - left) // zoom, (y - top) // zoom
+            rgb = monitor[my * width + mx] if 0 <= mx < width and 0 <= my < height \
+                and x >= left and y >= top else None
+            pixels.append(rgb + (255,) if rgb is not None
+                          else NACHT + (round(body_coverage(x, y, size) * 255),))
+    return pixels
+
+
+def write_ico(path, monitor, width, height):
+    """Schreibt die ICO: Kopf, je Größe ein Verzeichniseintrag, dann die PNG-Einträge."""
+    images = [(size, pngio.encode_png_rgba(size, size, ico_image(monitor, width, height, size, zoom)))
+              for size, zoom in ICO_GROESSEN]
+    data = struct.pack("<HHH", 0, 1, len(images))
+    offset = 6 + 16 * len(images)
+    for size, png in images:
+        # Breite und Höhe 0 heißen 256; Farben 0, Ebenen 1, 32 Bit je Pixel.
+        data += struct.pack("<BBBBHHII", size % 256, size % 256, 0, 0, 1, 32, len(png), offset)
+        offset += len(png)
+    for _, png in images:
+        data += png
+    open(path, "wb").write(data)
 
 
 def main():
@@ -79,6 +133,8 @@ def main():
                         help="Monitor im Logo: x0,y0,x1,y1 in Bildpixeln, x1 und y1 ausschließlich")
     parser.add_argument("--zoom", type=int, default=32, help="Vergrößerung je Bildpixel")
     parser.add_argument("--ausgabe", default="src/assets/icon/app_icon.png")
+    parser.add_argument("--ico", default="src/assets/icon/app_icon.ico",
+                        help="das Symbol für Windows")
     parser.add_argument("--ebenen", default="docs/art/app_icon")
     parser.add_argument("--glas", default="src/assets/icon/app_icon.icon",
                         help="Liquid-Glass-Symbol, dessen Ebene mit erneuert wird")
@@ -132,6 +188,8 @@ def main():
     glass_assets = os.path.join(args.glas, "Assets")
     if os.path.isdir(glass_assets):
         pngio.write_png_rgba(os.path.join(glass_assets, "monitor.png"), CANVAS, CANVAS, layer)
+    knapp, knapp_w, knapp_h = crop(monitor, monitor_w, monitor_h)
+    write_ico(args.ico, knapp, knapp_w, knapp_h)
 
     colors = len({c for c in monitor if c is not None})
     print(f"Monitor {monitor_w} × {monitor_h} Bildpixel aus {args.logo}, {colors} Farben, "
@@ -139,6 +197,8 @@ def main():
     print(f"Symbol → {args.ausgabe}; Ebenen monitor.png und grundfarbe.png → {args.ebenen}/")
     if os.path.isdir(glass_assets):
         print(f"Ebene monitor.png auch → {glass_assets}/")
+    groessen = ", ".join(str(size) for size, _ in ICO_GROESSEN)
+    print(f"ICO mit {groessen} → {args.ico} (Monitor {knapp_w} × {knapp_h})")
 
 
 if __name__ == "__main__":

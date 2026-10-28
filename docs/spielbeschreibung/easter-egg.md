@@ -13,7 +13,7 @@
   `research.md` R6 bis R11); Baustein „Spiel auf der Anzeige“ im
   [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX) mit Maßen, Pixelmustern und
   Ergebnisanzeige
-- **Stand:** Feature 006, 2026-10-28
+- **Stand:** Feature 007, 2026-10-28
 - **Nachbarn:** Gehäusetasten in [communicator.md](communicator.md), Folge, Start und Rückweg im
   Titel in [titel-und-hauptmenue.md](titel-und-hauptmenue.md), die Töne in [ton.md](ton.md),
   Bildraster und Farben in [darstellung.md](darstellung.md)
@@ -133,7 +133,10 @@ und solange die Seite verborgen ist. Tests stellen `autoplay = false` und rufen 
 
 Die Seite nimmt beim Start den Fokus und bekommt die Tasten in `_gui_input()`. Jede Taste ohne Cmd,
 Strg oder Alt verbraucht sie mit `accept_event()`, damit nichts zum Menü darunter durchdringt;
-Kürzel mit Cmd, Strg oder Alt und die Aktion `toggle_fullscreen` lässt sie durch. Echo zählt nie als
+Kürzel mit Cmd, Strg oder Alt und die Aktion `toggle_fullscreen` lässt sie durch. Die Aktion fragt
+sie mit `exact_match` ab (`is_action(&"toggle_fullscreen", true)`): Ohne genauen Vergleich prüft
+Godot beim Loslassen keine Zusatztasten, und das Loslassen von Enter träfe die Aktion wie Alt+Enter
+(Feature 007, R15). Echo zählt nie als
 neuer Druck. Verliert die Seite den Fokus an ein anderes Control, holt sie ihn nach diesem Bild
 zurück, wenn sie dann noch läuft und zu sehen ist (`focus_exited`).
 

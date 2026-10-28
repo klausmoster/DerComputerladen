@@ -3,12 +3,13 @@
 - **Worum es geht:** wie das Spiel gestartet, exportiert und getestet wird.
 - **Laden, wenn:** exportiert wird, Tests geschrieben oder laufen gelassen werden, oder neue
   Dateien zum Export oder Repo dazukommen.
-- **Code:** `src/export_presets.cfg`, `src/.gutconfig.json`, `src/test/`, `src/addons/gut/`,
-  `tools/ton/make_sounds.py`
+- **Code:** `src/export_presets.cfg`, `tools/build/baue_alles.sh`, `src/.gutconfig.json`,
+  `src/test/`, `src/addons/gut/`, `tools/ton/make_sounds.py`
 - **Herkunft:** `specs/001-hauptmenue/` (Export, GUT), `specs/002-zeitleisten-werkstatt/`
-  (Fixtures, Grundlinien), `specs/006-easter-egg-space-invaders/` (Töne, Probeszene), Regeln in
+  (Fixtures, Grundlinien), `specs/006-easter-egg-space-invaders/` (Töne, Probeszene),
+  `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R14, R26), Regeln in
   `docs/ki_workflow/ki_dev.md`, „Tests“
-- **Stand:** Feature 006, 2026-10-28
+- **Stand:** Feature 007, 2026-10-28
 
 ## Starten
 
@@ -35,20 +36,62 @@ Prüfsummen neu (siehe [ton.md](ton.md)).
 
 ## Export
 
-Bisher gibt es nur das Preset „macOS“:
+Sechs Presets, je System eins für das Spiel und eins für den Selbsttest. Ziele unter `build/`, nicht
+versioniert:
 
-| Option | Wert |
-|---|---|
-| Ziel | `build/macos/Der Computerladen.app` (nicht versioniert) |
-| Architektur | universal |
-| Signierung | ad hoc, ohne Beglaubigung |
-| Bundle-ID | `de.klausmoster.dercomputerladen` |
-| Version | aus `application/config/version` in `project.godot` |
-| Symbole | `app_icon.png` und Liquid-Glass `app_icon.icon` |
-| Ausgeschlossen | `addons/gut/*`, `test/*`, `tools/*`: GUT, Tests und die Werkstatt |
+| Preset | System | Feature-Tag | Ausgeschlossen | Ziel |
+|---|---|---|---|---|
+| `macOS` | macOS universal | – | `addons/gut/*`, `test/*`, `tools/*` | `macos/Der Computerladen.app` |
+| `Selbsttest macOS` | macOS universal | `selbsttest` | `addons/gut/*`, `test/*` | `macos/Der Computerladen Selbsttest.app` |
+| `Windows` | Windows x86_64 | – | `addons/gut/*`, `test/*`, `tools/*` | `windows/Der Computerladen.exe` |
+| `Selbsttest Windows` | Windows x86_64 | `selbsttest` | `addons/gut/*`, `test/*` | `windows/Der Computerladen Selbsttest.exe` |
+| `Linux` | Linux x86_64 | – | `addons/gut/*`, `test/*`, `tools/*` | `linux/Der Computerladen.x86_64` |
+| `Selbsttest Linux` | Linux x86_64 | `selbsttest` | `addons/gut/*`, `test/*` | `linux/Der Computerladen Selbsttest.x86_64` |
+
+Das Spiel schließt GUT, Tests und alle Werkzeuge aus; die Selbsttest-Presets nehmen `tools/*` mit,
+also auch die Werkstatt. Was der Feature-Tag bewirkt, steht in [selbsttest.md](selbsttest.md).
+
+- **macOS:** ad hoc signiert, ohne Beglaubigung; Bundle-ID `de.klausmoster.dercomputerladen`, der
+  Selbsttest `….selbsttest`; Symbole `app_icon.png` und Liquid-Glass `app_icon.icon`.
+- **Windows:** ohne Signatur. `application/modify_resources = true`: Godot schreibt Symbol und
+  Versionsangaben selbst in die `.exe`, ohne `rcedit`. Symbol ist die ICO
+  `res://assets/icon/app_icon.ico` (`application/icon`), Firmen- und Produktname „Der
+  Computerladen“. Direct3D 12 ist als Treiber gesetzt (`rendering_device/driver.windows`).
+- **Windows und Linux:** `binary_format/embed_pck = true`, das Paket steckt in der ausführbaren
+  Datei; eine Datei reicht.
+- **Version** aus `application/config/version` in `project.godot`, heute 0.1.
+- **Export-Templates 4.7.2** müssen vollständig installiert sein, nicht nur die für macOS.
 
 `export_presets.cfg` vor jedem Commit ansehen: Je nach Godot-Version landen dort Zugangsdaten.
-Windows und Linux, Developer-ID und Beglaubigung kommen mit Feature-Idee 11-03.
+Developer-ID und Beglaubigung für macOS und eine Signatur für Windows bleiben offen.
+
+Einzeln bauen, vom Repo-Root, headless:
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path src --export-release "macOS" "../build/macos/Der Computerladen.app"
+```
+
+Für die anderen Presets mit Name und Ziel aus der Tabelle.
+
+**Alles mit einem Befehl:** `tools/build/baue_alles.sh`, mit `--nur macos`, `windows` oder `linux`
+nur ein System. Godot kommt aus `$GODOT` oder `/Applications`. Je System leert es `build/<system>/`,
+baut beide Presets (Ausgabe von Godot nach `build/logs/`), prüft auf Testcode und packt
+`build/abnahme/<version>_<system>.zip` mit Spiel und Selbsttest; unter macOS mit `ditto`, damit
+Signatur und Rechte der `.app` bleiben, sonst mit `zip`, das das Ausführrecht unter Linux behält.
+Ausgabe je Schritt „gebaut“, „geprüft“, „gepackt“ oder der Fehler mit System und Grund. Als Fehler
+zählt auch die Warnung „Icon size …“ von Godot. Exit 0 nur, wenn alles gebaut und geprüft ist.
+
+**Prüfung auf Testcode:** Im Paket stehen die Pfade der Dateien im Klartext. Gesucht wird nach
+`selbsttest_laeufer`, der nur im Selbsttest steckt:
+
+```bash
+LC_ALL=C grep -a -c "selbsttest_laeufer" "build/macos/Der Computerladen.app/Contents/Resources/Der Computerladen.pck"
+```
+
+Erwartet: 0 im Spiel, mehr als 0 im Selbsttest; unter Windows und Linux an der ausführbaren Datei.
+Ohne `LC_ALL=C` und `-a` gibt `grep` bei Binärdateien nichts aus. Nach `tools/selbsttest` allein zu
+suchen reicht nicht: Der Override `main_scene.selbsttest` steht auch im Spiel in `project.binary`,
+wirkt dort aber nicht.
 
 ## Versionierung
 
@@ -74,6 +117,11 @@ Regeln:
   eigene Uhr, Zeitleiste, Uhrzeit (`now`), Würfel (`rng`) und `quit_callback`. Titel- und
   Spielbildschirm nehmen eine eigene `session` und prüfen Szenenwechsel über `scene_callback`.
   Kein Test schreibt in `user://spielstaende/`.
+- **Selbsttest (Feature 007):** `test_selbsttest_*.gd` prüfen Lauf, Protokoll, Fahrer, Eingabe,
+  Läufer, Abläufe und Zusammenfassung ohne Fenster; `test_projekt_einstellungen.gd` Renderer,
+  Vollbildtasten, Overrides und Symbol. Die Probeszene `test/fixtures/selbsttest_ergebnis_probe.tscn`
+  zeigt die Zusammenfassung mit erfundenen Läufen. Den Lauf im echten Fenster beschreibt
+  [selbsttest.md](selbsttest.md).
 - **Ausgaben als Ganzes vergleichen:** Bytevergleich gegen gespeicherte Erwartungen.
 - **Zahlen aus der Spec messen:** Tests prüfen ein ganzes Spiel unter 1 s, mit 500 Ereignissen
   ein Spiel unter 2 s, Prüfung samt Änderung unter 100 ms und 20 Spielstände mit 500 Ereignissen

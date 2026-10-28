@@ -5,11 +5,13 @@
   oder das Fensterverhalten betroffen ist.
 - **Code:** `src/core/game_window.gd` (Autoload `GameWindow`), `src/ui/ui_palette.gd`,
   `src/ui/computerladen_theme.tres`, `src/assets/fonts/`, Einstellungen in `src/project.godot`;
-  Tests `src/test/test_game_window.gd`, `test_ui_palette.gd`, `test_lcd_theme.gd`
+  Tests `src/test/test_game_window.gd`, `test_ui_palette.gd`, `test_lcd_theme.gd`,
+  `test_projekt_einstellungen.gd`
 - **Herkunft:** `specs/001-hauptmenue/` (Vertrag `contracts/titelbildschirm.md`, `research.md`),
   `specs/005-communicator/` (`lcd`, Theme für die Anzeige, `research.md` R1 bis R3),
-  `specs/006-easter-egg-space-invaders/` (Spiel auf der Anzeige, `research.md` R7)
-- **Stand:** Feature 006, 2026-10-28
+  `specs/006-easter-egg-space-invaders/` (Spiel auf der Anzeige, `research.md` R7),
+  `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R13 bis R15)
+- **Stand:** Feature 007, 2026-10-28
 - **Maßstab:** der [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX). Er ist die
   einzige Quelle für Farben, Raster, Schriften und Bausteine. Was man sieht, kommt zuerst dort
   hinein, dann in den Code.
@@ -17,8 +19,15 @@
 ## Rahmen
 
 Nur Desktop: Windows, macOS, Linux mit Maus und Tastatur. Hover, Tooltips, Rechtsklick,
-Mauszeiger und Drag&Drop sind erwünscht. Renderer ist Forward+. Keine Touch-Eingabe, keine
-Mobil- oder Web-Rücksichten.
+Mauszeiger und Drag&Drop sind erwünscht. Keine Touch-Eingabe, keine Mobil- oder Web-Rücksichten.
+
+**Renderer Forward+, ohne Ausweichen auf OpenGL** (R13): `rendering_device/fallback_to_opengl3 =
+false` in `project.godot`. Ausweichen zwischen Vulkan und Direct3D 12 bleibt erlaubt (Vorgabe true,
+nicht eingetragen), beides ist Forward+; unter Windows ist Direct3D 12 gesetzt
+(`rendering_device/driver.windows`). Folge: Kann ein Rechner unter Windows oder Linux weder Vulkan noch
+Direct3D 12, zeigt Godot „Unable to initialize video driver“ und endet, statt mit Compatibility zu
+starten. Startet Direct3D 12 nur halb, kommt keine Meldung (siehe [selbsttest.md](selbsttest.md),
+„Grenzen“). `test_projekt_einstellungen.gd` prüft die Einstellungen.
 
 ## Raster und Skalierung
 
@@ -38,21 +47,30 @@ Mobil- oder Web-Rücksichten.
 ```mermaid
 stateDiagram-v2
     [*] --> Fenster: Start
-    Fenster --> Vollbild: Ctrl+Cmd+F oder grüner Knopf
-    Vollbild --> Fenster: Ctrl+Cmd+F oder grüner Knopf
+    Fenster --> Vollbild: Ctrl+Cmd+F, F11, Alt+Enter oder grüner Knopf
+    Vollbild --> Fenster: Ctrl+Cmd+F, F11, Alt+Enter oder grüner Knopf
 ```
 
 - **Start im Fenster.** Im ersten Bild bekommt es den größten ganzzahligen Faktor f, bei dem
-  f · 640 × f · 360 samt Titelleiste auf den aktuellen Bildschirm passt, mindestens 1, und wird
-  zentriert (`best_factor()`). Dasselbe geschieht bei jeder Rückkehr aus dem Vollbild, nach dem
+  f · 640 × f · 360 samt Titelleiste auf den aktuellen Bildschirm passt, mindestens 1 (`best_factor()`),
+  und steht samt Titelleiste mittig im nutzbaren Bereich, also ohne Menüleiste und Dock
+  (`centered_position()`; seit Feature 007, vorher mittig auf dem ganzen Bildschirm). Dasselbe geschieht bei jeder Rückkehr aus dem Vollbild, nach dem
   Übergang von macOS (bis 1 s Wartezeit).
-- **Vollbild** über die Aktion `toggle_fullscreen` (Ctrl+Cmd+F, physische Taste F) oder den
-  grünen Knopf.
+- **Vollbild** über die Aktion `toggle_fullscreen` oder unter macOS den grünen Knopf. Die Aktion hat
+  drei Tasten, auf jedem System gleich: Ctrl+Cmd+F (physische Taste F), F11 und Alt+Enter. Unter
+  macOS fängt das System F11 meist selbst ab.
+- **Abgefangen in `GameWindow._input()`**, vor der Oberfläche, nicht in `_unhandled_input()`: Für
+  Godot ist Alt+Enter auch `ui_accept`, weil eine Aktion ohne Zusatztaste auch ein Ereignis mit Alt
+  trifft. `is_action_pressed(…, false, true)` vergleicht mit `exact_match` genau die Zusatztasten:
+  Alt+Enter schaltet, Enter allein geht weiter ans Menü. Jedes Ereignis des Kürzels, auch Loslassen
+  und Wiederholung, wird als behandelt markiert; Alt+Enter löst im Menü also nichts aus.
 - **Mindestgröße** 640 × 360 Bildschirmpixel. Im Fenster darf der Spieler die Größe frei ändern.
 - Headless tut `GameWindow` nichts. Eingebettet im Editor setzt es keine Startgröße, der Rest
-  gilt. Die Werkstatt schaltet es für ihren Prozess ab.
+  gilt. Die Werkstatt und die Zusammenfassung des Selbsttests schalten es für ihren Prozess ab, mit
+  `set_process(false)` und `set_process_input(false)`; dort wirkt das Vollbild-Kürzel nicht.
 
-Kürzel für Windows und Linux kommen mit dem Export für diese Systeme (Feature-Idee 11-03).
+Das versteckte Spiel liest Tasten selbst; es lässt das Kürzel durch und fragt es dafür ebenfalls
+mit `exact_match` ab (siehe [easter-egg.md](easter-egg.md)).
 
 ## Farben: UiPalette
 
@@ -122,6 +140,11 @@ Die Werkstatt hat ein eigenes Theme und läuft nicht im Pixelraster (siehe
 
 ## App-Symbol
 
-`src/assets/icon/app_icon.png`, dazu `app_icon.icon` als Liquid-Glass-Symbol für macOS. Motiv: der
-Monitor aus dem Ladenschild auf einem abgerundeten Quadrat in `nacht`. Wie es entsteht, steht in
-[bilder.md](bilder.md).
+`src/assets/icon/app_icon.png`, dazu `app_icon.icon` als Liquid-Glass-Symbol für macOS und
+`app_icon.ico` für Windows mit 16 bis 256 Pixeln. Motiv: der Monitor aus dem Ladenschild auf einem
+abgerundeten Quadrat in `nacht`. Wie es entsteht, steht in [bilder.md](bilder.md).
+
+Unter Windows kommt das Symbol an zwei Stellen aus der ICO: in der `.exe`, also im Explorer, über
+`application/icon` im Preset; im Fenster und in der Taskleiste über
+`application/config/windows_native_icon` in `project.godot`. Die ICO hat die kleinen Größen
+pixelgenau, statt sie Godot aus dem PNG herunterrechnen zu lassen.

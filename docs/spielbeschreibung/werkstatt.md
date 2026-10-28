@@ -19,7 +19,8 @@
 Ereignisse werden nicht im Code gepflegt, sondern in der Werkstatt. Sie ist Editor, Simulator
 und Statistik in einem und arbeitet immer mit dem aktuellen, auch ungespeicherten Stand.
 
-- Sie gehört nicht zum Spiel: Der Export schließt `tools/*` aus, das Spiel lädt sie nie.
+- Sie gehört nicht zum Spiel: Der Export des Spiels schließt `tools/*` aus, das Spiel lädt sie nie.
+  In der Selbsttest-App steckt sie mit, weil deren Presets nur `addons/gut/*` und `test/*` ausschließen.
 - Ihr Look folgt dem Abschnitt „Werkzeuge“ im Style-Guide, mit eigenem Theme
   `werkstatt_theme.tres` in den Farben des Computerladens. Sie läuft in voller Auflösung, nicht im
   Pixelraster des Spiels.

@@ -205,7 +205,7 @@ Spec Kit bleibt, wie es ist. Die Prüfer kommen an fünf Stellen dazu:
 | `/speckit-checklist` | Text- und Stil-Prüfer lesen die Wortlaute und Zustände aus Spec und Vertrag gegen den Style-Guide, bevor gebaut wird (Klaus, 2026-10-27). Der Architektur-Prüfer liest Plan, research.md, Datenmodell und Vertrag gegen den Leitfaden (Klaus, 2026-10-28). Checklisten für Stil und Texte prüfen, ob die Spec Sichtbares und Texte genau genug beschreibt. |
 | `/speckit-tasks` | Jede Phase mit Sichtbarem, Texten oder Code endet mit der [C]-Aufgabe „Phasenprüfung“ vor Klaus' Abnahme. |
 | `/speckit-analyze` | Eine fehlende Phasenprüfung ist kritisch, denn sie verstößt gegen Grundsatz VI der Verfassung; das gilt auch für eine Phase mit Code ohne Architektur-Prüfer. |
-| `/speckit-converge` | Die Prüfer laufen bei der Lückensuche einmal über das ganze Feature. |
+| `/speckit-converge` | Die Prüfer laufen bei der Lückensuche einmal über das ganze Feature. Dazu prüft Claude, ob jede neue Seite, jeder neue Weg, Text und jede neue Eingabe einen Schritt im Selbsttest hat (Klaus, 2026-10-28, Feature 007). |
 
 - Eine neue Rolle in `tasks.md` gibt es nicht. Die Prüfer arbeiten Claude zu, und die
   Phasenprüfung ist eine [C]-Aufgabe.
@@ -314,6 +314,23 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 006, Phase 5, Gehäusetasten und Easter Egg im Titel, 22 Fotos (2026-10-27) | Stil | 0 | 0 | 0 | 4, davon 1 verworfen (Pfad im Auftrag) | 0 |
 | Feature 006, Lückensuche über das ganze Feature (2026-10-27) | Stil | 2 | 2 | 0 | 3 | 2 |
 | Feature 006, Lückensuche, 14 Texte (2026-10-27) | Text | 0 | 0 | 0 | 4, davon 3 nicht übernommen | 0 |
+| Feature 007, Checkliste, Vertrag der Zusammenfassung (2026-10-28) | Stil | 11 | 11 | 0 | 11, davon 1 ohne Folgen (Fenstertitel) | 11 |
+| Feature 007, Checkliste, 31 Wortlaute der App, Protokoll und Abläufe (2026-10-28) | Text | 18 | 18 | 0 | 6 | 16 (2 meldete auch der Stil-Prüfer am Rande) |
+| Feature 007, Phase 1, rund 115 Texte des Selbsttests und drei erwartete Protokolle (2026-10-28) | Text | 1 (im Vertrag, nicht im Code) | 1 | 0 | 4 | 1 |
+| Feature 007, Phase 2, Fenstertitel, 7 Wortlaute der Schritte, Zustände des Fahrers, zwei echte Protokolle (2026-10-28) | Text | 6 | 6, davon 3 im Vertrag (Klaus: angleichen) | 0 | 4, davon 2 verworfen | 6 |
+| Feature 007, Phase 2, Nachprüfung des Geänderten (2026-10-28) | Text | 1 | 1 (Vertrag ergänzt, im Sinn von Klaus' Angleichen) | 0 | 0 | 1 |
+| Feature 007, Phase 3, 31 Schritte (93 Werte), rund 85 neue Texte, Literale der Abläufe (2026-10-28) | Text | 19 | 19, davon 8 mit Änderung am Vertrag (Klaus: angleichen) | 0 | 7 | 19 |
+| Feature 007, Phase 3, Nachprüfung des Geänderten (2026-10-28) | Text | 7 | 7, davon 3 im Vertrag oder Datenmodell | 0 | 1 (Form der Beschreibung, von Claude in den Vertrag) | 7 |
+| Feature 007, Phase 4, Zusammenfassung, 4 Fotos aus der Probeszene (2026-10-28) | Stil | 1 | 1 | 0 | 5, davon 1 verworfen (Mindestgröße: Startgröße wird vorher wiederhergestellt) | 1 |
+| Feature 007, Phase 4, 16 Texte der Zusammenfassung, 4 Fotos, 2 Fassungen für „Kopieren“ (2026-10-28) | Text | 2 | 2, davon 1 im Vertrag | 0 | 2 (eine dieselbe wie beim Stil: Tooltip am gesperrten Knopf) | 2 |
+| Feature 007, Phase 4, Nachprüfung des Geänderten (2026-10-28) | Stil | 0 | 0 | 0 | 2 (Beschreibung als Wert, Größe der Seitenüberschrift; von Claude entschieden: bleibt nach CHK034 und Vertrag) | 0 |
+| Feature 007, Phase 4, Nachprüfung des Geänderten (2026-10-28) | Text | 0 | 0 | 0 | 0 | 0 |
+| Feature 007, Phase 5, Vergleichswerkzeug: README, Ausgaben, 3 Berichte (2026-10-28) | Text | 5 | 5, dazu 1 Widerspruch im Vertrag | 0 | 4, davon 1 verworfen | 5 |
+| Feature 007, Phase 5, Nachprüfung des Geänderten (2026-10-28) | Text | 4 | 4, davon 3 im Vertrag oder in der README | 0 | 2, von Claude entschieden (Lauf-ID als Ordnername, Ergebniswörter in Anführungszeichen) | 4 |
+| Feature 007, Phase 6, ICO für Windows, Montage der sechs Größen ×8 (2026-10-28) | Stil | 0 | 0 | 0 | 3, zur Entscheidung bei Klaus | 0 |
+| Feature 007, Lückensuche über das ganze Feature (2026-10-28) | Stil | 4 | 4, davon 2 Folgepunkte außerhalb von 007 | 0 | 5 | 4 |
+| Feature 007, Lückensuche, rund 330 Texte (2026-10-28) | Text | 11 | 11 | 0 | 6 | 11 |
+| Feature 007, Phase 8, neue Schritte titel.04 und liste (2026-10-28) | Text | 4 | 4 | 0 | 2, eine als Regel in den Vertrag | 4 |
 | Feature 006, Phase 7, Nachprüfung des Geänderten (2026-10-28) | Stil | 1 | 1 | 0 | 3 | 1 |
 | Feature 006, Phase 7, 24 Testmeldungen und 6 Stellen Doku (2026-10-28) | Text | 0 | 0 | 0 | 1 | 0 |
 | Feature 008, Fehlerprobe, 8 Dateien mit 5 eingebauten Verstößen (2026-10-28) | Architektur | 7 | 7: alle 5 eingebauten mit richtiger Regel, dazu 2 zutreffende (Preisänderung ohne Befehl, Miete im Code); keine erlaubte Stelle gemeldet | 0 | 4 | 2 |

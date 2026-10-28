@@ -133,7 +133,7 @@ sich durch.
 Klaus hat für 008 entschieden: behoben wird, was in einem Ordner bleibt und keine Schnittstelle nach
 außen ändert. `MAX_SEED` steht fünfmal im Code, in `core/` und in der Werkstatt; eine Stelle dafür
 zu schaffen, berührt beide. `MenuHint` liegt im Ordner des Titels, obwohl der Communicator unter
-`src/ui/` es nutzt; es umzuziehen, berührt drei Ordner. Solche Umbauten stehen als 11-07 und 11-08 in
+`src/ui/` es nutzt; es umzuziehen, berührt drei Ordner. Solche Umbauten stehen als 11-09 und 11-10 in
 `docs/features/Feature_Ideas.md`. So bleibt 008 ein Feature über den Maßstab und den Prüfer, und ein
 Umbau über mehrere Systeme bekommt seine eigene Spec.
 
