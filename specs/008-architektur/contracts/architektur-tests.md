@@ -27,6 +27,10 @@ const KERNE: Array[String] = [
 	"res://tools/werkstatt/catalog_editor.gd",
 	"res://tools/werkstatt/what_if_probe.gd",
 	"res://tools/werkstatt/zebra.gd",
+	"res://tools/selbsttest/selbsttest_ablage.gd",
+	"res://tools/selbsttest/selbsttest_lauf.gd",
+	"res://tools/selbsttest/selbsttest_protokoll.gd",
+	"res://tools/selbsttest/selbsttest_texte.gd",
 ]
 
 ## Die Autoloads in dieser Reihenfolge, wie im Leitfaden (AR-03).
@@ -85,6 +89,12 @@ Vom Godot-Agent gemeldet, von Claude geprüft und übernommen:
 - Eine Zeichenkette mit `://` ist ein Dateipfad, nie ein Knotenpfad.
 - Gezählt werden wörtlich `../` und `/root/`; `get_node("..")` und `"/root"` ohne Schrägstrich
   nicht. Heute gibt es keine solche Stelle; erweitert wird erst, wenn eine auftaucht.
+- Nach der Nachprüfung von 007 (T035; Klaus, 2026-10-28): In Skripten zählt `../` nur in einem
+  Knotenpfad, also in `^"…"`, `$…`, `NodePath(…)` und als Text in `get_node()`,
+  `get_node_or_null()`, `has_node()`; `"../Resources"` in `path_join()` ist ein Dateipfad im
+  App-Paket und wurde vorher fälschlich gemeldet. `/root/` zählt weiter überall, in Szenen beides wie
+  bisher. `KERNE` bekommt die vier Kerne des Selbsttests; `selbsttest_system.gd` (Dienste der Engine)
+  und `selbsttest_logger.gd` (erbt von `Logger`) nicht (Leitfaden, AR-01).
 - Ein Kern erbt wörtlich von `RefCounted` oder `Resource` oder hat kein `extends`; eine eigene
   Resource-Klasse als Basis würde gemeldet.
 - `.shuffle()` und `.pick_random()` zählen auf jedem Objekt; `rng.randomize()` auf einem eigenen

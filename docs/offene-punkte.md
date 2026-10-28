@@ -613,7 +613,8 @@ wenn Klaus es will.
 ### Feature 008, Lücken im Style-Guide aus der Phasenprüfung Phase 4 (2026-10-28)
 
 Vom Text-Prüfer an den Testmeldungen von `test_architektur.gd` gemeldet, je mit Empfehlung von
-Claude; Klaus entscheidet:
+Claude. Klaus hat am 2026-10-28 alle wie empfohlen entschieden; die ersten vier stehen im Style-Guide
+unter „Sprache“, Abschnitt „Texte für Entwickler“, die Einzahl bleibt als künftiger Test vorgemerkt:
 - **Geltung für Testmeldungen:** „Ausgenommen sind Testausgaben“ steht nur unter „Anrede“.
   Empfehlung: ein Satz im Abschnitt „Sprache“: Für Testausgaben gelten klares Deutsch und die
   Begriffe des Maßstabs, den der Test misst; Ton und Wortschatz der Zeit nicht.

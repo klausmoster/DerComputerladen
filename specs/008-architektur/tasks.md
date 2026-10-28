@@ -205,7 +205,9 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
 - [ ] T035 [C] [US5] Voraussetzung prüfen: 007 gemergt und `main` im Branch (CHK019); sonst wartet die
   Phase. Kam 007 erst nach der Bestandsprüfung herein: Bestandsprüfung über den Code, den 007
   mitbringt (`src/tools/selbsttest/` und geänderte Dateien), Abweichungen Klaus vorlegen, Listen in
-  `test_architektur.gd` durch den Agent angleichen lassen (Analyse, I1). Ausgangsmessung festhalten:
+  `test_architektur.gd` durch den Agent angleichen lassen (Analyse, I1); nach der Nachprüfung
+  (Klaus, 2026-10-28) dazu `wege_nach_oben` auf Knotenpfade schärfen und `KERNE` um vier Kerne des
+  Selbsttests ergänzen (Vertrag der Tests, „Auslegungen“). Ausgangsmessung festhalten:
   Testzahl, Startprobe, Fahrpläne für die Seeds 1, 4711 und 99999 nach `vorher/` im Scratchpad;
   zwei Spielstände per Skript in `user://test_008_behebung/` anlegen (Mittel, Seed 4711, gespeichert
   1987; Schwer mit einem Eingriff, gespeichert 1993; CHK013), nicht im echten Ordner; Klaus bitten,
@@ -232,6 +234,25 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
     (AR-02, AR-12).
   - W3 `simulator_panel.gd`, `what_if_probe.gd`: `_end_day()` als Methode von `WhatIfProbe` (AR-15).
   - W4 `statistics_panel.gd`: `enum` für nie gerechnet, rechnet, abgebrochen, fertig (AR-11).
+  - Aus der Nachprüfung von 007 (T035; Klaus, 2026-10-28; `bestandsbericht.md`, „Nachprüfung des
+    Codes aus Feature 007“), alle unter `src/tools/selbsttest/`:
+    - B1 `selbsttest_ergebnis.gd`: Naht `game_window`, leer heißt das Autoload `GameWindow`; kein
+      Pfad `/root/` mehr (AR-02, AR-12).
+    - B2 `selbsttest_start.gd`: Variable `session` als Naht für `GameSession` wie bei Läufer und
+      Fahrer (AR-12).
+    - B3 `selbsttest_laeufer.gd`: `enum` für bereit, läuft, abgebrochen, geschrieben, beendet statt
+      `_laeuft`, `_abgebrochen`, `_geschrieben`, `_beendet` (AR-11).
+    - B5 `selbsttest_ergebnis.gd`: das Theme vor dem Setzen der Schrift duplizieren (AR-04).
+    - B6 Seed 4711 (`selbsttest_start.gd`, `selbsttest_fahrer.gd`) und der Ordner
+      `user://selbsttest/` (`selbsttest_ablage.gd`, `selbsttest_laeufer.gd`) je einmal als
+      Konstante; M8 ebenso der Pfad der Titelszene (`selbsttest_start.gd`, `selbsttest_laeufer.gd`,
+      `selbsttest_fahrer.gd`) (AR-04).
+    - B7 `selbsttest_system.gd`: Raster aus `GameWindow.BASE_SIZE` statt eigener Zahl (AR-04).
+    - B8 `selbsttest_lauf.gd`: „Nur lesen.“ an den Feldern, die die Zusammenfassung liest (AR-15).
+    - M1 `ablaeufe/ablauf_fenster.gd`: Größe und Lage über eine Methode des Fahrers statt über
+      `fahrer.fenster()` (Leitfaden, „Werkzeuge“).
+    - M10 `selbsttest_fahrer.gd`, `selbsttest_eingabe.gd`: im Kopf sagen, dass sie Helfer der Hülle
+      sind, kein Kern (AR-01).
 - [ ] T036b [A] [US5] Teil 2, nach Claudes Prüfung von Teil 1, je mit Lernnotiz:
   - S1 `src/scenes/title/title_screen.gd`: `enum` für die Eingabephase (vor den Einträgen,
     bedienbar, fährt hinaus) und für die Ebene (Hauptmenü, Gradwahl, Liste, Löschmodus, Rückfrage,
@@ -240,9 +261,14 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
   - L16 `src/tools/werkstatt/`: gemeinsame Hilfen von `EventForm` und `EventList` in eine eigene
     Klasse; kein Aufruf privater Funktionen fremder Klassen mehr (`difficulty_panel.gd:274, 282,
     295`, `event_form.gd:471`) (AR-02).
+- [ ] T036c [C] [US5] M11: In `tools/selbsttest/vergleich.py` nennt je ein Kommentar die Stelle in
+  Godot, deren Wert oder Format das Skript ein zweites Mal kennt: Protokoll (`selbsttest_protokoll.gd`,
+  `selbsttest_texte.gd`), Raster (`GameWindow.BASE_SIZE`), Kassenrot (`UiPalette.KASSENROT`).
 - [ ] T037 [C] [US5] Nach jedem Teil Vergleich nach R9: Fahrpläne `vorher/` gegen `nachher/` mit `cmp`, Startprobe,
   Tests zweimal, beide Spielstände aus `user://test_008_behebung/` mit einem kurzen Skript laden;
-  Code lesen.
+  Code lesen. Nach Teil 2 dazu ein Lauf des Selbsttests auf dem Mac (`tools/build/baue_alles.sh`,
+  `tools/selbsttest/vergleich.py`), weil S1 den Zustand des Titels umbaut, den der Fahrer liest
+  (Klaus, 2026-10-28).
 - [ ] T038 [C] [US5] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Architektur-Prüfer über das
   Geänderte, Maßstab Leitfaden und Bestandsbericht; Stil nur, wenn sich wider Erwarten Sichtbares
   ändert; danach Nachprüfung des Betroffenen.
@@ -260,6 +286,12 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
 - [ ] T040 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
   Feature“), dazu der Architektur-Prüfer einmal über alles, was 008 an Code geändert hat. Lücken
   werden eine eigene Phase mit Klaus' Freigabe.
+- [ ] T040a [A] Selbsttest-Abläufe anpassen (vor der Gesamtabnahme; `docs/ki_workflow/ki_dev.md`,
+  Punkt 11): Abläufe unter `src/tools/selbsttest/ablaeufe/`; entfällt, wenn 008 nichts ändert, was
+  der Selbsttest durchspielt.
+- [ ] T040b [C] Selbsttest zur Gesamtabnahme: `tools/build/baue_alles.sh`, Lauf auf dem Mac,
+  `tools/selbsttest/vergleich.py`; Ergebnis in der Bitte um Gesamtabnahme; neue Referenzbilder nur
+  mit Klaus' OK.
 - [ ] T041 [K] Gesamtabnahme nach dem ganzen Quickstart.
 - [ ] T042 [C] Doku nachziehen: `docs/features/Features.md` (008 fertig, System 11);
   `docs/features/Feature_Ideas.md` (11-06 gebaut); `docs/offene-punkte.md`; in `ki_pruefung.md` die

@@ -70,6 +70,12 @@ gibt sie mit dem Plan frei.
   Rechners nur für Zeitstempel und Rechenbudgets lesen, die das Ergebnis nicht ändern; Spielzeit nie.
   Aus `src/ui/` darf ein Kern nur Klassen mit Konstanten wie `UiPalette` kennen, keine Szenen und
   Bausteine.
+  Ein `RefCounted`, das auf den Baum zugreift, ist kein Kern, sondern ein Helfer der Hülle, und sagt
+  das im Doku-Kommentar am Kopf, etwa `SelbsttestFahrer`. Ein Kern des Spiels fragt keine Dienste der
+  Engine wie `DisplayServer`, `OS` oder `Thread`; in einem Werkzeug darf ein Kern das, etwa
+  `SelbsttestSystem`, steht dann aber nicht in der Liste `KERNE` des Tests. Eine programmweite
+  `static var` darf ein Kern als Naht haben, wenn nur Werkzeuge und Tests sie setzen und der
+  Kommentar das sagt, wie `SaveGame.time_zone_bias`.
 - **Grund:** So läuft dieselbe Logik im Spiel, in der Werkstatt und in Tests ohne Fenster und Uhr,
   und ein Lauf ist wiederholbar (AR-08). Die Godot-Doku hält Logik im Skript einer Szene für normal
   und kennt `RefCounted` nur als Werkzeug; der Leitfaden ist hier **bewusst strenger**, weil eine
@@ -110,7 +116,8 @@ gibt sie mit dem Plan frei.
   holt sich ein Autoload über `get_node("/root/GameWindow")`.
 - **Quelle:** Quellen 1.3, 5; Nystrom „Observer“ (Quellen 2.2).
 - **Schicht:** alle
-- **Prüfweise:** Test: `test_architektur.gd`, `wege_nach_oben` (`../` und `/root/`); dazu Prüfer:
+- **Prüfweise:** Test: `test_architektur.gd`, `wege_nach_oben` (`/root/`, dazu `../` in Knotenpfaden
+  der Skripte und in Szenen); dazu Prüfer:
   Aufrufe nach oben, die kein Pfad verrät, etwa über eine hineingereichte Referenz auf den Eltern.
 - **Stand:** gilt seit 2026-10-28, Klaus
 
@@ -124,6 +131,8 @@ gibt sie mit dem Plan frei.
   Autoloads dürfen einander über eine Naht und in der Reihenfolge aus `project.godot`
   aufrufen; ein Methodenaufruf ist kein „fremde Daten ändern“. Einstellungen des `SceneTree`, etwa
   `auto_accept_quit`, setzt ein Autoload nur mit Kommentar.
+  Reine Rechnungen, die zu einem Autoload gehören, dürfen als `static func` in dessen Skript stehen
+  und über `preload` getestet werden, wie `GameWindow.best_factor()`.
 - **Grund:** Jedes Autoload ist überall erreichbar und koppelt deshalb alles an alles. Nystrom nennt
   das Singleton das Muster, das meist mehr schadet als nützt. Die Godot-Doku erlaubt Autoloads für
   Systeme mit eigenen Daten; die feste Liste ist **strenger**, damit ein neues Autoload eine
@@ -158,6 +167,9 @@ gibt sie mit dem Plan frei.
   `SaveGame.REASON_*`. Das Theme ist neben `UiPalette` eine erlaubte zweite Stelle für Farben, weil
   Tests beide gleich halten. Vorgaben eines Werkzeugs für eine leere Datendatei dürfen im Code
   stehen.
+  Pfade von Szenen, die ein Werkzeug startet, stehen einmal als Konstante. Eine Kopie des Themes für
+  ein Werkzeug ist eine weitere erlaubte Stelle für Farben, wenn ein Test sie gleich hält, wie bei
+  `selbsttest_theme.tres`.
 - **Grund:** Der Spielinhalt soll sich ohne Code ändern lassen, im Inspector oder in einem
   Werkzeug, wie die Ereignisse in der Werkstatt. Ein Produkt wie „486DX-33“ ist eine Datenzeile,
   keine eigene Klasse.
@@ -347,6 +359,9 @@ gibt sie mit dem Plan frei.
 
 - **Aussage:** Kein Skript und keine Szene außerhalb von `src/tools/` verweist auf etwas unter
   `src/tools/`. Was Spiel und Werkzeug beide brauchen, liegt im Spiel, etwa in `src/core/`.
+  Eine Projekteinstellung mit Feature-Tag, die nur in einem Export gilt, der `src/tools/` enthält,
+  ist kein Verweis in diesem Sinn, etwa `run/main_scene.selbsttest`. Werkzeuge dürfen einander
+  kennen, solange beide zusammen aus dem Export des Spiels fallen.
 - **Grund:** Werkzeuge fehlen im exportierten Spiel; ein Verweis darauf bricht erst im Export.
 - **Beispiel:** Die Regel für Einträge im Eingriffsprotokoll zog aus `WhatIfProbe` (Werkzeug) nach
   `InterventionFile` (`src/core/timeline/intervention_file.gd`), weil der Spielstand sie braucht.
@@ -517,8 +532,17 @@ dieselben Regeln, mit diesen Unterschieden:
 - Ein Werkzeug darf Kerne des Spiels direkt nutzen und Autoloads über eine Naht (AR-12) anhalten oder
   steuern, wenn es dafür einen Grund im Kommentar nennt.
 - AR-14 gilt nur in eine Richtung: Werkzeuge dürfen das Spiel kennen, nicht umgekehrt.
-- Texte stehen je Panel als Konstanten am Kopf, nicht in einer eigenen Textklasse; ein Werkzeugfenster
-  ist kein Bildschirm im Sinne von AR-04 (Klaus, 2026-10-28).
+- Ein Werkzeug darf seine Texte je Panel als Konstanten am Kopf halten; ein Werkzeug aus vielen
+  Teilen wie der Selbsttest bekommt eine eigene Textklasse (`SelbsttestTexte`). Ein Werkzeugfenster
+  ist kein Bildschirm im Sinne von AR-04.
+- Ein Werkzeug darf das Spiel von außen über die Namen innerer Knoten bedienen, aber nur an einer
+  Stelle, wie der Fahrer des Selbsttests (`selbsttest_fahrer.gd`); alles andere im Werkzeug geht über
+  diese Stelle. Die Knotennamen werden damit zur Schnittstelle: Wer sie umbenennt, ändert den Fahrer
+  mit.
+- Ein Werkzeug darf Godots globalen Würfel mit `seed()` stellen, wenn es den Grund im Kommentar
+  nennt, etwa damit das versteckte Spiel im Selbsttest in jedem Lauf gleich spielt.
+- Der Leitfaden gilt für `src/`. Ein Werkzeug außerhalb, etwa `tools/selbsttest/vergleich.py`, nennt
+  im Kommentar die Stelle in Godot, deren Wert oder Format es ein zweites Mal kennt.
 
 ---
 
@@ -581,3 +605,19 @@ Abschnitt „Werkzeuge“ um die Texte (L14):
 | AR-09 | Form eines Befehls (L12) | Jede Handlung des Spielers, die den Spielverlauf ändert, ist ein Datenobjekt mit Tag, Art und Werten (Muster „Befehl“). Es lässt sich speichern, nachspielen und im Protokoll zeigen. Die Oberfläche erzeugt Befehle, der Kern führt sie aus. |
 | AR-11 | was eine Sammlung von Schaltern ist (L8) | Hat etwas mehr als zwei Zustände mit eigenem Verhalten, bekommt es einen ausdrücklichen Zustand: einen `enum` mit `match` oder, wenn jeder Zustand viel eigenes Verhalten hat, eine Klasse je Zustand (Muster „Zustand“). Keine Sammlung von Wahrheitswerten, die zusammen einen Zustand bedeuten. |
 | AR-15 | Felder eines Autoloads, Datenobjekte (L13) | Die Oberfläche zeigt den Zustand eines Kerns und meldet, was der Spieler will. Sie ändert Daten eines Kerns nie an dessen Feldern, sondern über seine Methoden oder als Befehl (AR-09). Felder eines Kerns, die die Oberfläche nur lesen darf, tragen den Doku-Kommentar „Nur lesen.“. |
+
+Ergänzt nach der Nachprüfung des Codes aus Feature 007 in Phase 5 von Feature 008 (T035; Klaus,
+2026-10-28), weil der Architektur-Prüfer elf Lücken gemeldet hatte
+(`specs/008-architektur/bestandsbericht.md`, „Nachprüfung des Codes aus Feature 007“). Der bisherige
+Wortlaut gilt weiter; ergänzt wurde je ein Absatz am Ende der Aussage, dazu der Abschnitt
+„Werkzeuge“ um die Punkte zu Knotennamen (M1), globalem Würfel (M6) und Werkzeugen außerhalb von
+`src/` (M11). Die Prüfweise von AR-02 zählt `../` in Skripten nur noch in Knotenpfaden, weil ein
+Dateipfad wie `"../Resources"` nicht nach oben greift.
+
+| Regel | Ergänzt um | Wortlaut der Aussage vor dieser Ergänzung |
+|---|---|---|
+| AR-01 | Helfer der Hülle, Dienste der Engine, statische Naht (M3, M10) | Spiellogik und Spielzustand stehen in Klassen, die von `RefCounted` erben (der **Kern**). Eine Szene oder ein Autoload ist nur die **Hülle**: Sie hält den Kern, reicht ihm Zeit, Seed und Daten hinein und macht aus seinen Ergebnissen Signale und Bilder. Ein Kern greift nicht auf den Szenenbaum, auf Autoloads oder auf den globalen Zufall zu. Ein Autoload darf kleinen Ablaufzustand halten, etwa das Datum der Uhr oder das laufende Spiel; Spielmechanik gehört in einen Kern. Ein Kern darf Dateien lesen und schreiben und die Uhr des Rechners nur für Zeitstempel und Rechenbudgets lesen, die das Ergebnis nicht ändern; Spielzeit nie. Aus `src/ui/` darf ein Kern nur Klassen mit Konstanten wie `UiPalette` kennen, keine Szenen und Bausteine. |
+| AR-03 | reine Rechnungen eines Autoloads (M4) | Es gibt genau diese Autoloads, in dieser Reihenfolge: `GameClock`, `Timeline`, `GameWindow`, `GameSession`. Ein neues braucht Klaus' Freigabe im Plan. Ein Autoload darf nur sein, was eigene Daten über Szenenwechsel hinweg verwaltet und keine fremden ändert. Kein allgemeiner Signalbus und kein „Manager“ als Autoload; Hilfsfunktionen sind `static func` einer Klasse mit `class_name`. Autoloads dürfen einander über eine Naht und in der Reihenfolge aus `project.godot` aufrufen; ein Methodenaufruf ist kein „fremde Daten ändern“. Einstellungen des `SceneTree`, etwa `auto_accept_quit`, setzt ein Autoload nur mit Kommentar. |
+| AR-04 | Szenenpfade, Kopie des Themes (M8, M9) | Gepflegte Spieldaten, etwa Produkte, Kundentypen oder Objekte eines Raums, sind Datenobjekte und keine Klassen (Muster „Typ-Objekt“). Sie stehen als `Resource`-Klasse mit `.tres`-Dateien oder in einer Datendatei, die ein Werkzeug pflegt, nicht als Werte im Code. Eine geladene Resource ist nur zum Lesen da, weil Godot sie zwischen allen Nutzern teilt; was sich im Spiel ändert, gehört in einen Kern oder in eine Kopie. Spielstände sind ausgenommen (AR-13). Spielinhalt heißt hier, was in die game_bible gehört: Produkte, Preise, Kunden, Mieten. Die game_bible bleibt dafür die Quelle; Resources entstehen daraus über einen Importer, nie von Hand, damit es keine zweite Quelle gibt. Keine Spieldaten in diesem Sinn sind Stellschrauben einer Mechanik, etwa Tempi oder Chancen, und Werte, die der Style-Guide festlegt: Sie stehen als benannte Konstanten an einer Stelle, wie `UiPalette`. Ebenso stehen die Texte eines Bildschirms an einer Stelle als Konstanten, wie `TitleTexts`; Dialoge regelt AR-20. Grundgrenzen wie der Spielzeitraum oder der größte Seed stehen einmal in `src/core/` und werden von dort gelesen. Texte, die ein Kern liefert, stehen als Konstanten am Kopf des Kerns, wie `SaveGame.REASON_*`. Das Theme ist neben `UiPalette` eine erlaubte zweite Stelle für Farben, weil Tests beide gleich halten. Vorgaben eines Werkzeugs für eine leere Datendatei dürfen im Code stehen. |
+| AR-14 | Projekteinstellung mit Feature-Tag, Werkzeuge untereinander (M5, M7) | Kein Skript und keine Szene außerhalb von `src/tools/` verweist auf etwas unter `src/tools/`. Was Spiel und Werkzeug beide brauchen, liegt im Spiel, etwa in `src/core/`. |
+| Werkzeuge, Texte | eigene Textklasse erlaubt (M2) | Texte stehen je Panel als Konstanten am Kopf, nicht in einer eigenen Textklasse; ein Werkzeugfenster ist kein Bildschirm im Sinne von AR-04 (Klaus, 2026-10-28). |

@@ -118,3 +118,61 @@ nicht gefunden.
     Bausteine nach `src/ui/`), L10 (Texte der Kerne).
   - „Werkstatt entkoppeln“: L17 (Griffe in innere Nodes).
 - **Verworfen:** K5, W6.
+
+## Nachprüfung des Codes aus Feature 007 (T035)
+
+007 kam nach der Bestandsprüfung nach `main` (`26a1363`) und in den Branch (`6270da6`). Geprüft in
+zwei Läufen gleichzeitig, wie oben: Kern des Selbsttests (`src/tools/selbsttest/selbsttest_*`, 14
+Dateien, und `project.godot`) sowie Abläufe (`ablaeufe/`, 11 Dateien), die von 007 geänderten Stellen
+in fünf Spieldateien (nur der Diff) und `tools/build/baue_alles.sh`, `tools/selbsttest/vergleich.py`.
+33 von 33 Dateien unter „Geprüft“. Claude hat jeden Befund am Code nachgesehen. **Klaus hat am
+2026-10-28 alles wie empfohlen entschieden:** B1 bis B3 und B5 bis B8 mit M1, M8 und M10 in T036a,
+M11 in T036c, B4 in Feature 11-09; die Lücken stehen im Leitfaden („Geschichte“); Test geschärft
+und `KERNE` ergänzt in T035; Selbsttest in T037 und Phase 6.
+
+**Test nach dem Merge:** zweimal 1364 Tests, 1363 grün, 188485 von 188486 Prüfungen; Startprobe
+still. Rot ist `test_kein_weg_nach_oben` mit zwei Stellen: `selbsttest_ergebnis.gd:152` (B1 unten)
+und `selbsttest_system.gd:166`, `"../Resources"`. Die zweite ist ein Dateipfad im App-Paket, kein
+Knotenpfad; der Test zählt `../` in jeder Zeichenkette ohne `://`.
+
+### Selbsttest
+
+| ID | Schwere | Ort | Regel | Befund | Urteil | Empfehlung, Aufwand |
+|---|---|---|---|---|---|---|
+| B1 | mittel | `selbsttest_ergebnis.gd:150-155` | AR-02, AR-12 | `get_node_or_null(^"/root/GameWindow")` ohne Naht, „wie in der Werkstatt“ | bestätigt; der Grund der Werkstatt gilt hier nicht: Die Seite läuft nur als Teil der App oder der Probe-Szene, beide mit Autoloads | beheben in 008: Naht `game_window`, leer heißt `GameWindow`; kein Pfad, keine Ausnahme; klein |
+| B2 | niedrig | `selbsttest_start.gd:50-54` | AR-12, „Werkzeuge“ | setzt `GameSession.folder`, `now`, `rng` direkt; Grund im Kommentar steht da, die Naht fehlt | bestätigt; Schwere niedriger als gemeldet, weil die Startszene die einzige Stelle ist, die die Sitzung einrichtet | beheben in 008: Variable `session` wie bei Läufer und Fahrer; klein |
+| B3 | mittel | `selbsttest_laeufer.gd:80-83` | AR-11 | bereit, läuft, abgebrochen, geschrieben, beendet aus vier Schaltern | bestätigt; wie S2 und W4 | beheben in 008: `enum`; klein |
+| B4 | mittel | `selbsttest_fahrer.gd:546-566` | AR-01 | baut einen neuen Spielstand selbst nach, wie `GameSession.start_new()` (`game_session.gd:87-98`) | bestätigt; kommt ein Pflichtfeld dazu, weichen die Spielstände des Selbsttests ab | Feature 11-09: eine Fabrik für neue Spielstände in `core/`, die beide nutzen; berührt `core/` und `tools/` |
+| B5 | mittel | `selbsttest_ergebnis.gd:82` | AR-04 | schreibt die Schrift in das geladene, geteilte `selbsttest_theme.tres`; der Kommentar meint mit „Kopie“ die Datei | bestätigt | beheben in 008: vorher `theme = theme.duplicate()`; klein |
+| B6 | niedrig | `selbsttest_start.gd:24`, `selbsttest_fahrer.gd:52`; `selbsttest_ablage.gd:18`, `selbsttest_laeufer.gd:30` | AR-04 | Seed 4711 und der Ordner `user://selbsttest/` je zweimal (`DEVICE := 4711` in `selbsttest_eingabe.gd` ist etwas anderes) | bestätigt | beheben in 008: je eine Konstante; klein |
+| B7 | niedrig | `selbsttest_system.gd:48` | AR-04 | `RASTER := Vector2i(640, 360)` neben `GameWindow.BASE_SIZE` | bestätigt; der Fahrer liest schon von dort | beheben in 008; klein |
+| B8 | niedrig | `selbsttest_lauf.gd:42-60, 72, 76` | AR-15 | Felder, die die Zusammenfassung liest, ohne „Nur lesen.“ | bestätigt | beheben in 008 mit K4; klein |
+| B9 | niedrig | `selbsttest_texte.gd` | AR-04, „Werkzeuge“ | eigene Textklasse, obwohl „Werkzeuge“ Texte je Panel am Kopf verlangt | verworfen als Befund: Der Satz entstand als Erleichterung für die Panels der Werkstatt (L14); eine Textklasse erfüllt „an einer Stelle“ besser. Als Lücke M2 unten | – |
+
+Die Abläufe selbst: ohne Befund. Sie kennen nur den Fahrer und Konstanten des Spiels; keiner nennt
+die Zustände, die Phase 5 umstellt (`_ready_for_input`, `_leaving`, `paused`, `_ended`, `_active`,
+`_lock_steps`, `_running`, `_aborted`). Der Fahrer liest den Titel über `current_page()`,
+`is_visible_in_tree()` und `InvadersPage.game()`; S1 und S2 müssen diese Wege erhalten.
+
+### Lücken im Leitfaden
+
+| ID | Frage | Empfehlung | Folge |
+|---|---|---|---|
+| M1 | Darf ein Werkzeug das Spiel von außen über Namen innerer Knoten bedienen? (Fahrer: `Communicator`, Seiten, `Rows/DeleteMode`, `LeaveButton` …) | Ja, aber nur an einer Stelle: dem Fahrer. Die Abläufe gehen nur über ihn. Die Knotennamen sind damit eine Schnittstelle; wer sie umbenennt, ändert den Fahrer mit | neue Abweichung: `ablauf_fenster.gd:69-71, 97-98` setzt Größe und Lage über `fahrer.fenster()` selbst → über `stelle_fenster()`; klein |
+| M2 | Gilt „Texte je Panel am Kopf“ für jedes Werkzeug? | Nein: „Ein Werkzeug darf seine Texte je Panel am Kopf halten; eines aus vielen Teilen wie der Selbsttest bekommt eine eigene Textklasse.“ | keine |
+| M3 | Darf ein Kern eine programmweite `static var` als Naht haben? (`SaveGame.time_zone_bias`) | Ja, wenn nur Werkzeuge und Tests sie setzen und der Kommentar das sagt | keine: der Kommentar an `save_game.gd:47-52` sagt das schon |
+| M4 | Gilt „Hilfsfunktionen mit `class_name`“ auch für reine Rechnungen eines Autoloads? (`GameWindow.best_factor()`, `centered_position()`) | Nein: Reine Rechnungen, die zum Autoload gehören, dürfen als `static func` im Autoload-Skript stehen und über `preload` getestet werden | keine |
+| M5 | Zählt eine Projekteinstellung mit Feature-Tag als Verweis nach `tools/` (AR-14)? | Nein, wenn sie nur mit einem Tag gilt, dessen Export `tools/` enthält (`run/main_scene.selbsttest`) | keine |
+| M6 | Darf ein Werkzeug Godots globalen Würfel stellen? (`seed(SEED)` für das versteckte Spiel) | Ja, mit Grund im Kommentar; AR-08 gilt für Kern und Wirtschaft, das versteckte Spiel würfelt in seiner Seite | keine |
+| M7 | Darf ein Werkzeug ein anderes kennen? (`selbsttest_theme.tres` nutzt `relief_style_box.gd` und Symbole der Werkstatt) | Ja, solange beide gemeinsam aus dem Spiel-Export fallen | keine |
+| M8 | Gilt „an einer Stelle“ auch für Szenenpfade? (`title_screen.tscn` dreimal im Selbsttest) | Ja: Pfade, die ein Werkzeug startet, einmal als Konstante | neue Abweichung, klein |
+| M9 | Ist eine Kopie des Themes eine dritte Stelle für Farben? | Erlaubt, wenn ein Test sie gleich hält; das tut `test_selbsttest_ergebnis.gd:467` | keine |
+| M10 | Was ist ein `RefCounted` mit Zugriff auf den Baum? (`SelbsttestFahrer`, `SelbsttestEingabe`) Darf ein Kern Engine-Dienste fragen? (`SelbsttestSystem`: `DisplayServer`, `OS`, `Thread`) | Kern ist, was AR-01 nach dem Inhalt erfüllt; ein `RefCounted` mit Baum ist ein Helfer der Hülle und sagt das im Kopf. Engine-Dienste nur in Werkzeugen, nicht in Kernen des Spiels | Kopf von Fahrer und Eingabe ergänzen, klein; `KERNE` bekommt `selbsttest_ablage.gd`, `selbsttest_lauf.gd`, `selbsttest_protokoll.gd`, `selbsttest_texte.gd`; nicht `selbsttest_system.gd` (Engine-Dienste) und nicht `selbsttest_logger.gd` (erbt von `Logger`) |
+| M11 | Gilt der Leitfaden für Werkzeuge außerhalb von `src/`? (`vergleich.py` kennt Protokollformat, 640 × 360 und Kassenrot ein zweites Mal) | Nein, er gilt für `src/`. Über die Grenze zu Python nennt ein Kommentar die Quelle in Godot | Kommentare in `vergleich.py`; klein |
+
+### Zählung
+
+| Lauf | Befunde | bestätigt | verworfen | Lücken | nur er fand |
+|---|---|---|---|---|---|
+| Selbsttest | 9 | 8 | 1 (B9, als Lücke) | 8 | 7 (B1 hatte der Test schon gemeldet) |
+| Abläufe und Änderungen | 0 | – | – | 6; M1 und M5 auch im anderen Lauf, M2 dort als B9 | – |
