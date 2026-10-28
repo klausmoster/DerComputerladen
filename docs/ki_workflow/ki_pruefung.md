@@ -298,6 +298,8 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 006, Phase 5, Gehäusetasten und Easter Egg im Titel, 22 Fotos (2026-10-27) | Stil | 0 | 0 | 0 | 4, davon 1 verworfen (Pfad im Auftrag) | 0 |
 | Feature 006, Lückensuche über das ganze Feature (2026-10-27) | Stil | 2 | 2 | 0 | 3 | 2 |
 | Feature 006, Lückensuche, 14 Texte (2026-10-27) | Text | 0 | 0 | 0 | 4, davon 3 nicht übernommen | 0 |
+| Feature 007, Checkliste, Vertrag der Zusammenfassung (2026-10-28) | Stil | 11 | 11 | 0 | 11, davon 1 ohne Folgen (Fenstertitel) | 11 |
+| Feature 007, Checkliste, 31 Wortlaute der App, Protokoll und Abläufe (2026-10-28) | Text | 18 | 18 | 0 | 6 | 16 (2 meldete auch der Stil-Prüfer am Rande) |
 | Feature 006, Phase 7, Nachprüfung des Geänderten (2026-10-28) | Stil | 1 | 1 | 0 | 3 | 1 |
 | Feature 006, Phase 7, 24 Testmeldungen und 6 Stellen Doku (2026-10-28) | Text | 0 | 0 | 0 | 1 | 0 |
 

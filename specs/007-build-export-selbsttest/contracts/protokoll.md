@@ -19,8 +19,8 @@ Funktion; sie dürfen sich nur darin unterscheiden, dass „Kopieren“ die Schr
 ## Aufbau
 
 ```text
-# Selbsttest Der Computerladen
-ergebnis: 38 von 40 Schritten in Ordnung, 1 Fehler, 1 nicht gelaufen
+# Der Computerladen Selbsttest
+ergebnis: 38 von 40 Schritten in Ordnung, 1 Fehler, 1 nicht gelaufen.
 
 # Lauf
 lauf.start: 2026-10-28 14:03:12
@@ -30,7 +30,7 @@ lauf.zeitraffer: 8
 lauf.abbruch: keiner
 selbsttest.version: 1
 selbsttest.gebaut: 2026-10-28 13:58
-spiel.version: 0.1
+computerladen.version: 0.1
 godot.version: 4.7.2.stable.official
 
 # System
@@ -45,30 +45,30 @@ fokus.verluste: 0
 # Schritte
 schritt: titel.01_start
 ablauf: titel
-beschreibung: App startet, der Communicator fährt herein
+beschreibung: Start, der Communicator fährt herein
 eingaben: keine
-erwartet: Hauptmenü sichtbar, „Neues Spiel“ gewählt, Hinweis „Einen neuen Laden aufmachen. …“
+erwartet: Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine
 status: OK
 dauer_ms: 1712
 foto: titel.01_start.png
 foto_vergleichbar: ja
 
-schritt: neues_spiel.02_gradwahl
+schritt: neues_spiel.01_gradwahl
 ablauf: neues_spiel
 beschreibung: Enter auf „Neues Spiel“
-eingaben: Taste Enter
-erwartet: Seite SCHWIERIGKEIT sichtbar, „Mittel“ gewählt
+eingaben: Maus über „Neues Spiel“, Enter
+erwartet: Menü steht: SCHWIERIGKEIT, Mittel
 status: FEHLER
-gefunden: Seite SCHWIERIGKEIT sichtbar, „Leicht“ gewählt
+gefunden: Zeit abgelaufen, zuletzt: Menü steht: SCHWIERIGKEIT, Leicht
 dauer_ms: 5003
-foto: neues_spiel.02_gradwahl.png
+foto: neues_spiel.01_gradwahl.png
 foto_vergleichbar: ja
 meldung: WARNING: … (je Meldung eine Zeile, in der Reihenfolge des Auftretens)
 
-schritt: neues_spiel.03_zurueck
+schritt: neues_spiel.02_zurueck_esc
 ablauf: neues_spiel
 status: NICHT_GELAUFEN
-gefunden: vorheriger Schritt neues_spiel.02_gradwahl gescheitert
+gefunden: Fehler in Schritt neues_spiel.01_gradwahl
 
 # Summe
 summe.ok: 38
@@ -79,7 +79,13 @@ summe.gesamt: 40
 
 - Bei `NICHT_GELAUFEN` stehen nur `schritt`, `ablauf`, `status` und `gefunden` mit dem Grund.
 - `gefunden` steht nur bei `FEHLER` und `NICHT_GELAUFEN`.
-- `meldung` kann fehlen oder mehrfach stehen.
+- `meldung` kann fehlen oder mehrfach stehen; eigene Fehler des Selbsttests als
+  `meldung: [selbsttest] …` (Review CHK007).
+- Werte stehen ohne Schlusspunkt, nur `ergebnis:` ist ein Satz. Zeiten, Maße und Zahlen in
+  Maschinenform: `2026-10-28 14:03:12`, `3024x1964`, `2.0` (Review CHK034, CHK039).
+- Ergebniszeile: `Alles in Ordnung: {n} von {n} Schritten.` oder
+  `{ok} von {n} Schritten in Ordnung, {f} Fehler, {ng} nicht gelaufen.`; der erste Teil steht immer
+  (Review CHK033). Wortlaute in [selbsttest-app.md](selbsttest-app.md), „Texte“.
 
 ## Text für „Kopieren“
 

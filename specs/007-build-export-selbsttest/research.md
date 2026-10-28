@@ -190,8 +190,13 @@ kennt.
 **Entscheidung:** Nach dem letzten Ablauf wechselt der Selbsttest in eine eigene Szene
 `selbsttest_ergebnis.tscn`. Wie die Werkstatt schaltet sie die Skalierung des Spiels ab, nimmt den
 Skalierungsfaktor des Bildschirms und das Theme `werkstatt_theme.tres` (Spec, Clarify). Was der
-Abschnitt „Werkzeuge“ im Style-Guide für eine solche Seite noch nicht regelt, etwa Farben für „in
-Ordnung“ und „Fehler“, kommt vorher dort hinein (Grundsatz IV), als `[C]`-Aufgabe in Phase 3.
+Abschnitt „Werkzeuge“ im Style-Guide für eine solche Seite noch nicht regelt, kommt vorher dort
+hinein (Grundsatz IV), als `[C]`-Aufgabe in Phase 4: Zeichen für Fehler und „nicht gelaufen“, keine
+Farbe für „in Ordnung“, gesperrte Knöpfe, mehrzeilige Listen, Bestätigung, Tooltip und Handzeiger
+für alle Werkzeuge, Umbruch, Geltung der Wortliste, Formen im Protokoll (Review CHK019, CHK020,
+CHK024 bis CHK027, CHK030, CHK039). Wie die Werkstatt maximiert die Seite das Fenster, hält
+`GameWindow` an und setzt die eingebaute Schrift auf einer Kopie des Themes (Review CHK016,
+CHK017).
 
 ## R13 Renderer: kein Ausweichen auf OpenGL
 
@@ -284,7 +289,7 @@ dauern; der Selbsttest ruft sie in einem Thread auf, solange der erste Ablauf l�
 
 ## R22 Fortschritt im Fenstertitel
 
-`get_window().title = "Selbsttest 12 von 40: Neues Spiel"` vor jedem Schritt (Spec, FR-003). Nicht
+`get_window().title = "Selbsttest · Schritt 12 von 40: Neues Spiel"` vor jedem Schritt (Spec, FR-003). Nicht
 im Spielbild, damit die Fotos nur das Spiel zeigen.
 
 ## R23 Prüfen, was sich prüfen lässt

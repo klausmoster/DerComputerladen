@@ -7,7 +7,11 @@ sich ein Text, bleibt der Ablauf gültig (R5).
 
 Die Kennungen sind fest; die Nummern `nn` dürfen Lücken haben, damit ein Schritt dazukommen kann, ohne
 dass sich alle Kennungen danach ändern. Ein Schritt hat ein Foto; „nicht vergleichbar“ steht dabei, wo
-das Bild von der Bildrate abhängt (R7).
+das Bild von der Bildrate abhängt (R7); diese Schritte nennt der Absatz unter ihrer Tabelle.
+
+Form der Spalte „Erwartet“ (Review CHK031, CHK032): Seiten und Kopfzeilen in Versalien, Menüeinträge
+in Anführungszeichen, Grade und Spielstände ohne, etwa `Menü steht: SCHWIERIGKEIT, Mittel`. Kein
+Verweis auf Spec oder Plan im Text; der Text landet so in `erwartet:` des Protokolls.
 
 ## Gemeinsame Prüfungen
 
@@ -16,33 +20,34 @@ das Bild von der Bildrate abhängt (R7).
   dieser Zeile.
 - **Spielbildschirm steht:** aktuelle Szene ist der Spielbildschirm, „Zum Hauptmenü“ hat den Fokus,
   der Hinweis nennt das laufende Spiel.
-- **Ordner:** die Spielstände im Ordner des Selbsttests, als Liste der Nummern.
+- **Spielstände:** die Spielstände im Ordner des Selbsttests, als Liste der Namen, etwa
+  `Spielstände: Spiel 1` oder `Spielstände: keine`.
 
 ## titel
 
 | nn | Schritt | Eingabe | Erwartet |
 |---|---|---|---|
-| 01 | `start` | keine | Menü steht: HAUPTMENÜ, „Neues Spiel“; Ordner leer |
+| 01 | `start` | keine | Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine |
 | 02 | `nicht_verfuegbar` | Maus über „Weiterspielen“ | Zeile gewählt, Hinweis „Noch kein Spiel angefangen.“; nichts ausgelöst |
-| 03 | `beenden_da` | Maus über „Beenden“ | Zeile gewählt, verfügbar, Hinweis von „Beenden“; nicht ausgelöst (FR-012) |
+| 03 | `beenden_da` | Maus über „Beenden“ | Zeile gewählt, verfügbar, Hinweis von „Beenden“; nicht ausgelöst |
 
 ## neues_spiel
 
 | nn | Schritt | Eingabe | Erwartet |
 |---|---|---|---|
-| 01 | `gradwahl` | Maus über „Neues Spiel“, Taste Enter | Menü steht: SCHWIERIGKEIT, „Mittel“ |
-| 02 | `zurueck_esc` | Taste Esc | Menü steht: HAUPTMENÜ, „Neues Spiel“ |
-| 03 | `gradwahl_klick` | Linksklick auf „Neues Spiel“ | Menü steht: SCHWIERIGKEIT, „Mittel“ |
-| 04 | `grad_mittel` | Taste Enter | Communicator fährt hinaus; Spielbildschirm steht; Ordner: 1 |
-| 05 | `zum_hauptmenue` | Linksklick auf „Zum Hauptmenü“ | Titel neu, Menü steht: HAUPTMENÜ, „Weiterspielen“ mit Hinweis zu Spiel 1, Mittel; Ordner: 1 |
+| 01 | `gradwahl` | Maus über „Neues Spiel“, Enter | Menü steht: SCHWIERIGKEIT, Mittel |
+| 02 | `zurueck_esc` | Esc | Menü steht: HAUPTMENÜ, „Neues Spiel“ |
+| 03 | `gradwahl_klick` | Linksklick auf „Neues Spiel“ | Menü steht: SCHWIERIGKEIT, Mittel |
+| 04 | `grad_mittel` | Enter | Communicator hinausgefahren; Spielbildschirm steht; Spielstände: Spiel 1 |
+| 05 | `zum_hauptmenue` | Linksklick auf „Zum Hauptmenü“ | Titel neu, Menü steht: HAUPTMENÜ, „Weiterspielen“ mit Hinweis zu Spiel 1, Mittel; Spielstände: Spiel 1 |
 
-## laden (baut auf `neues_spiel`)
+## laden: Spiel laden (baut auf `neues_spiel`)
 
 | nn | Schritt | Eingabe | Erwartet |
 |---|---|---|---|
-| 01 | `weiterspielen` | Taste Enter auf „Weiterspielen“ | Spielbildschirm steht mit Spiel 1 |
-| 02 | `zurueck` | Taste Enter auf „Zum Hauptmenü“ | Menü steht: HAUPTMENÜ, „Weiterspielen“ |
-| 03 | `liste` | Pfeil runter bis „Spiel laden“, Taste Enter | Menü steht: SPIELSTÄNDE, Zeile Spiel 1 mit Grad und Spieldatum |
+| 01 | `weiterspielen` | Enter auf „Weiterspielen“ | Spielbildschirm steht mit Spiel 1 |
+| 02 | `zurueck` | Enter auf „Zum Hauptmenü“ | Menü steht: HAUPTMENÜ, „Weiterspielen“ |
+| 03 | `liste` | Pfeil runter bis „Spiel laden“, Enter | Menü steht: SPIELSTÄNDE, Spiel 1 mit Grad und Spieldatum |
 | 04 | `zeile` | Linksklick auf Zeile Spiel 1 | Spielbildschirm steht mit Spiel 1 |
 | 05 | `zurueck_2` | Linksklick auf „Zum Hauptmenü“ | Menü steht: HAUPTMENÜ, „Weiterspielen“ |
 
@@ -50,36 +55,38 @@ das Bild von der Bildrate abhängt (R7).
 
 | nn | Schritt | Eingabe | Erwartet |
 |---|---|---|---|
-| 01 | `liste` | Linksklick auf „Spiel laden“ | Menü steht: SPIELSTÄNDE, Spiel 1 gewählt |
+| 01 | `liste` | Linksklick auf „Spiel laden“ | Menü steht: SPIELSTÄNDE, Spiel 1 |
 | 02 | `loeschmodus` | Linksklick auf „Löschen …“ | Kopfzeile WELCHES LÖSCHEN? |
-| 03 | `rueckfrage` | Linksklick auf Zeile Spiel 1 | Menü steht: LÖSCHEN?, „Abbrechen“ |
-| 04 | `abbrechen` | Taste Enter | Menü steht: SPIELSTÄNDE; Ordner: 1 |
+| 03 | `rueckfrage` | Linksklick auf Spiel 1 | Menü steht: LÖSCHEN?, „Abbrechen“ |
+| 04 | `abbrechen` | Enter | Menü steht: SPIELSTÄNDE; Spielstände: Spiel 1 |
 | 05 | `rueckfrage_2` | Linksklick auf „Löschen …“, Linksklick auf Spiel 1 | Menü steht: LÖSCHEN?, „Abbrechen“ |
-| 06 | `loeschen` | Pfeil runter, Taste Enter | Menü steht: HAUPTMENÜ, „Neues Spiel“; Ordner leer |
+| 06 | `loeschen` | Pfeil runter, Enter | Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine |
 
 ## easter_egg
 
 | nn | Schritt | Eingabe | Erwartet |
 |---|---|---|---|
 | 01 | `auswahl` | Pfeil runter bis „Spiel laden“ | Menü steht: HAUPTMENÜ, „Spiel laden“ |
-| 02 | `falsche_folge` | Linksklick auf Gehäusetaste 1, 0, 2 | Spiel nicht zu sehen, Menü steht wie in 01 |
-| 03 | `start` | Linksklick auf Gehäusetaste 0, 1, 2 | Seite Invaders sichtbar und aktiv, Hinweis aus; Foto nicht vergleichbar (R7) |
-| 04 | `spielen` | Pfeil rechts halten 0,5 s, Leertaste | Kanone weiter rechts als in 03, ein Schuss unterwegs oder ein Treffer gezählt; Foto nicht vergleichbar |
-| 05 | `ende_esc` | Taste Esc | Menü steht: HAUPTMENÜ, „Spiel laden“ mit Hinweis; Ordner leer |
+| 02 | `falsche_folge` | Linksklick auf Gehäusetaste 1, 0, 2 | Seite Invaders nicht sichtbar, Menü steht: HAUPTMENÜ, „Spiel laden“ |
+| 03 | `start` | Linksklick auf Gehäusetaste 0, 1, 2 | Seite Invaders sichtbar und aktiv, Hinweis aus |
+| 04 | `spielen` | Pfeil rechts halten 0,5 s, Leertaste | Kanone weiter rechts als beim Start, ein Schuss unterwegs oder ein Treffer gezählt |
+| 05 | `ende_esc` | Esc | Menü steht: HAUPTMENÜ, „Spiel laden“ mit Hinweis; Spielstände: keine |
+
+Fotos von 03 und 04 sind nicht vergleichbar: Das versteckte Spiel rechnet nach Zeit (R7).
 
 ## bedienung
 
 | nn | Schritt | Eingabe | Erwartet |
 |---|---|---|---|
 | 01 | `pfeile` | Pfeil runter, Pfeil hoch, Pfeil hoch | Auswahl wandert und läuft am Anfang ans Ende um |
-| 02 | `tab` | Tab, Shift+Tab | Auswahl eine Zeile weiter und zurück |
+| 02 | `tab` | Tab, Umschalt+Tab | Auswahl eine Zeile weiter und zurück |
 | 03 | `rechtsklick` | Rechtsklick auf „Neues Spiel“ | Zeile gewählt, nichts ausgelöst |
-| 04 | `leertaste` | Leertaste | Menü steht: SCHWIERIGKEIT, „Mittel“ |
+| 04 | `leertaste` | Leertaste | Menü steht: SCHWIERIGKEIT, Mittel |
 | 05 | `zurueck_klick` | Linksklick auf „Zurück“ | Menü steht: HAUPTMENÜ, „Neues Spiel“ |
-| 06 | `mausrad` | Ordner mit sieben erfundenen Spielständen, Liste öffnen, Mausrad runter | Liste rollt um eine ganze Zeile, Rollmarke oben sichtbar |
+| 06 | `mausrad` | Vorbereitung: sieben Spielstände; Linksklick auf „Spiel laden“, Mausrad runter | Liste rollt um eine ganze Zeile, Rollmarke oben sichtbar |
 
 Für Schritt 06 legt der Selbsttest die sieben Spielstände über `SaveStore` an, mit fester Uhrzeit und
-festem Seed, und räumt sie danach weg.
+festem Seed, und räumt sie danach weg; im Protokoll `eingaben: Vorbereitung, …` (Review CHK001).
 
 ## fenster
 
@@ -87,17 +94,17 @@ Ohne Vollbild (Spec, Clarify). Prüft Zahlen, kein Spielbild; die Fotos zeigen d
 
 | nn | Schritt | Eingabe | Erwartet |
 |---|---|---|---|
-| 01 | `start` | keine | Fenstergröße = 640 × 360 × `best_factor()` für den Bildschirm des Fensters; Fenster mittig im nutzbaren Bereich (± 1 Pixel) |
+| 01 | `start` | keine | Fenster 640 × 360 mal dem größten ganzzahligen Faktor, der auf den Bildschirm passt; mittig im nutzbaren Bereich, auf 1 Pixel genau |
 | 02 | `faktor_1` | Fenster auf 640 × 360 | Bild 1:1, ohne Rand |
-| 03 | `krumm` | Fenster auf 2 × 640 + 37 mal 2 × 360 + 21 | Bild Faktor 2, mittig, schwarzer Rand ringsum, ganze Pixel |
-| 04 | `zurueck` | Fenster auf die Größe aus 01 | wie 01 |
+| 03 | `krumm` | Fenster auf 1317 × 741 | Bild Faktor 2, mittig, schwarzer Rand ringsum, ganze Pixel |
+| 04 | `zurueck` | Fenster auf die Startgröße | Fenster in der Startgröße, Bild mit dem Startfaktor, ohne Rand |
 
 Die Fenstergröße stellt der Selbsttest über das Fenster ein, nicht über Eingaben: Größe ziehen ist
-Sache des Betriebssystems (Spec, Assumptions).
+Sache des Betriebssystems (Spec FR-004); im Protokoll `eingaben: Fenster, …`.
 
 ## titel_echtzeit
 
-Dieselben Schritte wie `titel`, ohne Zeitraffer (`Engine.time_scale = 1`), mit eigenen Kennungen
+Name „Titel in Echtzeit“. Dieselben Schritte wie `titel`, ohne Zeitraffer (`Engine.time_scale = 1`), mit eigenen Kennungen
 `titel_echtzeit.01_start` usw. Die Fotos müssen den Fotos von `titel` gleichen; der Vergleich zeigt
 es. Läuft als letzter Ablauf.
 

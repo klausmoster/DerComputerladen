@@ -90,6 +90,22 @@ einzeln als Auswahl gefragt:
   bedienen kann (Klaus, nach Empfehlung). Verworfen: ein Probeszenario jetzt, weil der Selbsttest die
   Spieluhr dafür an der Oberfläche vorbei starten müsste; keine Szenarien in 007.
 
+### Review 2026-10-28
+
+Aus `checklists/review.md`, 39 Punkte, davon 24 aus der Prüfung des Vertrags durch Stil- und
+Text-Prüfer; von Klaus am 2026-10-28 alle nach Vorschlag freigegeben. Die wichtigsten für die Spec:
+- Ausnahmen von „alles über die Oberfläche“: Vorbereiten eines Ablaufs und die Fenstergröße
+  (CHK001, FR-004).
+- „Ordner zeigen“ zeigt das Zip des Laufs (CHK002, FR-016).
+- Wann der Selbsttest auf Windows und Linux läuft, legt die Regel aus Phase 7 fest (CHK003).
+- Feste Zeitzone (CHK004), nicht vergleichbare Fotos (CHK005), abhängige Abläufe (CHK006),
+  Meldungen (CHK007), Export-Templates (CHK008).
+- Messbar: sechs Fehler in der Fehlerprobe (CHK009), Unterschiede zweier Protokolle (CHK010),
+  „ohne Störung“ (CHK011).
+- Die Zusammenfassung maximiert das Fenster wie die Werkstatt (CHK016) und folgt in Aufbau,
+  Schrift, Zeichen und Tasten dem Vertrag (CHK017 bis CHK028).
+- Wortlaute und Formate wie im Vertrag (CHK029 bis CHK039); der Ablauf heißt „Spiel laden“.
+
 ## Begriffe
 
 - **Export:** aus dem Godot-Projekt eine fertige App bauen, die ohne Godot läuft, etwa
@@ -242,7 +258,8 @@ Taskleiste das App-Symbol.
 Ab jetzt prüft der Selbsttest, was ein Feature an Sichtbarem dazubringt. Er gehört zur Endabnahme:
 Vor der Gesamtabnahme bekommt das Feature seine Abläufe, Claude baut mit einem Befehl für alle drei
 Systeme, lässt den Selbsttest auf dem Mac laufen und legt das Ergebnis mit der Bitte um
-Gesamtabnahme vor; Klaus startet ihn auf Windows und Linux. Die Phasen davor laufen wie bisher, ohne
+Gesamtabnahme vor; wann Klaus ihn auf Windows und Linux startet, legt die Regel aus Phase 7 fest.
+Die Phasen davor laufen wie bisher, ohne
 Selbsttest (Klaus, 2026-10-28).
 
 **Why this priority**: Ein Selbsttest, der nicht mitwächst, prüft bald das falsche Spiel. Die
@@ -280,7 +297,7 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   Schritt, in dem er geschah, damit ein Fehler daraus nicht wie ein Fehler im Spiel aussieht.
 - **Uhrzeit und Datum des Rechners:** Hinweise im Titel zeigen, wann ein Spiel zuletzt gespielt
   wurde. Damit Fotos auf jedem Rechner gleich sind, rechnet der Selbsttest mit einer festen
-  Uhrzeit und einem festen Seed; die echte Uhrzeit des Laufs steht nur im Protokoll.
+  Uhrzeit in einer festen Zeitzone und einem festen Seed; die echte Uhrzeit des Laufs steht nur im Protokoll.
 - **Ordner für Ergebnisse nicht beschreibbar:** Der Selbsttest zeigt das auf dem Bildschirm mit dem
   Pfad, statt still ohne Protokoll zu enden.
 - **Zweiter Lauf:** Ein neuer Lauf überschreibt keinen alten; jeder Lauf bekommt eigene Dateien,
@@ -289,6 +306,8 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   Ordner für Spielstände, damit „Neues Spiel“ immer gleich vorgewählt ist.
 - **Bildschirm kleiner als 1280 × 720:** Das Fenster bekommt Faktor 1. Die Fotos sind davon nicht
   betroffen, weil sie im Oberflächenraster entstehen; das Protokoll nennt Faktor und Fenstergröße.
+- **Zwischenablage unter Linux:** Ohne Clipboard-Manager ist der kopierte Text nach dem Beenden
+  weg. Die Bestätigung sagt es dort: „Kopiert. Erst einfügen, dann beenden.“
 - **macOS warnt beim ersten Start vor der unbekannten App,** Windows ebenso über SmartScreen: Das
   liegt vor Godot und ist nicht Teil des Selbsttests; die Quickstart-Anleitung sagt, wie Klaus es
   bestätigt.
@@ -306,7 +325,7 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   Spiel MUSS sich ohne Selbsttest genau wie vor diesem Feature verhalten.
 - **FR-003**: Die Selbsttest-App MUSS nach dem Start ohne weiteres Zutun alle Abläufe nacheinander
   durchspielen und danach die Zusammenfassung zeigen. Während des Laufs MUSS der Fenstertitel den
-  Fortschritt nennen, etwa „Selbsttest 12 von 40: Neues Spiel“; im Spielbild selbst erscheint
+  Fortschritt nennen, etwa „Selbsttest · Schritt 12 von 40: Neues Spiel“; im Spielbild selbst erscheint
   nichts davon, damit die Fotos nur das Spiel zeigen.
 - **FR-003a**: Die App MUSS ihre Abläufe im Zeitraffer spielen: Alles, was im Spiel nach Zeit
   rechnet, läuft um einen festen Faktor schneller, im Protokoll als `lauf.zeitraffer` genannt.
@@ -316,7 +335,9 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
 - **FR-004**: Alle Eingaben der Abläufe MÜSSEN als Maus- und Tastatureingaben durch dieselbe
   Eingabe des Spiels gehen, die auch echte Maus und Tastatur nutzen, im echten Fenster. Kein
   Schritt darf eine Seite, einen Knopf oder eine Funktion des Spiels direkt aufrufen, um eine
-  Eingabe zu ersetzen.
+  Eingabe zu ersetzen. Ausgenommen sind das Vorbereiten eines Ablaufs (Ordner leeren, Spielstände
+  anlegen, frischer Titel) und was das Betriebssystem tut, etwa die Fenstergröße; das Protokoll
+  nennt solche Schritte mit `eingaben: Vorbereitung` bzw. `eingaben: Fenster`.
 - **FR-005**: Die Abläufe MÜSSEN Ziele über ihre Bedeutung finden, etwa „der Eintrag ‚Neues
   Spiel‘“ oder „die mittlere graue Gehäusetaste“, nicht über feste Bildschirmkoordinaten. Rückt
   ein Knopf um ein paar Pixel, läuft der Ablauf weiter; wird ein Eintrag umbenannt oder entfernt,
@@ -327,12 +348,14 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   Foto abgeschlossen sein.
 - **FR-007**: Nach jedem Schritt MUSS die App ein Foto im Oberflächenraster 640 × 360 als
   verlustfreies Bild speichern, benannt nach Ablauf und Schritt, sodass derselbe Schritt in jedem
-  Lauf denselben Namen hat.
-- **FR-008**: Die App MUSS mit einer festen Uhrzeit, einem festen Seed und einem leeren eigenen
+  Lauf denselben Namen hat. Ein Schritt, dessen Bild vom Tempo des Rechners abhängt, ist als nicht
+  vergleichbar markiert; geprüft wird dort nur der Zustand.
+- **FR-008**: Die App MUSS mit einer festen Uhrzeit in einer festen Zeitzone, einem festen Seed und einem leeren eigenen
   Ordner für Spielstände rechnen, sodass zwei Läufe auf demselben Rechner Pixel für Pixel gleiche
   Fotos liefern. Echte Spielstände MÜSSEN unberührt und für den Selbsttest unsichtbar bleiben.
 - **FR-009**: Jeder Schritt MUSS eine Höchstzeit haben. Scheitert ein Schritt, MUSS der Rest seines
-  Ablaufs als „nicht gelaufen“ gelten und der nächste Ablauf beim frischen Titel beginnen.
+  Ablaufs als „nicht gelaufen“ gelten und der nächste Ablauf beim frischen Titel beginnen. Baut ein
+  Ablauf auf einem gescheiterten auf, gilt er ganz als nicht gelaufen, mit Grund.
 - **FR-010**: Echte Maus- und Tastatureingaben MÜSSEN während des Laufs vom Spiel ferngehalten
   werden. Schließen des Fensters MUSS den Lauf abbrechen und den Abbruch im Protokoll vermerken.
 
@@ -358,7 +381,8 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
      passt, und steht zentriert; auf Faktor 1 verkleinert und wieder vergrößert, bleibt das Bild
      ganzzahlig vergrößert, mittig und mit schwarzem Rand. Das Vollbild schaltet der Selbsttest
      nicht; Klaus prüft es von Hand nach der Quickstart-Anleitung.
-  8. **Titel in Echtzeit:** der Ablauf `titel` noch einmal, ohne Zeitraffer (FR-003a).
+  8. **Titel in Echtzeit:** der Ablauf `titel` noch einmal, ohne Zeitraffer, mit denselben
+     Schritten und denselben Fotos wie `titel` (FR-003a).
 - **FR-011a**: Der Läufer MUSS **Szenarien** tragen können: Abläufe, die ein Spiel über längere
   Spielzeit im Zeitraffer spielen, mit festen Entscheidungen über die Oberfläche und Prüfpunkten, an
   denen er Zustand prüft und fotografiert. 007 baut den Rahmen und beschreibt ihn so, dass ein
@@ -374,7 +398,7 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
     Grafikschnittstelle (etwa Metal, Vulkan, Direct3D 12), Bildschirmgröße, Skalierung des
     Bildschirms, Bildwiederholrate, Fenstergröße und Faktor, Sprache und Tastaturbelegung des
     Systems, Version des Spiels und von Godot, Datum und Uhrzeit des Laufs;
-  - je Schritt: Nummer, Ablauf, Schritt, Ergebnis (in Ordnung, Fehler, nicht gelaufen), bei Fehler
+  - je Schritt: Kennung (mit laufender Nummer im Ablauf), Ablauf, Schritt, Ergebnis (in Ordnung, Fehler, nicht gelaufen), bei Fehler
     Erwartetes und Gefundenes, Dauer und Name des Fotos;
   - Fokusverluste und einen Abbruch, wenn es sie gab;
   - am Ende die Summe: wie viele Schritte in Ordnung, fehlerhaft, nicht gelaufen.
@@ -385,7 +409,8 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
     Schritt nebeneinanderlegen, etwa Mac gegen Windows.
   - Ein Fehler steht so da, dass Claude ihn ohne Rückfrage einordnen kann: was der Schritt
     eingegeben hat, was erwartet war, was gefunden wurde, das Foto dazu und Warnungen oder Fehler,
-    die das Spiel in diesem Schritt gemeldet hat.
+    die Godot in diesem Schritt gemeldet hat, gleich von wem; eigene Fehler des Selbsttests sind
+    als solche markiert.
   - Das Protokoll nennt die Version des Selbsttests und das Datum seines Baus, damit klar ist,
     welcher Stand der Abläufe lief.
   - Das Zip eines Laufs enthält alles, was Claude zum Auswerten braucht: Protokoll, alle Fotos und
@@ -398,12 +423,15 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   „Kopieren“, „Ordner zeigen“ und „Beenden“. „Kopieren“ legt Summe, fehlerhafte Schritte mit allen
   Angaben aus FR-014 und die Systemdaten als Text in die Zwischenablage, sodass Klaus ihn in den
   Chat einfügen kann. Sie ist eine eigene Seite im Look der Werkzeuge aus dem
-  Style-Guide, wie die Werkstatt, nicht auf dem Communicator, und duzt. Passen nicht alle
-  fehlerhaften Schritte auf die Seite, lässt sich die Liste scrollen.
+  Style-Guide, wie die Werkstatt, nicht auf dem Communicator, und duzt. Wie die Werkstatt
+  maximiert sie das Fenster. Fehler und nicht gelaufene Schritte unterscheiden sich in Form und
+  Zeichen. Passen nicht alle fehlerhaften Schritte auf die Seite, lässt sich die Liste scrollen.
+  Aufbau, Schrift, Tasten und Wortlaute legt der Vertrag fest.
 - **FR-016**: Protokoll und Fotos MÜSSEN im eigenen Datenordner der Selbsttest-App liegen, je Lauf
   in einem Unterordner, benannt nach Datum und Uhrzeit, und zusätzlich als ein Zip-Archiv je Lauf,
   das Klaus an Claude zurückgibt. Die Zusammenfassung MUSS den Pfad nennen und einen Knopf „Ordner
-  zeigen“ haben, der den Ordner des Laufs im Finder, Explorer oder Dateimanager öffnet.
+  zeigen“ haben, der das Zip des Laufs im Finder, Explorer oder Dateimanager zeigt, markiert, wo
+  das System es kann; daneben liegt der Ordner des Laufs.
 - **FR-017**: Spiel und Selbsttest MÜSSEN mit Forward+ laufen; Godot DARF NICHT auf einen
   einfacheren Renderer ausweichen. Fehlt Vulkan oder Direct3D 12, zeigt Godot seine eigene
   Fehlermeldung und beendet sich, ohne Protokoll. Das Protokoll MUSS Renderer und
@@ -416,7 +444,7 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   Namen wie das Foto.
 - **FR-019**: Ein Vergleichswerkzeug außerhalb von Godot MUSS die Fotos eines Laufs mit den
   Referenzbildern vergleichen und je Schritt melden: gleich, abweichend mit Zahl der Pixel und
-  einem Bild mit markierten Abweichungen, Referenz fehlt oder Foto fehlt.
+  einem Bild mit markierten Abweichungen, nicht vergleichbar, Referenz fehlt oder Foto fehlt.
 - **FR-020**: Referenzbilder MÜSSEN nur nach einem Lauf erneuert werden, dessen Ergebnis Klaus
   abgenommen hat.
 - **FR-020a**: Ergebnisse von anderen Rechnern MÜSSEN als Zip in einen unversionierten
@@ -435,8 +463,8 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   ganzzahliger Faktor beim Start, zentriert, Mindestgröße 640 × 360. Das Vollbild MUSS sich auf
   allen drei Systemen per Tastatur hin und zurück schalten lassen: auf dem Mac mit Ctrl+Cmd+F, unter
   Windows und Linux mit F11 und mit Alt+Enter.
-- **FR-024**: Was Godot vor dem Bauen für Windows an Werkzeugen braucht, etwa für das App-Symbol,
-  MUSS dokumentiert sein; ein Download geschieht nur mit Klaus' Erlaubnis, mit Dateiname, Quelle
+- **FR-024**: Was der Export für Windows und Linux braucht, heute die vollständigen
+  Export-Templates 4.7.2, MUSS dokumentiert sein; ein Download geschieht nur mit Klaus' Erlaubnis, mit Dateiname, Quelle
   und Größe.
 - **FR-025**: Die Exporte MÜSSEN ohne Signatur auskommen; Signieren und Beglaubigen kommen später.
   In den gespeicherten Export-Einstellungen stehen keine Zugangsdaten.
@@ -474,23 +502,25 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   `titel_echtzeit`; Dauer je Schritt und gesamt stehen im Protokoll. Eine feste
   Obergrenze gibt es nicht (Klaus, 2026-10-28).
 - **SC-002**: Zwei Läufe hintereinander auf demselben Mac liefern Fotos, die Pixel für Pixel
-  gleich sind, und Protokolle, die sich nur in Datum, Uhrzeit und Dauern unterscheiden.
-- **SC-003**: Auf dem Mac sind in einem Lauf ohne Störung alle Schritte in Ordnung.
-- **SC-004**: Fehlerprobe: Wird in einer Kopie ein Fehler in Titel, Gradwahl, Liste, Rückfrage
-  oder Easter Egg eingebaut, etwa eine falsch vorgewählte Zeile, meldet der Selbsttest ihn als
-  Fehler im passenden Schritt. Alle eingebauten Fehler werden gefunden.
+  gleich sind, und Protokolle, die sich nur in Zeiten, Dauern, Pfaden und Fokusverlusten
+  unterscheiden.
+- **SC-003**: Auf dem Mac sind in einem Lauf ohne Fokusverlust und ohne Abbruch alle Schritte in
+  Ordnung.
+- **SC-004**: Fehlerprobe: In einer Kopie wird mindestens je ein Fehler in Titel, Gradwahl, Liste,
+  Rückfrage, Easter Egg und Fenster eingebaut, also sechs, etwa eine falsch vorgewählte Zeile. Der
+  Selbsttest meldet jeden als Fehler im passenden Schritt.
 - **SC-005**: Der normale Export enthält keine einzige Datei der Testabläufe; geprüft am Inhalt
   der gebauten App.
 - **SC-006**: Echte Spielstände sind nach einem Lauf bytegleich mit vorher.
 - **SC-007**: Klaus findet nach einem Lauf Protokoll und Fotos mit höchstens einem Klick von der
   Zusammenfassung aus.
-- **SC-010**: Claude kann aus Zip oder kopiertem Text eines Laufs jeden fehlerhaften Schritt ohne
-  Rückfrage an Klaus einordnen; geprüft an der Fehlerprobe aus SC-004, deren Protokolle Claude ohne
-  weitere Angaben dem richtigen eingebauten Fehler zuordnet.
 - **SC-008**: Der Vergleich findet einen absichtlich geänderten einzelnen Pixel und meldet zwei
   gleiche Läufe als gleich.
 - **SC-009**: Auf je einem Windows- und Linux-Rechner mit Vulkan oder Direct3D 12 läuft der
   Selbsttest bis zur Zusammenfassung, und Claude hat zu jedem Foto ein Vergleichsergebnis.
+- **SC-010**: Claude kann aus Zip oder kopiertem Text eines Laufs jeden fehlerhaften Schritt ohne
+  Rückfrage an Klaus einordnen; geprüft an der Fehlerprobe aus SC-004, deren Protokolle Claude ohne
+  weitere Angaben dem richtigen eingebauten Fehler zuordnet.
 
 ## Assumptions
 

@@ -75,13 +75,13 @@ Fixtures, `tools/selbsttest/` (Vergleich, README, rund 35 Referenzbilder), ICO i
 | I. Nur Desktop | Windows, macOS, Linux; Maus und Tastatur als eingespeiste Ereignisse. Forward+ bleibt, das Ausweichen auf OpenGL wird abgeschaltet (R13) | erfüllt | erfüllt |
 | II. Klaus entscheidet, der Agent baut, Claude plant und prüft | Godot-Code `[A]`; Vergleich, ICO, Style-Guide, Regel-Vorschlag `[C]`; Templates installieren, Läufe auf Windows und Linux, Abnahmen und die Entscheidung über die Regel `[K]`. Phasenweise auf Klaus' Freigabe, kein `/speckit-implement`; Lernnotizen je Aufgabe | erfüllt | erfüllt |
 | III. Erst spezifizieren | Spec mit 13 Klärungen und dem Abgleich mit Klaus' Ablauf, Branch, System 11; 27 Entscheidungen mit verworfenen Alternativen in research.md | erfüllt | erfüllt |
-| IV. Ein Look: der Style-Guide | Die Zusammenfassung folgt dem Abschnitt „Werkzeuge“; was fehlt, kommt vor dem Bauen hinein (R12, Phase 3). Fotos zeigen nur das bestehende Spiel | erfüllt, mit Vorarbeit | erfüllt, mit Vorarbeit |
+| IV. Ein Look: der Style-Guide | Die Zusammenfassung folgt dem Abschnitt „Werkzeuge“; was fehlt, kommt vor dem Bauen hinein (R12, Phase 4). Fotos zeigen nur das bestehende Spiel | erfüllt, mit Vorarbeit | erfüllt, mit Vorarbeit |
 | V. Daten sauber halten | keine Spieldaten berührt; game_bible und Katalog unberührt | erfüllt | erfüllt |
 | VI. Prüfen mit eigenem Maßstab | Phasen mit Texten oder Sichtbarem enden mit der Phasenprüfung, siehe „Prüfer je Phase“; Wortlaute der Zusammenfassung lesen die Prüfer bei der Checkliste | erfüllt | erfüllt |
 | Technische Rahmenbedingungen | Godot 4.7, GUT 9.7.1 bleibt für Tests ohne Fenster; kein neuer Autoload (R3); Zeitleiste unberührt | erfüllt | erfüllt |
 | Arbeitsweise | Dokumente deutsch; `.uid` der neuen Skripte werden committet; `export_presets.cfg` sieht Claude vor jedem Commit an, keine Zugangsdaten (FR-025); Downloads nur mit Erlaubnis | erfüllt | erfüllt |
 
-Ergebnis: bestanden, vor und nach dem Entwurf. Zu Grundsatz IV ist Vorarbeit in Phase 3 nötig.
+Ergebnis: bestanden, vor und nach dem Entwurf. Zu Grundsatz IV ist Vorarbeit in Phase 4 nötig.
 
 ## Project Structure
 
@@ -132,9 +132,8 @@ Keine Einträge, die Prüfung der Verfassung zeigt keine Verstöße.
 
 ## Vorarbeiten vor dem Bauen
 
-1. **Style-Guide** (R12), Phase 3: Claude prüft, ob der Abschnitt „Werkzeuge“ eine Ergebnisseite
-   trägt (Summe, Liste der Fehler, Farben für in Ordnung und Fehler), ergänzt, was fehlt, Klaus gibt
-   frei.
+1. **Style-Guide** (R12), Phase 4: Claude ergänzt den Abschnitt „Werkzeuge“ um die Regeln aus der
+   Checkliste (CHK019, CHK020, CHK024 bis CHK027, CHK030, CHK039), Klaus gibt frei.
 2. **Export-Templates** (R14), Teil 2: Klaus installiert die vollständigen Templates 4.7.2. Claude
    nennt vorher Dateiname, Quelle und Größe.
 3. Möglich als `[K]`: Klaus legt das Preset „Selbsttest macOS“ selbst im Export-Dialog des Editors
@@ -157,6 +156,22 @@ Jede Phase endet mit grünen Tests, Lernnotizen und Klaus' Abnahme; erst dann fo
 Phase 2 hängt an 1, Phase 3 an 2, Phase 4 an 3, Phase 5 an 4 (Referenzbilder aus einem vollständigen
 Lauf), Phase 6 an 5. In 007 läuft der Selbsttest in den Phasen 2 bis 6, weil er dort selbst gebaut
 wird; ab 008 nur zur Endabnahme (R25).
+
+## Änderungen nach der Checkliste
+
+Aus [checklists/review.md](checklists/review.md), 39 Punkte: 15 von Claude, 13 vom Stil-Prüfer, 11
+vom Text-Prüfer aus 18 Befunden; von Klaus am 2026-10-28 alle nach Vorschlag freigegeben.
+Eingearbeitet in Spec (Clarifications „Review 2026-10-28“, FR-004, FR-007 bis FR-009, FR-011.8,
+FR-013 bis FR-016, FR-019, FR-024, Story 5, Randfälle, SC-002 bis SC-004, Reihenfolge der SC),
+research.md (R12), Datenmodell, Verträge (App: Zusammenfassung und Texte neu; Abläufe: Form der
+Spalte „Erwartet“; Protokoll: Beispiel und Formen) und Quickstart. Die wichtigsten:
+- **CHK001**: Vorbereiten eines Ablaufs und Fenstergröße sind die einzigen Schritte ohne Eingabe.
+- **CHK016, CHK017**: Die Zusammenfassung maximiert wie die Werkstatt, hält `GameWindow` an und
+  setzt die eingebaute Schrift.
+- **CHK019, CHK020**: Fehler mit Feld „!“, nicht gelaufen mit Feld „–“, in Ordnung ohne Farbe;
+  gesperrter Knopf bei nicht beschreibbarem Ordner.
+- **CHK029 bis CHK039**: `computerladen.version`, „Spiel laden“, eine Ergebniszeile, Gründe ohne
+  „gescheitert“, Fenstertitel mit „Schritt“, Maschinenform im Protokoll.
 
 ## Prüfer je Phase
 

@@ -59,14 +59,19 @@ func starte(lauf: SelbsttestLauf, ablaeufe: Array[SelbsttestAblauf]) -> void
 func schritt_kennung() -> String          # die laufende, für Logger und Fokus
 ```
 
+- Vorbereitung und Fenster (CHK001): Frischer Titel, angelegte Spielstände und gesetzte
+  Fenstergrößen gehen nicht über Eingaben; das Protokoll nennt sie mit `eingaben: Vorbereitung`
+  bzw. `eingaben: Fenster`.
 - Je Ablauf ohne `baut_auf`: frischer Titel (Ordner leeren, laufendes Spiel ohne Speichern beenden,
   Titel neu laden, warten bis das Hauptmenü steht).
 - Je Ablauf: `Engine.time_scale` auf seinen Zeitraffer setzen (R24), danach wieder 1.
+- Meldungen (CHK007): Jede Warnung und jeder Fehler aus Godot zählt zum laufenden Schritt; eigene
+  Fehler des Selbsttests stehen als `meldung: [selbsttest] …`.
 - Je Schritt: Fenstertitel setzen, Eingaben über den Fahrer, warten bis `erwartet` wahr ist oder
   5000 ms vorbei, Foto, Ergebnis mit Dauer und Meldungen. Scheitert ein Schritt, gelten die übrigen
   seines Ablaufs und die Abläufe, die darauf aufbauen, als `NICHT_GELAUFEN`.
 - Fokus: `NOTIFICATION_APPLICATION_FOCUS_OUT` vermerkt `fokus.verlust` mit Schritt und Zeit.
-- Fenster schließen (`NOTIFICATION_WM_CLOSE_REQUEST`): Abbruch vermerken, Protokoll, Ausgabe und Zip
+- Fenster schließen während des Laufs (`NOTIFICATION_WM_CLOSE_REQUEST`): Abbruch vermerken, Protokoll, Ausgabe und Zip
   schreiben, beenden. `GameSession` speichert beim Schließen wie immer, aber in den Ordner des
   Selbsttests.
 - Am Ende: Protokoll, Ausgabe, Zip; Eingabe-Filter aus, Logger ab; Szene der Zusammenfassung.
@@ -141,14 +146,80 @@ Alle Methoden mit Eingaben sind `await`-bar. Echte Ereignisse verwirft der Filte
 
 ## Zusammenfassung (`selbsttest_ergebnis.tscn`)
 
-- Eigene Szene im Look der Werkzeuge, Theme `werkstatt_theme.tres`, Skalierung des Spiels aus,
-  Faktor des Bildschirms an (R12). Fenster bleibt in seiner Größe.
-- Oben die Zeile `ergebnis:` aus dem Protokoll in Worten, groß; darunter die fehlerhaften und nicht
-  gelaufenen Schritte mit Kennung, Beschreibung, Erwartet, Gefunden, scrollbar; darunter der Pfad.
-- Knöpfe „Kopieren“, „Ordner zeigen“, „Beenden“. „Kopieren“ bestätigt kurz mit „Kopiert.“
-- Scheiterte die Ablage: statt Summe die Meldung mit Pfad; „Kopieren“ legt dann Meldung und
-  Systemdaten ab.
-- Alle Texte in `SelbsttestTexte`, duzend; Wortlaute legt die Checkliste mit dem Text-Prüfer fest.
+Nach Abschnitt „Werkzeuge“ im Style-Guide, mit den Ergänzungen aus Phase 4 (Review CHK016 bis
+CHK028).
+
+**Fenster und Schrift**
+- Wie `werkstatt.gd`: `GameWindow` anhalten (`set_process(false)`,
+  `set_process_unhandled_input(false)`), `content_scale_mode = DISABLED`,
+  `content_scale_factor = DisplayServer.screen_get_scale()`, Fenster maximieren (CHK016).
+- Theme `werkstatt_theme.tres` als Kopie mit `default_font = ThemeDB.fallback_font` (CHK017).
+- Grund `papier` über die ganze Fläche (CHK022).
+- Knöpfe als Standard-`Button` ohne eigene Styles; Überfahren, Drücken, Fokus und gesperrt kommen
+  aus dem Theme. Tooltip und Handzeiger wie in der Werkstatt (CHK026).
+
+**Aufbau von oben** (CHK021), Rand und Abstand zwischen Bereichen `raster-16`, zwischen Einträgen
+`raster-8`, zwischen Knöpfen `raster-4` (CHK022):
+
+| Bereich | Schrift | Farbe |
+|---|---|---|
+| Überschrift | `werkzeug-titel` | `tusche` |
+| Systemzeile | `werkzeug-klein` | `gehaeuse-dunkel` |
+| Summe | `werkzeug-titel` | `tusche`; keine Farbe für „in Ordnung“ (CHK019) |
+| Bereichstitel „Was nicht stimmt“, nur wenn es Einträge gibt | `werkzeug-titel` | `tusche` auf `papier` |
+| Liste, scrollbar | `werkzeug-text` | zweite Farbe `endlos-gruen` je Eintrag (CHK024) |
+| Pfad | `werkzeug-text` | `tusche`, umbrochen nach einem Trenner, nie gekürzt (CHK027) |
+| Knopfreihe unten, links beginnend: Kopieren, Ordner zeigen, Beenden; rechts daneben die Bestätigung | `werkzeug-text` | Bestätigung in `tusche`, bis zum nächsten Klick (CHK025) |
+
+**Einträge der Liste** (CHK019, CHK034): nicht anklickbar, ohne Überfahren.
+- Fehler: Feld in `kassenrot` mit „!“ in `papier`, daneben `{kennung} · {beschreibung}`, darunter
+  `Erwartet: {erwartet}` und `Gefunden: {gefunden}`.
+- Nicht gelaufen: Feld mit `tusche`-Kontur auf `papier` mit „–“, daneben
+  `{kennung} · {beschreibung}`, darunter `Nicht gelaufen: {grund}`.
+- Lange Werte umbrechen (CHK027).
+
+**Tasten** (CHK023): Fokus beim Öffnen auf „Kopieren“; Tab und Umschalt+Tab wechseln zwischen den
+Knöpfen, Enter und Leertaste lösen aus, Esc tut nichts.
+
+**Ordner nicht beschreibbar** (CHK020): Überschrift und Systemzeile bleiben; an Stelle von Summe,
+Liste und Pfad steht die Meldung als Feld (Theme-Variante `ErrorNoticeLabel`, `kassenrot` mit Text
+in `papier`). „Ordner zeigen“ ist gesperrt. „Kopieren“ legt Meldung und Systemdaten ab.
+
+**Schließen:** Nach dem Schreiben hört der Läufer nicht mehr auf das Schließen des Fensters;
+Schließen auf der Zusammenfassung beendet einfach (CHK028).
+
+## Texte
+
+Alle in `SelbsttestTexte`, freigegeben mit der Checkliste (CHK029 bis CHK039). `{…}` sind
+Platzhalter. Zahlwörter nach dem Fall: „von 1 Schritt“, „von 2 Schritten“; „1 Fehler“, „2 Fehler“.
+
+| Wo | Text |
+|---|---|
+| Fenstertitel im Lauf | `Selbsttest · Schritt {n} von {gesamt}: {ablauf}` |
+| Fenstertitel danach | `Der Computerladen Selbsttest` |
+| Namen der Abläufe | Titel, Neues Spiel, Spiel laden, Löschen, Easter Egg, Bedienung, Fenster, Titel in Echtzeit |
+| Überschrift | `Selbsttest vom {datum}, {uhrzeit} Uhr`, etwa „Selbsttest vom 28.10.2026, 14:03 Uhr“ |
+| Systemzeile | `{system} {version} · {grafikkarte} · {grafik_api}` |
+| Summe, alles in Ordnung (auch `ergebnis:`) | `Alles in Ordnung: {n} von {n} Schritten.` |
+| Summe sonst (auch `ergebnis:`) | `{ok} von {n} Schritten in Ordnung, {f} Fehler, {ng} nicht gelaufen.`; der erste Teil steht immer, Fehler und nicht gelaufen entfallen bei 0 |
+| Bereichstitel | `Was nicht stimmt` |
+| Eintrag Fehler | `{kennung} · {beschreibung}` / `Erwartet: {erwartet}` / `Gefunden: {gefunden}` |
+| Eintrag nicht gelaufen | `{kennung} · {beschreibung}` / `Nicht gelaufen: {grund}` |
+| Pfad | `Protokoll und Fotos liegen hier: {pfad}` |
+| Knöpfe | `Kopieren`, `Ordner zeigen`, `Beenden` |
+| Tooltips | „Legt das Ergebnis als Text in die Zwischenablage.“, „Zeigt das Zip dieses Laufs im Dateimanager.“, „Beendet den Selbsttest.“ |
+| Bestätigung | `Kopiert.`; unter Linux `Kopiert. Erst einfügen, dann beenden.` |
+| Ordner nicht beschreibbar | `Kein Protokoll: In {pfad} lässt sich nicht schreiben.` |
+| `gefunden` bei FEHLER | `Zeit abgelaufen, zuletzt: {zustand}` / `Ziel nicht gefunden: {ziel}` / der gefundene Zustand |
+| Grund bei NICHT_GELAUFEN | `Fehler in Schritt {kennung}` / `Fehler in Ablauf {kennung}` / `Fenster geschlossen` |
+| Szenario ohne Bedienung der Uhr | `Die Uhr lässt sich im Spielbildschirm noch nicht bedienen` |
+| Kopf des Protokolls | `# Der Computerladen Selbsttest` |
+
+Werte im Protokoll stehen ohne Schlusspunkt, nur `ergebnis:` ist ein Satz (CHK034). Formen
+(CHK039): Im Protokoll Maschinenform (`2026-10-28 14:03:12`, `3024x1964`, `2.0`), ausgenommen von den
+Regeln für Texte wie Testausgaben; auf dem Bildschirm deutsch („28.10.2026, 14:03 Uhr“,
+„640 × 360“). Tasten in Beschreibungen: Enter, Esc, Tab, Umschalt+Tab, Leertaste, Pfeil runter.
+Zustände in der Form der Tabellen in [ablaeufe.md](ablaeufe.md) (CHK031, CHK032).
 
 ## Was sich am Spiel ändert
 

@@ -43,13 +43,14 @@ open "build/macos/Der Computerladen Selbsttest.app"
 
 1. Ein Fenster geht auf, der Titel erscheint, und die App spielt alle Abläufe im Zeitraffer durch,
    zum Schluss den Titel noch einmal in normalem Tempo. Der Fenstertitel
-   zählt mit, etwa „Selbsttest 12 von 40: Neues Spiel“. Maus und Tastatur nicht anfassen müssen,
+   zählt mit, etwa „Selbsttest · Schritt 12 von 40: Neues Spiel“. Maus und Tastatur nicht anfassen müssen,
    tun aber auch nichts.
-2. Am Ende steht die Zusammenfassung im Look der Werkzeuge: Summe, fehlerhafte Schritte, Pfad, dazu
+2. Am Ende steht die Zusammenfassung im Look der Werkzeuge, im maximierten Fenster: Summe,
+   fehlerhafte Schritte, Pfad, dazu
    „Kopieren“, „Ordner zeigen“ und „Beenden“. Erwartet: alle Schritte in Ordnung (SC-003); im
    Protokoll braucht `titel` weniger als halb so lange wie `titel_echtzeit` (SC-001).
-3. „Ordner zeigen“ öffnet den Ordner des Laufs im Finder: `protokoll.txt`, `ausgabe.txt`, `fotos/`,
-   daneben das Zip (SC-007).
+3. „Ordner zeigen“ zeigt das Zip des Laufs im Finder, markiert; daneben der Ordner des Laufs mit
+   `protokoll.txt`, `ausgabe.txt`, `fotos/` (SC-007).
 4. „Kopieren“ und in einen Texteditor einfügen: Kopf, Systemdaten, Summe, keine Schritte mit `OK`.
 5. Ein zweiter Lauf: neuer Ordner, alter bleibt. Vergleich der beiden Läufe:
 

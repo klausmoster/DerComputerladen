@@ -15,7 +15,7 @@ Ein Start der Selbsttest-App bis zur Zusammenfassung.
 | `zeitraffer` | der Faktor der Abläufe im Zeitraffer |
 | `ablaeufe` | die Abläufe in fester Reihenfolge, je mit ihren Schritten und Ergebnissen |
 | `fokusverluste` | je Verlust: Schritt-Kennung und Zeit seit dem Start in Millisekunden |
-| `abbruch` | leer, oder die Schritt-Kennung, in der das Fenster geschlossen wurde |
+| `abbruch` | `keiner`, oder die Schritt-Kennung, in der das Fenster geschlossen wurde |
 | `summe` | Zahl der Schritte je Ergebnis: in Ordnung, Fehler, nicht gelaufen |
 
 ```mermaid
@@ -59,7 +59,7 @@ heißt `unbekannt`, der Schlüssel fehlt nie.
 | `system.fenster_faktor` | `3` |
 | `system.sprache` | `de_DE` |
 | `system.tastatur` | Name der Belegung, etwa `German` |
-| `spiel.version` | aus `application/config/version`, etwa `0.1` |
+| `computerladen.version` | aus `application/config/version`, etwa `0.1` |
 | `godot.version` | `4.7.2.stable.official` |
 | `selbsttest.version` | eigene Nummer der Abläufe, etwa `1` |
 | `selbsttest.gebaut` | Änderungszeit der App-Datei, `JJJJ-MM-TT hh:mm` |
@@ -72,7 +72,7 @@ heißt `unbekannt`, der Schlüssel fehlt nie.
 | Feld | Bedeutung |
 |---|---|
 | `kennung` | kurz, klein, ohne Leerzeichen: `titel`, `neues_spiel`, `laden`, `loeschen`, `easter_egg`, `bedienung`, `fenster`, `titel_echtzeit` |
-| `name` | für Menschen, etwa „Neues Spiel“ |
+| `name` | für Menschen, etwa „Neues Spiel“, „Spiel laden“ |
 | `schritte` | in fester Reihenfolge |
 | `baut_auf` | leer, oder die Kennung des Ablaufs, dessen Ende er voraussetzt (etwa `laden` auf `neues_spiel`) |
 | `zeitraffer` | Faktor für die Zeit im Spiel, Vorgabe 8; 1 für `titel_echtzeit` und `fenster` (R24) |
@@ -97,9 +97,9 @@ Prüfpunkte heißen wie Schritte, `<szenario>.<nn>_<kurz>`, etwa `leicht_1987.03
 
 | Feld | Bedeutung |
 |---|---|
-| `kennung` | `<ablauf>.<nn>_<kurz>`, etwa `neues_spiel.03_grad_mittel`; zugleich Name des Fotos |
+| `kennung` | `<ablauf>.<nn>_<kurz>`, etwa `neues_spiel.04_grad_mittel`; zugleich Name des Fotos |
 | `beschreibung` | ein Satz, was der Schritt tut, etwa „Enter auf ‚Neues Spiel‘“ |
-| `eingaben` | die Folge von Eingaben, etwa „Taste Enter“, „Linksklick auf Gehäusetaste 2“ |
+| `eingaben` | die Folge von Eingaben, etwa „Enter“, „Linksklick auf Gehäusetaste 2“; `Vorbereitung` oder `Fenster` für Schritte ohne Eingabe (Review CHK001) |
 | `erwartet` | der Zustand, auf den gewartet wird, als lesbarer Text und als Prüfung |
 | `hoechstzeit` | Millisekunden bis „Zeit abgelaufen“, Vorgabe 5000 (R6) |
 | `foto_vergleichbar` | ob das Foto auf jedem Rechner gleich sein muss; nein nur, wo das Bild von der Bildrate abhängt (R7) |
@@ -109,7 +109,7 @@ Prüfpunkte heißen wie Schritte, `<szenario>.<nn>_<kurz>`, etwa `leicht_1987.03
 | Feld | Bedeutung |
 |---|---|
 | `status` | `OK`, `FEHLER` oder `NICHT_GELAUFEN` |
-| `gefunden` | bei `FEHLER`: der tatsächliche Zustand, lesbar; bei Ablauf der Zeit „Zeit abgelaufen“ und der Zustand zuletzt |
+| `gefunden` | bei `FEHLER`: der tatsächliche Zustand, lesbar, oder „Zeit abgelaufen, zuletzt: …“; bei `NICHT_GELAUFEN` der Grund, etwa „Fehler in Schritt …“ |
 | `dauer_ms` | von der ersten Eingabe bis zum Erreichen des Zustands oder zum Abbruch |
 | `foto` | Dateiname, `<kennung>.png`; auch bei `FEHLER` wird fotografiert, bei `NICHT_GELAUFEN` nicht |
 | `meldungen` | Fehler und Warnungen, die Godot oder das Spiel während des Schritts ausgegeben haben |
