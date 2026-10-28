@@ -101,3 +101,38 @@ Kein Godot, sondern Claude Code; aber es bestimmt, wer künftig deinen Code beur
 - Der Godot-Agent liest den Leitfaden jetzt vor jeder Aufgabe. Weicht er begründet ab, schreibt er
   `# Ausnahme AR-NN: …` an die Stelle und meldet es; gültig wird die Ausnahme erst mit Klaus' Zeile
   in der Tabelle des Leitfadens.
+
+## Phase 3
+
+### T022 bis T028 Was der Bestand über den Aufbau zeigt
+
+Die Bestandsprüfung hat den Code aus 001 bis 006 gegen den Leitfaden gelesen. Drei Muster ziehen
+sich durch.
+
+- **Zustand als Schalter (AR-11).** Der Titel weiß über `_ready_for_input` und `_leaving`, ob er
+  Eingaben annimmt, und über die Sichtbarkeit von fünf Seiten, wo der Spieler gerade ist
+  (`src/scenes/title/title_screen.gd`). Jede Eingabe fragt diese Kombination neu ab. Mit einem
+  `enum` steht der Zustand an einer Stelle, und `match` zeigt für jeden Zustand, was Esc oder eine
+  Gehäusetaste tut. Das Gegenstück gibt es schon: `InvadersGame` hat `enum State`, die Seite drum herum
+  nicht. Ein einzelner Schalter wie `_close_failed` in `GameSession` ist dagegen kein Zustand; die
+  Regel greift erst, wenn zwei Schalter zusammen etwas bedeuten.
+- **Der feste Schritt mit Obergrenze (AR-10).** `GameClock._process()` sammelt `delta` und ruft je
+  vollem Tag `advance_day()`, ohne Obergrenze. Hängt das Spiel 10 Sekunden, holt die Uhr im nächsten
+  Bild 20 Tage auf einmal nach. `InvadersPage.advance()` begrenzt das mit `MAX_STEPS`; dieselbe Grenze
+  bekommt die Uhr.
+- **Wer was kennt.** Fast alles hält sich schon an „Signal nach oben“: kein `get_parent()` nach oben
+  im Spiel, kein Verweis auf die Werkstatt, Autoloads nur über Nähte. Die Abweichungen liegen an den
+  Rändern: Die Werkstatt hält `GameWindow` über `/root/GameWindow` an, weil GDScript den Namen eines
+  Autoloads nicht kennt, wenn ein Skript mit `-s` startet. Das ist jetzt eine begründete Ausnahme:
+  Kommentar an der Stelle und Zeile in der Tabelle des Leitfadens. Und Panels der Werkstatt rufen
+  private Funktionen anderer Panels, etwa `EventForm._reason()`. Ein Unterstrich heißt in GDScript nur
+  „intern“, die Sprache verbietet den Aufruf nicht; der Leitfaden tut es jetzt.
+
+### Warum zwei Features statt alles in 008
+
+Klaus hat für 008 entschieden: behoben wird, was in einem Ordner bleibt und keine Schnittstelle nach
+außen ändert. `MAX_SEED` steht fünfmal im Code, in `core/` und in der Werkstatt; eine Stelle dafür
+zu schaffen, berührt beide. `MenuHint` liegt im Ordner des Titels, obwohl der Communicator unter
+`src/ui/` es nutzt; es umzuziehen, berührt drei Ordner. Solche Umbauten stehen als 11-07 und 11-08 in
+`docs/features/Feature_Ideas.md`. So bleibt 008 ein Feature über den Maßstab und den Prüfer, und ein
+Umbau über mehrere Systeme bekommt seine eigene Spec.

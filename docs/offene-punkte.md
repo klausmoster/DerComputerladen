@@ -827,6 +827,9 @@ Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder 
 - **R9** Behebung gemessen an Testzahl, Startprobe, Fahrplänen der Seeds 1, 4711, 99999 und einem
   Spielstand.
 - **R11** Keine Planprüfung durch den Architektur-Prüfer für 008 selbst.
+- **Bestandsprüfung (Phase 3):** Klaus hat am 2026-10-28 alle 17 Abweichungen und 19 Lücken wie
+  empfohlen entschieden (`specs/008-architektur/bestandsbericht.md`): 13 Behebungen in Phase 5
+  (T036a, T036b), eine Ausnahme (`werkstatt.gd`, AR-02), zwei Features (11-07, 11-08), zwei verworfen.
 - **R12** Muster im Leitfaden: Beobachter, Komponente, Typ-Objekt, Befehl, Zustand, Spielschleife;
   Singleton nur als Warnung. Entschieden in Phase 1 (Klaus, 2026-10-28): Der Ereigniskatalog bleibt
   JSON als begründete Ausnahme zu AR-04; dazu kommen die Tests „kein globaler Zufall in Kernen“ und

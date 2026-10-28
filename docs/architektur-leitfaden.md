@@ -15,8 +15,9 @@ Spec, Plan und Godot-Agent halten sich an ihn.
   stehen in `docs/spielbeschreibung/architektur.md`, „Code-Stil“. Beides prüft der
   Architektur-Prüfer nicht.
 - **Quellen:** `docs/recherche/architektur-quellen.md`, im Folgenden „Quellen“ mit Abschnitt.
-- **Stand:** Feature 008, Phase 1. Alle 20 Regeln hat Klaus am 2026-10-28 wie vorgeschlagen
-  entschieden.
+- **Stand:** Feature 008, Phase 3. Alle 20 Regeln hat Klaus am 2026-10-28 wie vorgeschlagen
+  entschieden; ergänzt nach den Proben (Phase 2) und der Bestandsprüfung (Phase 3), siehe
+  „Geschichte“.
 
 ## So liest man eine Regel
 
@@ -64,6 +65,11 @@ gibt sie mit dem Plan frei.
   **Kern**). Eine Szene oder ein Autoload ist nur die **Hülle**: Sie hält den Kern, reicht ihm Zeit,
   Seed und Daten hinein und macht aus seinen Ergebnissen Signale und Bilder. Ein Kern greift nicht
   auf den Szenenbaum, auf Autoloads oder auf den globalen Zufall zu.
+  Ein Autoload darf kleinen Ablaufzustand halten, etwa das Datum der Uhr oder das laufende
+  Spiel; Spielmechanik gehört in einen Kern. Ein Kern darf Dateien lesen und schreiben und die Uhr des
+  Rechners nur für Zeitstempel und Rechenbudgets lesen, die das Ergebnis nicht ändern; Spielzeit nie.
+  Aus `src/ui/` darf ein Kern nur Klassen mit Konstanten wie `UiPalette` kennen, keine Szenen und
+  Bausteine.
 - **Grund:** So läuft dieselbe Logik im Spiel, in der Werkstatt und in Tests ohne Fenster und Uhr,
   und ein Lauf ist wiederholbar (AR-08). Die Godot-Doku hält Logik im Skript einer Szene für normal
   und kennt `RefCounted` nur als Werkzeug; der Leitfaden ist hier **bewusst strenger**, weil eine
@@ -89,6 +95,11 @@ gibt sie mit dem Plan frei.
   `/root/` nach oben. Signale werden nicht über mehrere Ebenen weitergereicht.
   Ein Baustein darf das Signal eines inneren Teils in ein eigenes
   Signal mit eigener Bedeutung übersetzen; verboten ist nur das bloße Durchreichen.
+  Ein `Callable` darf der gemeinsame Eltern-Node hineinreichen; ein Kind hält nie eine
+  Referenz auf seinen Eltern-Node. „Nach unten“ heißt: bis zu den eigenen Kindern und deren
+  öffentlichen Methoden, nicht in innere Nodes einer eingesetzten Szene. Gemeinsame Hilfen von
+  Geschwistern liegen in einer eigenen Klasse; private Funktionen (`_name`) einer fremden Klasse ruft
+  niemand. `get_parent()` innerhalb der eigenen Szene ist erlaubt.
 - **Grund:** So lässt sich ein Baustein in eine andere Szene setzen, ohne ihn zu ändern, und für
   sich testen. Der Merksatz „Call down, signal up“ stammt aus der Godot-Gemeinde (KidsCanCode); die
   offizielle Doku sagt dasselbe sinngemäß.
@@ -110,6 +121,9 @@ gibt sie mit dem Plan frei.
   sein, was eigene Daten über Szenenwechsel hinweg verwaltet und keine fremden ändert. Kein
   allgemeiner Signalbus und kein „Manager“ als Autoload; Hilfsfunktionen sind `static func` einer
   Klasse mit `class_name`.
+  Autoloads dürfen einander über eine Naht und in der Reihenfolge aus `project.godot`
+  aufrufen; ein Methodenaufruf ist kein „fremde Daten ändern“. Einstellungen des `SceneTree`, etwa
+  `auto_accept_quit`, setzt ein Autoload nur mit Kommentar.
 - **Grund:** Jedes Autoload ist überall erreichbar und koppelt deshalb alles an alles. Nystrom nennt
   das Singleton das Muster, das meist mehr schadet als nützt. Die Godot-Doku erlaubt Autoloads für
   Systeme mit eigenen Daten; die feste Liste ist **strenger**, damit ein neues Autoload eine
@@ -139,6 +153,11 @@ gibt sie mit dem Plan frei.
   sind Stellschrauben einer Mechanik, etwa Tempi oder Chancen, und Werte, die der Style-Guide
   festlegt: Sie stehen als benannte Konstanten an einer Stelle, wie `UiPalette`. Ebenso stehen die
   Texte eines Bildschirms an einer Stelle als Konstanten, wie `TitleTexts`; Dialoge regelt AR-20.
+  Grundgrenzen wie der Spielzeitraum oder der größte Seed stehen einmal in `src/core/` und
+  werden von dort gelesen. Texte, die ein Kern liefert, stehen als Konstanten am Kopf des Kerns, wie
+  `SaveGame.REASON_*`. Das Theme ist neben `UiPalette` eine erlaubte zweite Stelle für Farben, weil
+  Tests beide gleich halten. Vorgaben eines Werkzeugs für eine leere Datendatei dürfen im Code
+  stehen.
 - **Grund:** Der Spielinhalt soll sich ohne Code ändern lassen, im Inspector oder in einem
   Werkzeug, wie die Ereignisse in der Werkstatt. Ein Produkt wie „486DX-33“ ist eine Datenzeile,
   keine eigene Klasse.
@@ -160,6 +179,8 @@ gibt sie mit dem Plan frei.
   für sich, in einer Probeszene oder mit F6, und bekommt, was sie braucht, von außen. Bausteine unter
   `src/ui/` kennen keinen Bildschirm. Ein Kind-Node ist nur, was mit seinem Eltern-Node entsteht und
   verschwindet.
+  Was mehrere Bildschirme nutzen, liegt unter `src/ui/`; `src/ui/` verweist nie auf
+  `src/scenes/`.
 - **Grund:** Kleine Szenen lassen sich einzeln bauen, testen und wiederverwenden; ein Laden aus
   Theke, Regal und Kunde bleibt überschaubar, ein Laden als eine große Szene nicht.
 - **Beispiel:** Der Titel setzt den Communicator als fertige Szene ein und hängt Hauptmenü,
@@ -181,6 +202,8 @@ gibt sie mit dem Plan frei.
 
 - **Aussage:** Wer ein Ereignis erzeugt, meldet es per Signal und wendet seine Folgen nicht selbst
   an. Was daraus folgt, entscheidet das System, das zuhört.
+  Zwischen Kern und Hülle ist ein Rückgabewert eine Meldung; die Hülle macht daraus
+  Signale. Die Regel gilt zwischen Systemen.
 - **Grund:** So bleibt die Zeitleiste von Wirtschaft, Nachfrage und Ruf getrennt, und jedes System
   lässt sich mit erfundenen Meldungen testen.
 - **Beispiel:** `Timeline` meldet `effect_applied` (`src/core/timeline.gd`); niemand ändert dort
@@ -217,6 +240,10 @@ gibt sie mit dem Plan frei.
   Das gilt für den Spielverlauf, der in den Spielstand geht. Ein
   Spiel ohne Spielstand, etwa das Easter Egg, darf seinen Startwert in der Hülle zufällig wählen; der
   Kern bekommt ihn trotzdem von außen. Ebenso gilt AR-09 nur für Eingriffe in den Spielverlauf.
+  Der Seed eines neuen Spiels wird einmal aus einem eigenen Würfel ohne festen Startwert
+  gezogen, an einer Stelle: `GameSession.rng`, in Werkzeugen das Seed-Feld. Globaler Zufall sind alle
+  Aufrufe ohne eigenen Würfel davor: `randi()`, `randf()`, `randi_range()`, `randf_range()`,
+  `randfn()`, `randomize()`, `Array.shuffle()` und `pick_random()`.
 - **Grund:** Spielstände bauen darauf, statt den ganzen Zustand zu speichern; ein Fehler lässt sich
   mit demselben Seed nachstellen. Factorio zeigt, wie schon ein anders berechneter Zwischenwert zwei
   Läufe auseinanderlaufen lässt.
@@ -236,6 +263,8 @@ gibt sie mit dem Plan frei.
 - **Aussage:** Jede Handlung des Spielers, die den Spielverlauf ändert, ist ein Datenobjekt mit Tag,
   Art und Werten (Muster „Befehl“). Es lässt sich speichern, nachspielen und im Protokoll zeigen. Die
   Oberfläche erzeugt Befehle, der Kern führt sie aus.
+  Ein Befehl darf ein `RefCounted` oder ein `Dictionary` mit festen Schlüsseln sein, wenn ein
+  Kern seine Form an einer Stelle prüft, wie `TimelineRun` und `InterventionFile`.
 - **Grund:** Nur so gilt „Spielstand = Seed + Grad + Eingriffe“ (AR-08) auch, wenn später Preise
   gesetzt, Waren bestellt und Kunden beraten werden.
 - **Beispiel:** Die Eingriffe der Zeitleiste stehen als Einträge im Eingriffsprotokoll
@@ -269,6 +298,9 @@ gibt sie mit dem Plan frei.
   ausdrücklichen Zustand: einen `enum` mit `match` oder, wenn jeder Zustand viel eigenes Verhalten
   hat, eine Klasse je Zustand (Muster „Zustand“). Keine Sammlung von Wahrheitswerten, die zusammen
   einen Zustand bedeuten.
+  Als Sammlung zählen ab zwei eigene Schalter, die zusammen Zustände bilden. Nicht dazu zählen
+  Eigenschaften der Engine wie `visible`, Prüfungen auf `null`, unabhängige Achsen wie der Fokus des
+  Fensters und ein einzelner Schalter.
 - **Grund:** Verstreute Schalter wie `is_waiting` und `is_leaving` können sich widersprechen; ein
   Zustand kann das nicht.
 - **Beispiel:** *(ausgedacht)* Ein Kunde ist `BETRITT`, `SCHAUT`, `WARTET`, `VERHANDELT` oder
@@ -339,7 +371,7 @@ vorgemerktes System braucht (Quellen 2). Vorgemerkt heißt: Das System steht in
 | Komponente (Component) | Ein Ding setzt sich aus Teilen je Bereich zusammen | Kind-Szenen | Titel mit Communicator und Seiten | AR-05 |
 | Typ-Objekt (Type Object) | Ein Typ ist ein Datenobjekt, keine Klasse | `Resource`, `.tres` | Menüeinträge, Ereignisse, später Produkte | AR-04 |
 | Fliegengewicht (Flyweight) | Viele teilen sich unveränderliche Daten | geteilte Resources | später Produktdaten | AR-04 |
-| Befehl (Command) | Ein Aufruf wird ein Datenobjekt | `RefCounted` je Eingriff | Eingriffe, später Preise und Bestellungen | AR-09 |
+| Befehl (Command) | Ein Aufruf wird ein Datenobjekt | `RefCounted` oder `Dictionary` mit festen Schlüsseln je Eingriff | Eingriffe, später Preise und Bestellungen | AR-09 |
 | Zustand (State) | Verhalten je Zustand | `enum` und `match`, Zustandsklassen | später Kunden, Verkaufsgespräch | AR-11 |
 | Spielschleife (Game Loop) | Spielzeit getrennt von Echtzeit | Hülle sammelt `delta` | Spieluhr, Easter Egg | AR-10 |
 | Aktualisierungsmethode (Update Method) | Jedes Objekt schreibt sich je Schritt fort | nur als Tagesschritt, nicht `_process()` | später Wirtschaft | AR-10 |
@@ -375,6 +407,9 @@ rechnet, und dem, was zeigt (Quellen 3.2, 4.2). Regeln: AR-02, AR-05, AR-09, AR-
   (AR-09).
   Felder eines Kerns, die die Oberfläche nur lesen darf, tragen den
   Doku-Kommentar „Nur lesen.“.
+  Das gilt auch für Felder eines Autoloads, die die Oberfläche liest. Ein reines
+  Datenobjekt, das nur Werte für eine Datei sammelt, ist kein Kern; seine Felder setzt, wer es
+  füllt.
 - **Grund:** Sonst gibt es zwei Stellen, an denen sich der Zustand ändert, und der Kern kann seine
   Regeln nicht durchsetzen.
 - **Beispiel:** Der Titel ruft `GameSession.start_new()` und baut den Lauf nicht selbst
@@ -482,6 +517,8 @@ dieselben Regeln, mit diesen Unterschieden:
 - Ein Werkzeug darf Kerne des Spiels direkt nutzen und Autoloads über eine Naht (AR-12) anhalten oder
   steuern, wenn es dafür einen Grund im Kommentar nennt.
 - AR-14 gilt nur in eine Richtung: Werkzeuge dürfen das Spiel kennen, nicht umgekehrt.
+- Texte stehen je Panel als Konstanten am Kopf, nicht in einer eigenen Textklasse; ein Werkzeugfenster
+  ist kein Bildschirm im Sinne von AR-04 (Klaus, 2026-10-28).
 
 ---
 
@@ -505,6 +542,7 @@ dieselben Regeln, mit diesen Unterschieden:
 | Ort | Regel | Grund | Freigabe |
 |---|---|---|---|
 | `src/data/event_catalog.json` | AR-04 | Gepflegte Spieldaten als JSON statt Resource: Die Werkstatt liest und schreibt die Datei, Grundsatz V der Verfassung sieht sie als Datei vor, und Git zeigt jede Änderung lesbar. Eine Datendatei ohne Skript, deshalb nur diese Zeile | Klaus, 2026-10-28 |
+| `src/tools/werkstatt/werkstatt.gd`, `_set_up_window()` | AR-02 | Die Werkstatt hält GameWindow über den Pfad `/root/GameWindow` an. Mit `-s` geladen, etwa von der Textausgabe, kennt GDScript den Namen des Autoloads beim Kompilieren nicht; der Pfad ist der einzige Weg. Die Naht nach AR-12 bleibt davon unberührt | Klaus, 2026-10-28 |
 
 ---
 
@@ -524,3 +562,22 @@ Leitfaden“). Der bisherige Wortlaut gilt weiter; ergänzt wurde je ein Absatz 
 
 Dazu die Regel für die Schwere bei einem Verstoß gegen die Verfassung (L3), unter „So liest man eine
 Regel“.
+
+Ergänzt nach der Bestandsprüfung in Phase 3 von Feature 008 (Klaus, 2026-10-28), weil der
+Architektur-Prüfer 21 Lücken gemeldet hatte, zusammengefasst zu 19
+(`specs/008-architektur/bestandsbericht.md`, „Lücken im Leitfaden“). Der bisherige Wortlaut gilt
+weiter; ergänzt wurde je ein Absatz am Ende der Aussage, dazu die Tabelle „Muster“ beim Befehl und der
+Abschnitt „Werkzeuge“ um die Texte (L14):
+
+| Regel | Ergänzt um | Wortlaut der Aussage vor dieser Ergänzung |
+|---|---|---|
+| AR-01 | Autoloads mit Ablaufzustand, Engine-Dienste, Kern und `src/ui/` (L1, L2, L4) | Spiellogik und Spielzustand stehen in Klassen, die von `RefCounted` erben (der **Kern**). Eine Szene oder ein Autoload ist nur die **Hülle**: Sie hält den Kern, reicht ihm Zeit, Seed und Daten hinein und macht aus seinen Ergebnissen Signale und Bilder. Ein Kern greift nicht auf den Szenenbaum, auf Autoloads oder auf den globalen Zufall zu. |
+| AR-02 | Callables, Tiefe nach unten, Hilfen von Geschwistern, eigene Szene (L15, L16, L17, L19) | Ein Baustein kennt den nicht, der ihn einsetzt. Er meldet nach oben per Signal; wer ihn einsetzt, ruft ihn direkt auf und reicht ihm hinein, was er braucht. Geschwister reden über den gemeinsamen Eltern-Node. Kein Skript greift über `get_parent()`, einen Pfad mit `../` oder `/root/` nach oben. Signale werden nicht über mehrere Ebenen weitergereicht. Ein Baustein darf das Signal eines inneren Teils in ein eigenes Signal mit eigener Bedeutung übersetzen; verboten ist nur das bloße Durchreichen. |
+| AR-03 | Autoloads untereinander (L11) | Es gibt genau diese Autoloads, in dieser Reihenfolge: `GameClock`, `Timeline`, `GameWindow`, `GameSession`. Ein neues braucht Klaus' Freigabe im Plan. Ein Autoload darf nur sein, was eigene Daten über Szenenwechsel hinweg verwaltet und keine fremden ändert. Kein allgemeiner Signalbus und kein „Manager“ als Autoload; Hilfsfunktionen sind `static func` einer Klasse mit `class_name`. |
+| AR-04 | Grundgrenzen, Texte aus Kernen, Theme, Vorgaben für leere Dateien (L6, L9, L10, L18) | Gepflegte Spieldaten, etwa Produkte, Kundentypen oder Objekte eines Raums, sind Datenobjekte und keine Klassen (Muster „Typ-Objekt“). Sie stehen als `Resource`-Klasse mit `.tres`-Dateien oder in einer Datendatei, die ein Werkzeug pflegt, nicht als Werte im Code. Eine geladene Resource ist nur zum Lesen da, weil Godot sie zwischen allen Nutzern teilt; was sich im Spiel ändert, gehört in einen Kern oder in eine Kopie. Spielstände sind ausgenommen (AR-13). Spielinhalt heißt hier, was in die game_bible gehört: Produkte, Preise, Kunden, Mieten. Die game_bible bleibt dafür die Quelle; Resources entstehen daraus über einen Importer, nie von Hand, damit es keine zweite Quelle gibt. Keine Spieldaten in diesem Sinn sind Stellschrauben einer Mechanik, etwa Tempi oder Chancen, und Werte, die der Style-Guide festlegt: Sie stehen als benannte Konstanten an einer Stelle, wie `UiPalette`. Ebenso stehen die Texte eines Bildschirms an einer Stelle als Konstanten, wie `TitleTexts`; Dialoge regelt AR-20. |
+| AR-05 | geteilte Bausteine (L5) | Eine Szene wird aus kleineren, eigenständigen Szenen zusammengesetzt. Jede Szene läuft für sich, in einer Probeszene oder mit F6, und bekommt, was sie braucht, von außen. Bausteine unter `src/ui/` kennen keinen Bildschirm. Ein Kind-Node ist nur, was mit seinem Eltern-Node entsteht und verschwindet. |
+| AR-06 | Rückgabewert als Meldung (L7) | Wer ein Ereignis erzeugt, meldet es per Signal und wendet seine Folgen nicht selbst an. Was daraus folgt, entscheidet das System, das zuhört. |
+| AR-08 | Seed eines neuen Spiels, Liste des globalen Zufalls (L3) | Katalog, Seed, Grad und Eingriffe legen ein Spiel vollständig fest. Jeder Zufall kommt aus einem eigenen `RandomNumberGenerator`, dessen Startwert nur vom Seed, vom Zweck und von einem Schlüssel abhängt; nie aus `randi()`, `randf()` oder `randomize()`. Abgeleitete Werte werden entweder gespeichert oder beim Laden genauso neu berechnet wie im Spiel. Das gilt für den Spielverlauf, der in den Spielstand geht. Ein Spiel ohne Spielstand, etwa das Easter Egg, darf seinen Startwert in der Hülle zufällig wählen; der Kern bekommt ihn trotzdem von außen. Ebenso gilt AR-09 nur für Eingriffe in den Spielverlauf. |
+| AR-09 | Form eines Befehls (L12) | Jede Handlung des Spielers, die den Spielverlauf ändert, ist ein Datenobjekt mit Tag, Art und Werten (Muster „Befehl“). Es lässt sich speichern, nachspielen und im Protokoll zeigen. Die Oberfläche erzeugt Befehle, der Kern führt sie aus. |
+| AR-11 | was eine Sammlung von Schaltern ist (L8) | Hat etwas mehr als zwei Zustände mit eigenem Verhalten, bekommt es einen ausdrücklichen Zustand: einen `enum` mit `match` oder, wenn jeder Zustand viel eigenes Verhalten hat, eine Klasse je Zustand (Muster „Zustand“). Keine Sammlung von Wahrheitswerten, die zusammen einen Zustand bedeuten. |
+| AR-15 | Felder eines Autoloads, Datenobjekte (L13) | Die Oberfläche zeigt den Zustand eines Kerns und meldet, was der Spieler will. Sie ändert Daten eines Kerns nie an dessen Feldern, sondern über seine Methoden oder als Befehl (AR-09). Felder eines Kerns, die die Oberfläche nur lesen darf, tragen den Doku-Kommentar „Nur lesen.“. |

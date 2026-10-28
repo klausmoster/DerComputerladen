@@ -317,6 +317,9 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 006, Phase 7, Nachprüfung des Geänderten (2026-10-28) | Stil | 1 | 1 | 0 | 3 | 1 |
 | Feature 006, Phase 7, 24 Testmeldungen und 6 Stellen Doku (2026-10-28) | Text | 0 | 0 | 0 | 1 | 0 |
 | Feature 008, Fehlerprobe, 8 Dateien mit 5 eingebauten Verstößen (2026-10-28) | Architektur | 7 | 7: alle 5 eingebauten mit richtiger Regel, dazu 2 zutreffende (Preisänderung ohne Befehl, Miete im Code); keine erlaubte Stelle gemeldet | 0 | 4 | 2 |
+| Feature 008, Bestandsprüfung Kern, 29 Dateien (2026-10-28) | Architektur | 5 | 4 | 1 (ein einzelner Schalter ist kein Zustand) | 9 | 4 |
+| Feature 008, Bestandsprüfung Spiel und Oberfläche, 25 Dateien (2026-10-28) | Architektur | 5 | 5 | 0 | 5 | 3 |
+| Feature 008, Bestandsprüfung Werkzeuge, 22 Dateien (2026-10-28) | Architektur | 7 | 5, dazu 1 zum Teil | 1 (Texte der Werkstatt, nach Klaus' Entscheidung zu Werkzeugen) | 7 | 5 |
 | Feature 008, Planprobe am Plan von 006 (2026-10-28) | Architektur | 3 | 2 (Zustände der Seite und des Titels als Schalter, AR-11) | 1 (Stellschrauben als Konstanten, nach Klaus' Entscheidung zur Lücke L1 kein Verstoß gegen AR-04) | 6 | 2 |
 
 „Nur er fand“ heißt: Claudes eigene Prüfung hatte es nicht gefunden. Bei den Probeläufen an

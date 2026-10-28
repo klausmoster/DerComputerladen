@@ -3,6 +3,11 @@
 Datei: `src/test/test_architektur.gd`, `extends GutTest` (research.md, R6, R7). Baut der Godot-Agent
 `[A]` in Phase 4. FR-008, SC-004.
 
+Die Listen stehen seit dem Bestandsbericht fest (Klaus, 2026-10-28, T028): `BIS_BEHEBUNG` und
+`VORGEMERKT` sind leer, weil keine der Abweichungen aus Phase 3 eine gemessene Regel betrifft; die
+Stelle in `werkstatt.gd` ist eine begründete Ausnahme. Liefert eine Prüffunktion beim Bau weitere
+Treffer, hält der Agent an und meldet sie, statt sie in eine Liste zu schreiben.
+
 Welche Regeln messbar sind, hat Klaus mit dem Leitfaden festgelegt (2026-10-28): AR-01, AR-02 und
 AR-03 wie geplant, dazu „kein globaler Zufall in Kernen“ (AR-08) und „Spiel kennt Werkzeuge nicht“
 (AR-14). Die Probe „speichern, laden, vergleichen“ entfällt (Klaus, 2026-10-28).
@@ -14,8 +19,14 @@ AR-03 wie geplant, dazu „kein globaler Zufall in Kernen“ (AR-08) und „Spie
 const KERNE: Array[String] = [
 	"res://core/game_date.gd",
 	"res://scenes/title/key_sequence.gd",
+	"res://scenes/title/menu_paper.gd",
+	"res://scenes/title/title_texts.gd",
 	"res://scenes/title/invaders/invaders_game.gd",
-	# … endgültige Liste nach dem Bestandsbericht
+	"res://scenes/title/invaders/invaders_sprites.gd",
+	"res://ui/ui_palette.gd",
+	"res://tools/werkstatt/catalog_editor.gd",
+	"res://tools/werkstatt/what_if_probe.gd",
+	"res://tools/werkstatt/zebra.gd",
 ]
 
 ## Die Autoloads in dieser Reihenfolge, wie im Leitfaden (AR-03).
@@ -23,7 +34,10 @@ const AUTOLOADS: Array[String] = ["GameClock", "Timeline", "GameWindow", "GameSe
 
 ## Erlaubte Stellen je Prüfung: {"datei": …, "regel": "AR-NN", "grund": …}. Nur begründete
 ## Ausnahmen aus der Tabelle im Leitfaden.
-const ERLAUBT_NACH_OBEN: Array[Dictionary] = []
+const ERLAUBT_NACH_OBEN: Array[Dictionary] = [
+	{"datei": "res://tools/werkstatt/werkstatt.gd", "regel": "AR-02",
+		"grund": "GameWindow über /root/ anhalten; mit -s kennt GDScript den Namen nicht"},
+]
 
 ## Abweichungen, die Phase 5 behebt. Wird mit Phase 5 leer.
 const BIS_BEHEBUNG: Array[Dictionary] = []
@@ -40,7 +54,7 @@ Repos aufruft (wie `test_bilder.gd`):
 
 | Funktion | Gibt zurück | Regel |
 |---|---|---|
-| `kern_verstoesse(quelltext: String) -> Array[String]` | Gründe, warum der Text kein Kern ist: erbt nicht von `RefCounted` oder `Resource`, nennt ein Autoload, ruft `get_tree()` oder `Engine.get_main_loop()`, ruft `randi()`, `randf()`, `randi_range()`, `randf_range()` oder `randomize()` ohne eigenen `RandomNumberGenerator` | AR-01, AR-08 |
+| `kern_verstoesse(quelltext: String) -> Array[String]` | Gründe, warum der Text kein Kern ist: erbt nicht von `RefCounted` oder `Resource`, nennt ein Autoload, ruft `get_tree()` oder `Engine.get_main_loop()`, ruft globalen Zufall nach AR-08: `randi()`, `randf()`, `randi_range()`, `randf_range()`, `randfn()`, `randomize()` ohne Objekt davor, oder `.shuffle()` und `.pick_random()` auf einem Array. Aufrufe auf einem eigenen Würfel wie `dice.randf()` oder `_rng.randi_range(…)` sind erlaubt | AR-01, AR-08 |
 | `autoloads_aus(project_godot: String) -> Array[String]` | Namen der Autoloads in Reihenfolge | AR-03 |
 | `wege_nach_oben(quelltext: String) -> Array[int]` | Zeilen mit `../` in einem Knotenpfad oder `/root/` | AR-02 |
 | `verweise_auf_werkzeuge(quelltext: String) -> Array[int]` | Zeilen mit `res://tools/` | AR-14 |

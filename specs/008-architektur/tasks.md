@@ -141,29 +141,29 @@ durch; sonst löst Claude die Konflikte beim späteren Hereinholen.
 **Independent Test**: Der Bericht nennt jede Datei (SC-003) und je Abweichung Ort, Regel, Beleg,
 Schwere, Claudes Urteil und Klaus' Entscheidung (quickstart.md, Phase 3).
 
-- [ ] T022 [C] [US4] Fragen, ob 007 gemergt ist. Wenn ja: `main` mit Klaus' OK in den Branch holen
+- [x] T022 [C] [US4] Fragen, ob 007 gemergt ist. Wenn ja: `main` mit Klaus' OK in den Branch holen
   (`sync_with_base_branch`), Tests zweimal und Startprobe. Wenn nein: im Bericht vermerken (CHK008).
-- [ ] T023 [C] [US4] Dateilisten für die drei Läufe aus `find`: Kern (`src/core/` und
+- [x] T023 [C] [US4] Dateilisten für die drei Läufe aus `find`: Kern (`src/core/` und
   `src/project.godot`), Spiel und Oberfläche (`src/scenes/`, `src/ui/`, `src/default_bus_layout.tres`),
   Werkzeuge (`src/tools/werkstatt/` und, wenn 007 im Branch ist, `src/tools/selbsttest/`); je Skripte,
   Szenen und Resources, ohne `addons/` und `test/` (R5; Analyse, I1).
-- [ ] T024 [C] [US4] Drei Läufe gleichzeitig, Auftrag „Bestand“, je mit Leitfaden und Liste. Meldet
+- [x] T024 [C] [US4] Drei Läufe gleichzeitig, Auftrag „Bestand“, je mit Leitfaden und Liste. Meldet
   ein Lauf ungelesene Dateien, diesen Teil teilen und nur das Fehlende wiederholen (CHK011).
-- [ ] T025 [C] [US4] Jede Abweichung nachprüfen, bestätigt oder verworfen mit Grund; die drei Berichte
+- [x] T025 [C] [US4] Jede Abweichung nachprüfen, bestätigt oder verworfen mit Grund; die drei Berichte
   zu `specs/008-architektur/bestandsbericht.md` nach data-model.md zusammenführen; SC-003 gegen die
   Listen aus T023 prüfen.
-- [ ] T026 [C] [US4] Klaus vorlegen: je bestätigte Abweichung eine Empfehlung mit Aufwand (in 008
+- [x] T026 [C] [US4] Klaus vorlegen: je bestätigte Abweichung eine Empfehlung mit Aufwand (in 008
   beheben, wenn ein System nach FR-027; begründete Ausnahme; Regel ändern; eigenes Feature), je
   Lücke im Leitfaden eine Empfehlung.
-- [ ] T027 [K] [US4] Entscheidungen zu Abweichungen und Lücken.
-- [ ] T028 [C] [US4] Einarbeiten: Ausnahmen in die Tabelle des Leitfadens; geänderte Regeln mit
+- [x] T027 [K] [US4] Entscheidungen zu Abweichungen und Lücken.
+- [x] T028 [C] [US4] Einarbeiten: Ausnahmen in die Tabelle des Leitfadens; geänderte Regeln mit
   „Geschichte“; Einträge in `docs/features/Feature_Ideas.md` für große Umbauten; die Listen `KERNE`,
   `ERLAUBT_NACH_OBEN`, `BIS_BEHEBUNG` und `VORGEMERKT` in contracts/architektur-tests.md; die
   Behebungen als Aufgaben in Phase 5 dieser Datei; Zählung der drei Läufe in `ki_pruefung.md`,
   „Nachmessen“. Danach Spec, Tasks und Verträge auf die neuen Aufgaben abgleichen (Analyse, U18).
-- [ ] T029 [C] [US4] Lernnotiz Phase 3: was der Bestand über den Aufbau zeigt, an den
+- [x] T029 [C] [US4] Lernnotiz Phase 3: was der Bestand über den Aufbau zeigt, an den
   aufschlussreichsten Abweichungen und Ausnahmen.
-- [ ] T030 [K] [US4] Abnahme Phase 3.
+- [x] T030 [K] [US4] Abnahme Phase 3.
 
 **Checkpoint**: Es steht fest, was behoben wird, was Ausnahme ist und was ein eigenes Feature wird.
 
@@ -198,8 +198,9 @@ Phase 4).
 **Independent Test**: Fahrpläne bytegleich, Startprobe still, Tests zweimal grün, `BIS_BEHEBUNG` leer,
 beide Spielstände laden (SC-004; quickstart.md, Phase 5).
 
-Die einzelnen Behebungen ergänzt Claude in T028 nach Klaus' Entscheidungen; wird die Phase groß,
-teilt sie sich in zwei Teile (ki_dev, Punkt 4).
+Die Behebungen stehen seit T028 fest (Klaus, 2026-10-28; `bestandsbericht.md`). Die Phase hat
+zwei Teile (ki_dev, Punkt 4): erst die kleinen Behebungen (T036a), dann Titel und Werkstatt (T036b);
+dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
 
 - [ ] T035 [C] [US5] Voraussetzung prüfen: 007 gemergt und `main` im Branch (CHK019); sonst wartet die
   Phase. Kam 007 erst nach der Bestandsprüfung herein: Bestandsprüfung über den Code, den 007
@@ -209,10 +210,37 @@ teilt sie sich in zwei Teile (ki_dev, Punkt 4).
   zwei Spielstände per Skript in `user://test_008_behebung/` anlegen (Mittel, Seed 4711, gespeichert
   1987; Schwer mit einem Eingriff, gespeichert 1993; CHK013), nicht im echten Ordner; Klaus bitten,
   für die Handprobe selbst einen Spielstand anzulegen (Analyse, U14, U15).
-- [ ] T036 [A] [US5] Behebungen laut `bestandsbericht.md`, je eigene Aufgabe aus T028; dazu die
-  Kommentare `# Ausnahme AR-NN: …` an den Stellen der begründeten Ausnahmen; `BIS_BEHEBUNG` leeren;
-  Lernnotiz.
-- [ ] T037 [C] [US5] Vergleich nach R9: Fahrpläne `vorher/` gegen `nachher/` mit `cmp`, Startprobe,
+- [ ] T036a [A] [US5] Teil 1, kleine Behebungen ohne Änderung am Verhalten, je mit Lernnotiz:
+  - K1 `src/core/game_clock.gd`: Obergrenze an Tagen je Bild in `_process()`, wie
+    `InvadersPage.MAX_STEPS` (AR-10).
+  - K2 `src/core/game_clock.gd`: `enum` für läuft, angehalten, am Ende statt `paused` und `_ended`;
+    `paused` bleibt als Eigenschaft lesbar und setzbar, wie die Tests sie nutzen (AR-11).
+  - K3 `src/core/timeline.gd`: `start_game()` ohne Seed würfelt aus einem eigenen `rng` als Naht wie
+    `GameSession.rng`, nicht aus `randi_range()` (AR-08).
+  - K4, S5, L13: Doku-Kommentar „Nur lesen.“ an den Feldern, die die Oberfläche liest:
+    `SaveSlot` (`number`, `state`, `reason`, `game`), `SaveGame` (`name`, `difficulty`, `day`,
+    `last_played_at`), `GameSession` (`current`, `last_error`), `InvadersGame` (`state`, `score`,
+    `lives`) (AR-15).
+  - S2 `src/scenes/title/invaders/invaders_page.gd`: `enum` für keine Partie, läuft, Ergebnis
+    gesperrt, Ergebnis wartet, beendet; `_window_focused` bleibt eigene Achse (AR-11).
+  - S3 `title_screen.gd`, `title_screen.tscn`: Untertitel, `STAGE` und Vorlage der Versionszeile
+    nach `TitleTexts` (AR-04).
+  - S4 `main_menu.gd`, `main_menu.tscn`, `save_list.tscn`: keine zweite Kopfzeile neben
+    `TitleTexts`; die Vorgabe in Szene und `header_text` leer (AR-04).
+  - W1, W2 `src/tools/werkstatt/werkstatt.gd`: Variable `game_window` als Naht, leer heißt der Pfad
+    `/root/GameWindow`; dort der Kommentar `# Ausnahme AR-02: …` wie in der Tabelle des Leitfadens
+    (AR-02, AR-12).
+  - W3 `simulator_panel.gd`, `what_if_probe.gd`: `_end_day()` als Methode von `WhatIfProbe` (AR-15).
+  - W4 `statistics_panel.gd`: `enum` für nie gerechnet, rechnet, abgebrochen, fertig (AR-11).
+- [ ] T036b [A] [US5] Teil 2, nach Claudes Prüfung von Teil 1, je mit Lernnotiz:
+  - S1 `src/scenes/title/title_screen.gd`: `enum` für die Eingabephase (vor den Einträgen,
+    bedienbar, fährt hinaus) und für die Ebene (Hauptmenü, Gradwahl, Liste, Löschmodus, Rückfrage,
+    Space Invaders) statt `_ready_for_input`, `_leaving` und der Sichtbarkeit der Seiten; Esc und
+    Gehäusetasten über `match` (AR-11).
+  - L16 `src/tools/werkstatt/`: gemeinsame Hilfen von `EventForm` und `EventList` in eine eigene
+    Klasse; kein Aufruf privater Funktionen fremder Klassen mehr (`difficulty_panel.gd:274, 282,
+    295`, `event_form.gd:471`) (AR-02).
+- [ ] T037 [C] [US5] Nach jedem Teil Vergleich nach R9: Fahrpläne `vorher/` gegen `nachher/` mit `cmp`, Startprobe,
   Tests zweimal, beide Spielstände aus `user://test_008_behebung/` mit einem kurzen Skript laden;
   Code lesen.
 - [ ] T038 [C] [US5] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Architektur-Prüfer über das
