@@ -44,6 +44,14 @@ const REASON_DIFFICULTY := "Der Schwierigkeitsgrad ist unbekannt."
 ## Das Spieldatum ist kein Tag von 1985 bis 1999, auch wenn es sich gar nicht als Datum lesen lässt.
 const REASON_DAY := "Das Spieldatum ist kein Tag von 1985 bis 1999."
 
+## Der Versatz zu UTC in Minuten für alle Uhrzeiten, die ohne eigenen Versatz gezeigt werden
+## (Feature 007, R7). Vorgabe SYSTEM_BIAS: wie der Rechner, also wie bisher. Nur der Selbsttest
+## setzt ihn, auf UTC+1, damit die Liste auf jedem Rechner dieselbe Uhrzeit zeigt und die Fotos
+## gleich bleiben. Das Spiel weiß nichts vom Selbsttest; es hat nur diese Stellschraube. Sie gilt,
+## solange das Programm läuft, für alle Spielstände; wer sie in einem Test setzt, setzt sie danach
+## auf SYSTEM_BIAS zurück.
+static var time_zone_bias: int = SYSTEM_BIAS
+
 ## Die Nummer aus dem Dateinamen, ab 1; sie steht zusätzlich in der Datei, es gilt aber der
 ## Dateiname (R4).
 var number: int = 0
@@ -191,7 +199,8 @@ func day_text() -> String:
 
 
 ## „26.10.2026 21:40“ in Ortszeit, für die Spalte „zuletzt gespielt“ der Liste (R12).
-## [param bias_minutes] ist der Versatz zu UTC in Minuten; SYSTEM_BIAS heißt der des Rechners.
+## [param bias_minutes] ist der Versatz zu UTC in Minuten; SYSTEM_BIAS heißt der aus
+## [member time_zone_bias], und ohne den der des Rechners.
 ## Der Versatz gilt für heute: Ein Zeitpunkt aus dem Sommer erscheint im Winter eine Stunde früher.
 ## Das reicht für „zuletzt gespielt“ (data-model.md, „Zeitpunkte“).
 static func time_text(unix: int, bias_minutes: int = SYSTEM_BIAS) -> String:
@@ -287,9 +296,12 @@ static func _utc_text(unix: int) -> String:
 
 
 ## Datum und Uhrzeit in Ortszeit: Unix-Zeit plus Versatz, wie die Werkstatt ihre Sicherungskopien
-## zeigt (werkstatt.gd, _time_text()).
+## zeigt (werkstatt.gd, _time_text()). Ein ausdrücklicher Versatz geht vor; dann kommt
+## time_zone_bias, dann der Rechner.
 static func _local_time(unix: int, bias_minutes: int) -> Dictionary:
 	var bias := bias_minutes
+	if bias == SYSTEM_BIAS:
+		bias = time_zone_bias
 	if bias == SYSTEM_BIAS:
 		bias = Time.get_time_zone_from_system().get("bias", 0)
 	return Time.get_datetime_dict_from_unix_time(unix + bias * 60)

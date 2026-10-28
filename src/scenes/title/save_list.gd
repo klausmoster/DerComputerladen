@@ -211,6 +211,12 @@ func selected_index() -> int:
 	return _selected_index
 
 
+## Ob oben die Rollmarke steht, weil über dem Fenster noch Spielstände sind. Der Selbsttest liest
+## so, was die Liste zeigt, ohne in ihr Inneres zu greifen (Feature 007, Ablauf „bedienung“).
+func shows_scroll_mark_above() -> bool:
+	return _more_above()
+
+
 # --- Aufbau ---------------------------------------------------------------------------------------
 
 ## Legt die Buttons an: visible_rows() Zeilen für Spielstände, dann „Löschen …“ und „Zurück“. Es

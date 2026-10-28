@@ -4,9 +4,9 @@
 - **Laden, wenn:** eine Arbeit mehrere Systeme berührt, neue Dateien, Autoloads oder Systeme
   dazukommen, oder ein System an ein anderes angebunden wird.
 - **Code:** `src/project.godot`, `src/core/`, `src/scenes/`, `src/ui/`, `src/tools/`
-- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/006-easter-egg-space-invaders/`,
+- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/007-build-export-selbsttest/`,
   Verfassung `.specify/memory/constitution.md`
-- **Stand:** Feature 006, 2026-10-28
+- **Stand:** Feature 007, 2026-10-28
 
 ## Das Spiel in einem Absatz
 
@@ -17,7 +17,8 @@ Zeitleiste mit ihrer Werkstatt (002), die Schwierigkeitsgrade der Zeitleiste (00
 Beginnen, Speichern und Fortsetzen von Spielen (004) und der Communicator, ein Taschengerät als
 Steuerelement, auf dem heute das Menü des Titels läuft (005). Feature 006 brachte die ersten Töne
 und ein Easter Egg: Drei Gehäusetasten des Communicators starten im Titel ein verstecktes Spiel auf
-seiner Anzeige. Der Spielbildschirm ist noch leer: Die Uhr steht, Wirtschaft und Laden gibt es noch
+seiner Anzeige. Feature 007 brachte die Exporte für Windows und Linux und den Selbsttest, eine
+eigene App, die den Titel von selbst durchspielt. Der Spielbildschirm ist noch leer: Die Uhr steht, Wirtschaft und Laden gibt es noch
 nicht.
 
 ## Ordner
@@ -34,10 +35,13 @@ nicht.
 | `src/ui/` | für alle Szenen: Theme, Farben, Baustein Knopf, Baustein Communicator mit Gehäusetasten (`communicator/`) |
 | `src/assets/` | Schriften, gerasterte Bilder, App-Symbol, Töne (`sounds/`) |
 | `src/default_bus_layout.tres` | Tonkanäle `Master` und `Effekte`; Godot lädt die Datei von selbst |
-| `src/tools/werkstatt/` | Zeitleisten-Werkstatt; nicht im Export |
+| `src/tools/werkstatt/` | Zeitleisten-Werkstatt; nicht im Export des Spiels |
+| `src/tools/selbsttest/` | Selbsttest-App: Startszene, Läufer, Fahrer, Eingabe, Protokoll, Zusammenfassung, `ablaeufe/`, `szenarien/`; nur im Export des Selbsttests |
 | `src/test/` | GUT-Tests und `fixtures/` |
 | `tools/raster/` | Python-Werkzeuge für Bilder, außerhalb von Godot |
 | `tools/ton/` | `make_sounds.py`: erzeugt alle Töne, außerhalb von Godot |
+| `tools/selbsttest/` | `vergleich.py`: Fotos eines Selbsttest-Laufs gegen die Referenzbilder in `referenz/macos/` |
+| `tools/build/` | `baue_alles.sh`: baut alle sechs Presets, prüft auf Testcode, packt je System ein Zip |
 | `docs/` | Vision (`game_design.md`), Spielinhalt (`game_bible/`), Bauplan (`features/`), diese Beschreibung, Arbeitsweise (`ki_workflow/`) |
 | `specs/NNN-*/` | Spec Kit je Feature: Spec, Plan, Datenmodell, Verträge, Recherche, Aufgaben, Lernnotizen |
 
@@ -63,9 +67,10 @@ flowchart TB
         CAT["EventCatalog,<br/>CatalogValidator"]
         DIF["Difficulty,<br/>DifficultyProfile"]
     end
-    subgraph werkzeuge["Werkzeuge, nicht im Export"]
+    subgraph werkzeuge["Werkzeuge, nicht im Export des Spiels"]
         WS["Werkstatt"]
         TA["Textausgabe"]
+        STT["Selbsttest"]
     end
     DATA[("data/event_catalog.json")]
     SAVES[("user://spielstaende/")]
@@ -98,6 +103,8 @@ flowchart TB
     WS --> CAT
     WS -->|"liest und schreibt"| DATA
     TA --> RUN
+    STT -->|"Eingaben, liest Zustand"| TS
+    STT -->|"folder, now, rng"| SE
     TS --> UI
     WS --> UI
     TL -.->|"Signale, später"| ABN["Abnehmer:<br/>Wirtschaft, Nachfrage, Ruf"]
@@ -108,7 +115,11 @@ meldet nur Gehäusetasten. Das Spiel kennt weder `GameSession` noch Spielstände
 
 Autoloads in `project.godot`, in dieser Reihenfolge: `GameClock`, `Timeline`, `GameWindow`,
 `GameSession`.
-Hauptszene ist `res://scenes/title/title_screen.tscn`.
+Hauptszene ist `res://scenes/title/title_screen.tscn`. Mit dem Feature-Tag `selbsttest`, den nur die
+Selbsttest-Presets setzen, ersetzen Overrides mit Punkt (`run/main_scene.selbsttest`,
+`config/name.selbsttest`) Hauptszene und Namen; so startet die gebaute App in
+`tools/selbsttest/selbsttest_start.tscn` mit eigenem Datenordner, ohne dass das Spiel davon weiß
+(siehe [selbsttest.md](selbsttest.md)).
 
 ## Grundsätze
 

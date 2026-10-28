@@ -1,0 +1,94 @@
+class_name SelbsttestAblauf
+extends RefCounted
+
+## Ein Ablauf des Selbsttests (Feature 007, contracts/selbsttest-app.md, „Ablauf“;
+## data-model.md, „Ablauf“): eine feste Folge von Schritten durch das Spiel, etwa „Neues Spiel“.
+## Jeder Ablauf ist ein eigenes Skript, das von dieser Klasse erbt und schritte() überschreibt;
+## welche es gibt und was sie tun, steht in contracts/ablaeufe.md.
+##
+## Ein Ablauf ist kein Node. Er beschreibt nur, was geschehen soll; ausführen tut es der Läufer,
+## und SelbsttestLauf hält die Ergebnisse fest. So lässt sich ein Ablauf auch ohne Fenster ansehen,
+## etwa im Test.
+##
+## Ein Schritt ist ein Dictionary mit den Schlüsseln aus dem Vertrag:
+## kennung, beschreibung, eingaben_text (die Eingaben in Worten, für „eingaben:“ im Protokoll),
+## eingaben (Callable, mit await aufrufbar), erwartet (Callable, gibt "" zurück, wenn der Zustand
+## stimmt, sonst den gefundenen Zustand als Text), erwartet_text, hoechstzeit_ms und
+## foto_vergleichbar. neuer_schritt() baut es mit den Vorgaben.
+##
+## eingaben gibt "" oder nichts zurück, wenn alle Eingaben verschickt sind. Findet der Fahrer ein
+## Ziel nicht, gibt es den Text für „gefunden:“ zurück, etwa „Ziel nicht gefunden: HAUPTMENÜ,
+## „Neues Spiel““; dann scheitert der Schritt sofort, ohne zu warten.
+##
+## Sind die Callables Methoden des Ablaufs (etwa _pruefe_start.bind(fahrer)), merkt sich Godot darin
+## nur die Kennung des Ablaufs, keinen Verweis. Wer die Schritte benutzt, hält deshalb den Ablauf
+## selbst, wie der Läufer in seiner Liste; sonst ist er weg, bevor der erste Schritt läuft.
+
+## Faktor für Engine.time_scale in Abläufen im Zeitraffer (R24).
+const ZEITRAFFER := 8
+## Millisekunden echter Zeit, bis ein Schritt mit „Zeit abgelaufen“ scheitert (R6).
+const HOECHSTZEIT_MS := 5000
+
+## Kurz, klein, ohne Leerzeichen, etwa „neues_spiel“; Anfang jeder Schritt-Kennung.
+var kennung: String = ""
+## Für Menschen, etwa „Spiel laden“; die Wortlaute stehen in SelbsttestTexte.ABLAUF_NAMEN.
+var name: String = ""
+## Leer, oder die Kennung des Ablaufs, dessen Ende dieser voraussetzt, etwa „neues_spiel“ für
+## „laden“. Ist jener gescheitert, gilt dieser ganz als nicht gelaufen (FR-009).
+var baut_auf: String = ""
+## Faktor für die Zeit im Spiel; 1 für „titel_echtzeit“ und „fenster“ (data-model.md, R24).
+var zeitraffer: int = ZEITRAFFER
+
+
+## Die Schritte in fester Reihenfolge. Die Basisklasse hat keine; jeder Ablauf überschreibt das.
+## [param _fahrer] ist der SelbsttestFahrer, über den die Schritte Ziele finden, Zustände lesen und
+## Eingaben schicken. Tests ohne Fenster geben null.
+func schritte(_fahrer: SelbsttestFahrer) -> Array[Dictionary]:
+	return []
+
+
+## Ein Schritt mit der Kennung „<ablauf>.<nn_kurz>“, etwa aus „01_gradwahl“ in „neues_spiel“
+## „neues_spiel.01_gradwahl“, und den Vorgaben für Höchstzeit und Foto. [param eingaben_text]
+## steht im Protokoll hinter „eingaben:“, etwa „Maus über „Neues Spiel“, Enter“; ohne Eingabe
+## SelbsttestTexte.EINGABEN_KEINE (Entscheidung Claude, research.md, „Auslegungen aus Phase 1“).
+func neuer_schritt(nn_kurz: String, beschreibung: String, eingaben_text: String,
+		eingaben: Callable, erwartet: Callable, erwartet_text: String,
+		foto_vergleichbar: bool = true, hoechstzeit_ms: int = HOECHSTZEIT_MS) -> Dictionary:
+	return {
+		"kennung": "%s.%s" % [kennung, nn_kurz],
+		"beschreibung": beschreibung,
+		"eingaben_text": eingaben_text,
+		"eingaben": eingaben,
+		"erwartet": erwartet,
+		"erwartet_text": erwartet_text,
+		"hoechstzeit_ms": hoechstzeit_ms,
+		"foto_vergleichbar": foto_vergleichbar,
+	}
+
+
+## Räumt nach dem letzten Schritt weg, was der Ablauf vorbereitet hat, etwa die Spielstände von
+## „bedienung“ (CHK001). Der Läufer ruft es nach jedem Ablauf, auch wenn ein Schritt scheiterte,
+## nur nach einem Abbruch nicht; dann leert der nächste Start den Ordner. Die Basisklasse hat nichts
+## wegzuräumen.
+func aufraeumen(_fahrer: SelbsttestFahrer) -> void:
+	pass
+
+
+# --- Hilfen für Schritte --------------------------------------------------------------------------
+
+## Mehrere Eingaben eines Schritts, etwa „Maus über „Neues Spiel“, Enter“: ruft die Callables in
+## [param folge] nacheinander mit await auf. Gibt eine "" oder nichts zurück, kommt die nächste;
+## gibt eine einen Text zurück, etwa „Ziel nicht gefunden: …“, endet die Folge damit, und keine
+## weitere Eingabe geht hinaus. Ohne Typ der Elemente, weil bind() ein gewöhnliches Array mitgibt.
+func _nacheinander(folge: Array) -> String:
+	for eingabe: Callable in folge:
+		var antwort: Variant = await eingabe.call()
+		if antwort is String and not (antwort as String).is_empty():
+			return antwort
+	return ""
+
+
+## Prüfung „Menü steht“ (contracts/ablaeufe.md, „Gemeinsame Prüfungen“): "" wenn auf
+## [param seite] die Zeile [param zeile] steht, sonst der Zustand, den der Fahrer liest.
+func _pruefe_menue(fahrer: SelbsttestFahrer, seite: StringName, zeile: StringName) -> String:
+	return "" if fahrer.menue_steht(seite, zeile) else fahrer.zustand()

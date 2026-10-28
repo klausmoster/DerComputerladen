@@ -9,8 +9,8 @@
   `test_save_store.gd`, `test_save_resume_run.gd`, `test_intervention_file.gd`, Fixtures
   `src/test/fixtures/spielstaende/`
 - **Herkunft:** `specs/004-neues-spiel/` (`contracts/spielstand.md`, `data-model.md`, `research.md`
-  R1 bis R5, R10)
-- **Stand:** Feature 004, 2026-10-27
+  R1 bis R5, R10); Zeitzone aus `specs/007-build-export-selbsttest/research.md` R7
+- **Stand:** Feature 007, 2026-10-28
 - **Nachbarn:** wer speichert und fortsetzt in [spielablauf.md](spielablauf.md), die Liste auf dem
   Titelbildschirm in [titel-und-hauptmenue.md](titel-und-hauptmenue.md)
 
@@ -69,6 +69,13 @@ gelöscht.
 | `game_version` | Version aus `project.godot`, die zuletzt geschrieben hat |
 | `catalog` | die Kopie des Katalogs im Format von `event_catalog.json` |
 | `interventions` | das Eingriffsprotokoll des Laufs |
+
+**Ortszeit:** `SaveGame.time_text()` zeigt die Zeitpunkte mit dem Versatz aus der statischen
+Stellschraube `SaveGame.time_zone_bias` (Minuten zu UTC). Vorgabe ist `SYSTEM_BIAS`, also wie der
+Rechner; der Versatz gilt für heute, ein Zeitpunkt aus dem Sommer erscheint im Winter eine Stunde
+früher. Nur der Selbsttest setzt ihn, auf 60 (UTC+1), damit die Liste auf jedem Rechner dieselbe
+Uhrzeit zeigt und seine Fotos gleich bleiben (Feature 007, R7). Sie gilt für das ganze Programm;
+wer sie in einem Test setzt, setzt sie danach zurück.
 
 Alle Schlüssel sind Pflicht, ein leerer Name zählt als fehlend. Unbekannte Schlüssel stören nicht:
 Spätere Features fügen ihre Daten hinzu. Geschrieben wird kanonisch wie der Katalog: Schlüssel

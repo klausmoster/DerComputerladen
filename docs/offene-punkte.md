@@ -12,6 +12,203 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Abschluss (2026-10-28)
+
+- **Klaus:** Regel „Selbsttest zur Gesamtabnahme“ in `ki_dev.md` (Punkt 11), Aufgaben-Vorlage und
+  `ki_pruefung.md`; die Verfassung bleibt. Phase 8 aus der Lückensuche mit dem empfohlenen Paket;
+  Skalierung unter Windows und X11 aus den dpi; 8 neue Referenzbilder (Version 2 des Selbsttests,
+  45 Schritte).
+- **Entscheidungen Claude zu Lücken der Lückensuche:**
+  - Shell-Skripte unter `tools/` zählen wie Python-Werkzeuge; „Spiel“ als Name des Pakets im
+    Bauskript ist erlaubt. READMEs unter `tools/` zählen als Hilfe; Spec-Dokumente und Belege sind
+    frei.
+  - Beschreibung nennt die Seite mit ihrem Namen („Gradwahl“), die Erwartung mit ihrer Kopfzeile
+    („SCHWIERIGKEIT“). Zusatztasten heißen wie auf der Tastatur des Systems. „D3D12“ bleibt als
+    Messwert. Verschachtelte Anführungszeichen „„…““.
+  - Bildlaufleisten brauchen keinen Tooltip und keinen Handzeiger (Godots Standard).
+  - Bei mehreren Eingaben nennt die Beschreibung die entscheidende (Vertrag, „Beschreibung“).
+  - Diese Regeln kommen mit der nächsten Ergänzung des Style-Guides in „Werkzeuge“, „Texte“.
+- **Folgepunkte außerhalb von 007, mit Empfehlung:**
+  - Werkstatt: `raster-8` zwischen Knöpfen, Handzeiger an Knöpfen, Zeilenabstand 0 wie im
+    Selbsttest; dazu ein gemeinsames Theme für Werkzeuge statt zweier Kopien.
+  - Mac-Symbol: mittig setzen und für die icns Nearest statt Lanczos (`icon_interpolation`),
+    zusammen mit dem Punkt aus Phase 6.
+  - Linux-Symbol in kleinen Größen aus dem gerasterten Monitor, wie die ICO.
+  - Rangfolge der Texte in `werkzeug-titel`: Seitenüberschrift und Summe gleich groß wie
+    Bereichstitel.
+  - Windows-Lauf mit Vulkan oder Direct3D 12 (Windows bisher nur mit Compatibility belegt).
+  - Linux und Windows mit Version 2 des Selbsttests (45 Schritte) laufen lassen; belegt sind dort
+    bisher 37 Schritte.
+  - `vergleich.py` legt Belege fest unter `specs/007-build-export-selbsttest/belege/` ab; für spätere
+    Features einen Ordner je Feature wählbar machen.
+
+### Feature 007, Phase 6 (2026-10-28)
+
+- **Klaus:** Export-Templates 4.7.2 im Editor installiert; Windows-Symbol in 16 aus jedem zweiten
+  Bildpixel (Style-Guide Version 62). Direct3D-12-Dateien (Agility SDK) bringen die Templates nicht
+  mit; ob Windows trotzdem Direct3D 12 nutzt, zeigt `system.grafik_api` im Protokoll.
+- **Lücken aus der Phasenprüfung (Stil, ICO), von Klaus mit Empfehlung abgenommen (T049):**
+  - 48 mit ×2 füllt 93 % des Quadrats statt 70 % wie die anderen Größen. Empfehlung: so lassen, ×1
+    wäre mit 47 % zu klein; im Style-Guide als bewusste Ausnahme vermerken.
+  - Das 1024er Symbol für macOS sitzt 1 Bildpixel links von der Mitte (leere 19. Spalte), die ICO
+    mittig. Empfehlung: eigener kleiner Folgepunkt außerhalb von 007, weil er das Mac-Symbol und das
+    Liquid-Glass-Symbol ändert.
+  - Der Rand des abgerundeten Quadrats ist in allen Größen geglättet, wie im 1024er Symbol.
+    Empfehlung: so lassen; das Symbol steht im System neben anderen, nicht im VGA-Bild.
+- **Läufe auf anderen Rechnern (T047, T048):** Linux (AMD R7 200, RADV, Vulkan 1.3) 37 von 37,
+  35 Fotos gleich den Mac-Referenzen. Windows auf MacBook Pro 2015 mit Boot Camp (AMD R9 M370X):
+  Forward+ startet nicht, ohne Meldung; mit erzwungenem OpenGL 37 von 37 und 35 Fotos gleich.
+  Ein Windows-Lauf mit Vulkan oder Direct3D 12 steht aus (Beleg mit `hinweis.md`).
+- **Abweichung von FR-017, von Klaus mit Empfehlung abgenommen (T049):** Startet Direct3D 12 nur halb, zeigt Godot
+  keine Meldung. Empfehlung: so lassen und in quickstart.md erklären (erledigt); eine eigene Prüfung
+  beim Start wäre ein eigenes Feature.
+- **Renderer:** Ob das Spiel bei Forward+ bleibt oder auf Compatibility wechselt, klärt eine eigene
+  Sitzung („Renderer klären: Forward+ oder Compatibility“); bis dahin gilt CLAUDE.md.
+- **Agent:** `werkstatt.gd` und `selbsttest_ergebnis.gd` schalten `GameWindow` jetzt mit
+  `set_process_input(false)` ab; `invaders_page.gd` fragt das Vollbild-Kürzel mit `exact_match` ab.
+
+### Feature 007, Phase 5 (2026-10-28)
+
+- **Klaus:** Referenzlauf `2026-10-28_15-14-18` abgenommen; 35 vergleichbare Fotos liegen unter
+  `tools/selbsttest/referenz/macos/` (1,4 MB). Die beiden Fotos von Invaders sind nicht
+  vergleichbar und haben kein Referenzbild.
+- **Klaus, Style-Guide Version 61:** „Texte“ gilt auch für Python-Werkzeuge; englische Meldungen von
+  Python und argparse dürfen stehen; nie kürzen, auch nicht in Texten.
+- **Entscheidungen Claude:** Der Bericht nennt die Ergebnisse in Wörtern („nicht vergleichbar“), das
+  Rechteck als „x 280–420, y 140–152“; „Größe 320 × 180“ bleibt in der Spalte „Pixel“. Der Vergleich
+  dauert in reinem Python rund 10 s je Lauf, weil `pngio` die PNG selbst entpackt; für 37 Fotos
+  reicht das.
+
+### Feature 007, Phase 4 (2026-10-28)
+
+- **Klaus:** Die Zusammenfassung wird nicht maximiert. Das Fenster behält Größe und Lage aus dem
+  Lauf, damit der Selbsttest eine reproduzierbare Fenstergröße hat; ersetzt das Maximieren aus CHK016.
+- **Klaus, Lücken der Phasenprüfung (Style-Guide Version 60):** gesperrter Knopf mit Tooltip, der den
+  Grund nennt; `raster-8` zwischen Knöpfen; Bestätigung `raster-16` neben der Knopfreihe; Titel eines
+  Bereichs `raster-8` über dem Inhalt, „Kopf“ ist eine Fläche, „Titel“ nur Text; Schlusspunkt auf dem
+  Bildschirm wie im Protokoll.
+- **Folgepunkt, außerhalb von 007:** Die Werkstatt hat noch `raster-4` zwischen Knöpfen, und ihre
+  Knöpfe setzen keinen Handzeiger (nur der Zeitstrahl). Beides weicht jetzt vom Abschnitt
+  „Werkzeuge“ ab.
+- **Hinweis:** „Ordner zeigen“ öffnet den Ordner `selbsttest/` mit dem markierten Zip, nicht den
+  Ordner des Laufs aus der Pfadzeile; Knopf und Tooltip sind so freigegeben (CHK002, CHK026).
+- **Style-Guide Version 58** (T027, T028): Abschnitt „Werkzeuge“ um Nicht gelaufen, Gesperrt,
+  Tooltip, Bestätigung, Umbruch und den Teil „Texte“ ergänzt.
+
+### Feature 007, Phase 3 (2026-10-28)
+
+- **Klaus:** Der Selbsttest fand, dass `GameWindow` das Fenster mittig auf dem ganzen Bildschirm
+  stellt, nicht im nutzbaren Bereich ohne Menüleiste und Dock (bei Klaus 63 Pixel zu tief). Das Spiel
+  wird gerichtet: Fenster samt Titelleiste mittig im nutzbaren Bereich.
+- **Entscheidungen Claude:** Der Vertrag übernimmt die Auslegungen des Agents zu allen Abläufen
+  (Erwartungen in der Form des Befunds). `bedienung.01` mit vier Pfeiltasten, weil ohne Spielstand
+  „Neues Spiel“ vorgewählt ist. `fenster.03` mit 1318 × 742 statt 1317 × 741, weil macOS bei
+  Skalierung 2 nur ganze Punkte setzt. Zeilen mit Spielstand stehen in `erwartet:` mit Grad und
+  Spieldatum; „Linksklick auf Spiel 1“ ohne „Zeile“.
+- **Fehlerprobe (T024, SC-004, SC-010):** Ein eigener Agent baute verdeckt je einen Fehler in Titel,
+  Gradwahl, Liste, Rückfrage, Easter Egg und Fenster in sechs Kopien. Jeder Fehler stand im passenden
+  Schritt; Claude ordnete alle sechs Protokolle ohne Schlüssel richtig zu.
+- **Filter nach `fenster` (Analyse, U3) nicht automatisch prüfbar:** Echte Mausereignisse lassen
+  sich ohne Bedienungshilfen-Recht nicht erzeugen; die Probe mit `CGEvent` kam nicht an. Klaus prüft
+  es bei der Abnahme von Hand (Maus und Tasten während des ganzen Laufs).
+- **Lücken aus der Phasenprüfung, von Claude entschieden:** Ziffern bei Maß und Anzahl im Werkzeug
+  („7 Spielstände“), „ein/eine“ als Wort; Lage mit Richtungen statt Vorzeichen; Einheiten „0,5 s“ und
+  „Pixel“ bleiben; Fehlertexte des Spiels in „gefunden:“ in Anführungszeichen mit ihrem Punkt;
+  `erwartet: keine` bei einer Entscheidung ohne Erwartung; „Seed“ als Fachwort; Ziele in „Ziel nicht
+  gefunden“ nur mit dem Namen der Zeile. Kommt mit T027 in den Abschnitt „Werkzeuge“.
+- **Klaus:** 19 Textbefunde, Vertrag überall angeglichen (Eingaben mit Ziel, Gehäusetasten links,
+  Mitte, rechts, „Rollmarke“, „Invaders“).
+- **Restrisiko Zeigerform** aus Phase 2: tritt in `laden` und `loeschen` nicht auf, auch mit dem echten
+  Zeiger auf der Liste (drei Läufe). Bleibt ein Risiko, falls das Spiel später die Zeigerform an
+  einem Menü-Button setzt, der schon im Baum hängt.
+
+### Feature 007, Phase 2 (2026-10-28)
+
+Lücken aus der Phasenprüfung (Text-Prüfer), von Claude entschieden:
+- **Englische Fehlernamen von Godot** (`error_string()`) dürfen in Meldungen des Selbsttests stehen,
+  etwa „titel.01_start.png ließ sich nicht schreiben: File: Can't open“. Sie sind Daten der Engine
+  wie Testausgaben; übersetzt wären sie geraten. Kommt mit T027 als Satz in den Abschnitt
+  „Werkzeuge“.
+- **Seite ohne Kopfzeile** heißt im Protokoll nach ihrem Knoten, heute nur „Seite Invaders
+  sichtbar“, wie im Vertrag. Bekommt eine neue Seite keine Kopfzeile, nennt ihr Vertrag den Namen.
+- Verworfen: Großer Anfang bei satzartigen Meldungen ist keine Lücke (ein Satz ohne Schlusspunkt
+  bleibt ein Satz, CHK034); „Ordner“ in der Meldung zum fremden Ordner ist richtig, sie nennt einen
+  Pfad, nicht die Spielstände.
+- **Klaus:** Bei titel.02 und titel.03 heißt `erwartet:` jetzt „Menü steht: …“ wie `gefunden:`,
+  Hinweis ausgeschrieben, überall „nichts ausgelöst“ (contracts/ablaeufe.md).
+- **Nachprüfung, von Claude entschieden:** „nicht verfügbar“ steht in `erwartet:` und `gefunden:`,
+  „verfügbar“ nur, wo ein Schritt es erwartet; bedienung.03 heißt jetzt auch „Menü steht: …;
+  nichts ausgelöst“. Offen, nicht dringend: „Seite Invaders“ steht im Vertrag nicht in Versalien,
+  weil die Seite keine Kopfzeile hat; Empfehlung, so lassen (Name, keine Kopfzeile).
+- **Für T018:** Ein Lauf dauert nur etwa 0,5 s nach rund 0,7 s Start; Maus und Tastatur während des
+  Laufs und Schließen mitten im Lauf sind von Hand kaum zu treffen. Claude hat das Schließen mit
+  einem Beenden-Befehl zu drei Zeitpunkten probiert (research.md, „Auslegungen aus Phase 2“).
+
+### Feature 007, Phase 1 (2026-10-28)
+
+- **Testläufe aus Worktrees teilen sich `user://`:** Alle Checkouts des Projekts heißen „Der
+  Computerladen“ und schreiben nach `app_userdata/Der Computerladen/`. Lief die Sitzung 008 in ihrem
+  Worktree gleichzeitig Tests, wurden beim Agent drei Läufe rot (bis zu 54 Tests in
+  `test_title_screen`, `test_save_store`, `test_simulator`, `test_statistics_panel`,
+  `test_werkstatt_scene`). Claudes Läufe nach dem Warten waren zweimal grün. Empfehlung: Sitzungen
+  warten aufeinander (die Sitzung 008 tut es schon); auf Dauer eigene Testordner je Checkout.
+- **`test_title_screen.gd` wackelt vielleicht schon auf `main`:** Der Agent ließ die Datei auf einer
+  Kopie von HEAD sechsmal allein laufen, zweimal rot. Nicht nachgeprüft, ob dabei ein anderer
+  Testlauf lief. Zu klären außerhalb von 007.
+- **Entscheidung Claude:** Text für `eingaben:` als eigener Schlüssel im Schritt (research.md,
+  „Auslegungen aus Phase 1“).
+
+### Feature 007, Plan (2026-10-28)
+
+Eigene Entscheidungen von Claude in `specs/007-build-export-selbsttest/research.md`:
+- **Eigener Läufer statt GUT** (R1), Code unter `src/tools/selbsttest/`, damit der normale Export
+  ihn wie die Werkstatt weglässt; die Werkstatt kommt mit in die Selbsttest-App (R2).
+- **Ein Fahrer** zwischen Abläufen und Titel, damit Änderungen an der Oberfläche eine Stelle treffen
+  (R5).
+- **Höchstzeit 5 s je Schritt**, keine festen Wartezeiten, echte Fahrt des Communicators (R6).
+- **Feste Zeit `2026-10-26 20:40 UTC`, Seed 4711, Zeitzone UTC+1** im Selbsttest; dafür eine
+  Stellschraube in `SaveGame`, die einzige Änderung am Spielcode in Teil 1 (R7).
+- **Fotos vom versteckten Spiel sind „nicht vergleichbar“**, weil es nach Zeit rechnet (R7).
+- **Ein Protokoll als Text mit festen Schlüsseln**, kein JSON daneben (R9).
+- **ICO mit sechs Größen aus `make_icon.py`**, statt Godot die PNG verkleinern zu lassen (R14).
+- **F11, Alt+Enter und Ctrl+Cmd+F gelten auf jedem System** in einer Aktion (R15).
+- **Bauzeit = Änderungszeit des Pakets** (R21).
+- **Zeitraffer-Faktor 8** über `Engine.time_scale`; `fenster` läuft mit Faktor 1 (R24).
+- **`tools/build/baue_alles.sh` als Shell-Skript**, Zips unter `build/abnahme/`, mit `--nur macos`
+  für die Phasen vor Teil 2 (R26).
+- **Szenario-Rahmen** als `SelbsttestSzenario` mit Start, Entscheidungen und Prüfpunkten nach
+  Spieldatum (R27).
+- **Befund:** Auf Klaus' Mac fehlen die Export-Templates für Windows und Linux; Download in Phase 6
+  als `[K]`. `rcedit` wird nicht gebraucht.
+- **Zum Aufräumen:** Die Recherche hat unter `~/Library/Application Support/Godot/app_userdata/`
+  die Ordner `Probe` und `Probe Selbsttest` angelegt; sie können weg.
+
+### Feature 007, Spec (2026-10-28)
+
+Eigene Entscheidungen von Claude in `specs/007-build-export-selbsttest/spec.md`, umgesetzt in der
+Spec, von Klaus noch nicht bestätigt:
+- **Ein Fehler beendet nur seinen Ablauf:** Der Rest des Ablaufs gilt als „nicht gelaufen“, der
+  nächste beginnt beim frischen Titel (FR-009). So zieht ein Fehler keine Folgefehler nach sich.
+- **Feste Uhrzeit und fester Seed im Selbsttest** (FR-008), weil Hinweise wie „Gespielt am …“ die
+  Fotos sonst bei jedem Lauf ändern.
+- **Echte Maus und Tastatur sind während des Laufs abgeschaltet,** Schließen des Fensters bricht ab
+  (FR-010).
+- **„Beenden“ wird nicht ausgelöst,** nur geprüft, dass es da ist (FR-012).
+- **Fotos im Oberflächenraster 640 × 360,** nicht in Fenstergröße; die Vergrößerung prüft der
+  Ablauf „Fenster“ (Assumptions).
+- ~~Höchstens 2 Minuten für einen Lauf~~: entfällt, Klaus will Zeitraffer und keine feste Grenze
+  (2026-10-28); SC-001 vergleicht jetzt Zeitraffer und Echtzeit.
+- **Linux nur x86_64** (FR-021).
+- **Der Abschnitt „Bedienung“ der Abläufe** prüft jede Eingabeart des Titels einmal (FR-011,
+  Punkt 6).
+- **Fortschritt im Fenstertitel** (FR-003, aus `/speckit-clarify`), nicht im Spielbild, damit die
+  Fotos nur das Spiel zeigen.
+- **`rcedit` wird vermutlich nicht gebraucht:** Nach Claudes Wissen setzt Godot seit 4.1 Symbol und
+  Versionsangaben einer Windows-App selbst. Der Plan prüft das in der Doku von 4.7, bevor ein
+  Download angefragt wird.
+- **Befund am Rande:** Ohne Einstellung weicht Godot heute still auf einen einfacheren Renderer aus,
+  wenn Vulkan oder Direct3D 12 fehlt. Klaus hat entschieden, das abzuschalten (Spec, Clarifications).
+
 ### Feature 005, Phase 5 (2026-10-27)
 
 Aus der Phasenprüfung (Stil- und Text-Prüfer, von Claude nachgeprüft):

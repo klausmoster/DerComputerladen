@@ -93,7 +93,10 @@ deren `README.md`.
 | `src/scenes/game/` | Spielbildschirm, bisher leer bis auf „Zum Hauptmenü“ |
 | `src/assets/` | Schriften (`fonts/`), gerasterte Bilder (`images/`), App-Symbol (`icon/`), Töne (`sounds/`) |
 | `src/tools/werkstatt/` | Zeitleisten-Werkstatt (Editor, Zeitstrahl, Simulator, Statistik), Textausgabe `fahrplan_ausgabe.gd`, Proben unter `proben/`; vom Export ausgeschlossen |
+| `src/tools/selbsttest/` | Selbsttest-App: Läufer, Fahrer, Eingabe, Abläufe unter `ablaeufe/`, Szenarien unter `szenarien/`, Zusammenfassung; nur im Preset „Selbsttest“, vom Spiel ausgeschlossen |
 | `tools/raster/` | Python-Werkzeuge der Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol |
+| `tools/selbsttest/` | `vergleich.py` vergleicht einen Lauf mit den Referenzbildern unter `referenz/macos/` |
+| `tools/build/` | `baue_alles.sh` baut Spiel und Selbsttest für macOS, Windows und Linux und packt je System ein Zip unter `build/abnahme/` |
 | `tools/ton/` | `make_sounds.py` erzeugt die Töne; die Kanäle stehen in `src/default_bus_layout.tres` |
 | `tools/tagebuch/` | `token_bilanz.py`: Token und geschätzte Kosten je Branch aus den Protokollen von Claude Code |
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |

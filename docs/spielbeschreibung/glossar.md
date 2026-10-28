@@ -3,7 +3,7 @@
 - **Worum es geht:** die Begriffe des Spiels und der Doku und wie sie im Code heißen.
 - **Laden, wenn:** ein Begriff unklar ist oder Spec, Doku und Code gegeneinander übersetzt
   werden.
-- **Stand:** Feature 006, 2026-10-28
+- **Stand:** Feature 007, 2026-10-28
 
 Doku und Oberfläche sind deutsch, der Code englisch. Werte in Dateien sind deutsch, wo sie
 Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
@@ -11,6 +11,7 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Begriff | Im Code | Bedeutung | Mehr in |
 |---|---|---|---|
 | Abnehmer | — | System, das sich an Signale der Zeitleiste hängt, später etwa Wirtschaft | [zeitleiste.md](zeitleiste.md) |
+| Ablauf (Selbsttest) | `SelbsttestAblauf`, Skripte in `src/tools/selbsttest/ablaeufe/` | feste Folge von Schritten durch das Spiel, etwa `neues_spiel`; kann auf einem anderen aufbauen (`baut_auf`) | [selbsttest.md](selbsttest.md) |
 | Art (eines Ereignisses) | `TimelineEvent.Kind` | fix, fix jährlich, beim Start gesetzt, über Wahrscheinlichkeit, nur als Folge | [zeitleiste.md](zeitleiste.md) |
 | Anzeige | `Communicator.display_rect`, `Display` | die LCD-Fläche des Communicators in `lcd`, 320 × 160; darauf stehen die Seiten | [communicator.md](communicator.md) |
 | Ausnehmen | `without_faulty()` | Fehlerhaftes aus einer Kopie des Katalogs entfernen, bevor gerechnet wird | [ereigniskatalog.md](ereigniskatalog.md) |
@@ -29,8 +30,10 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Ereignis | `TimelineEvent` | was passieren kann, Eintrag im Katalog | [zeitleiste.md](zeitleiste.md) |
 | Ereigniskatalog, Katalog | `EventCatalog`, `event_catalog.json` | alle Ereignisse, Kategorien und Profile | [ereigniskatalog.md](ereigniskatalog.md) |
 | Ergebnisanzeige | `InvadersPage._draw_result()`, `TitleTexts.INVADERS_*` | drei Zeilen auf der Anzeige am Ende des versteckten Spiels; keine Meldung | [easter-egg.md](easter-egg.md) |
+| Fahrer | `SelbsttestFahrer` | findet im Selbsttest Ziele über ihre Bedeutung, liest den Zustand und schickt Eingaben; einzige Stelle, die Titel und Spielbildschirm kennt | [selbsttest.md](selbsttest.md) |
 | Fahrplan | `TimelineRun.entries` | alle Termine eines Spiels, zugleich seine Geschichte | [zeitleiste.md](zeitleiste.md) |
 | Fahrt | `slide_in()`, `slide_out()`, `slide_finished` | Bewegung des Communicators herein oder hinaus, 200 ms | [communicator.md](communicator.md) |
+| Feature-Tag | `custom_features` im Preset, `OS.has_feature()`, Override `einstellung.tag` in `project.godot` | Kennzeichen einer gebauten App; heute nur `selbsttest`, der Name und Hauptszene ersetzt | [selbsttest.md](selbsttest.md) |
 | Folgeereignis | `FollowUp` | Ereignis, das mit einer Wahrscheinlichkeit nach einem anderen kommt | [zeitleiste.md](zeitleiste.md) |
 | Folge (Gehäusetasten) | `KeySequence`, `TitleScreen.EASTER_EGG_KEYS` | Reihenfolge von Gehäusetasten, die etwas startet; im Titel links, Mitte, rechts | [titel-und-hauptmenue.md](titel-und-hauptmenue.md) |
 | Fortsetzen | `GameSession.resume()`, `Timeline.resume_game()` | ein gespeichertes Spiel neu aufbauen und still bis zum Spieldatum vorspielen | [spielablauf.md](spielablauf.md) |
@@ -42,6 +45,8 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Kettenbremse | `TimelineRun.MAX_CHAIN` | höchstens 16 Glieder einer Folgekette am selben Tag, der Auslöser mitgezählt | [zeitleiste.md](zeitleiste.md) |
 | Knopf | `Knopf`, `src/ui/knopf.gd` | Baustein Knopf aus dem Style-Guide | [darstellung.md](darstellung.md) |
 | Lauf | `TimelineRun` | ein Spiel der Zeitleiste aus Katalog, Seed und Grad | [zeitleiste.md](zeitleiste.md) |
+| Lauf (Selbsttest) | `SelbsttestLauf`, Kennung wie `2026-10-28_14-03-12` | ein Durchgang der Selbsttest-App vom Start bis zur Zusammenfassung, mit Ergebnis je Schritt | [selbsttest.md](selbsttest.md) |
+| Läufer | `SelbsttestLaeufer` | Node an der Wurzel, der die Abläufe nacheinander durchspielt, wartet, fotografiert und das Ergebnis schreibt | [selbsttest.md](selbsttest.md) |
 | Laufendes Spiel | `GameSession.current` | das Spiel, das gerade gespielt wird; auf dem Titelbildschirm keins | [spielablauf.md](spielablauf.md) |
 | Look | `MainMenu.Look`, `SaveList.Look` | ob eine Seite als Papier oder auf der Anzeige erscheint | [communicator.md](communicator.md) |
 | Löschmodus | `SaveList.set_delete_mode()` | Zustand der Liste, in dem eine Zeile zur Rückfrage „Löschen?“ führt | [titel-und-hauptmenue.md](titel-und-hauptmenue.md) |
@@ -53,8 +58,11 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Profil | `DifficultyProfile` | Liste der Start-Modifikatoren eines Grads | [schwierigkeitsgrade.md](schwierigkeitsgrade.md) |
 | Protokoll | `TimelineRun.protocol` | alle Meldungen eines Laufs | [zeitleiste.md](zeitleiste.md) |
 | Prüfmeldung | `CatalogIssue` | Fehler oder Warnung zu einer Regel V01–V31 | [ereigniskatalog.md](ereigniskatalog.md) |
+| Referenzbild | `tools/selbsttest/referenz/macos/<kennung>.png` | Foto eines Schritts von einem abgenommenen Mac-Lauf; `vergleich.py` vergleicht jeden Lauf Pixel für Pixel damit | [selbsttest.md](selbsttest.md) |
+| Schritt (Selbsttest) | Dictionary aus `SelbsttestAblauf.neuer_schritt()`, Kennung `<ablauf>.<nn_kurz>` | Eingaben, erwarteter Zustand, Foto; Ergebnis `OK`, `FEHLER` oder `NICHT_GELAUFEN` | [selbsttest.md](selbsttest.md) |
 | Seed | `TimelineRun.seed` | Zahl 0–2.147.483.647, aus der alle Zufallsentscheidungen eines Spiels folgen | [zeitleiste.md](zeitleiste.md) |
 | Seite | Control unter dem Communicator, etwa `MainMenu`, `SaveList` | was die Anzeige zeigt, immer genau eine: im Titel Hauptmenü, Gradwahl, Spielstände, Rückfrage, das versteckte Spiel | [titel-und-hauptmenue.md](titel-und-hauptmenue.md) |
+| Selbsttest | Presets `Selbsttest …`, `src/tools/selbsttest/` | eigene App, die das gebaute Spiel auf dem echten Rechner von selbst durchspielt und ein Protokoll mit Fotos schreibt | [selbsttest.md](selbsttest.md) |
 | Spielbildschirm | `scenes/game/game_screen.tscn` | Ziel nach Beginnen oder Fortsetzen; heute nur „Zum Hauptmenü“ | [spielablauf.md](spielablauf.md) |
 | Spiel, verstecktes | `InvadersGame`, `InvadersPage` | das Easter Egg im Titel: ein Spiel auf der Anzeige des Communicators | [easter-egg.md](easter-egg.md) |
 | Spieldatum | `SaveGame.day` | Tag, an dem ein Spielstand steht | [spielstaende.md](spielstaende.md) |
@@ -74,6 +82,7 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Wirkung | `EventEffect` | was ein Ereignis meldet: Preis, Nachfrage, Ruf, Kundenstrom, Presse | [zeitleiste.md](zeitleiste.md) |
 | Würfel | `EventDice` | eigener Zufallsgenerator je Zweck und Ereignis | [zeitleiste.md](zeitleiste.md) |
 | Würfelrunde | `_roll_month()` | am Monatsersten würfeln alle Ereignisse über Wahrscheinlichkeit | [zeitleiste.md](zeitleiste.md) |
+| Zeitraffer | `Engine.time_scale`, `SelbsttestAblauf.zeitraffer` | im Selbsttest läuft die Zeit im Spiel achtfach, außer in `fenster` und `titel_echtzeit` | [selbsttest.md](selbsttest.md) |
 | Zeitstrahl | `TimelineView` | grafische Ansicht des Katalogs in der Werkstatt | [werkstatt.md](werkstatt.md) |
 | Zustand | `ScheduleEntry.State` | geplant, läuft, eingetreten, beendet, entfallen, abgesagt | [zeitleiste.md](zeitleiste.md) |
 | Zwischendatei | `spiel_<N>.json.neu`, `.alt` | Datei beim sicheren Schreiben; gilt nach einem Abbruch | [spielstaende.md](spielstaende.md) |

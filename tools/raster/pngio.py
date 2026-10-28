@@ -227,6 +227,11 @@ def write_png_indexed(path, width, height, indices, palette, transparent_index=N
 
 def write_png_rgba(path, width, height, pixels):
     """Schreibt ein 8-Bit-RGBA-PNG; pixels zeilenweise als (r, g, b, a)."""
+    open(path, "wb").write(encode_png_rgba(width, height, pixels))
+
+
+def encode_png_rgba(width, height, pixels):
+    """Ein 8-Bit-RGBA-PNG als Bytes, etwa für einen Eintrag einer ICO."""
     raw = bytearray()
     for y in range(height):
         raw.append(0)
@@ -236,4 +241,4 @@ def write_png_rgba(path, width, height, pixels):
     png += _chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
     png += _chunk(b"IDAT", zlib.compress(bytes(raw), 9))
     png += _chunk(b"IEND", b"")
-    open(path, "wb").write(png)
+    return png

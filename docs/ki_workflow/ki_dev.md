@@ -102,6 +102,16 @@ Wann die Phasenprüfung läuft, sagt Punkt 8.
     die Einträge ab, sie gehen mit in den Merge. Warum: Das Tagebuch hält fest, wie das Spiel mit
     KI entsteht, vor allem die Entscheidungen zu Arbeitsweise und Grafik. Nachträglich lassen sich
     Gründe kaum noch belegen.
+11. **Selbsttest zur Gesamtabnahme** (Klaus, 2026-10-28, Feature 007): Nicht nach jeder Phase, dort
+    reichen Tests und Startprobe. Ändert ein Feature Seiten, Wege, Texte oder Eingaben, die der
+    Selbsttest durchspielt, passt vor der Gesamtabnahme die Aufgabe „[A] Selbsttest-Abläufe
+    anpassen“ die Abläufe unter `src/tools/selbsttest/ablaeufe/` an. Dann baut Claude mit
+    `tools/build/baue_alles.sh`, lässt den Selbsttest auf dem Mac laufen, vergleicht mit
+    `tools/selbsttest/vergleich.py` und nennt das Ergebnis in der Bitte um Gesamtabnahme. Neue
+    Referenzbilder gibt es nur nach Klaus' Abnahme. Auf Windows und Linux startet Klaus ihn, wenn
+    das Feature Fenster, Eingabe, Grafik, Dateien oder Export ändert, sonst spätestens jedes dritte
+    Feature. Warum: Tests ohne Fenster sehen weder Treiber noch echtes Fenster; in 007 fand der
+    Selbsttest die falsche Fenstermitte und einen Windows-Rechner, auf dem Forward+ nicht startet.
 
 ## Git
 

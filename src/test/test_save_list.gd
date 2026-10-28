@@ -717,6 +717,22 @@ func test_mausrad_rollt_um_je_eine_zeile() -> void:
 	assert_false(_liste._more_above())
 
 
+func test_die_rollmarke_oben_ist_von_aussen_lesbar() -> void:
+	# Arrange
+	await _zeige(_viele(7))
+	var vorher := _liste.shows_scroll_mark_above()
+	var ziel := _mitte(_zeile(0))
+	_maus_nach(ziel)
+
+	# Act
+	_rad(ziel, MOUSE_BUTTON_WHEEL_DOWN)
+
+	# Assert: dieselbe Antwort, nach der _draw() die Marke malt (Feature 007, Selbsttest).
+	assert_false(vorher)
+	assert_true(_liste.shows_scroll_mark_above())
+	assert_eq(_liste.shows_scroll_mark_above(), _liste._more_above())
+
+
 func test_mausrad_ueber_der_kopfzeile_und_den_festen_zeilen_rollt_auch() -> void:
 	# Arrange
 	await _zeige(_viele(20), 21)

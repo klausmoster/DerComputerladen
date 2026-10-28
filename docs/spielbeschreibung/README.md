@@ -9,7 +9,7 @@ Arbeit an einem System lädt sie die passende Datei, statt Specs und Code zu dur
 Backlog und das Archiv. `docs/game_bible/` ist der Spielinhalt. Dieser Ordner beschreibt den
 **Stand im Code**. Wo Spec und Code auseinandergehen, gilt hier der Code.
 
-**Stand:** Features 001 bis 006, 2026-10-28.
+**Stand:** Features 001 bis 007, 2026-10-28.
 
 ## Dateien
 
@@ -29,7 +29,8 @@ Backlog und das Archiv. `docs/game_bible/` ist der Spielinhalt. Dieser Ordner be
 | [ton.md](ton.md) | Tonkanäle `Master` und `Effekte`, die zehn Töne, `make_sounds.py`, Prüfsummen, Verhalten ohne Fokus und ohne Tonausgang | ein Ton dazukommt oder sich ändert, etwas Töne spielen soll, Kanäle oder Lautstärke betroffen sind |
 | [darstellung.md](darstellung.md) | Fenster, Raster, Skalierung, Theme, Farben, Schriften | Oberfläche gebaut wird, Farben oder Schriften gebraucht werden |
 | [bilder.md](bilder.md) | Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol | ein Bild ins Spiel kommt |
-| [build-und-tests.md](build-und-tests.md) | Starten, Probeszenen, Töne erzeugen, Export, Versionierung, Tests und Fixtures | exportiert oder getestet wird |
+| [build-und-tests.md](build-und-tests.md) | Starten, Probeszenen, Töne erzeugen, Export mit sechs Presets und `baue_alles.sh`, Prüfung auf Testcode, Versionierung, Tests und Fixtures | exportiert oder getestet wird |
+| [selbsttest.md](selbsttest.md) | Selbsttest-App: Feature-Tag, die neun Abläufe, Läufer, Fahrer, Eingabe, Protokoll, Zusammenfassung, Vergleich mit Referenzbildern, Ablauf ergänzen, Grenzen | ein Feature Seiten, Wege, Texte oder Eingaben ändert; der Selbsttest gebaut, gestartet oder ausgewertet wird |
 | [glossar.md](glossar.md) | Begriffe des Spiels und ihre Namen im Code | ein Begriff unklar ist |
 
 ## Stand der Systeme
@@ -41,7 +42,7 @@ Die Systeme 01–11 aus `docs/features/Features.md`:
 | 01 Zeitleiste | gebaut: Spieluhr, Fahrplan-Modell, Werkstatt, Schwierigkeitsgrade |
 | 02–09 | noch nichts: Produktdatenbank, Wirtschaft, Information, Standort, Marketing, Handel, Qualität, Adventure |
 | 10 Präsentation & UI | Titelbildschirm auf dem Communicator, leerer Spielbildschirm, Fenster, Theme, Bausteine Knopf und Communicator mit Gehäusetasten, das versteckte Spiel auf der Anzeige |
-| 11 Infrastruktur | Spielstände, Export für macOS, Tests, Ton: Kanäle `Master` und `Effekte`, Töne aus `make_sounds.py` |
+| 11 Infrastruktur | Spielstände, Export für macOS, Windows und Linux, Selbsttest, Tests, Ton: Kanäle `Master` und `Effekte`, Töne aus `make_sounds.py` |
 
 ## Pflege
 
