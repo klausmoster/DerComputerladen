@@ -2,20 +2,24 @@
 
 - **Worum es geht:** was vom Start der App bis zum Spiel auf dem Titelbildschirm passiert: das
   Hauptmenü, die Wahl des Grads, die Liste der Spielstände mit Löschen und die Rückfrage, alle als
-  Seiten auf dem Communicator.
+  Seiten auf dem Communicator; dazu der Weg ins Easter Egg über die Gehäusetasten.
 - **Laden, wenn:** Titelbildschirm, Hauptmenü, eine Seite, der Hinweis oder Texte im Titel
-  geändert werden, oder ein Menüeintrag dazukommt oder verfügbar wird.
+  geändert werden, ein Menüeintrag dazukommt oder verfügbar wird, oder die Folge der Gehäusetasten
+  betroffen ist.
 - **Code:** `src/scenes/title/` (`title_screen`, `main_menu`, `menu_entry`, `menu_hint`,
-  `menu_paper`, `save_list`, `title_texts`); Tests `src/test/test_title_screen.gd`,
-  `test_main_menu.gd`, `test_save_list.gd`, `test_menu_hint.gd`, `test_title_texts.gd`
+  `menu_paper`, `save_list`, `title_texts`, `key_sequence`); Tests `src/test/test_title_screen.gd`,
+  `test_main_menu.gd`, `test_save_list.gd`, `test_menu_hint.gd`, `test_title_texts.gd`,
+  `test_key_sequence.gd`
 - **Herkunft:** `specs/001-hauptmenue/` (`contracts/titelbildschirm.md`), erweitert durch
   `specs/004-neues-spiel/` (`contracts/titelbildschirm.md`, `data-model.md`, `research.md` R11 bis
-  R14) und `specs/005-communicator/` (`contracts/titelbildschirm.md`, `research.md` R8 bis R10)
-- **Stand:** Feature 005, 2026-10-27
+  R14), `specs/005-communicator/` (`contracts/titelbildschirm.md`, `research.md` R8 bis R10) und
+  `specs/006-easter-egg-space-invaders/` (`contracts/titelbildschirm.md`, `research.md` R5, R10,
+  R16)
+- **Stand:** Feature 006, 2026-10-28
 - **Nachbarn:** der Baustein Communicator in [communicator.md](communicator.md), was beim
   Beginnen und Fortsetzen passiert in [spielablauf.md](spielablauf.md), Spielstände in
   [spielstaende.md](spielstaende.md), Fenster, Farben und Schriften in
-  [darstellung.md](darstellung.md)
+  [darstellung.md](darstellung.md), das versteckte Spiel in [easter-egg.md](easter-egg.md)
 
 ## Start
 
@@ -37,11 +41,13 @@ TitleScreen (Control, 640 × 360)
 ├── LogoBlock           Ladenschild-Logo, darunter „WIRTSCHAFTSSIMULATION · 1985–1999“,
 │                       bei (14, 12) bis y 83, mit pixelschatten
 ├── VersionLine         oben rechts, 16 vom Rand, „V0.1 · PROTOTYP“
-└── Communicator        Gehäuse G-03, Endlage (244, 92) bis zum unteren Bildrand
+└── Communicator        Gehäuse G-03, Endlage (244, 92) bis zum unteren Bildrand,
+    │                   case_keys: die drei grauen Tasten
     ├── MainMenu        Seite HAUPTMENÜ        ┐
     ├── DifficultySheet Seite SCHWIERIGKEIT    │ auf der Anzeige (280, 120) bis (600, 280),
     ├── SaveList        Seite SPIELSTÄNDE      │ immer genau eine sichtbar
-    └── ConfirmSheet    Seite LÖSCHEN?         ┘
+    ├── ConfirmSheet    Seite LÖSCHEN?         │
+    └── Invaders        das versteckte Spiel   ┘
 ```
 
 Alle Seiten stehen mit `look = LCD` auf der Anzeige des Communicators (siehe
@@ -155,6 +161,47 @@ höchstens 160 breit, mit Umbruch. Er fährt mit dem Gerät. Godots Tooltip pass
 nur für die Maus und mit Verzögerung. Mit `show_warning()` wird er zur Meldung (Theme-Variante
 `WarningPanel`); sie bleibt, bis etwas anderes gewählt oder ausgelöst wird. Alle Hinweise und
 Meldungen passen in höchstens zwei Zeilen, das prüft `test_title_texts.gd`.
+
+## Easter Egg
+
+Die drei grauen Gehäusetasten rechts unter der Anzeige, gedrückt links, Mitte, rechts, starten das
+versteckte Spiel als fünfte Seite auf der Anzeige. Die Tasten selbst gehören zum Communicator (siehe
+[communicator.md](communicator.md)); der Titel setzt sie in seiner Szene mit `case_keys` und hört
+`case_key_pressed`. Das Spiel selbst steht in [easter-egg.md](easter-egg.md).
+
+**Folge:** `EASTER_EGG_KEYS = [0, 1, 2]` in `KeySequence` (`key_sequence.gd`, `RefCounted`).
+`press(index)` gibt true, wenn die Folge damit voll ist, und beginnt dann von vorn. Die richtige
+nächste Taste zählt eins weiter; eine falsche setzt zurück, und ist sie die erste der Folge, zählt
+sie gleich als neuer Anfang. So startet 1-1-2-3; 1-2-2-3 und 2-1-3 starten nicht. Dazwischen darf
+der Spieler im Menü wählen. Jeder Titel bekommt eine neue Folge, auch nach „Zum Hauptmenü“.
+
+Ein Druck zählt nur, wenn der Titel Eingaben annimmt (`_accepts_input()`: Einträge da, nicht beim
+Hinausfahren) und das Spiel nicht schon auf der Anzeige steht. Sonst klickt die Taste nur und drückt
+sich ein. Damit zählt die Folge auch schon während der Fahrt herein, wie die Seiten dann Eingaben
+annehmen.
+
+```mermaid
+flowchart LR
+    P["Seite mit Auswahl<br/>und Hinweis"] -->|"links, Mitte, rechts"| I["Invaders"]
+    I -->|"finished: Esc oder<br/>Ergebnisanzeige"| P
+```
+
+- **Start** (`_start_invaders()`): Folge zurücksetzen, die sichtbare Seite in `_return_page` und das
+  Control mit dem Fokus in `_return_focus` merken, Hinweis und Meldung ausblenden (`_hide_hint()`),
+  dann `show_page(Invaders)` und erst danach `Invaders.start()`; nur eine sichtbare Seite kann den
+  Fokus nehmen. Zeile und Hinweis führt der Titel ohnehin in `_selected_row` und `_selected_hint`.
+  Gerät, Logo und Versionszeile bewegen sich nicht.
+- **Ende** (`_on_invaders_finished()`): Folge zurücksetzen, die gemerkte Seite zeigen, ohne eine
+  das Hauptmenü; den Fokus zurückgeben (`_restore_focus()`): dem gemerkten Control, ist es noch
+  nicht sichtbar, nach diesem Bild; fehlt es, wählt die Seite ihre gemerkte Zeile neu. Dann den
+  Hinweis der Zeile wieder zeigen. Eine Meldung, die beim Start stand, etwa „Löschen ging
+  nicht.“, kommt nicht zurück; an ihrer Stelle steht der Hinweis der Zeile.
+- **Esc:** Im Spiel nimmt die Seite Esc selbst. Erreicht Esc trotzdem `_unhandled_input()` des
+  Titels, etwa in dem Bild, in dem die Seite ihren Fokus zurückholt, markiert der Titel es als
+  behandelt und führt keine Ebene zurück, solange `Invaders` sichtbar ist.
+- **Kein Spielstand:** Das Spiel ruft `GameSession` nicht, braucht keinen Spielstand und legt keinen
+  an, auch nicht, wenn das Fenster während des Spiels schließt. Es startet auch mit einem
+  beschädigten Spielstand im Ordner. Nach dem Spiel läuft alles wie vorher.
 
 ## Versionszeile
 

@@ -3,7 +3,7 @@
 - **Worum es geht:** die Begriffe des Spiels und der Doku und wie sie im Code heißen.
 - **Laden, wenn:** ein Begriff unklar ist oder Spec, Doku und Code gegeneinander übersetzt
   werden.
-- **Stand:** Feature 005, 2026-10-27
+- **Stand:** Feature 006, 2026-10-28
 
 Doku und Oberfläche sind deutsch, der Code englisch. Werte in Dateien sind deutsch, wo sie
 Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
@@ -15,21 +15,27 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Anzeige | `Communicator.display_rect`, `Display` | die LCD-Fläche des Communicators in `lcd`, 320 × 160; darauf stehen die Seiten | [communicator.md](communicator.md) |
 | Ausnehmen | `without_faulty()` | Fehlerhaftes aus einer Kopie des Katalogs entfernen, bevor gerechnet wird | [ereigniskatalog.md](ereigniskatalog.md) |
 | Bedingung | `EventCondition` | „X ist schon / noch nicht eingetreten“ als Voraussetzung eines Termins | [zeitleiste.md](zeitleiste.md) |
+| Bildpixel | — | ein Pixel des Bildrasters, gezeigt als 2 × 2 Oberflächenpixel; auch Maß des versteckten Spiels | [darstellung.md](darstellung.md) |
 | Bildraster | — | 320 × 180, Raster der Szenen und Bilder | [darstellung.md](darstellung.md) |
 | Blatt | `MainMenu`, `SaveList` mit `look = PAPER` | Seite als Endlospapier; bis Feature 004 der Look des Titels, heute auf keinem Bildschirm | [communicator.md](communicator.md) |
 | Communicator | `Communicator`, `src/ui/communicator/` | Baustein: Taschengerät, das von unten ins Bild fährt und auf seiner Anzeige Seiten zeigt | [communicator.md](communicator.md) |
 | Chance, Grundchance | `monthly_chance` | Wahrscheinlichkeit pro Monat aus dem Katalog | [zeitleiste.md](zeitleiste.md) |
 | Chance, wirksame | `chance_info()["effective"]` | Grundchance plus Modifikatoren, begrenzt auf 0–1 | [zeitleiste.md](zeitleiste.md) |
+| Easter Egg | `KeySequence`, `InvadersPage` | verstecktes Spiel oder Ding, das nur durch Ausprobieren zu finden ist; bisher das versteckte Spiel auf der Anzeige | [easter-egg.md](easter-egg.md) |
+| Effekte (Kanal) | Bus `Effekte` in `default_bus_layout.tres` | Tonkanal für jeden Ton des Spiels, −10 dB, mündet in `Master` | [ton.md](ton.md) |
 | Endlage | Lage des Communicators in der Szene | wo der Communicator nach der Fahrt herein steht; im Titel (244, 92) | [communicator.md](communicator.md) |
 | Eingriff | `add_modifier()`, `cancel_entry()`, `move_entry()`, `schedule_event()` | Änderung am laufenden Spiel von außen, mit Grund | [zeitleiste.md](zeitleiste.md) |
 | Eingriffsprotokoll | `TimelineRun.interventions` | alle angenommenen Eingriffe mit Tag, zum Nachspielen | [zeitleiste.md](zeitleiste.md) |
 | Ereignis | `TimelineEvent` | was passieren kann, Eintrag im Katalog | [zeitleiste.md](zeitleiste.md) |
 | Ereigniskatalog, Katalog | `EventCatalog`, `event_catalog.json` | alle Ereignisse, Kategorien und Profile | [ereigniskatalog.md](ereigniskatalog.md) |
+| Ergebnisanzeige | `InvadersPage._draw_result()`, `TitleTexts.INVADERS_*` | drei Zeilen auf der Anzeige am Ende des versteckten Spiels; keine Meldung | [easter-egg.md](easter-egg.md) |
 | Fahrplan | `TimelineRun.entries` | alle Termine eines Spiels, zugleich seine Geschichte | [zeitleiste.md](zeitleiste.md) |
 | Fahrt | `slide_in()`, `slide_out()`, `slide_finished` | Bewegung des Communicators herein oder hinaus, 200 ms | [communicator.md](communicator.md) |
 | Folgeereignis | `FollowUp` | Ereignis, das mit einer Wahrscheinlichkeit nach einem anderen kommt | [zeitleiste.md](zeitleiste.md) |
+| Folge (Gehäusetasten) | `KeySequence`, `TitleScreen.EASTER_EGG_KEYS` | Reihenfolge von Gehäusetasten, die etwas startet; im Titel links, Mitte, rechts | [titel-und-hauptmenue.md](titel-und-hauptmenue.md) |
 | Fortsetzen | `GameSession.resume()`, `Timeline.resume_game()` | ein gespeichertes Spiel neu aufbauen und still bis zum Spieldatum vorspielen | [spielablauf.md](spielablauf.md) |
 | Gehäuse | `Case`, `organizer_1991.png` | Bild des Communicators, heute G-03 | [communicator.md](communicator.md) |
+| Gehäusetaste | `Communicator.case_keys`, `CaseKey`, `case_key_pressed` | drückbare Taste im Gehäusebild; zählt beim Loslassen über ihr; im Titel die drei grauen Tasten | [communicator.md](communicator.md) |
 | Grad, Schwierigkeitsgrad | `Difficulty.Level` | Leicht, Mittel, Schwer | [schwierigkeitsgrade.md](schwierigkeitsgrade.md) |
 | Herkunft | `ScheduleEntry.Origin` | warum ein Termin im Fahrplan steht | [zeitleiste.md](zeitleiste.md) |
 | Kategorie | `EventCategory` | Gruppe von Ereignissen mit Farbe, eine Zeile im Zeitstrahl | [ereigniskatalog.md](ereigniskatalog.md) |
@@ -48,8 +54,9 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Protokoll | `TimelineRun.protocol` | alle Meldungen eines Laufs | [zeitleiste.md](zeitleiste.md) |
 | Prüfmeldung | `CatalogIssue` | Fehler oder Warnung zu einer Regel V01–V31 | [ereigniskatalog.md](ereigniskatalog.md) |
 | Seed | `TimelineRun.seed` | Zahl 0–2.147.483.647, aus der alle Zufallsentscheidungen eines Spiels folgen | [zeitleiste.md](zeitleiste.md) |
-| Seite | Control unter dem Communicator, etwa `MainMenu`, `SaveList` | was die Anzeige zeigt, immer genau eine: im Titel Hauptmenü, Gradwahl, Spielstände, Rückfrage | [titel-und-hauptmenue.md](titel-und-hauptmenue.md) |
+| Seite | Control unter dem Communicator, etwa `MainMenu`, `SaveList` | was die Anzeige zeigt, immer genau eine: im Titel Hauptmenü, Gradwahl, Spielstände, Rückfrage, das versteckte Spiel | [titel-und-hauptmenue.md](titel-und-hauptmenue.md) |
 | Spielbildschirm | `scenes/game/game_screen.tscn` | Ziel nach Beginnen oder Fortsetzen; heute nur „Zum Hauptmenü“ | [spielablauf.md](spielablauf.md) |
+| Spiel, verstecktes | `InvadersGame`, `InvadersPage` | das Easter Egg im Titel: ein Spiel auf der Anzeige des Communicators | [easter-egg.md](easter-egg.md) |
 | Spieldatum | `SaveGame.day` | Tag, an dem ein Spielstand steht | [spielstaende.md](spielstaende.md) |
 | Spielstand | `SaveGame`, `spiel_<N>.json` | gespeichertes Spiel: Seed, Grad, Katalogkopie, Eingriffe, Spieldatum | [spielstaende.md](spielstaende.md) |
 | Spielstand, Eintrag der Liste | `SaveSlot` | ein Spielstand mit Zustand fortsetzbar, beschädigt oder neuere Version | [spielstaende.md](spielstaende.md) |

@@ -7,8 +7,9 @@
   `src/ui/computerladen_theme.tres`, `src/assets/fonts/`, Einstellungen in `src/project.godot`;
   Tests `src/test/test_game_window.gd`, `test_ui_palette.gd`, `test_lcd_theme.gd`
 - **Herkunft:** `specs/001-hauptmenue/` (Vertrag `contracts/titelbildschirm.md`, `research.md`),
-  `specs/005-communicator/` (`lcd`, Theme für die Anzeige, `research.md` R1 bis R3)
-- **Stand:** Feature 005, 2026-10-27
+  `specs/005-communicator/` (`lcd`, Theme für die Anzeige, `research.md` R1 bis R3),
+  `specs/006-easter-egg-space-invaders/` (Spiel auf der Anzeige, `research.md` R7)
+- **Stand:** Feature 006, 2026-10-28
 - **Maßstab:** der [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX). Er ist die
   einzige Quelle für Farben, Raster, Schriften und Bausteine. Was man sieht, kommt zuerst dort
   hinein, dann in den Code.
@@ -107,6 +108,14 @@ Steht ein Knopf allein auf einem Bildschirm, zeigt der Bildschirm seinen Hinweis
 
 **Baustein Communicator** (`src/ui/communicator/`): Taschengerät mit Anzeige, das von unten ins
 Bild fährt und Seiten zeigt; eigene Datei [communicator.md](communicator.md).
+
+**Spiel auf der Anzeige:** Das versteckte Spiel liegt auf dem Bildraster, nicht auf dem
+Oberflächenraster. Sein Feld ist die Anzeige, 160 × 80 Bildpixel, und `InvadersPage._draw()` malt
+jedes Bildpixel als 2 × 2 Oberflächenpixel, also 320 × 160. Es gibt eine einzige Farbe: `tusche`
+auf dem Grund `lcd`, den die Anzeige selbst hat. Alle Muster liegen auf ganzen Bildpixeln; die
+Abstände `raster-2` bis `raster-16` gelten dort nicht. Texte in Kopfzeile und Ergebnisanzeige stehen
+in `tusche` mit den Schriften von `LcdHeader` und `LcdRow`; die Ergebnisanzeige ist in
+Oberflächenpixeln gesetzt. Mehr in [easter-egg.md](easter-egg.md).
 
 Die Werkstatt hat ein eigenes Theme und läuft nicht im Pixelraster (siehe
 [werkstatt.md](werkstatt.md)).

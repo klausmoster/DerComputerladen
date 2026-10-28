@@ -319,17 +319,17 @@ SC-001 und SC-006 im selben Bild erfüllt.
   Feature“), dazu Stil- und Text-Prüfer einmal über alles. Lücken werden eine eigene Phase mit
   Klaus' Freigabe; hat sie Sichtbares, endet sie mit eigener Phasenprüfung.
 - [x] T037 [K] Gesamtabnahme nach dem ganzen Quickstart.
-- [ ] T038 [C] Doku nachziehen: `docs/features/Features.md` (006 fertig, Systeme 10 und 11; System
+- [x] T038 [C] Doku nachziehen: `docs/features/Features.md` (006 fertig, Systeme 10 und 11; System
   11 „Sound“ nicht mehr nur Idee); `docs/offene-punkte.md`; `CLAUDE.md` (Tabelle „Aufbau“:
   `src/assets/sounds/`, `tools/ton/`, `default_bus_layout.tres`) nur mit Klaus' OK.
-- [ ] T039 [C] Spielbeschreibung prüfen (die letzte Aufgabe vor dem Tagebuch, nach der
+- [x] T039 [C] Spielbeschreibung prüfen (die letzte Aufgabe vor dem Tagebuch, nach der
   Gesamtabnahme und vor dem Merge; `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“): Claude
   gleicht `docs/spielbeschreibung/` mit dem Code ab und legt Klaus eine Liste vor, welche Dateien
   veralten und welche neu angelegt werden sollten, mit Grund, mindestens `communicator.md`,
   `titel-und-hauptmenue.md`, `darstellung.md`, `build-und-tests.md`, `glossar.md`, `architektur.md`
   und ein mögliches neues `ton.md` samt Index. Abweichungen zwischen Spec und Code gehören dazu.
   Geändert wird erst nach Klaus' OK.
-- [ ] T040 [C] Tagebuch vor dem Merge (`ki_dev.md`, Punkt 10): eigene Datei für Feature 006 unter
+- [x] T040 [C] Tagebuch vor dem Merge (`ki_dev.md`, Punkt 10): eigene Datei für Feature 006 unter
   `docs/tagebuch/` nach dem README dort, auf Englisch, je echter Entscheidung ein Eintrag, oben die
   Zeile „Tokens and cost“ aus `python3 -I tools/tagebuch/token_bilanz.py
   feature/006-easter-egg-space-invaders`. Klaus nimmt die Einträge ab.

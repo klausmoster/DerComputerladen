@@ -1003,3 +1003,21 @@ nach Empfehlung entschieden; die Sätze stehen im Style-Guide, Version 57, der C
   „Anrede“).
 - Der Befund des Stil-Prüfers (Kommentar zum Fokusverlust in `invaders_page.gd` nannte eine
   Gehäusetaste als Ursache) ist behoben, ebenso in `research.md` R9 und `test_invaders_page.gd`.
+
+### Feature 006, Spielbeschreibung (2026-10-28)
+
+Beim Abgleich für `docs/spielbeschreibung/` (T039) fielen sieben kleine Abweichungen zwischen
+Spec-Dokumenten und Code auf. Keine ändert das Verhalten; die Spielbeschreibung beschreibt den Code.
+Empfehlung: so lassen, die Specs von 006 sind abgeschlossen.
+- Eindrücken: gemalt über das Signal `draw` von `Keys` in `communicator.gd`, nicht in einem
+  `Keys._draw()` (contracts/gehaeusetasten.md).
+- Die Folge beginnt mit jedem Titel neu, statt dass der Titel beim Erscheinen `reset()` ruft (R5).
+- Die 15 ms Tonlatenz sind Godots Vorgabe, keine Projekteinstellung (R13).
+- Zwei Rückfallwege beim Rückweg (Hauptmenü, wenn keine Seite gemerkt ist; Zeile neu wählen, wenn
+  das Control fehlt) stehen nicht in contracts/titelbildschirm.md.
+- Die Explosion an der Kanone steht auch nach dem letzten Treffer, wie in R7 ausgelegt, nicht nur in
+  `RESPAWN` (contracts/invaders.md).
+- Ohne Fensterfokus prüft `_gui_input()` den Fokus nicht; es kommen dann keine Tasten an
+  (data-model.md).
+- `CaseKey` meldet beim Loslassen einer Taste, die nicht unten ist, kein `down_changed(false)`;
+  im Ergebnis gleich (contracts/gehaeusetasten.md).

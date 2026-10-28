@@ -4,9 +4,9 @@
 - **Laden, wenn:** eine Arbeit mehrere Systeme berührt, neue Dateien, Autoloads oder Systeme
   dazukommen, oder ein System an ein anderes angebunden wird.
 - **Code:** `src/project.godot`, `src/core/`, `src/scenes/`, `src/ui/`, `src/tools/`
-- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/005-communicator/`,
+- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/006-easter-egg-space-invaders/`,
   Verfassung `.specify/memory/constitution.md`
-- **Stand:** Feature 005, 2026-10-27
+- **Stand:** Feature 006, 2026-10-28
 
 ## Das Spiel in einem Absatz
 
@@ -15,8 +15,10 @@ betreibt von 1985 bis 1999 einen Computerladen in Deutschland. Die Vision steht 
 `docs/game_design.md`. Gebaut sind bisher der Start bis zum Hauptmenü (Feature 001), die
 Zeitleiste mit ihrer Werkstatt (002), die Schwierigkeitsgrade der Zeitleiste (003), das
 Beginnen, Speichern und Fortsetzen von Spielen (004) und der Communicator, ein Taschengerät als
-Steuerelement, auf dem heute das Menü des Titels läuft (005). Der Spielbildschirm ist noch leer: Die Uhr
-steht, Wirtschaft und Laden gibt es noch nicht.
+Steuerelement, auf dem heute das Menü des Titels läuft (005). Feature 006 brachte die ersten Töne
+und ein Easter Egg: Drei Gehäusetasten des Communicators starten im Titel ein verstecktes Spiel auf
+seiner Anzeige. Der Spielbildschirm ist noch leer: Die Uhr steht, Wirtschaft und Laden gibt es noch
+nicht.
 
 ## Ordner
 
@@ -28,11 +30,14 @@ steht, Wirtschaft und Laden gibt es noch nicht.
 | `src/core/timeline/` | Kern der Zeitleiste ohne Node: Datenklassen, Katalog, Prüfung, Lauf, Vergleich, Statistik, Grade |
 | `src/data/` | Spieldaten: `event_catalog.json` |
 | `src/scenes/` | Szenen des Spiels: `title/` (Titelbildschirm und seine Seiten), `game/` (Spielbildschirm) |
-| `src/ui/` | für alle Szenen: Theme, Farben, Baustein Knopf, Baustein Communicator (`communicator/`) |
-| `src/assets/` | Schriften, gerasterte Bilder, App-Symbol |
+| `src/scenes/title/invaders/` | das versteckte Spiel: Kern `InvadersGame`, Muster `InvadersSprites`, Seite `InvadersPage` |
+| `src/ui/` | für alle Szenen: Theme, Farben, Baustein Knopf, Baustein Communicator mit Gehäusetasten (`communicator/`) |
+| `src/assets/` | Schriften, gerasterte Bilder, App-Symbol, Töne (`sounds/`) |
+| `src/default_bus_layout.tres` | Tonkanäle `Master` und `Effekte`; Godot lädt die Datei von selbst |
 | `src/tools/werkstatt/` | Zeitleisten-Werkstatt; nicht im Export |
 | `src/test/` | GUT-Tests und `fixtures/` |
 | `tools/raster/` | Python-Werkzeuge für Bilder, außerhalb von Godot |
+| `tools/ton/` | `make_sounds.py`: erzeugt alle Töne, außerhalb von Godot |
 | `docs/` | Vision (`game_design.md`), Spielinhalt (`game_bible/`), Bauplan (`features/`), diese Beschreibung, Arbeitsweise (`ki_workflow/`) |
 | `specs/NNN-*/` | Spec Kit je Feature: Spec, Plan, Datenmodell, Verträge, Recherche, Aufgaben, Lernnotizen |
 
@@ -67,6 +72,13 @@ flowchart TB
     UI["ui: Theme, UiPalette"]
     CO["Communicator<br/>ui/communicator"]
     TS -->|"Seiten, Fahrt, Hinweis"| CO
+    CO -.->|"case_key_pressed"| TS
+    TS --> KS["KeySequence"]
+    TS -->|"show_page, start"| IP["InvadersPage<br/>scenes/title/invaders"]
+    IP -.->|"finished"| TS
+    IP --> IG["InvadersGame,<br/>InvadersSprites"]
+    CO --> SND[("assets/sounds,<br/>Kanal Effekte")]
+    IP --> SND
     CO --> UI
     TS -->|"start_new, resume"| SE
     GS -->|"leave"| SE
@@ -91,6 +103,9 @@ flowchart TB
     TL -.->|"Signale, später"| ABN["Abnehmer:<br/>Wirtschaft, Nachfrage, Ruf"]
 ```
 
+Gestrichelt sind Signale. Der Communicator kennt weder den Titel noch die Seite des Spiels; er
+meldet nur Gehäusetasten. Das Spiel kennt weder `GameSession` noch Spielstände.
+
 Autoloads in `project.godot`, in dieser Reihenfolge: `GameClock`, `Timeline`, `GameWindow`,
 `GameSession`.
 Hauptszene ist `res://scenes/title/title_screen.tscn`.
@@ -99,7 +114,8 @@ Hauptszene ist `res://scenes/title/title_screen.tscn`.
 
 - **Kern ohne Node, Hülle als Autoload.** Logik steckt in `RefCounted`-Klassen, die weder
   Szenenbaum noch Uhr brauchen. So laufen sie gleich im Spiel, in Werkzeugen und in Tests. Das
-  Autoload verbindet nur und macht Signale daraus.
+  Autoload verbindet nur und macht Signale daraus. Ebenso `KeySequence` und `InvadersGame`: Die
+  Hülle ist dort der Titel und die Seite `InvadersPage`.
 - **Melden statt anwenden.** Die Zeitleiste meldet Ereignisse und Wirkungen; was daraus folgt,
   entscheidet das System, das zuhört. Systeme sind über Signale entkoppelt, nicht über direkte
   Aufrufe.
@@ -107,7 +123,8 @@ Hauptszene ist `res://scenes/title/title_screen.tscn`.
   bauen darauf, statt den ganzen Zustand zu speichern (siehe [spielstaende.md](spielstaende.md)).
 - **Daten statt Code.** Ereignisse und Profile stehen in der Katalogdatei und werden in der
   Werkstatt gepflegt; Menüeinträge sind `MenuEntry`-Resources; Texte des Titels stehen an einer
-  Stelle (`TitleTexts`); Farben heißen über Tokens.
+  Stelle (`TitleTexts`); Farben heißen über Tokens; Töne entstehen aus einem Skript, nicht aus
+  fremden Quellen.
 - **Ein Look.** Der Style-Guide ist die einzige Quelle für Farben, Raster, Schriften und Sprache.
   Texte duzen den Spieler.
 - **Nur Desktop.** Maus und Tastatur, Forward+.

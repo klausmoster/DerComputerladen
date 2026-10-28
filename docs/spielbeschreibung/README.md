@@ -9,7 +9,7 @@ Arbeit an einem System lädt sie die passende Datei, statt Specs und Code zu dur
 Backlog und das Archiv. `docs/game_bible/` ist der Spielinhalt. Dieser Ordner beschreibt den
 **Stand im Code**. Wo Spec und Code auseinandergehen, gilt hier der Code.
 
-**Stand:** Features 001 bis 005, 2026-10-27.
+**Stand:** Features 001 bis 006, 2026-10-28.
 
 ## Dateien
 
@@ -23,11 +23,13 @@ Backlog und das Archiv. `docs/game_bible/` ist der Spielinhalt. Dieser Ordner be
 | [spielablauf.md](spielablauf.md) | `GameSession`: neues Spiel, Fortsetzen, Speichern, Verlassen, Speichern beim Schließen; der Spielbildschirm | ein Spiel beginnt, fortgesetzt oder verlassen wird; ein System beim Spielstart mitmachen muss |
 | [spielstaende.md](spielstaende.md) | Inhalt und Datei eines Spielstands, sicheres Schreiben, Lesen und Zustand, Liste, Löschen | Speichern, Laden oder das Format betroffen sind; ein System mitgespeichert werden muss |
 | [werkstatt.md](werkstatt.md) | Zeitleisten-Werkstatt: Editor, Zeitstrahl, Simulator, Proben, Statistik, Textausgabe | die Werkstatt benutzt oder geändert wird |
-| [titel-und-hauptmenue.md](titel-und-hauptmenue.md) | App-Start, Titelbildschirm, Hauptmenü, Gradwahl, Liste der Spielstände mit Löschen, Rückfrage, Hinweis, Fahrt vor dem Spielstart | Titel, Menü oder eine Seite geändert werden |
-| [communicator.md](communicator.md) | Baustein Communicator: Gehäuse, Anzeige, Seiten, Fahrt, Hinweis; Menü und Liste auf der Anzeige | ein Bildschirm den Communicator braucht, eine Seite oder ein Gehäuse dazukommt |
+| [titel-und-hauptmenue.md](titel-und-hauptmenue.md) | App-Start, Titelbildschirm, Hauptmenü, Gradwahl, Liste der Spielstände mit Löschen, Rückfrage, Hinweis, Fahrt vor dem Spielstart, Weg ins Easter Egg | Titel, Menü oder eine Seite geändert werden |
+| [communicator.md](communicator.md) | Baustein Communicator: Gehäuse, Anzeige, Seiten, Fahrt, Hinweis, Gehäusetasten; Menü und Liste auf der Anzeige | ein Bildschirm den Communicator braucht, eine Seite, ein Gehäuse oder eine Gehäusetaste dazukommt |
+| [easter-egg.md](easter-egg.md) | Easter Eggs: wie sie gebaut sind; das versteckte Spiel mit Kern, Mustern, Seite, Ergebnisanzeige, Texten und Probeszene | am versteckten Spiel etwas geändert wird oder ein Easter Egg dazukommt |
+| [ton.md](ton.md) | Tonkanäle `Master` und `Effekte`, die zehn Töne, `make_sounds.py`, Prüfsummen, Verhalten ohne Fokus und ohne Tonausgang | ein Ton dazukommt oder sich ändert, etwas Töne spielen soll, Kanäle oder Lautstärke betroffen sind |
 | [darstellung.md](darstellung.md) | Fenster, Raster, Skalierung, Theme, Farben, Schriften | Oberfläche gebaut wird, Farben oder Schriften gebraucht werden |
 | [bilder.md](bilder.md) | Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol | ein Bild ins Spiel kommt |
-| [build-und-tests.md](build-und-tests.md) | Starten, Export, Versionierung, Tests und Fixtures | exportiert oder getestet wird |
+| [build-und-tests.md](build-und-tests.md) | Starten, Probeszenen, Töne erzeugen, Export, Versionierung, Tests und Fixtures | exportiert oder getestet wird |
 | [glossar.md](glossar.md) | Begriffe des Spiels und ihre Namen im Code | ein Begriff unklar ist |
 
 ## Stand der Systeme
@@ -38,8 +40,8 @@ Die Systeme 01–11 aus `docs/features/Features.md`:
 |---|---|
 | 01 Zeitleiste | gebaut: Spieluhr, Fahrplan-Modell, Werkstatt, Schwierigkeitsgrade |
 | 02–09 | noch nichts: Produktdatenbank, Wirtschaft, Information, Standort, Marketing, Handel, Qualität, Adventure |
-| 10 Präsentation & UI | Titelbildschirm auf dem Communicator, leerer Spielbildschirm, Fenster, Theme, Bausteine Knopf und Communicator |
-| 11 Infrastruktur | Spielstände, Export für macOS, Tests |
+| 10 Präsentation & UI | Titelbildschirm auf dem Communicator, leerer Spielbildschirm, Fenster, Theme, Bausteine Knopf und Communicator mit Gehäusetasten, das versteckte Spiel auf der Anzeige |
+| 11 Infrastruktur | Spielstände, Export für macOS, Tests, Ton: Kanäle `Master` und `Effekte`, Töne aus `make_sounds.py` |
 
 ## Pflege
 
