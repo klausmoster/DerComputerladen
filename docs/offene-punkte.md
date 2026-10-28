@@ -798,8 +798,10 @@ Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder 
   Spielstand.
 - **R11** Keine Planprüfung durch den Architektur-Prüfer für 008 selbst.
 - **R12** Muster im Leitfaden: Beobachter, Komponente, Typ-Objekt, Befehl, Zustand, Spielschleife;
-  Singleton nur als Warnung. In Phase 1 zu entscheiden: Ereigniskatalog bleibt JSON (Empfehlung) und
-  ob ein Test „speichern, laden, vergleichen“ dazukommt.
+  Singleton nur als Warnung. Entschieden in Phase 1 (Klaus, 2026-10-28): Der Ereigniskatalog bleibt
+  JSON als begründete Ausnahme zu AR-04; dazu kommen die Tests „kein globaler Zufall in Kernen“ und
+  „Spiel kennt Werkzeuge nicht“, die Probe „speichern, laden, vergleichen“ entfällt. Alle 20 Regeln
+  des Leitfadens hat Klaus wie vorgeschlagen übernommen.
 
 ## Erledigt
 

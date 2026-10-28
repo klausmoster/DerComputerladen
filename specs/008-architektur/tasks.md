@@ -54,7 +54,7 @@ plan.md unter „Prüfer je Phase“ Prüfer nennt (4 und 5). Kürzel wie „CHK
 **Independent Test**: Jede Regel hat alle acht Teile, keine steht auf „Vorschlag“ (SC-001); eine
 Stelle aus `src/` lässt sich nur mit dem Leitfaden beurteilen (quickstart.md, Phase 1).
 
-- [ ] T001 [C] [US1] Entwurf `docs/architektur-leitfaden.md` nach contracts/leitfaden.md: Kopf;
+- [x] T001 [C] [US1] Entwurf `docs/architektur-leitfaden.md` nach contracts/leitfaden.md: Kopf;
   „So liest man eine Regel“ mit Teilen, Ständen, Nummern und der Tabelle „Schwere“ (CHK015);
   AR-01 bis AR-05 für die fünf Godot-Prinzipien; die Muster und Schichten nach research.md, R12;
   „Was bisher woanders stand“ mit den Grundsätzen aus `docs/spielbeschreibung/architektur.md` und
@@ -62,21 +62,21 @@ Stelle aus `src/` lässt sich nur mit dem Leitfaden beurteilen (quickstart.md, P
   `src/` (Pfad, gesucht mit `grep`), sonst ausgedachtem Beispiel aus dem Spiel, Gegenbeispiel,
   Quelle aus `docs/recherche/architektur-quellen.md`, Schicht, Prüfweise (Test für die messbaren
   nach R6) und Stand „Vorschlag“. Wo der Leitfaden strenger ist als die Godot-Doku, sagt er es (R12).
-- [ ] T002 [C] [US1] Die echten Alternativen einzeln als Auswahl an Klaus, die Empfehlung zuerst, je
+- [x] T002 [C] [US1] Die echten Alternativen einzeln als Auswahl an Klaus, die Empfehlung zuerst, je
   mit Aufwand: Ereigniskatalog bleibt JSON als Ausnahme zu AR-04 oder wird Resource; Probe
   „speichern, laden, vergleichen“ als vierter Test in Phase 4 oder nicht (R12); dazu jede weitere,
   die beim Schreiben von T001 auftaucht.
-- [ ] T003 [C] [US1] Tabelle zur Durchsicht vorlegen: Regel, Kurzfassung, Empfehlung (R2, CHK009).
-- [ ] T004 [K] [US1] Durchsicht: je Regel übernehmen, ändern oder streichen („alle wie Vorschlag
+- [x] T003 [C] [US1] Tabelle zur Durchsicht vorlegen: Regel, Kurzfassung, Empfehlung (R2, CHK009).
+- [x] T004 [K] [US1] Durchsicht: je Regel übernehmen, ändern oder streichen („alle wie Vorschlag
   außer …“).
-- [ ] T005 [C] [US1] Entscheidungen aus T002 und T004 einarbeiten: Stand „gilt seit 2026-…, Klaus“
+- [x] T005 [C] [US1] Entscheidungen aus T002 und T004 einarbeiten: Stand „gilt seit 2026-…, Klaus“
   oder „gilt ab dem ersten Feature der Schicht …“; Gestrichenes und Geändertes in „Geschichte“.
   Wählt Klaus den vierten Test, contracts/architektur-tests.md ergänzen. SC-001 mit einem kurzen
   Skript zählen (CHK017). `docs/offene-punkte.md`, Abschnitt „Feature 008, Plan“, nachführen.
-- [ ] T006 [C] [US1] Lernnotiz Phase 1 in `specs/008-architektur/lernnotizen.md`: was die fünf
+- [x] T006 [C] [US1] Lernnotiz Phase 1 in `specs/008-architektur/lernnotizen.md`: was die fünf
   Prinzipien an konkreten Stellen im Code bedeuten, etwa `TimelineRun` als Kern, `case_key_pressed`
   als Signal nach oben, die Naht `session if session != null else GameSession`.
-- [ ] T007 [K] [US1] Abnahme Phase 1 nach quickstart.md, Phase 1.
+- [x] T007 [K] [US1] Abnahme Phase 1 nach quickstart.md, Phase 1.
 
 **Checkpoint**: Der Leitfaden gilt; Spec, Plan und Godot-Agent können sich daran halten.
 
@@ -177,9 +177,9 @@ Schwere, Claudes Urteil und Klaus' Entscheidung (quickstart.md, Phase 3).
 Phase 4).
 
 - [ ] T031 [A] `src/test/test_architektur.gd` nach contracts/architektur-tests.md mit den Listen aus
-  T028: Prüffunktionen `kern_verstoesse`, `autoloads_aus`, `wege_nach_oben`; Tests
-  `test_kerne_ohne_node`, `test_genau_diese_autoloads`, `test_kein_weg_nach_oben`,
-  `test_listen_ohne_leichen`, `test_ausnahmen_wie_im_leitfaden`; Meldungen deutsch mit Datei, Zeile
+  T028: Prüffunktionen `kern_verstoesse` (mit globalem Zufall), `autoloads_aus`, `wege_nach_oben`,
+  `verweise_auf_werkzeuge`; Tests `test_kerne_ohne_node`, `test_genau_diese_autoloads`,
+  `test_kein_weg_nach_oben`, `test_spiel_kennt_werkzeuge_nicht`, `test_listen_ohne_leichen`, `test_ausnahmen_wie_im_leitfaden`; Meldungen deutsch mit Datei, Zeile
   und AR-Nummer; Fehlerprobe je Prüffunktion an Kopien außerhalb des Repos; Lernnotiz.
 - [ ] T032 [C] Ergebnis prüfen: Tests zweimal, Startprobe, Fehlerprobe nachvollziehen, Code lesen;
   Auslegungen in Vertrag oder research.md.
