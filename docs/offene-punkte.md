@@ -407,6 +407,12 @@ wenn Klaus es will.
 - **Mac-App unter `build/macos`:** Sie stammt vom Probe-Export vor dem Fensterstart. Neu
   exportieren hat Claude angeboten.
 
+### Feature 008, Recherche (2026-10-28)
+
+- **Fließkomma auf drei Systemen:** Ob GDScript auf Windows, macOS und Linux mit Fließkomma
+  bitgleich rechnet, ist ungeprüft. Wichtig, sobald die Wirtschaft mit Seed rechnet und Spielstände
+  aus Eingriffen nachspielt (`docs/recherche/architektur-quellen.md`, 6.3).
+
 ## Eigene Entscheidungen von Claude
 
 ### Arbeitsweise (2026-10-21)
@@ -776,6 +782,24 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
 - **Musterbericht nachgeschärft:** Drei ausgedachte Befunde widersprachen dem Style-Guide. 2 px
   Abstand ist erlaubt (`raster-2`), jetzt sind es 3 px; Preise stehen als „499,00 DM“; „googeln“
   gab es bis 1999 nicht, auch nicht ab 1998.
+
+### Feature 008, Plan (2026-10-28)
+
+Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder Abnahme ändern:
+- **R1** Leitfaden als eine Datei `docs/architektur-leitfaden.md`, Regeln mit festen Nummern `AR-NN`.
+- **R2** Klaus entscheidet die Regeln in einer Durchsicht des Entwurfs; einzeln gefragt wird nur bei
+  echten Alternativen.
+- **R3** Begründete Ausnahme = Kommentar `# Ausnahme AR-NN: …` an der Stelle und Zeile im Leitfaden.
+- **R4** Prüfer als Subagent mit `Read, Grep, Glob`, `model: inherit`, Aufträge Phase, Plan, Bestand.
+- **R5** Bestandsprüfung in drei Läufen: Kern, Spiel und Oberfläche, Werkstatt.
+- **R6/R7** `test_architektur.gd` mit drei Prüfungen, gebaut nach der Bestandsprüfung.
+- **R8** Fehlerprobe des Prüfers unter `specs/008-architektur/fehlerprobe/`.
+- **R9** Behebung gemessen an Testzahl, Startprobe, Fahrplänen der Seeds 1, 4711, 99999 und einem
+  Spielstand.
+- **R11** Keine Planprüfung durch den Architektur-Prüfer für 008 selbst.
+- **R12** Muster im Leitfaden: Beobachter, Komponente, Typ-Objekt, Befehl, Zustand, Spielschleife;
+  Singleton nur als Warnung. In Phase 1 zu entscheiden: Ereigniskatalog bleibt JSON (Empfehlung) und
+  ob ein Test „speichern, laden, vergleichen“ dazukommt.
 
 ## Erledigt
 
