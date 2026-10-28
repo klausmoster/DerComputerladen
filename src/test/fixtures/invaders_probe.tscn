@@ -1,0 +1,30 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://test/fixtures/invaders_probe.gd" id="1_probe"]
+[ext_resource type="PackedScene" path="res://ui/communicator/communicator.tscn" id="2_communicator"]
+[ext_resource type="PackedScene" path="res://scenes/title/invaders/invaders_page.tscn" id="3_page"]
+
+[node name="InvadersProbe" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_probe")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+
+[node name="Communicator" parent="." instance=ExtResource("2_communicator")]
+layout_mode = 0
+offset_left = 244.0
+offset_top = 92.0
+offset_right = 636.0
+offset_bottom = 360.0
+
+[node name="InvadersPage" parent="Communicator" instance=ExtResource("3_page")]
+layout_mode = 0

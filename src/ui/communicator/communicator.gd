@@ -6,19 +6,21 @@ extends Control
 ## braucht; den Titel kennt er nicht (Feature 005, FR-007).
 ##
 ## Aufbau (communicator.tscn): `Case` ist das Gehäuse, `Display` die Anzeige darauf, `Hint` der
-## Hinweis links neben dem Gehäuse. Danach kommen die Seiten. Ein Bildschirm hängt sie in seiner
-## Szene direkt unter die Instanz des Communicators; `_ready()` stellt jede auf die Anzeige und
-## verbirgt sie, `show_page()` zeigt genau eine. Weil sie nach den eigenen Kindern stehen, liegen
-## sie über der Anzeige, und die Pfade des Bildschirms wie `$Communicator/MainMenu` bleiben gültig.
+## Hinweis links neben dem Gehäuse, `Keys` die Gehäusetasten und `KeyClick` ihr Klick. Danach
+## kommen die Seiten. Ein Bildschirm hängt sie in seiner Szene direkt unter die Instanz des
+## Communicators; `_ready()` stellt jede auf die Anzeige und verbirgt sie, `show_page()` zeigt genau
+## eine. Weil sie nach den eigenen Kindern stehen, liegen sie über der Anzeige, und die Pfade des
+## Bildschirms wie `$Communicator/MainMenu` bleiben gültig.
 ##
 ## Was eine Seite meldet, hört der Bildschirm selbst. Der Communicator kennt die Signale seiner
 ## Seiten nicht; er stellt sie nur hin, zeigt sie und fährt.
 ##
-## Das Gehäuse ist reine Grafik: Communicator, Gehäuse, Anzeige und Hinweis lassen die Maus durch
-## (`mouse_filter` IGNORE in der Szene), bedienbar sind nur die Seiten. Das Gehäuse ist ein Bild auf
-## dem Bildraster, genau ×2 gezeigt: `Case` hat die Größe der Textur, STRETCH_KEEP und scale 2.
-## Beim Organizer ist das G-03 (`organizer_1991.png`). Hat `Case` kein Bild, etwa bei einem
-## Gehäuse in Arbeit, malt `_draw()` an seiner Stelle einen Platzhalter (research.md, R11).
+## Das Gehäuse ist Grafik bis auf seine Gehäusetasten: Communicator, Gehäuse, Anzeige, Hinweis und
+## `Keys` lassen die Maus durch (`mouse_filter` IGNORE in der Szene), bedienbar sind nur die Seiten
+## und die Tasten. Das Gehäuse ist ein Bild auf dem Bildraster, genau ×2 gezeigt: `Case` hat die
+## Größe der Textur, STRETCH_KEEP und scale 2. Beim Organizer ist das G-03 (`organizer_1991.png`).
+## Hat `Case` kein Bild, etwa bei einem Gehäuse in Arbeit, malt `_draw()` an seiner Stelle einen
+## Platzhalter (research.md, R11).
 ##
 ## Eingabe: Ab `slide_out()` nimmt keine Seite Fokus, Maus oder Tastatur an, bis `slide_in()` oder
 ## `place_hidden()` kommt. Das regeln zwei Eigenschaften von Control für den ganzen Teilbaum,
@@ -29,9 +31,19 @@ extends Control
 ## Tween ist angehalten; `_process()` taktet ihn mit `custom_step()` und gedeckeltem Zeitschritt.
 ## So springt das Gerät in einem langen ersten Bild nicht gleich halb herein, und ein Test kann die
 ## Fahrt Bild für Bild nachrechnen, ohne zu warten (research.md, R6).
+##
+## Gehäusetasten (Feature 006, contracts/gehaeusetasten.md): [member case_keys] nennt Rechtecke im
+## Gehäusebild; für jedes legt der Communicator unter `Keys` eine unsichtbare Klickfläche
+## ([CaseKey]) an, ×2 wie das Gehäuse. Drückt die linke Maustaste eine Taste, klickt `KeyClick`, und
+## `Keys` malt die Taste eingedrückt; lässt sie über derselben Taste los, kommt
+## [signal case_key_pressed]. Was eine Folge von Tasten bedeutet, weiß der Bildschirm, nicht der
+## Communicator (research.md, R1). Die Sperre gilt für die Tasten mit, denn sie liegen im Teilbaum.
 
 ## Die Fahrt herein oder hinaus ist zu Ende. [param arrived_in] true heißt Endlage, false draußen.
 signal slide_finished(arrived_in: bool)
+## Eine Gehäusetaste wurde gedrückt und über ihr losgelassen (R4). [param index] ist ihr Platz in
+## case_keys, von links gezählt ab 0.
+signal case_key_pressed(index: int)
 
 ## Dauer einer Fahrt (Style-Guide, Baustein Communicator, Fahrt: 200 ms).
 const SLIDE_SECONDS := 0.2
@@ -61,6 +73,16 @@ const HIDDEN_Y := 360.0
 		display_color = value
 		if is_node_ready():
 			_display.color = value
+## Die Tasten im Gehäuse, je ein Rechteck in Bildpixeln des Gehäusebilds. Sie gehören zum Gehäuse
+## wie display_rect. Vorgabe ist leer; der Titel setzt die drei grauen Tasten von G-03 in seiner
+## Szene mit den Rechtecken aus dem Style-Guide (R1, R2; Analyse, I2).
+## Ein Gehäuse ohne Tasten setzt ein leeres Array. Ändert es sich zur Laufzeit, entstehen die
+## Klickflächen neu.
+@export var case_keys: Array[Rect2i] = []:
+	set(value):
+		case_keys = value
+		if is_node_ready():
+			_build_case_keys()
 
 ## false: Fahrten springen sofort ans Ziel und melden sich gleich (Tests, später „Bewegung
 ## reduzieren“).
@@ -83,11 +105,21 @@ var _tween: Tween = null
 var _first_step := false
 ## Ob die Eingabe gesperrt ist: ab slide_out() bis slide_in() oder place_hidden().
 var _locked := false
+## Die Klickflächen in der Reihenfolge von case_keys.
+var _case_key_nodes: Array[CaseKey] = []
+## Das Gehäusebild als Image, für die Farbe des Spalts links neben einer Taste; erst beim ersten
+## Eindrücken geholt.
+var _case_image: Image = null
 
 @onready var _case: TextureRect = $Case
 @onready var _display: ColorRect = $Display
 ## Der Hinweis zur gewählten Zeile. Als Kind fährt er mit, ohne eigenen Code (research.md, R7).
 @onready var _hint: MenuHint = $Hint
+## Die Ebene der Gehäusetasten: über dem Gehäuse, unter den Seiten. Ihre Kinder sind die
+## Klickflächen; was eingedrückt ist, malt _draw_case_keys() auf sie.
+@onready var _keys: Control = $Keys
+## Der Klick einer Gehäusetaste, knopf.wav auf dem Kanal Effekte (Style-Guide, Ton).
+@onready var _key_click: AudioStreamPlayer = $KeyClick
 
 
 func _ready() -> void:
@@ -99,6 +131,10 @@ func _ready() -> void:
 			% [name, position])
 	_display.color = display_color
 	_apply_display()
+	# Keys malt nicht selbst: Sein Signal draw ruft hier eine Funktion, die mit den draw_*-Befehlen
+	# von Keys malt. So braucht die Ebene kein eigenes Skript.
+	_keys.draw.connect(_draw_case_keys)
+	_build_case_keys()
 	# Die Seiten aus der Szene des Bildschirms sind jetzt schon Kinder: Godot ruft _ready() erst,
 	# wenn alle Kinder bereit sind.
 	for page in _page_list():
@@ -205,6 +241,15 @@ func accepts_input() -> bool:
 	return not _locked
 
 
+# --- Gehäusetasten --------------------------------------------------------
+
+## Ob die Taste [param index] gerade eingedrückt ist (für Tests und die Probeszene).
+func is_case_key_down(index: int) -> bool:
+	if index < 0 or index >= _case_key_nodes.size():
+		return false
+	return _case_key_nodes[index].is_down
+
+
 # --- Hinweis --------------------------------------------------------------
 
 ## Zeigt [param text] als Hinweis zu der Zeile [param row_rect] (global): links neben dem Gehäuse,
@@ -269,10 +314,17 @@ func _stop() -> void:
 ## - mouse_behavior_recursive DISABLED lässt jede Zeile für die Maus wie IGNORE wirken: kein
 ##   mouse_entered (MainMenu wählt damit), kein gui_input (SaveList wählt bei Bewegung), kein Klick.
 ## Frei heißt INHERITED, nicht ENABLED: So gilt weiter, was der Bildschirm darüber einstellt.
+##
+## Die Gehäusetasten liegen im selben Teilbaum und nehmen gesperrt ebenfalls keine Maus an. Eine
+## Taste, die in diesem Moment unten ist, bekäme ihr Loslassen aber nicht mehr; cancel() lässt sie
+## hochgehen, ohne dass der Druck zählt.
 func _set_locked(locked: bool) -> void:
 	_locked = locked
 	focus_behavior_recursive = FOCUS_BEHAVIOR_DISABLED if locked else FOCUS_BEHAVIOR_INHERITED
 	mouse_behavior_recursive = MOUSE_BEHAVIOR_DISABLED if locked else MOUSE_BEHAVIOR_INHERITED
+	if locked:
+		for key in _case_key_nodes:
+			key.cancel()
 
 
 ## Das Rechteck, das MenuHint bekommt: oben bündig mit [param row_rect], links aber an der linken
@@ -298,16 +350,95 @@ func _place_page(page: Control) -> void:
 	page.size = Vector2(display_rect.size)
 
 
-## Die Seiten: jedes Control unter dem Communicator außer Gehäuse, Anzeige und Hinweis, in der
-## Reihenfolge im Baum. Eine eigene Liste braucht es nicht; was der Bildschirm unter die Instanz
+## Die Seiten: jedes Control unter dem Communicator außer Gehäuse, Anzeige, Hinweis und der Ebene
+## der Gehäusetasten, in der Reihenfolge im Baum. KeyClick ist kein Control und fällt von selbst
+## heraus. Eine eigene Liste braucht es nicht; was der Bildschirm unter die Instanz
 ## hängt oder mit add_page() dazugibt, ist eine Seite, und was er wegnimmt, ist keine mehr.
 func _page_list() -> Array[Control]:
 	var pages: Array[Control] = []
 	for child in get_children():
 		var page := child as Control
-		if page != null and page != _case and page != _display and page != _hint:
+		if (page != null and page != _case and page != _display and page != _hint
+				and page != _keys):
 			pages.append(page)
 	return pages
+
+
+## Baut die Klickflächen aus case_keys neu: die alten weg, je Rechteck eine neue unter Keys, in
+## Oberflächenpixeln relativ zum Communicator (Rechteck mal Case.scale, dazu die Lage von Case).
+## Keys steht bei (0, 0), Lagen in Keys sind also Lagen im Communicator.
+func _build_case_keys() -> void:
+	for old in _case_key_nodes:
+		_keys.remove_child(old)
+		old.queue_free()
+	_case_key_nodes.clear()
+	for index in case_keys.size():
+		var surface := _surface_rect(Rect2(case_keys[index]))
+		var key := CaseKey.new()
+		key.name = "CaseKey%d" % index
+		var on_keys := _on_keys(surface)
+		key.position = on_keys.position
+		key.size = on_keys.size
+		key.down_changed.connect(_on_case_key_down_changed)
+		key.pressed.connect(_on_case_key_pressed.bind(index))
+		_keys.add_child(key)
+		_case_key_nodes.append(key)
+	_keys.queue_redraw()
+
+
+## Eine Taste geht runter oder hoch. Runter klickt es, von vorn, auch wenn der vorige Klick noch
+## klingt (FR-041). In beiden Fällen malt Keys im nächsten Bild neu (FR-001a).
+func _on_case_key_down_changed(is_down: bool) -> void:
+	if is_down:
+		_key_click.play()
+	_keys.queue_redraw()
+
+
+func _on_case_key_pressed(index: int) -> void:
+	case_key_pressed.emit(index)
+
+
+## Malt jede eingedrückte Taste auf Keys (R3; Style-Guide, Gehäusetasten). Ohne Bild im Gehäuse
+## gibt es nichts einzudrücken.
+func _draw_case_keys() -> void:
+	if _case.texture == null:
+		return
+	for index in _case_key_nodes.size():
+		if not _case_key_nodes[index].is_down:
+			continue
+		var layers := _pressed_layers(case_keys[index])
+		_keys.draw_rect(layers["gap_rect"], layers["gap_color"])
+		_keys.draw_texture_rect_region(_case.texture, layers["key_rect"], layers["key_source"])
+
+
+## Was _draw_case_keys() für die eingedrückte Taste [param key] malt, in Koordinaten von Keys:
+## - "gap_rect", "gap_color": die oberste Zeile der Taste in der Farbe des Bildpixels links neben
+##   ihr, des dunklen Spalts;
+## - "key_rect", "key_source": der Ausschnitt der Taste ohne ihre unterste Zeile ("key_source", in
+##   Bildpixeln) eine Bildpixelzeile tiefer ("key_rect", ×2). Er reicht nie über die Taste hinaus.
+func _pressed_layers(key: Rect2i) -> Dictionary:
+	var top_row := Rect2(key.position, Vector2(key.size.x, 1))
+	var source := Rect2(key.position, Vector2(key.size.x, key.size.y - 1))
+	var lowered := Rect2(source.position + Vector2(0, 1), source.size)
+	if _case_image == null:
+		_case_image = _case.texture.get_image()
+	return {
+		"gap_rect": _on_keys(_surface_rect(top_row)),
+		"gap_color": _case_image.get_pixel(key.position.x - 1, key.position.y),
+		"key_rect": _on_keys(_surface_rect(lowered)),
+		"key_source": source,
+	}
+
+
+## [param image_rect] in Bildpixeln des Gehäuses als Rechteck in Oberflächenpixeln des
+## Communicators.
+func _surface_rect(image_rect: Rect2) -> Rect2:
+	return Rect2(_case.position + image_rect.position * _case.scale, image_rect.size * _case.scale)
+
+
+## [param rect] aus Koordinaten des Communicators in Koordinaten von Keys.
+func _on_keys(rect: Rect2) -> Rect2:
+	return Rect2(rect.position - _keys.position, rect.size)
 
 
 ## Ob [param point] auf ganzen Bildpixeln liegt: Ein Bildpixel sind 2 × 2 Oberflächenpixel, x und y

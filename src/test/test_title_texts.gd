@@ -3,7 +3,9 @@ extends GutTest
 ## Prüft die Texte aus TitleTexts (Feature 004, T019): Jeder Hinweis und jede Meldung passt mit den
 ## längsten Platzhaltern in höchstens zwei Zeilen des Hinweises; ebenso die Meldungen zum Speichern
 ## aus GameSession und die Gründe aus SaveGame und SaveSlot (Analyse, C10). Dazu passen Einträge,
-## Kopfzeilen und die Zustandswörter in ihre Felder, und die Funktionen füllen die Vorlagen.
+## Kopfzeilen und die Zustandswörter in ihre Felder, und die Funktionen füllen die Vorlagen. Seit
+## Feature 006 passen auch die Zeilen der Ergebnisanzeige auf die Anzeige und die Punkte neben die
+## Leben in der Kopfzeile des Spiels.
 ##
 ## Gemessen wird mit dem echten Hinweis aus menu_hint.tscn: dieselbe Schrift aus dem Theme
 ## (HintLabel), dieselben 150 Pixel für den Text und derselbe Umbruch wie im Spiel. Die Texte holt
@@ -133,6 +135,57 @@ func test_zustandswoerter_passen_in_die_spalten_grad_und_spieldatum() -> void:
 		assert_true(breite <= ZUSTAND_BREITE, "„%s“ ist %d breit." % [zustand, breite])
 
 
+# --- Spiel auf der Anzeige (Feature 006, T016) ----------------------------
+
+func test_zeilen_der_ergebnisanzeige_passen_in_die_anzeige() -> void:
+	# Arrange: die Breite der Anzeige ohne den Innenrand von 2 Bildpixeln je Seite (Style-Guide,
+	# Spiel auf der Anzeige), also 312. Die Punkte mit drei Stellen, mehr gibt es nicht (640).
+	var platz := Communicator.DISPLAY_SIZE.x - 2 * InvadersGame.INSET * InvadersPage.PIXEL
+	var zeilen := [
+		["Zeile 1, gewonnen", TitleTexts.INVADERS_WON, &"LcdHeader"],
+		["Zeile 1, verloren", TitleTexts.INVADERS_LOST, &"LcdHeader"],
+		["Zeile 2", TitleTexts.INVADERS_POINTS % 640, &"LcdHeader"],
+		["Zeile 3", TitleTexts.INVADERS_CONTINUE, &"LcdRow"],
+	]
+
+	# Assert
+	assert_eq(platz, 312, "Voraussetzung: 312 Pixel für den Text.")
+	for zeile: Array in zeilen:
+		var breite := _breite(zeile[1], zeile[2])
+		assert_true(breite <= platz, "%s: „%s“ ist %d breit." % [zeile[0], zeile[1], breite])
+
+
+func test_die_schriften_der_ergebnisanzeige_sind_drucker_und_menue() -> void:
+	# Zeilen 1 und 2 wie eine Kopfzeile, Zeile 3 wie ein Eintrag (R10).
+	assert_eq(InvadersPage.RESULT_THEME_TYPES,
+		[&"LcdHeader", &"LcdHeader", &"LcdRow"] as Array[StringName])
+	assert_eq(THEMA.get_font(&"font", &"LcdHeader"), THEMA.get_font(&"font", &"MenuHeader"),
+		"drucker wie die Kopfzeilen.")
+	assert_eq(THEMA.get_font(&"font", &"LcdRow"), THEMA.get_font(&"font", &"MenuRow"),
+		"menue wie die Einträge.")
+
+
+func test_kopfzeile_mit_den_meisten_punkten_passt_links_neben_drei_leben() -> void:
+	# Arrange: die Punkte ab x 2, das erste von drei Leben; beides in Oberflächenpixeln.
+	var text := TitleTexts.INVADERS_SCORE % 640
+	var anfang := InvadersPage.SCORE_POS.x * InvadersPage.PIXEL
+	var erstes_leben := InvadersPage.life_pos(0, InvadersGame.LIVES).x * InvadersPage.PIXEL
+
+	# Assert
+	assert_eq(text, "PUNKTE 0640")
+	assert_true(anfang + _breite(text, &"LcdHeader") <= erstes_leben,
+		"„%s“ endet bei %d, das erste Leben beginnt bei %d."
+		% [text, anfang + _breite(text, &"LcdHeader"), erstes_leben])
+
+
+func test_punkte_mit_und_ohne_fuehrende_nullen() -> void:
+	# Führende Nullen nur in der Kopfzeile, wo die Stellenzahl fest ist (R10).
+	assert_eq(TitleTexts.INVADERS_SCORE % 0, "PUNKTE 0000")
+	assert_eq(TitleTexts.INVADERS_SCORE % 380, "PUNKTE 0380")
+	assert_eq(TitleTexts.INVADERS_POINTS % 380, "380 PUNKTE")
+	assert_eq(TitleTexts.INVADERS_POINTS % 0, "0 PUNKTE")
+
+
 # --- Vorlagen füllen ------------------------------------------------------
 
 func test_funktionen_fuellen_die_vorlagen_wie_im_vertrag() -> void:
@@ -199,6 +252,13 @@ func _konstanten(klasse: String, skript: Script, praefix: String) -> Dictionary:
 		if konstante.begins_with(praefix) and alle[konstante] is String:
 			texte["%s.%s" % [klasse, konstante]] = alle[konstante]
 	return texte
+
+
+## Breite von [param text] in der Schrift der Theme-Variante [param variante], ganze Pixel.
+func _breite(text: String, variante: StringName) -> int:
+	var schrift := THEMA.get_font(&"font", variante)
+	var groesse := THEMA.get_font_size(&"font_size", variante)
+	return ceili(schrift.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, groesse).x)
 
 
 ## Zeigt [param text] im Hinweis und zählt seine Zeilen, wie das Label sie umbricht.

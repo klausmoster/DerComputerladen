@@ -7,9 +7,10 @@ extends GutTest
 ##
 ## Durchsucht werden die Szenen und Skripte unter res://scenes/, res://tools/werkstatt/ und
 ## res://core/: in .tscn die Werte der Texteigenschaften, in .gd alle Zeichenketten außerhalb von
-## Kommentaren. Ein Treffer ist ein Wort der höflichen Anrede als ganzes Wort und großgeschrieben.
-## „sie“ und „ihr“ klein sind die dritte Person und bleiben unbeanstandet; „Sieben“ und
-## „Ihringen“ sind keine ganzen Wörter der Anrede.
+## Kommentaren. Ein Treffer ist ein Wort der höflichen Anrede als ganzes Wort und großgeschrieben,
+## auch ganz in Versalien wie in der Ergebnisanzeige des Spiels auf der Anzeige („SIE“, „IHNEN“;
+## Feature 006, Analyse, U7). „sie“ und „ihr“ klein sind die dritte Person und bleiben
+## unbeanstandet; „Sieben“ und „Ihringen“ sind keine ganzen Wörter der Anrede.
 ##
 ## Großgeschrieben steht „Sie“ auch am Satzanfang, dann meint es oft die Mehrzahl. Solche Stellen
 ## kommen mit Grund in ERLAUBT. Ein eigener Test meldet Einträge, die es nicht mehr gibt.
@@ -26,8 +27,9 @@ const TEXTEIGENSCHAFTEN := [
 ]
 ## Die Wörter der höflichen Anrede als ganzes Wort: weder davor noch danach ein Buchstabe, eine
 ## Ziffer oder ein Unterstrich. \p{L} schließt Umlaute ein, anders als \b.
-const ANREDE := "(?<![\\p{L}\\p{N}_])" + "(Sie|Ihnen|Ihr|Ihre|Ihrem|Ihren|Ihrer|Ihres)" \
-	+ "(?![\\p{L}\\p{N}_])"
+## Dieselben Wörter auch ganz in Versalien.
+const ANREDE := "(?<![\\p{L}\\p{N}_])" + "(Sie|Ihnen|Ihr|Ihre|Ihrem|Ihren|Ihrer|Ihres" \
+	+ "|SIE|IHNEN|IHR|IHRE|IHREM|IHREN|IHRER|IHRES)" + "(?![\\p{L}\\p{N}_])"
 ## Stellen, an denen ein Wort der Anrede steht, ohne zu siezen: Datei relativ zu res://, ein
 ## eindeutiger Ausschnitt der Zeichenkette, der das Wort enthält, und der Grund.
 const ERLAUBT := [
@@ -88,6 +90,24 @@ func test_anrede_wird_in_skript_und_szene_gefunden() -> void:
 		[[2, "Ihr"]])
 	assert_string_contains(_als_zeile(in_der_szene[0]), "probe.tscn:2")
 	assert_string_contains(_als_zeile(in_der_szene[0]), "Ihr Konto")
+
+
+func test_anrede_in_versalien_wird_gefunden() -> void:
+	# Arrange: Versalien wie in der Ergebnisanzeige; „SIE SIND GELANDET.“ war ein früherer Wortlaut
+	# und las sich wie die Anrede (R10). Dazu Wörter, die nur so anfangen.
+	var skript := "var a := \"SIE SIND GELANDET.\"\nvar b := \"DANKE IHNEN.\"\n" \
+		+ "var c := \"IHR LADEN, IHRE KASSE\"\nvar d := \"SIEBEN SIEGER, ALLE ERWISCHT.\"\n"
+	var szene := "text = \"GAME OVER\"\ntooltip_text = \"IHRES ZEICHENS\"\n"
+
+	# Act
+	var im_skript := _treffer_im_skript(skript, "probe.gd")
+	var in_der_szene := _treffer_in_der_szene(szene, "probe.tscn")
+
+	# Assert
+	assert_eq(im_skript.map(func(t: Dictionary) -> Array: return [t.zeile, t.wort]),
+		[[1, "SIE"], [2, "IHNEN"], [3, "IHR"], [3, "IHRE"]])
+	assert_eq(in_der_szene.map(func(t: Dictionary) -> Array: return [t.zeile, t.wort]),
+		[[2, "IHRES"]])
 
 
 func test_harmlose_saetze_bleiben_unbeanstandet() -> void:

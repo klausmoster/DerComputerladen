@@ -106,6 +106,20 @@ const HINT_LEAVE := "Speichert {name} und führt ins Hauptmenü."
 ## Löschen ist gescheitert. Die Meldungen zum Speichern stehen in GameSession.
 const MESSAGE_DELETE_FAILED := "Löschen ging nicht. Der Spielstand ist noch da."
 
+# --- Spiel auf der Anzeige (Feature 006, research.md, R10) -------------------------------------
+
+## Kopfzeile im Spiel, mit vier Stellen: „PUNKTE 0380“. Führende Nullen nur hier, wo die
+## Stellenzahl fest ist.
+const INVADERS_SCORE := "PUNKTE %04d"
+## Ergebnisanzeige, Zeile 1 nach einem Sieg.
+const INVADERS_WON := "ALLE ERWISCHT."
+## Beide Niederlagen, wie beim Automaten von 1978 (Klaus, 2026-10-27).
+const INVADERS_LOST := "GAME OVER"
+## Ergebnisanzeige, Zeile 2: „380 PUNKTE“, ohne führende Nullen.
+const INVADERS_POINTS := "%d PUNKTE"
+## Ergebnisanzeige, Zeile 3; Bedienung, ohne Witz.
+const INVADERS_CONTINUE := "Weiter mit Taste oder Klick."
+
 
 ## „Weiter mit Spiel 2, Schwer, am 14.03.1986.“
 static func continue_hint(game_name: String, difficulty: String, date: String) -> String:

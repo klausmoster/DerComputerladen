@@ -903,3 +903,121 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
   Grenze festhalten. Steht im Datenmodell unter „Neu abspielen“ und in R22.
 - **Vorgabe-Teilung der Tabellen (T101):** Klaus, 2026-10-21: Die Tabelle bekommt Vorrang.
   Umgesetzt in Phase 12.
+
+### Feature 006, Spec (2026-10-27)
+
+- **Der Name „Space Invaders“ erscheint nicht im Spiel:** Er ist eine Marke. Das Easter Egg
+  übernimmt nur die Spielidee, keine Grafik, keinen Ton und keinen Namen aus dem Original. Klaus
+  kann das im Review kippen (`specs/006-easter-egg-space-invaders/spec.md`, Assumptions).
+- **Regeln für Ton in den Style-Guide:** Klang, Tonhöhen und Lautstärke kommen als Abschnitt
+  „Ton“ in den Style-Guide, damit es eine Quelle für alles gibt, was Look und Klang bestimmt.
+- **Das Spiel hält an, solange das Fenster keinen Fokus hat** (FR-016), damit niemand eine Partie
+  verliert, während er in einem anderen Fenster ist.
+
+### Feature 006, Plan (2026-10-27)
+
+Alle in `specs/006-easter-egg-space-invaders/research.md`; Klaus kann sie bei Checkliste oder Abnahme
+ändern:
+- **R1** Die Knöpfe sind Gehäusetasten des Communicators (`case_keys`, Signal), die Folge kennt nur
+  der Titel (`KeySequence`).
+- **R2/R3** Lage der Knöpfe aus G-03 gemessen; eingedrückt aus dem eigenen Bildausschnitt eine Zeile
+  tiefer, ohne neues Bild.
+- **R4** Gezählt wird beim Loslassen über derselben Taste, der Klick ertönt beim Drücken.
+- **R5** Während das Spiel läuft, klicken die Knöpfe weiter, starten aber nichts.
+- **R6** Spiel als Kern ohne Node mit festem Schritt 1/60 s und Seed, dazu eine Seite; unter
+  `src/scenes/title/invaders/`.
+- **R7** Maße und Tempi des Levels als Vorschlag; Klaus stellt sie in Phase 4 ein.
+- **R8** Pixelmuster als Text-Daten, eigene Entwürfe statt Kopien des Originals.
+- **R10** Wortlaute der Meldung (Vorschlag), Sperre von 0,5 s vor dem Weiter.
+- **R11** Anhalten über die Fokus-Benachrichtigungen der App statt `get_tree().paused`.
+- **R13/R14** WAV 22 050 Hz aus `tools/ton/make_sounds.py`; Kanäle `Master` und `Effekte` (−10 dB),
+  kein Autoload für Ton.
+
+### Feature 006, Phasenprüfung Phase 4 (2026-10-27)
+
+Lücken im Style-Guide, von den Prüfern gemeldet und von Claude nachgeprüft. Klaus hat am 2026-10-27
+alle nach Empfehlung entschieden; geschlossen im Style-Guide, Version 53 (Baustein Spiel auf der
+Anzeige, Sprache):
+- **Kopfzeile „oben bündig bei y 1“** (Stil): Gebaut ist der Zeilenkasten ab Oberflächenpixel 2 wie
+  bei einem Label; die Versalien stehen dann in den Zeilen 5 bis 11, die Leben in 4 bis 11.
+  Empfehlung: so lassen und im Baustein „Zeilenkasten ab y 1, wie ein Label“ schreiben.
+- **„Waagrecht mittig“ bei Doto mit Laufweite** (Stil): Nachgemessen liegen die drei Zeilen der
+  Ergebnisanzeige 1 bis 1,5 Oberflächenpixel links der Mitte, weil die Laufweite nach dem letzten
+  Zeichen mitzählt und nach links gerundet wird. Empfehlung: „mittig auf 1 Oberflächenpixel genau,
+  ein Rest fällt nach links“ in den Baustein.
+- **Explosion an der Kanone, halber Pixel** (Stil): 8 breit über 9; gebaut bündig links
+  (research.md, Auslegungen Phase 3). Empfehlung: so in den Baustein.
+- **Satzzeichen in Versalzeilen** (Text): Empfehlung für „Sprache“: Ein Satz endet mit Punkt
+  („ALLE ERWISCHT.“), eine Angabe nicht („640 PUNKTE“, „GAME OVER“, „HAUPTMENÜ“), eine Frage mit
+  Fragezeichen („LÖSCHEN?“).
+- **„Weiter mit …“ in zwei Bedeutungen** (Text): „Weiter mit Spiel 2 …“ im Hauptmenü und „Weiter mit
+  Taste oder Klick.“ in der Ergebnisanzeige stehen auf verschiedenen Seiten nacheinander.
+  Empfehlung: lassen; „Blatt“ in der Regel meint eine Seite.
+
+### Feature 006, Phasenprüfung Phase 5 (2026-10-27)
+
+Lücken vom Stil-Prüfer, von Claude nachgeprüft. Klaus hat am 2026-10-27 nach Empfehlung entschieden;
+die Sätze stehen im Style-Guide, Version 54 (Baustein Communicator), der Code folgt in einer Aufgabe
+für den Agent vor der Abnahme:
+- **Fenster verliert den Fokus, während eine Gehäusetaste unten ist:** Heute schickt Godot dann ein
+  Loslassen, und steht die Maus über der Taste, zählt der Druck. Empfehlung: wie beim Hinausfahren
+  zurückspringen und nicht zählen; Satz im Baustein Communicator, `cancel()` bei
+  `NOTIFICATION_APPLICATION_FOCUS_OUT` in `CaseKey`, ein Test. Aufwand: klein, eine Aufgabe für den
+  Agent.
+- **Kein Fokus und keine Tastatur an den Gehäusetasten:** gebaut so (`FOCUS_NONE`), im Style-Guide
+  fehlt der Satz. Empfehlung: in die Ausnahmeliste im Baustein Communicator.
+- **Meldung in der Probeszene für einen Tastendruck:** Die Probe zeigt „Gehäusetaste 3 gedrückt.“ als
+  Meldung, obwohl die Meldung für Fehler ist; so macht es die Probe seit Feature 005. Empfehlung:
+  lassen, Probeszenen sind kein Teil des Spiels.
+- Verworfen: „Baustein Hinweis fehlt im Maßstab“; der Pfad im Auftrag war falsch, der Baustein
+  steht im Style-Guide.
+
+### Feature 006, Lückensuche (2026-10-28)
+
+Lücken vom Stil- und Text-Prüfer über das ganze Feature (T036), von Claude nachgeprüft. Klaus hat am
+2026-10-28 nach Empfehlung entschieden. Übernommen in den Style-Guide, Version 56 (T044): das Spiel
+als Seite im Titel (Baustein Communicator, „Einsatz“; Baustein Menü, „Seiten im Titel“), die
+Gehäusetasten auch in der Probeszene, „Name des Vorbilds“ nur für Sichtbares und Hörbares, Werkzeuge
+und Probeszenen unter denselben Sprachregeln (Abschnitt Sprache, „Anrede“). Nicht übernommen:
+- **„Taste“ in „Weiter mit Taste oder Klick.“, während Gehäusetasten zu sehen sind (Text L1):** Kein
+  Verstoß; die Regel „kein Wort für zwei Dinge“ gilt für Wörter auf derselben Seite, und die
+  Gehäusetasten stehen nirgends als Wort. „Knopf“ oder „Tastendruck“ passt nicht in die Zeile.
+- **Ob die Ergebnisanzeige als Meldung oder Warnung zählt (Text L3):** Der Abschnitt „Texte im Spiel
+  auf der Anzeige“ sagt schon „zählt als Meldung“; eine Warnung kommt im Spiel nicht vor. Ohne Folge
+  für Text oder Code.
+- **Satzform der Meldungen in der Probeszene (Text L4):** Probeszenen folgen jetzt denselben
+  Sprachregeln; eine eigene Regel für ihre Satzform braucht es nicht. „Gehäusetaste 3 gedrückt.“
+  bleibt, wie in Phase 5 entschieden.
+
+### Feature 006, Nachprüfung Phase 7 (2026-10-28)
+
+Lücken von Stil- und Text-Prüfer über das Geänderte, von Claude nachgeprüft. Klaus hat am 2026-10-28
+nach Empfehlung entschieden; die Sätze stehen im Style-Guide, Version 57, der Code tut es schon so:
+- **Meldung beim Start des Spiels:** Hinweis und Meldung sind verborgen; danach kommt der Hinweis der
+  gewählten Zeile zurück, die Meldung nicht (Baustein Communicator, „Hinweis und Meldung“; Baustein
+  Spiel, „Einsatz“).
+- **Versionszeile während des Spiels:** bleibt stehen (Baustein Spiel, „Einsatz“).
+- **Gehäusetasten beim Hereinfahren:** zählen schon, wie die Seiten (Baustein Communicator,
+  „Gehäusetasten“).
+- **Sprachregeln und Testausgaben:** Testausgaben im Code sind ausgenommen (Abschnitt Sprache,
+  „Anrede“).
+- Der Befund des Stil-Prüfers (Kommentar zum Fokusverlust in `invaders_page.gd` nannte eine
+  Gehäusetaste als Ursache) ist behoben, ebenso in `research.md` R9 und `test_invaders_page.gd`.
+
+### Feature 006, Spielbeschreibung (2026-10-28)
+
+Beim Abgleich für `docs/spielbeschreibung/` (T039) fielen sieben kleine Abweichungen zwischen
+Spec-Dokumenten und Code auf. Keine ändert das Verhalten; die Spielbeschreibung beschreibt den Code.
+Empfehlung: so lassen, die Specs von 006 sind abgeschlossen.
+- Eindrücken: gemalt über das Signal `draw` von `Keys` in `communicator.gd`, nicht in einem
+  `Keys._draw()` (contracts/gehaeusetasten.md).
+- Die Folge beginnt mit jedem Titel neu, statt dass der Titel beim Erscheinen `reset()` ruft (R5).
+- Die 15 ms Tonlatenz sind Godots Vorgabe, keine Projekteinstellung (R13).
+- Zwei Rückfallwege beim Rückweg (Hauptmenü, wenn keine Seite gemerkt ist; Zeile neu wählen, wenn
+  das Control fehlt) stehen nicht in contracts/titelbildschirm.md.
+- Die Explosion an der Kanone steht auch nach dem letzten Treffer, wie in R7 ausgelegt, nicht nur in
+  `RESPAWN` (contracts/invaders.md).
+- Ohne Fensterfokus prüft `_gui_input()` den Fokus nicht; es kommen dann keine Tasten an
+  (data-model.md).
+- `CaseKey` meldet beim Loslassen einer Taste, die nicht unten ist, kein `down_changed(false)`;
+  im Ergebnis gleich (contracts/gehaeusetasten.md).

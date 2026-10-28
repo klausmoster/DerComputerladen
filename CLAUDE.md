@@ -89,11 +89,12 @@ deren `README.md`.
 | `src/core/save/` | Spielstände: `SaveGame` (Inhalt, Formatversion), `SaveSlot` (eine Datei und ihr Zustand), `SaveStore` (Ordner `user://spielstaende/`, sicheres Schreiben, Löschen) |
 | `src/data/` | Ereigniskatalog `event_catalog.json`, gepflegt mit der Zeitleisten-Werkstatt |
 | `src/ui/` | Theme des ganzen Spiels (`computerladen_theme.tres`), Farben (`ui_palette.gd`) und der Communicator (`communicator/`) |
-| `src/scenes/title/` | Titelbildschirm mit seinen Seiten auf dem Communicator: Hauptmenü, Gradwahl, Liste der Spielstände, Rückfrage; Hinweis und Meldung; alle Texte in `title_texts.gd` |
+| `src/scenes/title/` | Titelbildschirm mit seinen Seiten auf dem Communicator: Hauptmenü, Gradwahl, Liste der Spielstände, Rückfrage; Hinweis und Meldung; alle Texte in `title_texts.gd`; das versteckte Spiel unter `invaders/` |
 | `src/scenes/game/` | Spielbildschirm, bisher leer bis auf „Zum Hauptmenü“ |
-| `src/assets/` | Schriften (`fonts/`), gerasterte Bilder (`images/`), App-Symbol (`icon/`) |
+| `src/assets/` | Schriften (`fonts/`), gerasterte Bilder (`images/`), App-Symbol (`icon/`), Töne (`sounds/`) |
 | `src/tools/werkstatt/` | Zeitleisten-Werkstatt (Editor, Zeitstrahl, Simulator, Statistik), Textausgabe `fahrplan_ausgabe.gd`, Proben unter `proben/`; vom Export ausgeschlossen |
 | `tools/raster/` | Python-Werkzeuge der Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol |
+| `tools/ton/` | `make_sounds.py` erzeugt die Töne; die Kanäle stehen in `src/default_bus_layout.tres` |
 | `tools/tagebuch/` | `token_bilanz.py`: Token und geschätzte Kosten je Branch aus den Protokollen von Claude Code |
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
 | `docs/game_bible/` | Obsidian-Vault mit den Spieldaten (Komponenten, Preise, Prospekte) |
