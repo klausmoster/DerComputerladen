@@ -158,14 +158,18 @@ CHK028).
 **Fenster und Schrift**
 - Wie `werkstatt.gd`: `GameWindow` anhalten (`set_process(false)`,
   `set_process_unhandled_input(false)`), `content_scale_mode = DISABLED`,
-  `content_scale_factor = DisplayServer.screen_get_scale()`, Fenster maximieren (CHK016).
+  `content_scale_factor = DisplayServer.screen_get_scale()`. Das Fenster behält Größe und Lage aus
+  dem Lauf und wird nicht maximiert (Klaus, Phase 4: eine reproduzierbare Fenstergröße für den
+  Selbsttest; die Zusammenfassung steht einfach darin; ersetzt das Maximieren aus CHK016).
 - Theme `werkstatt_theme.tres` als Kopie mit `default_font = ThemeDB.fallback_font` (CHK017).
 - Grund `papier` über die ganze Fläche (CHK022).
 - Knöpfe als Standard-`Button` ohne eigene Styles; Überfahren, Drücken, Fokus und gesperrt kommen
   aus dem Theme. Tooltip und Handzeiger wie in der Werkstatt (CHK026).
 
-**Aufbau von oben** (CHK021), Rand und Abstand zwischen Bereichen `raster-16`, zwischen Einträgen
-`raster-8`, zwischen Knöpfen `raster-4` (CHK022):
+**Aufbau von oben** (CHK021), Rand und Abstand zwischen Bereichen `raster-16`, zwischen dem Text
+zweier Einträge `raster-8` (je `raster-4` Innenabstand oben und unten; die Streifen in `endlos-gruen` liegen ohne
+Lücke aneinander), zwischen Knöpfen `raster-8`, vom Bereichstitel zur Liste `raster-8`, von der Knopfreihe zur
+Bestätigung `raster-16` (CHK022; Style-Guide „Werkzeuge“, Version 60):
 
 | Bereich | Schrift | Farbe |
 |---|---|---|
@@ -213,7 +217,7 @@ Platzhalter. Zahlwörter nach dem Fall: „von 1 Schritt“, „von 2 Schritten�
 | Eintrag nicht gelaufen | `{kennung} · {beschreibung}` / `Nicht gelaufen: {grund}` |
 | Pfad | `Protokoll und Fotos liegen hier: {pfad}` |
 | Knöpfe | `Kopieren`, `Ordner zeigen`, `Beenden` |
-| Tooltips | „Legt das Ergebnis als Text in die Zwischenablage.“, „Zeigt das Zip dieses Laufs im Dateimanager.“, „Beendet den Selbsttest.“ |
+| Tooltips | „Legt das Ergebnis als Text in die Zwischenablage.“, „Zeigt das Zip dieses Laufs im Dateimanager.“, „Beendet den Selbsttest.“; „Ordner zeigen“ gesperrt: „Kein Zip: Im Ordner lässt sich nicht schreiben.“ |
 | Bestätigung | `Kopiert.`; unter Linux `Kopiert. Erst einfügen, dann beenden.` |
 | Ordner nicht beschreibbar | `Kein Protokoll: In {pfad} lässt sich nicht schreiben.` |
 | `gefunden` bei FEHLER | `Zeit abgelaufen, zuletzt: {zustand}` / `Ziel nicht gefunden: {ziel}` / der gefundene Zustand |

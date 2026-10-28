@@ -12,6 +12,22 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Phase 4 (2026-10-28)
+
+- **Klaus:** Die Zusammenfassung wird nicht maximiert. Das Fenster behält Größe und Lage aus dem
+  Lauf, damit der Selbsttest eine reproduzierbare Fenstergröße hat; ersetzt das Maximieren aus CHK016.
+- **Klaus, Lücken der Phasenprüfung (Style-Guide Version 60):** gesperrter Knopf mit Tooltip, der den
+  Grund nennt; `raster-8` zwischen Knöpfen; Bestätigung `raster-16` neben der Knopfreihe; Titel eines
+  Bereichs `raster-8` über dem Inhalt, „Kopf“ ist eine Fläche, „Titel“ nur Text; Schlusspunkt auf dem
+  Bildschirm wie im Protokoll.
+- **Folgepunkt, außerhalb von 007:** Die Werkstatt hat noch `raster-4` zwischen Knöpfen, und ihre
+  Knöpfe setzen keinen Handzeiger (nur der Zeitstrahl). Beides weicht jetzt vom Abschnitt
+  „Werkzeuge“ ab.
+- **Hinweis:** „Ordner zeigen“ öffnet den Ordner `selbsttest/` mit dem markierten Zip, nicht den
+  Ordner des Laufs aus der Pfadzeile; Knopf und Tooltip sind so freigegeben (CHK002, CHK026).
+- **Style-Guide Version 58** (T027, T028): Abschnitt „Werkzeuge“ um Nicht gelaufen, Gesperrt,
+  Tooltip, Bestätigung, Umbruch und den Teil „Texte“ ergänzt.
+
 ### Feature 007, Phase 3 (2026-10-28)
 
 - **Klaus:** Der Selbsttest fand, dass `GameWindow` das Fenster mittig auf dem ganzen Bildschirm

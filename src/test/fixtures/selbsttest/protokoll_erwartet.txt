@@ -49,7 +49,7 @@ foto_vergleichbar: ja
 
 schritt: neues_spiel.01_gradwahl
 ablauf: neues_spiel
-beschreibung: Enter auf „Neues Spiel“
+beschreibung: Enter auf „Neues Spiel“ öffnet die Gradwahl
 eingaben: Maus über „Neues Spiel“, Enter
 erwartet: Menü steht: SCHWIERIGKEIT, Mittel
 status: FEHLER

@@ -9,15 +9,18 @@ extends Node
 ## Titel als Vorbereitung, dann je Schritt Fenstertitel, Eingaben über den Fahrer, jedes Bild die
 ## Prüfung, bis sie stimmt oder die Höchstzeit in echter Zeit vorbei ist, Foto, Ergebnis. Was
 ## daraus folgt (nicht gelaufene Schritte, abhängige Abläufe), regelt SelbsttestLauf. Am Ende
-## schreibt er Protokoll, Ausgabe und Zip und beendet die App; die Zusammenfassung kommt in Phase 4.
+## schreibt er Protokoll, Ausgabe und Zip, schaltet den Filter der Eingabe aus und wechselt zur
+## Zusammenfassung (SelbsttestErgebnis). Ab dann hört er nicht mehr auf das Schließen des Fensters;
+## Schließen beendet einfach (CHK028).
 ##
 ## Der Ablauf ist eine Kette von await: Der Läufer wartet auf Bilder (process_frame), auf das fertig
 ## gemalte Bild für das Foto (frame_post_draw) und auf die Eingaben. Dazwischen läuft das Spiel
 ## ganz normal weiter. Wird das Fenster geschlossen, schreibt _brich_ab() sofort alles und beendet;
 ## die angehaltene Kette merkt beim nächsten Weiterlaufen an _abgebrochen, dass sie aufhören soll.
 ##
-## Für Tests ohne Fenster lassen sich frischer Titel, Foto und Beenden über Callables ersetzen
-## (vorbereitung, fotograf, beenden), wie quit_callback in GameSession.
+## Für Tests ohne Fenster lassen sich frischer Titel, Foto, Zusammenfassung und Beenden über
+## Callables ersetzen (vorbereitung, fotograf, zusammenfassung, beenden), wie quit_callback in
+## GameSession.
 
 ## Steht im Protokoll als selbsttest.version; steigt, wenn sich Abläufe ändern (R21).
 const VERSION := 1
@@ -59,8 +62,11 @@ var session: Node = null
 var vorbereitung: Callable
 ## Gibt das Foto als Image, mit await; ungültig heißt das Bild des Fensters nach frame_post_draw.
 var fotograf: Callable
-## Beendet die App; ungültig heißt get_tree().quit().
+## Beendet die App nach einem Abbruch; ungültig heißt get_tree().quit().
 var beenden: Callable
+## Zeigt nach dem Schreiben die Zusammenfassung; ungültig heißt der Wechsel zu SelbsttestErgebnis
+## (_zeige_zusammenfassung()).
+var zusammenfassung: Callable
 ## Der Lauf, den starte() bekam.
 var lauf: SelbsttestLauf = null
 
@@ -161,7 +167,10 @@ func _laufe() -> void:
 		return
 	_schreibe()
 	fertig.emit(lauf)
-	_beende()
+	if zusammenfassung.is_valid():
+		zusammenfassung.call()
+	else:
+		_zeige_zusammenfassung()
 
 
 ## Ein Schritt: Eingaben, warten auf den Zustand, Foto, Ergebnis. [param nach_frischem_titel]: Der
@@ -341,6 +350,15 @@ func _schreibe() -> void:
 static func _melde_schreibfehler(datei: String, fehler: Error) -> void:
 	if fehler != OK:
 		printerr(SelbsttestTexte.nicht_geschrieben(datei, error_string(fehler)))
+
+
+## Wechselt zur Zusammenfassung. change_scene_to_node() nimmt den fertigen Knoten; so stehen Lauf
+## und Pfade, bevor sie in den Baum kommt. Der Filter ist hier schon aus (_schreibe()), sonst
+## kämen echte Klicks auf ihren Knöpfen nie an (Analyse, U3).
+func _zeige_zusammenfassung() -> void:
+	var ordner := ablage.ordner() if ablage != null else ""
+	var zip := ablage.zip_pfad() if ablage != null else ""
+	get_tree().change_scene_to_node(SelbsttestErgebnis.erstelle(lauf, ordner, zip))
 
 
 func _beende() -> void:

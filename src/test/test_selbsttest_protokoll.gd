@@ -352,7 +352,7 @@ func _erfundener_lauf(mit_schritten: bool = true) -> SelbsttestLauf:
 	var neues_spiel := SelbsttestAblauf.new()
 	neues_spiel.kennung = "neues_spiel"
 	lauf.plane(neues_spiel, [
-		neues_spiel.neuer_schritt("01_gradwahl", "Enter auf „Neues Spiel“",
+		neues_spiel.neuer_schritt("01_gradwahl", "Enter auf „Neues Spiel“ öffnet die Gradwahl",
 			"Maus über „Neues Spiel“, Enter", nichts, passt,
 			"Menü steht: SCHWIERIGKEIT, Mittel"),
 		neues_spiel.neuer_schritt("02_zurueck_esc", "Esc", "Esc", nichts, passt,

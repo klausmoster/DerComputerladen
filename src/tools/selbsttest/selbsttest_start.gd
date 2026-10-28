@@ -5,8 +5,9 @@ extends Node
 ## Hauptszene nennt (application/run/main_scene.selbsttest); das Spiel selbst weiß nichts davon.
 ##
 ## Sie richtet den Lauf ein und tritt dann ab:
-## 1. Ablage für den Lauf anlegen. Lässt sich dort nicht schreiben, gibt sie die Meldung aus und
-##    beendet; die Zusammenfassung, die sie zeigen soll, kommt erst in Phase 4.
+## 1. Ablage für den Lauf anlegen. Lässt sich dort nicht schreiben, erhebt sie nur die Systemdaten
+##    und wechselt gleich zur Zusammenfassung mit der Meldung und dem Pfad (CHK020). Am Spiel
+##    ändert sich dann nichts, und kein Ablauf läuft.
 ## 2. Logger anmelden, Systemdaten erheben, sobald das Fenster seine Größe hat (Analyse, I6).
 ## 3. GameSession auf den eigenen Ordner, die feste Zeit und den festen Seed stellen, SaveGame auf
 ##    die feste Zeitzone (FR-008). Dafür gibt es diese Felder schon; am Spiel ändert sich nichts.
@@ -31,8 +32,13 @@ func _ready() -> void:
 	var lauf := SelbsttestLauf.new()
 	var ablage := SelbsttestAblage.new(lauf.id)
 	if ablage.lege_an() != OK:
+		# Auch im Terminal zu lesen, etwa wenn die App unter Linux aus der Konsole startet.
 		printerr(SelbsttestTexte.kein_protokoll(ablage.ordner()))
-		get_tree().quit(1)
+		var nur_system := await _erhebe_system()
+		nur_system.hole_treiber()
+		_trage_ein(lauf, nur_system)
+		get_tree().change_scene_to_node(SelbsttestErgebnis.erstelle(lauf, ablage.ordner(),
+			ablage.zip_pfad(), false))
 		return
 
 	var logger := SelbsttestLogger.new()
@@ -55,17 +61,8 @@ func _ready() -> void:
 	eingabe.einschalten(get_window())
 	var fahrer := SelbsttestFahrer.new(get_tree(), eingabe)
 
-	# system.fenster soll die Größe nach dem Start nennen (Analyse, I6).
-	for bild in BILDER_BIS_ZUR_FENSTERGROESSE:
-		await get_tree().process_frame
-	var system := SelbsttestSystem.new()
-	system.erhebe()
-
-	lauf.system = system.werte
-	lauf.version = SelbsttestLaeufer.VERSION
-	lauf.feste_zeit = FESTE_ZEIT
-	lauf.feste_zeitzone = ZEITZONE_MINUTEN
-	lauf.zeitraffer = SelbsttestAblauf.ZEITRAFFER
+	var system := await _erhebe_system()
+	_trage_ein(lauf, system)
 
 	var laeufer := SelbsttestLaeufer.new()
 	laeufer.name = "SelbsttestLaeufer"
@@ -80,3 +77,23 @@ func _ready() -> void:
 	get_tree().root.add_child.call_deferred(laeufer)
 	laeufer.starte.call_deferred(lauf, SelbsttestLaeufer.ablaeufe())
 	get_tree().change_scene_to_file(TITEL)
+
+
+## Die Systemdaten, sobald das Fenster seine Größe hat: system.fenster soll die Größe nach dem Start
+## nennen (Analyse, I6).
+func _erhebe_system() -> SelbsttestSystem:
+	for bild in BILDER_BIS_ZUR_FENSTERGROESSE:
+		await get_tree().process_frame
+	var system := SelbsttestSystem.new()
+	system.erhebe()
+	return system
+
+
+## Was der Lauf vom Start an weiß: Systemdaten, Version der Abläufe, feste Zeit und Zeitraffer. Auch
+## ohne beschreibbaren Ordner, denn „Kopieren“ legt dann „# Lauf“ und „# System“ ab.
+func _trage_ein(lauf: SelbsttestLauf, system: SelbsttestSystem) -> void:
+	lauf.system = system.werte
+	lauf.version = SelbsttestLaeufer.VERSION
+	lauf.feste_zeit = FESTE_ZEIT
+	lauf.feste_zeitzone = ZEITZONE_MINUTEN
+	lauf.zeitraffer = SelbsttestAblauf.ZEITRAFFER

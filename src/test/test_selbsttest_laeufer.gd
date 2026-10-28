@@ -4,12 +4,13 @@ extends GutTest
 ## „Läufer“; R6, R22, R24; FR-003a, FR-006, FR-009, FR-010; Analyse, I1, U2): Abläufe nacheinander
 ## im Zeitraffer ihres Ablaufs, Warten auf den Zustand bis zur Höchstzeit, „Zeit abgelaufen“ und
 ## „Ziel nicht gefunden“, Dauer ab der ersten Eingabe, Meldungen je Schritt, Fenstertitel,
-## Fokusverlust, Abbruch beim Schließen, und am Ende Protokoll, Ausgabe, Fotos und Zip.
+## Fokusverlust, Abbruch beim Schließen, und am Ende Protokoll, Ausgabe, Fotos, Zip und die
+## Zusammenfassung.
 ##
-## Statt des Fahrers geben erfundene Abläufe ihre Callables selbst vor. Frischer Titel, Foto und
-## Beenden ersetzt der Test über vorbereitung, fotograf und beenden; geschrieben wird in den eigenen
-## Ordner BASIS, den after_each() abräumt. Die Session ist eine eigene, nicht im Baum, damit der
-## quit_callback des Autoloads unberührt bleibt.
+## Statt des Fahrers geben erfundene Abläufe ihre Callables selbst vor. Frischer Titel, Foto,
+## Zusammenfassung und Beenden ersetzt der Test über vorbereitung, fotograf, zusammenfassung und
+## beenden; geschrieben wird in den eigenen Ordner BASIS, den after_each() abräumt. Die Session ist
+## eine eigene, nicht im Baum, damit der quit_callback des Autoloads unberührt bleibt.
 
 const BASIS := "user://test_selbsttest_laeufer/"
 const SITZUNG := preload("res://core/game_session.gd")
@@ -22,6 +23,9 @@ var _lauf: SelbsttestLauf
 var _logger: SelbsttestLogger
 var _sitzung: SITZUNG
 var _beendet := 0
+var _zusammengefasst := 0
+## Ob der Filter der Eingabe noch aktiv war, als die Zusammenfassung kam.
+var _filter_bei_zusammenfassung := true
 var _vorbereitet := 0
 ## Der Fenstertitel und Engine.time_scale, wie die Eingaben jedes Schritts sie sahen.
 var _gesehen: Array[Dictionary] = []
@@ -30,6 +34,8 @@ var _gesehen: Array[Dictionary] = []
 func before_each() -> void:
 	_raeume_auf(BASIS)
 	_beendet = 0
+	_zusammengefasst = 0
+	_filter_bei_zusammenfassung = true
 	_vorbereitet = 0
 	_gesehen.clear()
 	_lauf = SelbsttestLauf.new(START)
@@ -45,6 +51,10 @@ func before_each() -> void:
 	_laeufer.vorbereitung = func() -> void: _vorbereitet += 1
 	_laeufer.fotograf = _foto
 	_laeufer.beenden = func() -> void: _beendet += 1
+	_laeufer.zusammenfassung = func() -> void:
+		_zusammengefasst += 1
+		if _laeufer.eingabe != null:
+			_filter_bei_zusammenfassung = _laeufer.eingabe.ist_aktiv()
 	add_child_autofree(_laeufer)
 
 
@@ -67,7 +77,8 @@ func test_ein_lauf_in_ordnung_schreibt_protokoll_ausgabe_fotos_und_zip() -> void
 
 	# Assert
 	assert_eq(_lauf.summe_text(), "Alles in Ordnung: 3 von 3 Schritten.")
-	assert_eq(_beendet, 1, "Nach dem Schreiben beendet sich die App.")
+	assert_eq(_zusammengefasst, 1, "Nach dem Schreiben kommt die Zusammenfassung.")
+	assert_eq(_beendet, 0, "Die App bleibt offen, bis Klaus sie beendet.")
 	assert_eq(_vorbereitet, 2, "Jeder Ablauf ohne baut_auf beginnt beim frischen Titel.")
 	var ordner := BASIS + LAUF_ID + "/"
 	var protokoll := FileAccess.get_file_as_string(ordner + "protokoll.txt")
@@ -82,6 +93,24 @@ func test_ein_lauf_in_ordnung_schreibt_protokoll_ausgabe_fotos_und_zip() -> void
 	assert_true(FileAccess.file_exists(ordner + "ausgabe.txt"))
 	assert_true(FileAccess.file_exists(BASIS + LAUF_ID + "_macos.zip"))
 	assert_gte(_lauf.dauer_ms, 0)
+
+
+func test_vor_der_zusammenfassung_ist_der_filter_aus() -> void:
+	# Arrange: Headless gibt es keinen Empfang am Fenster; einschalten() setzt nur den Zustand.
+	var eingabe := SelbsttestEingabe.new()
+	var gesammelt := Input.use_accumulated_input
+	eingabe.einschalten(get_window())
+	_laeufer.eingabe = eingabe
+
+	# Act
+	await _laufe([_ablauf("titel", [_schritt("01_start")])])
+
+	# Assert: Sonst kämen echte Klicks auf ihren Knöpfen nie an (Analyse, U3).
+	assert_eq(_zusammengefasst, 1)
+	assert_false(_filter_bei_zusammenfassung,
+		"Der Filter ist aus, bevor die Zusammenfassung kommt.")
+	assert_true(eingabe.durchlassen(InputEventMouseButton.new()), "Echte Klicks gehen durch.")
+	assert_eq(Input.use_accumulated_input, gesammelt, "Wie vor dem Selbsttest.")
 
 
 func test_zeitraffer_und_fenstertitel_je_ablauf() -> void:
@@ -248,6 +277,7 @@ func test_schliessen_bricht_ab_schreibt_und_beendet() -> void:
 	assert_eq(_lauf.schritt("titel.02_zwei").gefunden, "Fenster geschlossen")
 	assert_eq(_lauf.schritt("titel.03_drei").gefunden, "Fenster geschlossen")
 	assert_eq(_beendet, 1, "Einmal beendet, auch beim zweiten Schließen.")
+	assert_eq(_zusammengefasst, 0, "Nach einem Abbruch keine Zusammenfassung.")
 	assert_eq(fertig.size(), 1)
 	assert_string_contains(FileAccess.get_file_as_string(BASIS + LAUF_ID + "/protokoll.txt"),
 		"\nlauf.abbruch: titel.02_zwei\n")
@@ -282,9 +312,10 @@ func test_nach_dem_schreiben_hoert_der_laeufer_nicht_mehr_auf_das_schliessen() -
 	# Act (CHK028)
 	_laeufer.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
 
-	# Assert
+	# Assert: Das Schließen beendet dann über auto_accept_quit, ohne den Läufer.
 	assert_eq(_lauf.abbruch, "keiner")
-	assert_eq(_beendet, 1)
+	assert_eq(_beendet, 0)
+	assert_eq(_zusammengefasst, 1)
 
 
 func test_ein_ordner_ausserhalb_des_selbsttests_wird_nie_geleert() -> void:

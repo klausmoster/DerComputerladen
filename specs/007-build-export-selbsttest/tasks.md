@@ -245,37 +245,45 @@ FR-014a, SC-005, SC-007; R11, R12; contracts/selbsttest-app.md, „Zusammenfassu
 „Kopieren“ legt den Text aus contracts/protokoll.md ab; mit nicht beschreibbarem Ordner steht die
 Meldung.
 
-- [ ] T027 [C] Style-Guide ergänzen, https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Abschnitt
+- [x] T027 [C] Style-Guide ergänzen, https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Abschnitt
   `project/Werkzeuge.md`, nach der Checkliste: keine Farbe für „in Ordnung“, Feld „!“ für Fehler und
   Feld „–“ für nicht gelaufen (CHK019), gesperrter Knopf (CHK020), zweite Farbe je Eintrag in
   mehrzeiligen Listen, kein Überfahren bei nicht anklickbaren Zeilen (CHK024), Bestätigung (CHK025),
   Tooltip und Handzeiger in allen Werkzeugen (CHK026), Umbruch langer Werte (CHK027), Geltung der
   Wortliste der Zeit (CHK030), Formen im Protokoll und Tastennamen (CHK039), Maschinenform nur für
   Messwerte (Phasenprüfung Phase 1, L1).
-- [ ] T028 [K] Style-Guide-Ergänzung aus T027 freigeben.
-- [ ] T029 [A] [US1] `src/tools/selbsttest/selbsttest_ergebnis.tscn`/`.gd` laut Vertrag,
-  „Zusammenfassung“: `GameWindow` anhalten, Skalierung aus, Faktor des Bildschirms, Fenster maximiert
-  (CHK016); Kopie von `werkstatt_theme.tres` mit `default_font = ThemeDB.fallback_font` (CHK017);
+- [x] T028 [K] Style-Guide-Ergänzung aus T027 freigeben.
+- [x] T029 [A] [US1] `src/tools/selbsttest/selbsttest_ergebnis.tscn`/`.gd` laut Vertrag,
+  „Zusammenfassung“: `GameWindow` anhalten, Skalierung aus, Faktor des Bildschirms, Fenster bleibt in Größe und
+  Lage des Laufs, nicht maximiert (CHK016; Klaus, Phase 4); Kopie von `werkstatt_theme.tres` mit `default_font = ThemeDB.fallback_font` (CHK017);
   Aufbau, Schriften, Abstände, Grund `papier` (CHK018, CHK021, CHK022); `src/test/test_texte.gd`
   durchsucht auch `res://tools/selbsttest/` (Phasenprüfung Phase 1); Einträge mit Feld „!“ oder
   „–“ (CHK019); Standard-`Button` mit Tooltip und Handzeiger (CHK026); Fokus auf „Kopieren“, Tasten
   (CHK023); „Kopieren“ mit Bestätigung, unter Linux mit Zusatz; „Ordner zeigen“ mit
   `OS.shell_show_in_file_manager()` auf das Zip (CHK002); „Beenden“; Ordner nicht beschreibbar
   (CHK020); Läufer wechselt nach dem Schreiben dorthin und hört nicht mehr auf das Schließen
-  (CHK028). Wortlaute aus `SelbsttestTexte`. Bildschirmfotos aus dem echten Fenster bei 1920 × 925
-  logisch: alles in Ordnung, mit Fehlern (erfunden), Ordner nicht beschreibbar, nach „Kopieren“;
+  (CHK028). Wortlaute aus `SelbsttestTexte`. Bildschirmfotos aus dem echten Fenster in der Größe, die der Lauf hinterlässt
+  (auf Klaus' Mac 1600 × 932 Punkte): alles in Ordnung, mit Fehlern (erfunden), Ordner nicht beschreibbar, nach „Kopieren“;
   Aussage, ob der Platz reicht.
-- [ ] T030 [A] [US1] Lernnotizen zu T029: Werkzeug im Spielfenster, Theme-Kopie, Zwischenablage,
+- [x] T030 [A] [US1] Lernnotizen zu T029: Werkzeug im Spielfenster, Theme-Kopie, Zwischenablage,
   Dateimanager.
-- [ ] T031 [C] [US2] SC-005 belegen: Spiel und Selbsttest für macOS bauen, nach `selbsttest_laeufer`
+- [x] T031 [C] [US2] SC-005 belegen: Spiel und Selbsttest für macOS bauen, nach `selbsttest_laeufer`
   in beiden `.pck` suchen (contracts/export.md); im Spiel 0, im Selbsttest mehr als 0.
-- [ ] T032 [C] [US1] Prüfen: Tests zweimal, Startprobe still, ein Lauf bis zur Zusammenfassung,
+- [x] T032 [C] [US1] Prüfen: Tests zweimal, Startprobe still, ein Lauf bis zur Zusammenfassung,
   „Ordner zeigen“ und „Kopieren“ selbst ausprobieren, Fotos aus T029 ansehen; nach dem Maximieren
   kommen echte Eingaben an (Analyse, U3); SC-010 mit dem kopierten Text der Fehlerprobe wiederholen
   (A1).
-- [ ] T033 [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`, Stil- und Text-Prüfer mit den Fotos
+- [x] T033 [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`, Stil- und Text-Prüfer mit den Fotos
   aus T029 gegen `Werkzeuge.md` nach T028, `tokens.json`, `Sprache.md`; vor Klaus' Abnahme.
-- [ ] T034 [K] [US1] Phase 4 abnehmen: App starten, Lauf bis zur Zusammenfassung, die drei Knöpfe.
+- [x] T034 [K] [US1] Phase 4 abnehmen: App starten, Lauf bis zur Zusammenfassung, die drei Knöpfe.
+
+Erledigt am 2026-10-28, von Klaus abgenommen: Style-Guide „Werkzeuge“ bis Version 60 (T027, T028 und
+die Lücken der Phasenprüfung); `SelbsttestErgebnis` mit eigener Theme-Kopie, im Fenster des Laufs
+ohne Maximieren (Klaus), Kopieren, Ordner zeigen, Beenden, gesperrter Knopf bei nicht beschreibbarem
+Ordner. Zweimal 1326 von 1326 Tests grün (188 358 Prüfungen), Startprobe still; App 37 von 37 bis zur
+Zusammenfassung, Fenster unverändert, Schließen beendet ohne Abbruch, echte Spielstände unverändert;
+SC-005: Läufer im Spiel 0, im Selbsttest 4. Phasenprüfung: Stil 1, Text 2 Befunde, behoben;
+Nachprüfung ohne Befund. Echte Mausklicks prüft Klaus von Hand (keine Freigabe für Bedienungshilfen).
 
 **Checkpoint**: User Story 1 und 2 sind fertig: Der Selbsttest läuft auf dem Mac von Doppelklick bis
 Zusammenfassung, das Spiel ist ohne Testcode.

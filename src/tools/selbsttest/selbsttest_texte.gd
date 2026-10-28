@@ -205,12 +205,17 @@ const NICHT_GESCHRIEBEN := "%s ließ sich nicht schreiben: %s"
 # --- Zusammenfassung -----------------------------------------------------------------------------
 
 const BEREICHSTITEL := "Was nicht stimmt"
+## Zeichen im Feld vor einem Eintrag der Liste: Fehler und nicht gelaufen (CHK019).
+const ZEICHEN_FEHLER := "!"
+const ZEICHEN_NICHT_GELAUFEN := "–"
 const KNOPF_KOPIEREN := "Kopieren"
 const KNOPF_ORDNER_ZEIGEN := "Ordner zeigen"
 const KNOPF_BEENDEN := "Beenden"
 const TOOLTIP_KOPIEREN := "Legt das Ergebnis als Text in die Zwischenablage."
 const TOOLTIP_ORDNER_ZEIGEN := "Zeigt das Zip dieses Laufs im Dateimanager."
 const TOOLTIP_BEENDEN := "Beendet den Selbsttest."
+## Tooltip von „Ordner zeigen“, wenn er gesperrt ist, weil sich im Ordner nicht schreiben ließ.
+const TOOLTIP_ORDNER_GESPERRT := "Kein Zip: Im Ordner lässt sich nicht schreiben."
 const BESTAETIGUNG := "Kopiert."
 ## Unter Linux mit X11 ist die Zwischenablage nach dem Beenden leer (R11).
 const BESTAETIGUNG_LINUX := "Kopiert. Erst einfügen, dann beenden."

@@ -351,3 +351,105 @@ nichts und haben deshalb keine Notiz.
 - **`fenster.01` wartet auch, bis der Communicator steht.** Der Schritt hat keine Eingabe, also wartet
   der Läufer nicht von sich aus; ohne das zeigten die Fotos von 01 bis 04 die Fahrt herein, in jedem
   Lauf an anderer Stelle.
+
+## Phase 4
+
+### T029 Werkzeug im Spielfenster
+
+- **Dieselbe App, ein anderes Fenster.** Der Selbsttest läuft im Spielraster 640 × 360 mit Stretch
+  `viewport`; die Zusammenfassung ist ein Werkzeug und braucht scharfen Text in normaler Größe.
+  `SelbsttestErgebnis._richte_fenster_ein()` stellt deshalb wie die Werkstatt
+  `content_scale_mode = DISABLED` und `content_scale_factor = DisplayServer.screen_get_scale()`:
+  Godot zeichnet in voller Auflösung, und ein Punkt Text ist auf dem Retina-Bildschirm zwei Pixel.
+  Das ist nur eine Einstellung am `Window`; Szenenbaum und Autoloads bleiben, wie sie sind.
+- **`GameWindow` anhalten statt umbauen.** Das Autoload prüft jedes Bild in `_process()`, ob das
+  Fenster aus dem Vollbild kommt, und gäbe ihm dann die ganzzahlige Spielgröße. `set_process(false)`
+  und `set_process_unhandled_input(false)` schalten nur diesen einen Knoten still, ohne dass
+  `GameWindow` vom Selbsttest wissen muss. Die Seite holt es über `/root/GameWindow`, wie die
+  Werkstatt.
+- **Kein Maximieren (Klaus, 2026-10-28).** Anders als die Werkstatt behält das Fenster Größe und Lage
+  aus dem Lauf, auf diesem Mac 1600 × 932 Punkte samt Titelleiste. Die Seite füllt die Fläche, die
+  da ist. Gemessen: in der Probe vor und nach dem Wechsel 3200 × 1800 Pixel an derselben Stelle, in
+  der echten App von außen über 25 s gleich bis auf den Ablauf `fenster`.
+- **Felder vor dem Einzug setzen: `change_scene_to_node()`.** Der Läufer baut die Seite mit
+  `SelbsttestErgebnis.erstelle()`, setzt Lauf und Pfade und gibt den fertigen Knoten an
+  `get_tree().change_scene_to_node()` (seit Godot 4.5). So stehen alle Werte, bevor `_ready()` läuft;
+  mit `change_scene_to_file()` gäbe es keinen Weg dorthin außer über ein Autoload. `erstelle()` lädt
+  die Szene mit `load()`, nicht `preload()`: Die Szene nennt das Skript, ein `preload` im Skript
+  wäre ein Kreis.
+- **Der Filter muss vorher aus sein.** `SelbsttestEingabe.einschalten()` ersetzt den Empfang des
+  Fensters; Godot gibt den alten nicht heraus. `ausschalten()` lässt deshalb den eigenen Empfang
+  stehen, der danach alles durchreicht. Der Läufer ruft es in `_schreibe()`, also vor dem Wechsel.
+  Belegt in der Probe mit `--filter`: Ein Klick mit gewöhnlichem Gerät über
+  `Input.parse_input_event()`, dem Eingang auch der Ereignisse von macOS, kommt bei eingeschaltetem
+  Filter nicht an „Kopieren“, danach schon.
+- **Schließen beendet einfach.** Nach `_schreibe()` ist `_laeuft` falsch, der Läufer überhört
+  `NOTIFICATION_WM_CLOSE_REQUEST`, und `GameSession.quit_callback` ist wieder der alte. Ohne
+  laufendes Spiel steht `auto_accept_quit` auf true; Godot beendet dann ohne eigenen Code.
+
+### T029 Theme-Kopie
+
+- **Eine Datei, die erbt, gibt es nicht.** Godot kann ein Theme nicht von einem anderen ableiten.
+  `selbsttest_theme.tres` ist deshalb eine Kopie von `werkstatt_theme.tres` mit fünf neuen Varianten
+  (`theme_type_variation`): `EntryPanel` und `AlternateEntryPanel` für die Einträge in `papier` und
+  `endlos-gruen`, `ErrorMarkLabel` und `NotRunMarkLabel` für die Felder „!“ und „–“,
+  `SmallMutedLabel` für die Systemzeile. So stehen auch diese Farben im Theme statt im Code.
+- **Damit die Kopie nicht still veraltet,** vergleicht `test_selbsttest_ergebnis.gd` sie Eintrag für
+  Eintrag mit dem Theme der Werkstatt. Unterressourcen wie Styleboxen tragen einen Pfad
+  `datei.tres::id`; der Test vergleicht sie nach ihren gespeicherten Eigenschaften, Dateien wie
+  Symbole nach dem Pfad. `ResourceLoader.CACHE_MODE_IGNORE` lädt frisch aus der Datei, ohne die
+  Schrift, die eine offene Seite schon gesetzt hat.
+- **Die Schrift kommt per Code.** Open Sans SemiBold ist Godots eingebaute Schrift
+  (`ThemeDB.fallback_font`) und hat keine Datei, die eine `.tres` nennen könnte. Die Werkstatt
+  dupliziert ihr Theme vorher, weil es geteilt ist; die Kopie gehört nur dieser Seite, die Seite
+  setzt `default_font` direkt.
+- **Ein Pfad, der nur nach Trennern umbricht.** `umbrechbar()` setzt hinter jedes `/` und `\` ein
+  Leerzeichen ohne Breite (`\u200B`), an dem der Umbruch erlaubt ist, und macht die Leerzeichen im
+  Pfad fest (`\u00A0`). Ohne das brach der Pfad bei „Büro hinten“ um; mit `AUTOWRAP_WORD_SMART`
+  bricht er nach „Woche 44/“ und wird nie gekürzt. Zu sehen ist der Pfad unverändert.
+
+### T029 Zwischenablage
+
+- **`DisplayServer.clipboard_set()`** legt den Text ab, den `SelbsttestProtokoll.kopieren()` baut,
+  dieselbe Funktion wie für `protokoll.txt`. Die Seite hält sie als Callable
+  (`zwischenablage`); Tests geben eine eigene Funktion und prüfen den Text, ohne Klaus'
+  Zwischenablage anzufassen.
+- **Warum Linux anders ist.** Unter macOS und Windows übernimmt das System den Inhalt. Unter X11
+  gehört er dem Programm, das ihn anbietet: Wer einfügt, fragt die App, und ist sie beendet, ist der
+  Inhalt weg, solange kein Clipboard-Manager ihn übernimmt (R11). Deshalb heißt die Bestätigung
+  dort „Kopiert. Erst einfügen, dann beenden.“
+- **Bestätigung bis zum nächsten Klick.** `_input()` sieht jeden Klick, bevor ein Knopf ihn
+  bekommt, und blendet „Kopiert.“ aus. Ein Knopf löst erst beim Loslassen aus; ein Klick auf
+  „Kopieren“ zeigt die Bestätigung deshalb gleich wieder. Das Mausrad zählt nicht als Klick.
+
+### T029 Dateimanager
+
+- **`OS.shell_show_in_file_manager()`** zeigt das Zip im Finder bzw. Explorer und markiert es;
+  unter Linux öffnet es den Ordner (R11). Gibt es kein Zip, weil das Packen scheiterte, zeigt die
+  Seite den Ordner des Laufs. Auch das ist ein Callable (`dateimanager`), damit kein Test ein
+  Fenster öffnet.
+- **Ordner nicht beschreibbar.** Die Startszene erhebt dann nur die Systemdaten und wechselt
+  gleich zur Seite mit `beschreibbar = false`: Meldung an Stelle von Summe, Liste und Pfad,
+  „Ordner zeigen“ gesperrt. Ein gesperrter Knopf behält in Godot seinen `focus_mode`; die Seite
+  setzt ihn auf `FOCUS_NONE`, sonst landete Tab auf einem Knopf, der nichts tut.
+
+### Auslegungen in T029
+
+- **Abstände.** Die Zeilen der Tabelle im Vertrag gelten als Bereiche, also 16 zwischen
+  Überschrift, Systemzeile, Summe, Bereichstitel, Pfad und Fußzeile. Bereichstitel und Liste stehen
+  in einem eigenen `VBoxContainer` „Bereich“ mit 8 dazwischen (Style-Guide „Werkzeuge“, Version 60).
+  Die Einträge liegen ohne Lücke untereinander, damit der Grund `endlos-gruen` als Streifen wirkt;
+  je 4 Innenabstand oben und unten ergeben 8 zwischen zwei Einträgen. Die Fußzeile ist ein
+  `HBoxContainer` mit 16: links die Knopfreihe mit 8 zwischen den Knöpfen, damit die Fokuslinie
+  (4 über den Knopf hinaus) den Nachbarn nicht berührt, rechts die Bestätigung.
+- **Zeilenabstand 0.** Godots Vorgabe für `Label/constants/line_spacing` ist 3; umbrochene Zeilen in
+  einem Label stünden so 3 Pixel weiter auseinander als getrennte Labels. Die Kopie setzt den Wert
+  für alle Labels der Seite auf 0, eine Zeile `werkzeug-text` ist damit 20 Pixel hoch. Das ist der
+  einzige Eintrag, den die Kopie in einem Typ der Werkstatt ändert; der Test kennt ihn.
+- **Gesperrter Knopf mit eigenem Tooltip.** „Ordner zeigen“ sagt im gesperrten Zustand „Kein Zip:
+  Im Ordner lässt sich nicht schreiben.“
+- **Pfad und Knopfreihe stehen unten.** Die Liste nimmt den freien Platz und rollt, wenn er nicht
+  reicht; ohne Liste hält eine leere Fläche die Knopfreihe unten.
+- **Das Feld** ist quadratisch und so hoch wie eine Zeile `werkzeug-text`, damit „!“ und „–“ neben
+  der ersten Zeile stehen. Die Zeichen stehen als `ZEICHEN_FEHLER` und `ZEICHEN_NICHT_GELAUFEN` in
+  `SelbsttestTexte`.

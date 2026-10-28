@@ -5,12 +5,13 @@ extends GutTest
 ## Style-Guide, Sprache › Anrede: Bedienung, Hinweise, Meldungen und Tooltips duzen. Figuren,
 ## Briefe und Bescheide in der Spielwelt dürfen siezen; solche Texte gibt es heute noch nicht.
 ##
-## Durchsucht werden die Szenen und Skripte unter res://scenes/, res://tools/werkstatt/ und
-## res://core/: in .tscn die Werte der Texteigenschaften, in .gd alle Zeichenketten außerhalb von
-## Kommentaren. Ein Treffer ist ein Wort der höflichen Anrede als ganzes Wort und großgeschrieben,
-## auch ganz in Versalien wie in der Ergebnisanzeige des Spiels auf der Anzeige („SIE“, „IHNEN“;
-## Feature 006, Analyse, U7). „sie“ und „ihr“ klein sind die dritte Person und bleiben
-## unbeanstandet; „Sieben“ und „Ihringen“ sind keine ganzen Wörter der Anrede.
+## Durchsucht werden die Szenen und Skripte unter res://scenes/, res://tools/werkstatt/,
+## res://tools/selbsttest/ und res://core/: in .tscn die Werte der Texteigenschaften, in .gd alle
+## Zeichenketten außerhalb von Kommentaren. Ein Treffer ist ein Wort der höflichen Anrede als
+## ganzes Wort und großgeschrieben, auch ganz in Versalien wie in der Ergebnisanzeige des Spiels
+## auf der Anzeige („SIE“, „IHNEN“; Feature 006, Analyse, U7). „sie“ und „ihr“ klein sind die
+## dritte Person und bleiben unbeanstandet; „Sieben“ und „Ihringen“ sind keine ganzen Wörter der
+## Anrede. Der Selbsttest gehört seit Feature 007 dazu (Phasenprüfung Phase 1).
 ##
 ## Großgeschrieben steht „Sie“ auch am Satzanfang, dann meint es oft die Mehrzahl. Solche Stellen
 ## kommen mit Grund in ERLAUBT. Ein eigener Test meldet Einträge, die es nicht mehr gibt.
@@ -18,7 +19,8 @@ extends GutTest
 ## Die Prüffunktionen nehmen einen Pfad oder einen Text, damit sich auch eine Kopie außerhalb des
 ## Projekts prüfen lässt. Der Test schreibt nichts.
 
-const ORDNER := ["res://scenes/", "res://tools/werkstatt/", "res://core/"]
+const ORDNER := ["res://scenes/", "res://tools/werkstatt/", "res://tools/selbsttest/",
+	"res://core/"]
 ## Eigenschaften in .tscn, deren Wert Text für Menschen ist. Bei Schlüsseln mit Pfad wie
 ## popup/item_0/text zählt der letzte Teil.
 const TEXTEIGENSCHAFTEN := [
