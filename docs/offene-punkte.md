@@ -12,6 +12,20 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 007, Phase 1 (2026-10-28)
+
+- **Testläufe aus Worktrees teilen sich `user://`:** Alle Checkouts des Projekts heißen „Der
+  Computerladen“ und schreiben nach `app_userdata/Der Computerladen/`. Lief die Sitzung 008 in ihrem
+  Worktree gleichzeitig Tests, wurden beim Agent drei Läufe rot (bis zu 54 Tests in
+  `test_title_screen`, `test_save_store`, `test_simulator`, `test_statistics_panel`,
+  `test_werkstatt_scene`). Claudes Läufe nach dem Warten waren zweimal grün. Empfehlung: Sitzungen
+  warten aufeinander (die Sitzung 008 tut es schon); auf Dauer eigene Testordner je Checkout.
+- **`test_title_screen.gd` wackelt vielleicht schon auf `main`:** Der Agent ließ die Datei auf einer
+  Kopie von HEAD sechsmal allein laufen, zweimal rot. Nicht nachgeprüft, ob dabei ein anderer
+  Testlauf lief. Zu klären außerhalb von 007.
+- **Entscheidung Claude:** Text für `eingaben:` als eigener Schlüssel im Schritt (research.md,
+  „Auslegungen aus Phase 1“).
+
 ### Feature 007, Plan (2026-10-28)
 
 Eigene Entscheidungen von Claude in `specs/007-build-export-selbsttest/research.md`:

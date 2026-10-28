@@ -42,6 +42,9 @@ func before_each() -> void:
 
 func after_each() -> void:
 	_raeume_auf(ORDNER)
+	# Die Stellschraube gilt für das ganze Programm; ein Test, der sie setzt, darf keinem anderen
+	# eine Zeitzone hinterlassen, auch wenn er vorher abbricht (Feature 007, T005).
+	SaveGame.time_zone_bias = SaveGame.SYSTEM_BIAS
 
 
 # --- Name, Text, Rundreise (T006) --------------------------------------------------------------
@@ -201,6 +204,69 @@ func test_ortszeit_ohne_vorgabe_nimmt_den_versatz_des_rechners() -> void:
 
 	# Act und Assert
 	assert_eq(SaveGame.time_text(ANGELEGT), SaveGame.time_text(ANGELEGT, versatz))
+
+
+# --- Stellschraube für den Zeitzonenversatz (Feature 007, T005; R7) ----------------------------
+
+func test_stellschraube_steht_ohne_selbsttest_auf_dem_rechner() -> void:
+	# Act und Assert: Ohne Selbsttest bleibt alles wie vorher.
+	assert_eq(SaveGame.time_zone_bias, SaveGame.SYSTEM_BIAS)
+
+
+func test_stellschraube_gilt_fuer_uhrzeiten_ohne_eigenen_versatz() -> void:
+	# Arrange: wie der Selbsttest, UTC+1
+	SaveGame.time_zone_bias = 60
+
+	# Act
+	var ohne_versatz := SaveGame.time_text(ANGELEGT)
+	var westlich := SaveGame.time_text(ANGELEGT, -300)
+	SaveGame.time_zone_bias = SaveGame.SYSTEM_BIAS
+
+	# Assert
+	assert_eq(ohne_versatz, "26.10.2026 21:40", "Die feste Zeit des Selbsttests, 20:40 UTC.")
+	assert_eq(westlich, "26.10.2026 15:40", "Ein ausdrücklicher Versatz geht vor.")
+
+
+func test_stellschraube_auch_ueber_mitternacht_und_westlich() -> void:
+	# Act
+	SaveGame.time_zone_bias = 240
+	var oestlich := SaveGame.time_text(ANGELEGT)
+	SaveGame.time_zone_bias = -300
+	var westlich := SaveGame.time_text(ANGELEGT)
+	SaveGame.time_zone_bias = 0
+	var utc := SaveGame.time_text(ANGELEGT)
+	SaveGame.time_zone_bias = SaveGame.SYSTEM_BIAS
+
+	# Assert: 0 ist UTC, nicht „wie der Rechner“.
+	assert_eq(oestlich, "27.10.2026 00:40")
+	assert_eq(westlich, "26.10.2026 15:40")
+	assert_eq(utc, "26.10.2026 20:40")
+
+
+func test_stellschraube_zurueckgesetzt_nimmt_wieder_den_rechner() -> void:
+	# Arrange
+	var versatz: int = Time.get_time_zone_from_system().get("bias", 0)
+	SaveGame.time_zone_bias = versatz + 180
+
+	# Act
+	SaveGame.time_zone_bias = SaveGame.SYSTEM_BIAS
+
+	# Assert
+	assert_eq(SaveGame.time_text(ANGELEGT), SaveGame.time_text(ANGELEGT, versatz))
+
+
+func test_stellschraube_aendert_die_datei_nicht() -> void:
+	# Arrange
+	var game := _spielstand()
+	var vorher := game.to_json()
+
+	# Act
+	SaveGame.time_zone_bias = 60
+	var danach := game.to_json()
+	SaveGame.time_zone_bias = SaveGame.SYSTEM_BIAS
+
+	# Assert: In der Datei steht UTC; die Stellschraube gilt nur für die Anzeige.
+	assert_eq(danach, vorher)
 
 
 func test_day_text_ist_das_spieldatum() -> void:

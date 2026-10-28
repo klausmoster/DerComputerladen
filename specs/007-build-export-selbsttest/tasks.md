@@ -58,13 +58,13 @@ R7, R9 bis R11, R20, R21; contracts/selbsttest-app.md, contracts/protokoll.md).
 **Independent Test**: Die neuen GUT-Tests sind grün; ein erfundener Lauf ergibt Byte für Byte das
 erwartete Protokoll und den erwarteten Text für „Kopieren“.
 
-- [ ] T001 [A] [US1] `src/tools/selbsttest/selbsttest_lauf.gd` (`class_name SelbsttestLauf`) und
+- [x] T001 [A] [US1] `src/tools/selbsttest/selbsttest_lauf.gd` (`class_name SelbsttestLauf`) und
   `src/tools/selbsttest/ablaeufe/selbsttest_ablauf.gd` (`class_name SelbsttestAblauf`) laut Vertrag
   und data-model.md: Lauf mit `id` `JJJJ-MM-TT_hh-mm-ss`, `zeitraffer`, Ergebnissen je Schritt
   (`OK`, `FEHLER`, `NICHT_GELAUFEN`), `fokusverluste`, `abbruch` mit Wert `keiner` (CHK038), Summe;
   „Baut ein Ablauf auf einem gescheiterten auf, gilt er ganz als nicht gelaufen, mit Grund“ (FR-009,
   CHK006). `src/test/test_selbsttest_lauf.gd`.
-- [ ] T002 [A] [US1] `src/tools/selbsttest/selbsttest_texte.gd` (`class_name SelbsttestTexte`) mit
+- [x] T002 [A] [US1] `src/tools/selbsttest/selbsttest_texte.gd` (`class_name SelbsttestTexte`) mit
   allen Wortlauten aus contracts/selbsttest-app.md, „Texte“, und
   `src/tools/selbsttest/selbsttest_protokoll.gd` (`class_name SelbsttestProtokoll`) laut
   contracts/protokoll.md: eine Funktion für `protokoll.txt` und den Text für „Kopieren“ (FR-014a),
@@ -75,31 +75,38 @@ erwartete Protokoll und den erwarteten Text für „Kopieren“.
   `src/test/fixtures/selbsttest/protokoll_erwartet.txt` und `kopieren_erwartet.txt`; dazu „Alles in
   Ordnung“ mit 1 und 37 Schritten und der Text bei nicht beschreibbarem Ordner gegen
   `kopieren_nicht_beschreibbar.txt` (Analyse, U5). Je Schritt eine Zeile `zeitraffer:` (U7).
-- [ ] T003 [A] [P] [US1] `src/tools/selbsttest/selbsttest_system.gd` (`class_name
+- [x] T003 [A] [P] [US1] `src/tools/selbsttest/selbsttest_system.gd` (`class_name
   SelbsttestSystem`): alle Schlüssel aus data-model.md, „Systemdaten“, mit `computerladen.version`
   (CHK029); Treiberinfo unter Windows und Linux in einem Thread (R20). `src/test/test_selbsttest_system.gd`:
   jeder Schlüssel ist da, headless darf ein Wert `unbekannt` sein.
-- [ ] T004 [A] [P] [US1] `src/tools/selbsttest/selbsttest_logger.gd` (`class_name SelbsttestLogger`,
+- [x] T004 [A] [P] [US1] `src/tools/selbsttest/selbsttest_logger.gd` (`class_name SelbsttestLogger`,
   `extends Logger`): Zeilen mit Schritt-Kennung, `[start]` und `[ende]`, Fehler und Warnungen als
   Meldung des Schritts, eigene als `[selbsttest] …` (CHK007); `Mutex`, gibt selbst nichts aus (R10).
   `src/tools/selbsttest/selbsttest_ablage.gd` (`class_name SelbsttestAblage`): Ordner
   `selbsttest/<lauf-id>/`, Fotos als PNG unter `fotos/`, `protokoll.txt`, `ausgabe.txt`, Zip
   `<lauf-id>_<system>.zip` mit `ZIPPacker`, Fehler „nicht beschreibbar“ mit Pfad (R11). Tests in
   eigenen Ordnern unter `user://`, nie in `user://spielstaende/`.
-- [ ] T005 [A] [US1] `src/core/save/save_game.gd`: statische Stellschraube für den
+- [x] T005 [A] [US1] `src/core/save/save_game.gd`: statische Stellschraube für den
   Zeitzonenversatz, Vorgabe „wie der Rechner“ (R7). `src/test/test_save_game.gd` erweitert; alle
   bisherigen Tests bleiben unverändert grün.
-- [ ] T006 [A] [US1] Lernnotizen zu T001 bis T005: Klassen ohne Node wie `TimelineRun`, ein
+- [x] T006 [A] [US1] Lernnotizen zu T001 bis T005: Klassen ohne Node wie `TimelineRun`, ein
   Formatierer für zwei Ausgaben, `Logger` und Threads, `ZIPPacker`, statische Stellschraube statt
   Abhängigkeit des Spiels vom Selbsttest.
-- [ ] T007 [C] [US1] Prüfen: Tests zweimal mit gleicher Zahl, Startprobe still; Fehlerprobe in einer
+- [x] T007 [C] [US1] Prüfen: Tests zweimal mit gleicher Zahl, Startprobe still; Fehlerprobe in einer
   Kopie: Reihenfolge der Schlüssel, Dativ, fehlender Schlüssel, falscher Zeitzonenversatz; die Tests
   finden jeden.
-- [ ] T008 [C] Phasenprüfung Phase 1 mit `/dcl-phasenpruefung`, Text-Prüfer über die Protokolle aus
+- [x] T008 [C] Phasenprüfung Phase 1 mit `/dcl-phasenpruefung`, Text-Prüfer über die Protokolle aus
   den Fixtures und `SelbsttestTexte` (plan.md, „Prüfer je Phase“); Maßstab zusätzlich CHK030 und
   CHK039 aus review.md, bis sie in Phase 4 im Style-Guide stehen (Analyse, I4); vor Klaus' Abnahme
   (`docs/ki_workflow/ki_pruefung.md`).
-- [ ] T009 [K] [US1] Phase 1 abnehmen: Diff, Lernnotizen, Testergebnis, ein Beispielprotokoll.
+- [x] T009 [K] [US1] Phase 1 abnehmen: Diff, Lernnotizen, Testergebnis, ein Beispielprotokoll.
+
+Erledigt am 2026-10-28, von Klaus abgenommen: `SelbsttestLauf`, `SelbsttestTexte`,
+`SelbsttestProtokoll`, `SelbsttestSystem`, `SelbsttestLogger`, `SelbsttestAblage` und
+`SelbsttestAblauf` unter `src/tools/selbsttest/`; `SaveGame.time_zone_bias` für die Zeitzone. 78 neue
+Tests in fünf Skripten, drei Fixtures mit den erwarteten Protokollen. Zweimal 1212 von 1212 Tests grün
+(187 088 Prüfungen), Startprobe still, Fehlerprobe 4 von 4. Phasenprüfung: Text 1 Befund im Vertrag
+(behoben), 4 Lücken, von Claude geklärt. Auslegungen in research.md, „Auslegungen aus Phase 1“.
 
 **Checkpoint**: Ein Lauf lässt sich beschreiben und schreiben; zu sehen ist noch nichts.
 
@@ -225,12 +232,14 @@ Meldung.
   Feld „–“ für nicht gelaufen (CHK019), gesperrter Knopf (CHK020), zweite Farbe je Eintrag in
   mehrzeiligen Listen, kein Überfahren bei nicht anklickbaren Zeilen (CHK024), Bestätigung (CHK025),
   Tooltip und Handzeiger in allen Werkzeugen (CHK026), Umbruch langer Werte (CHK027), Geltung der
-  Wortliste der Zeit (CHK030), Formen im Protokoll und Tastennamen (CHK039).
+  Wortliste der Zeit (CHK030), Formen im Protokoll und Tastennamen (CHK039), Maschinenform nur für
+  Messwerte (Phasenprüfung Phase 1, L1).
 - [ ] T028 [K] Style-Guide-Ergänzung aus T027 freigeben.
 - [ ] T029 [A] [US1] `src/tools/selbsttest/selbsttest_ergebnis.tscn`/`.gd` laut Vertrag,
   „Zusammenfassung“: `GameWindow` anhalten, Skalierung aus, Faktor des Bildschirms, Fenster maximiert
   (CHK016); Kopie von `werkstatt_theme.tres` mit `default_font = ThemeDB.fallback_font` (CHK017);
-  Aufbau, Schriften, Abstände, Grund `papier` (CHK018, CHK021, CHK022); Einträge mit Feld „!“ oder
+  Aufbau, Schriften, Abstände, Grund `papier` (CHK018, CHK021, CHK022); `src/test/test_texte.gd`
+  durchsucht auch `res://tools/selbsttest/` (Phasenprüfung Phase 1); Einträge mit Feld „!“ oder
   „–“ (CHK019); Standard-`Button` mit Tooltip und Handzeiger (CHK026); Fokus auf „Kopieren“, Tasten
   (CHK023); „Kopieren“ mit Bestätigung, unter Linux mit Zusatz; „Ordner zeigen“ mit
   `OS.shell_show_in_file_manager()` auf das Zip (CHK002); „Beenden“; Ordner nicht beschreibbar

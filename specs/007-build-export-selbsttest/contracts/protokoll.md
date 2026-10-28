@@ -81,8 +81,14 @@ summe.gesamt: 37
 
 - Bei `NICHT_GELAUFEN` stehen nur `schritt`, `ablauf`, `status` und `gefunden` mit dem Grund.
 - `gefunden` steht nur bei `FEHLER` und `NICHT_GELAUFEN`.
-- `meldung` kann fehlen oder mehrfach stehen; eigene Fehler des Selbsttests als
-  `meldung: [selbsttest] …` (Review CHK007).
+- `meldung` kann fehlen oder mehrfach stehen; eigene Fehler des Selbsttests während eines Schritts
+  als `meldung: [selbsttest] …` (Review CHK007). Die Meldung bei nicht beschreibbarem Ordner gehört
+  zu keinem Schritt und steht ohne `[selbsttest]` (Phasenprüfung Phase 1, L4).
+- Bleibt ein Schritt durch einen Fehler im Läufer offen, gilt er als `NICHT_GELAUFEN` mit
+  `gefunden: unbekannt` (Phasenprüfung Phase 1, L3).
+- Die Maschinenform gilt nur für Messwerte: Systemdaten, Zeiten, Dauern. Texte aus den Abläufen in
+  `beschreibung:`, `eingaben:` und `erwartet:` bleiben deutsch, Maße mit „ד, etwa „Fenster auf
+  1317 × 741“ (Phasenprüfung Phase 1, L1).
 - Werte stehen ohne Schlusspunkt, nur `ergebnis:` ist ein Satz. Zeiten, Maße und Zahlen in
   Maschinenform: `2026-10-28 14:03:12`, `3024x1964`, `2.0` (Review CHK034, CHK039).
 - Ergebniszeile: `Alles in Ordnung: {n} von {n} Schritten.` oder
@@ -104,7 +110,7 @@ es das Zip.
 ## Ausgabe (`ausgabe.txt`)
 
 Jede Zeile, die Godot oder das Spiel während des Laufs ausgibt, mit vorangestellter Schritt-Kennung:
-`[neues_spiel.02_gradwahl] WARNING: …`. Vor dem ersten Schritt steht `[start]`, nach dem letzten
+`[neues_spiel.01_gradwahl] WARNING: …`. Vor dem ersten Schritt steht `[start]`, nach dem letzten
 `[ende]`. Fehler und Warnungen eines Schritts stehen zusätzlich als `meldung:` im Protokoll.
 
 ## Prüfung

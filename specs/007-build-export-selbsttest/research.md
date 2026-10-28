@@ -380,6 +380,38 @@ erfundenen Szenario ohne Fenster.
 Läufer zu ändern. Ein Probeszenario jetzt hätte die Spieluhr an der Oberfläche vorbei starten
 müssen (Spec, Abgleich).
 
+## Auslegungen aus Phase 1
+
+Vom Agent bei T001 bis T006 ausgelegt, von Claude geprüft und angenommen (2026-10-28):
+- `SelbsttestAblauf.schritte()` nimmt den Fahrer vorerst als `RefCounted`; T013 stellt auf
+  `SelbsttestFahrer` um. `zeitraffer` ist ein Feld des Ablaufs (Vorgabe 8). Schritte entstehen über
+  `neuer_schritt()`, damit jedes Dictionary dieselben Schlüssel hat.
+- `selbsttest.version`, `lauf.start`, `lauf.feste_zeit` und `lauf.zeitraffer` hält der Lauf, nicht
+  `SelbsttestSystem`; ein Test prüft, dass beide zusammen genau die 24 Schlüssel der Tabelle haben.
+- Der Grund bei abhängigen Abläufen nennt die Ursache über mehrere Stufen („Fehler in Ablauf
+  neues_spiel“ auch bei `loeschen`). Beim Abbruch heißen der laufende und alle offenen Schritte
+  „Fenster geschlossen“, `lauf.abbruch` nennt den laufenden.
+- Der Kopiertext bei nicht beschreibbarem Ordner hat kein `ergebnis:`, die `meldung:` steht nach
+  `# System`; `# Schritte` steht auch ohne Schritte da.
+- Das Zip hat keinen Oberordner; `vergleich.py` (T035) entpackt nach `build/selbsttest/<name>/`.
+- Meldungen haben die Form `WARNING: Text · at: funktion (datei:zeile)` mit dem Ort aus dem
+  Skript; `printerr()` zählt als Meldung, `print()` nicht; Meldungen vor dem ersten und nach dem
+  letzten Schritt stehen nur in `ausgabe.txt`. Der Läufer sagt dem Logger den Schritt
+  (`setze_schritt()`), weil der Logger aus fremden Threads gerufen wird. `ausgabe.txt` entsteht am
+  Ende aus dem Speicher.
+- `system.gpu_driver` als „Name Version“, `godot.version` mit drei Zahlen, Kommazahlen auf 0,01,
+  ganze Bildwiederholraten ohne Nachkommastellen; headless meldet die Tastatur „Not supported“, so
+  bleibt es stehen.
+- Zwei Testdateien mehr als im Vertrag: `test_selbsttest_logger.gd`, `test_selbsttest_ablage.gd`.
+- **Aus der Phasenprüfung (Text-Prüfer, 2026-10-28), von Claude entschieden:** Das Ziel in „Ziel
+  nicht gefunden: …“ steht in der Form der Spalte „Erwartet“, etwa `HAUPTMENÜ, „Neues Spiel“`, die
+  Kennung nur, wo es keinen Wortlaut gibt (L2). Maschinenform nur für Messwerte, Texte der Abläufe
+  deutsch mit „ד (L1). Ein durch einen Fehler im Läufer offener Schritt hat `gefunden: unbekannt`
+  (L3). „Kein Protokoll“ steht ohne `[selbsttest]` (L4). L1 kommt mit T027 in den Style-Guide.
+- **Entscheidung Claude für Phase 2:** Der Text für `eingaben:` kommt als eigener Schlüssel
+  `eingaben_text` in das Schritt-Dictionary (`neuer_schritt()`), nicht aus einem Mitschreiben der
+  Eingabe; so steht im Protokoll, was der Ablauf meint, etwa „Maus über „Neues Spiel“, Enter“.
+
 ## Für Klaus zum Aufräumen
 
 Die Versuche des Agents haben unter `~/Library/Application Support/Godot/app_userdata/` die Ordner

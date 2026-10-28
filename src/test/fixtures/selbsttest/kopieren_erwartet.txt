@@ -1,0 +1,64 @@
+# Der Computerladen Selbsttest
+ergebnis: 1 von 3 Schritten in Ordnung, 1 Fehler, 1 nicht gelaufen.
+
+# Lauf
+lauf.start: 2026-10-28 14:03:12
+lauf.dauer_ms: 84213
+lauf.feste_zeit: 2026-10-26 21:40 UTC+01:00
+lauf.zeitraffer: 8
+lauf.abbruch: keiner
+selbsttest.version: 1
+selbsttest.gebaut: 2026-10-28 13:58
+computerladen.version: 0.1
+godot.version: 4.7.2.stable.official
+
+# System
+system.os: macOS
+system.os_version: 26.0.0
+system.cpu: Apple M3 Pro
+system.gpu: Apple M3 Pro
+system.gpu_vendor: Apple
+system.gpu_driver: unbekannt
+system.renderer: forward_plus
+system.grafik_api: Metal
+system.grafik_api_version: 4.0
+system.bildschirm: 3024x1964
+system.bildschirm_skalierung: 2.0
+system.bildschirm_dpi: 254
+system.bildwiederholrate: 120
+system.fenster: 1920x1080
+system.fenster_faktor: 3
+system.sprache: de_DE
+system.tastatur: German
+
+# Fokus
+fokus.verluste: 1
+fokus.verlust: neues_spiel.01_gradwahl 2210
+
+# Schritte
+schritt: neues_spiel.01_gradwahl
+ablauf: neues_spiel
+beschreibung: Enter auf „Neues Spiel“
+eingaben: Maus über „Neues Spiel“, Enter
+erwartet: Menü steht: SCHWIERIGKEIT, Mittel
+status: FEHLER
+gefunden: Zeit abgelaufen, zuletzt: Menü steht: SCHWIERIGKEIT, Leicht
+dauer_ms: 5003
+zeitraffer: 8
+foto: neues_spiel.01_gradwahl.png
+foto_vergleichbar: ja
+meldung: WARNING: Seite fehlt · at: _ready (res://scenes/title/title_screen.gd:42)
+meldung: [selbsttest] Foto ging nicht⏎zweiter Versuch auch nicht
+
+schritt: neues_spiel.02_zurueck_esc
+ablauf: neues_spiel
+status: NICHT_GELAUFEN
+gefunden: Fehler in Schritt neues_spiel.01_gradwahl
+
+# Summe
+summe.ok: 1
+summe.fehler: 1
+summe.nicht_gelaufen: 1
+summe.gesamt: 3
+
+ordner: /Users/klaus/Library/Application Support/Godot/app_userdata/Der Computerladen Selbsttest/selbsttest/2026-10-28_14-03-12

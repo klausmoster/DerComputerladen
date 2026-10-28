@@ -126,7 +126,7 @@ func ziel_eintrag(seite: StringName, kennung: StringName) -> Rect2   # leer, wen
 func ziel_zeile(nummer: int) -> Rect2
 func ziel_gehaeusetaste(index: int) -> Rect2
 func ziel_knopf_hauptmenue() -> Rect2
-func fehlt(beschreibung: String) -> String           # „Ziel nicht gefunden: …“
+func fehlt(beschreibung: String) -> String           # „Ziel nicht gefunden: HAUPTMENÜ, „Neues Spiel““
 ```
 
 Alle Rechtecke im Raster 640 × 360; die Umrechnung in Fensterpixel macht `SelbsttestEingabe`.
