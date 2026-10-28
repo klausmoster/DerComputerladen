@@ -31,8 +31,8 @@ flowchart TD
     beschreiben --> F{"Klaus gibt eine<br/>Phase frei"}
     subgraph phase["Je Phase"]
         B["Godot-Agent baut"] --> CP["Claude prüft:<br/>Tests zweimal, Startprobe, Code"]
-        CP -->|"ohne Sichtbares und Texte"| AB["Klaus nimmt ab"]
-        CP -->|"Sichtbares oder Texte"| P["Phasenprüfung mit<br/>Stil- und Text-Prüfer"]
+        CP -->|"ohne Sichtbares, Texte und Code"| AB["Klaus nimmt ab"]
+        CP -->|"Sichtbares, Texte oder Code"| P["Phasenprüfung mit Stil-,<br/>Text- und Architektur-Prüfer"]
         P --> AB
         AB --> CO["Claude committet"]
     end
@@ -79,10 +79,12 @@ Wann die Phasenprüfung läuft, sagt Punkt 8.
    dem Plan, besprochen und spezifiziert wurde dort, wo die Idee aufkam (Klaus, 2026-10-21).
 8. **Phasenprüfung vor der Abnahme** (Klaus, 2026-10-22, fest seit dem Pilot in Feature 004,
    Klaus, 2026-10-26): Ändert eine Phase Sichtbares oder Texte, auch in Werkzeugen, prüfen
-   Stil- und Text-Prüfer sie gegen den Style-Guide, bevor Klaus abnimmt. Wie, steht in
+   Stil- und Text-Prüfer sie gegen den Style-Guide, bevor Klaus abnimmt. Ändert sie Skripte, Szenen
+   oder Resources unter `src/` außer Tests, prüft der Architektur-Prüfer sie gegen den
+   [Architektur-Leitfaden](../architektur-leitfaden.md) (Klaus, 2026-10-28, Feature 008). Wie, steht in
    [ki_pruefung.md](ki_pruefung.md). Schon bei `/speckit-checklist` lesen die Prüfer die Wortlaute
    und Zustände aus Spec und Vertrag, damit ein Fehler im Vertrag gar nicht erst gebaut wird
-   (Klaus, 2026-10-27). Bis zum Pilot prüfte Claude allein.
+   (Klaus, 2026-10-27); der Architektur-Prüfer liest dort Plan und Vertrag (Klaus, 2026-10-28). Bis zum Pilot prüfte Claude allein.
 9. **Als letzte Aufgabe die Spielbeschreibung prüfen** (Klaus, 2026-10-27): Nach der
    Gesamtabnahme und vor dem Merge gleicht Claude `docs/spielbeschreibung/` mit dem Code ab. Claude
    legt Klaus vor, welche Dateien veralten und welche neu angelegt werden sollten, je mit Grund,

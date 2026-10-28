@@ -14,11 +14,13 @@ erklärt, dass Klaus daraus Godot lernt.
 ## Vor jeder Aufgabe lesen
 
 1. `CLAUDE.md` und die Verfassung `.specify/memory/constitution.md`.
-2. Im Ordner des Features `specs/<nummer>-<kurzname>/`: `spec.md`, `plan.md`, `research.md`,
+2. Den Architektur-Leitfaden `docs/architektur-leitfaden.md`: Regeln `AR-NN` mit dem Stand „gilt …“.
+   Danach baust du; der Architektur-Prüfer prüft dein Ergebnis dagegen.
+3. Im Ordner des Features `specs/<nummer>-<kurzname>/`: `spec.md`, `plan.md`, `research.md`,
    `data-model.md`, `contracts/` und `tasks.md`.
-3. Aus `docs/spielbeschreibung/` die Dateien zu den Systemen, an denen du baust; welche, sagt
+4. Aus `docs/spielbeschreibung/` die Dateien zu den Systemen, an denen du baust; welche, sagt
    deren `README.md`. Sie beschreiben den Stand im Code.
-4. Jede Datei, die du änderst oder an die du andockst, vollständig.
+5. Jede Datei, die du änderst oder an die du andockst, vollständig.
 
 Der Vertrag unter `contracts/` ist verbindlich: Pfade, Klassennamen, Signale und Signaturen
 genau so, wie dort angegeben. Passt etwas nicht zusammen, hörst du auf und meldest es, statt den
@@ -36,8 +38,10 @@ Vertrag eigenmächtig auszulegen.
   typisiertes GDScript, Bezeichner englisch, Doc-Kommentare (`##`) und Testnamen deutsch,
   Einrückung mit Tabs, zwei Leerzeilen zwischen Funktionen.
 - Texte im Spiel sind deutsch und duzen den Spieler.
-- Systeme reden über Signale, nicht über direkten Zugriff. Die Timeline wendet keine Effekte an,
-  sie meldet sie.
+- Aufbau nach dem Architektur-Leitfaden: Kern ohne Node, Signal nach oben und Aufruf nach unten,
+  keine neuen Autoloads, Daten als Resources, Szenen aus Szenen. Die Timeline wendet keine Effekte
+  an, sie meldet sie (Verfassung). Weichst du begründet ab, setzt du an die Stelle
+  `# Ausnahme AR-NN: <Grund>` und meldest es unter „Offen“; freigeben kann es nur Klaus.
 - Szenen (`.tscn`, `format=3`) und Resources (`.tres`) dürfen als Text entstehen. Verweise
   laufen über `res://`-Pfade; erfinde keine `uid://`-Werte. Nach neuen Dateien
   `Godot --headless --path src --import` ausführen, damit Godot die `.uid`- und `.import`-Dateien
@@ -77,4 +81,4 @@ Antworte mit genau diesen Abschnitten:
 3. **Lernnotiz:** die Godot-Konzepte dieser Aufgaben und warum es so gebaut ist, an den
    konkreten Stellen im Code. Für Klaus geschrieben, der Godot lernt: kurz, kein Tutorial.
 4. **Prüfung:** die Befehle mit ihrem Ergebnis und was Klaus von Hand prüfen muss.
-5. **Offen:** Abweichungen vom Vertrag, Annahmen und Fragen.
+5. **Offen:** Abweichungen vom Vertrag und vom Leitfaden, je mit Grund, Annahmen und Fragen.

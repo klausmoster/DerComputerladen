@@ -13,7 +13,7 @@ flowchart LR
     C["Claude<br/>plant, beauftragt, prüft, committet"]
     A[["Godot-Agent<br/>baut die [A]-Aufgaben"]]
     T["Tests<br/>alles Messbare, bei jedem Lauf"]
-    P{{"Prüfer für Stil und Text<br/>lesen nur, melden Befunde"}}
+    P{{"Prüfer für Stil, Text und Architektur<br/>lesen nur, melden Befunde"}}
     K -->|"gibt eine Phase frei"| C
     C -->|"Auftrag"| A
     A -->|"Code, Lernnotiz, Testergebnis"| C
@@ -25,7 +25,7 @@ flowchart LR
     C -->|"Bitte um Abnahme"| K
 ```
 
-Die Prüfer arbeiten Claude zu, wenn eine Phase Sichtbares oder Texte ändert; wie, steht in
+Die Prüfer arbeiten Claude zu, wenn eine Phase Sichtbares, Texte oder Code ändert; wie, steht in
 [ki_pruefung.md](ki_pruefung.md). Die Rollen im Einzelnen stehen in [ki_dev.md](ki_dev.md), „Rollen“.
 
 ## Was steht wo
@@ -36,6 +36,7 @@ Die Prüfer arbeiten Claude zu, wenn eine Phase Sichtbares oder Texte ändert; w
 | [ki_pruefung.md](ki_pruefung.md) | Prüfen mit KI: Grundsätze, Prüfer und ihre Maßstäbe, Ablauf einer Phasenprüfung, Tests, Stand der Einführung |
 | `CLAUDE.md` | die verbindliche Arbeitsanweisung für Claude Code in diesem Projekt |
 | `.specify/memory/constitution.md` | die Verfassung: verbindliche Grundsätze für die Spec-Kit-Abläufe |
+| `docs/architektur-leitfaden.md` | wie das Spiel gebaut wird: Godot-Prinzipien, Muster, Schichten; Maßstab des Architektur-Prüfers |
 | `docs/spielbeschreibung/` | der Stand im Code nach Systemen, zum gezielten Vorladen; am Ende jedes Features geprüft ([ki_dev.md](ki_dev.md), Punkt 9) |
 | `docs/tagebuch/` | das Entwicklungstagebuch: die Entscheidungen seit Projektbeginn, auf Englisch, vor jedem Merge fortgeschrieben ([ki_dev.md](ki_dev.md), Punkt 10); Token und Kosten je Feature aus `tools/tagebuch/token_bilanz.py` |
 | `docs/offene-punkte.md` | offene Fragen, Lücken und Claudes eigene Entscheidungen, bis Klaus sie entschieden oder bestätigt hat |

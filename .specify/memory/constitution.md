@@ -98,17 +98,23 @@ Regenerieren der Tabellen nicht verloren gehen.
 
 ### VI. Prüfen mit eigenem Maßstab
 
-- Ändert eine Phase Sichtbares oder Texte, auch in Werkzeugen, endet sie vor Klaus' Abnahme mit
-  einer Phasenprüfung. Stil- und Text-Prüfer (`.claude/agents/`) prüfen nur lesend gegen den
-  Style-Guide, Claude prüft jeden ihrer Befunde nach.
+- Ändert eine Phase Sichtbares oder Texte, auch in Werkzeugen, oder Skripte, Szenen und Resources
+  unter `src/` außer Tests, endet sie vor Klaus' Abnahme mit einer Phasenprüfung. Stil- und
+  Text-Prüfer (`.claude/agents/`) prüfen nur lesend gegen den Style-Guide, der Architektur-Prüfer
+  gegen den Architektur-Leitfaden (`docs/architektur-leitfaden.md`); Claude prüft jeden ihrer
+  Befunde nach.
 - In `tasks.md` steht die Phasenprüfung als `[C]`-Aufgabe. Welche Prüfer für welche Phase gelten,
   legt `plan.md` unter „Prüfer je Phase“ fest.
-- Bei `/speckit-checklist` lesen die Prüfer die Wortlaute und Zustände aus Spec und Vertrag, bevor
-  gebaut wird.
+- Bei `/speckit-checklist` lesen die Prüfer die Wortlaute und Zustände aus Spec und Vertrag, der
+  Architektur-Prüfer Plan und Vertrag, bevor gebaut wird.
+- Ein Plan, der vom Leitfaden abweicht, nennt die Abweichung unter „Ausnahmen vom Leitfaden“; Klaus
+  gibt sie mit dem Plan frei.
 - Was sich messen lässt, prüfen Tests, nicht Prüfer.
 
 Begründung: Ein Prüfer mit eigenem Maßstab sieht, was der übersieht, der gebaut und geplant hat.
-Im Pilot (Feature 004) waren alle 13 bestätigten Befunde neu für Claude, keiner war falsch.
+Im Pilot (Feature 004) waren alle 13 bestätigten Befunde neu für Claude, keiner war falsch. Für den
+Aufbau des Codes ist der Architektur-Leitfaden dieser Maßstab, damit der Prüfer nach Regeln urteilt
+und nicht nach Geschmack (Feature 008).
 
 ## Technische Rahmenbedingungen
 
@@ -153,4 +159,4 @@ Im Pilot (Feature 004) waren alle 13 bestätigten Befunde neu für Claude, keine
   ein Grundsatz wegfällt oder neu definiert wird; MINOR, wenn ein Grundsatz oder Abschnitt
   hinzukommt oder deutlich erweitert wird; PATCH für Klarstellungen und Wortlaut.
 
-**Version**: 2.2.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-27
+**Version**: 2.3.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-28

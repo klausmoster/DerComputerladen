@@ -89,46 +89,46 @@ Stelle aus `src/` lässt sich nur mit dem Leitfaden beurteilen (quickstart.md, P
 **Independent Test**: Fehlerprobe mit fünf Verstößen bestanden (SC-002); Planprobe am Plan von 006
 liefert einen Bericht in der Form des Vertrags; Vorlage und Skill nennen Code als Auslöser (SC-006).
 
-- [ ] T008 [C] [US2] `.claude/agents/architektur-pruefer.md` nach contracts/architektur-pruefer.md:
+- [x] T008 [C] [US2] `.claude/agents/architektur-pruefer.md` nach contracts/architektur-pruefer.md:
   Kopf mit `tools: Read, Grep, Glob`, `model: inherit`; Anweisung mit den Punkten 1 bis 8; Bericht mit
   fünf Abschnitten; Tabelle „Schwere“.
-- [ ] T009 [C] [US2] Fehlerprobe unter `specs/008-architektur/fehlerprobe/` (R8): fünf Dateien als
+- [x] T009 [C] [US2] Fehlerprobe unter `specs/008-architektur/fehlerprobe/` (R8): fünf Dateien als
   Text, je ein Verstoß gegen AR-01 bis AR-05 und daneben eine ähnliche, erlaubte Stelle; dazu die
   Lösung `specs/008-architektur/fehlerprobe-loesung.md` außerhalb des Ordners der Probe (Analyse, U5).
-- [ ] T010 [C] [US2] Fehlerprobe laufen lassen. Der neue Agent-Typ steht erst in einer neuen Sitzung
+- [x] T010 [C] [US2] Fehlerprobe laufen lassen. Der neue Agent-Typ steht erst in einer neuen Sitzung
   bereit; deshalb ein allgemeiner Agent, der zuerst die Datei des Prüfers liest, mit „nur lesen“ im
   Auftrag (CHK018). Der Auftrag verbietet, die Lösung zu lesen, und nennt keine Regel als von Tests
   gemessen (Analyse, U5, A4). Ergebnis gegen die Lösung; besteht er nicht,
   Anweisung nachschärfen und höchstens zweimal wiederholen, dann entscheidet Klaus (SC-002, CHK006).
-- [ ] T011 [C] [US3] Planprobe (CHK005): Plan, research.md, data-model.md und contracts/ von
+- [x] T011 [C] [US3] Planprobe (CHK005): Plan, research.md, data-model.md und contracts/ von
   `specs/006-easter-egg-space-invaders/` als Auftrag „Plan“; Bericht nachprüfen.
 Vor T012 bis T016 sieht Claude nach dem Stand von 007, das dieselben Dateien in seinem Abschluss
 ändert (Analyse, I2). Ist 007 gemergt, holt Claude `main` mit Klaus' OK zuerst herein
 (`sync_with_base_branch`) und sieht die Tasks auf die Regel „[A] Selbsttest-Abläufe anpassen“ aus 007
 durch; sonst löst Claude die Konflikte beim späteren Hereinholen.
 
-- [ ] T012 [P] [C] [US2] `docs/ki_workflow/ki_pruefung.md` nach contracts/arbeitsweise.md: Stand,
+- [x] T012 [P] [C] [US2] `docs/ki_workflow/ki_pruefung.md` nach contracts/arbeitsweise.md: Stand,
   Grundsatz 5 und der Satz unter der Auswertung des Pilots (Analyse, C13),
   „Wer prüft was“, Schaubild, „Die Prüfer“, „Nicht vorgesehen“ mit „bis 2026-10-28“ und Grund,
   „Maßstäbe“, Ablauf, „Anbindung an Spec Kit“; Zeilen im „Nachmessen“ für T010 und T011.
-- [ ] T013 [P] [C] [US2] `docs/ki_workflow/ki_dev.md` (Punkt 8, Schaubild „Ablauf je Feature“) und
+- [x] T013 [P] [C] [US2] `docs/ki_workflow/ki_dev.md` (Punkt 8, Schaubild „Ablauf je Feature“) und
   `docs/ki_workflow/README.md` (Schaubild „Wer macht was“, Tabelle „Was steht wo“).
-- [ ] T014 [P] [C] [US2] `.claude/skills/dcl-phasenpruefung/SKILL.md`: Beschreibung, Schritt 2,
+- [x] T014 [P] [C] [US2] `.claude/skills/dcl-phasenpruefung/SKILL.md`: Beschreibung, Schritt 2,
   Vorbereitung mit `.gd`, `.tscn` und `.tres` aus dem Diff, Ersatz-Auftrag, Checkliste mit Plan und
   Vertrag, Bericht mit Abschnitt „Architektur-Prüfer“.
-- [ ] T015 [P] [C] [US2] `.specify/templates/overrides/tasks-template.md`: an jeder Phasenprüfung
+- [x] T015 [P] [C] [US2] `.specify/templates/overrides/tasks-template.md`: an jeder Phasenprüfung
   „nur wenn die Phase Sichtbares, Texte oder Code ändert“ (FR-021). Danach mit `git diff` prüfen,
   dass Spec Kits eigene Vorlagen unberührt sind.
-- [ ] T016 [P] [C] [US2] `.claude/agents/godot-entwickler.md`: Leitfaden unter „Vor jeder Aufgabe
+- [x] T016 [P] [C] [US2] `.claude/agents/godot-entwickler.md`: Leitfaden unter „Vor jeder Aufgabe
   lesen“, Verweis unter „Godot“, Abweichungen unter „Abliefern“, „Offen“ (FR-022).
-- [ ] T017 [C] [US2] Vorschlag für Grundsatz VI aus contracts/arbeitsweise.md vorlegen.
-- [ ] T018 [K] [US2] Grundsatz VI beschließen; Claude führt `/speckit-constitution` mit Klaus'
+- [x] T017 [C] [US2] Vorschlag für Grundsatz VI aus contracts/arbeitsweise.md vorlegen.
+- [x] T018 [K] [US2] Grundsatz VI beschließen; Claude führt `/speckit-constitution` mit Klaus'
   Wortlaut aus, Version 2.3.0 (FR-023).
-- [ ] T019 [C] [US2] Zeile für den Leitfaden in der Tabelle „Aufbau“ von `CLAUDE.md` vorlegen;
+- [x] T019 [C] [US2] Zeile für den Leitfaden in der Tabelle „Aufbau“ von `CLAUDE.md` vorlegen;
   eintragen nur mit Klaus' OK.
-- [ ] T020 [C] [US2] Lernnotiz Phase 2: was ein Subagent ist, warum die Positivliste der Werkzeuge
+- [x] T020 [C] [US2] Lernnotiz Phase 2: was ein Subagent ist, warum die Positivliste der Werkzeuge
   ihn zum reinen Leser macht, warum Fehlerprobe und Planprobe den Prüfer messen.
-- [ ] T021 [K] [US2] Abnahme Phase 2 nach quickstart.md, Phase 2.
+- [x] T021 [K] [US2] Abnahme Phase 2 nach quickstart.md, Phase 2.
 
 **Checkpoint**: Ab jetzt planen neue Features den Architektur-Prüfer von selbst ein.
 

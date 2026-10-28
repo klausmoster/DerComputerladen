@@ -64,3 +64,40 @@ Godot-Prinzipien lassen sich alle schon im Spiel ansehen.
 - Die Regeln für Wirtschaft (AR-16, AR-17) und Adventure (AR-18 bis AR-20) gelten erst, wenn diese
   Schichten gebaut werden. Sie stehen jetzt schon da, damit das erste Feature der Schicht nicht ohne
   Vorbild beginnt.
+
+## Phase 2
+
+### T008 bis T011 Ein Prüfer, der nur lesen kann, und wie man ihn misst
+
+Kein Godot, sondern Claude Code; aber es bestimmt, wer künftig deinen Code beurteilt.
+
+- Ein **Subagent** ist eine eigene Claude-Sitzung mit eigener Anweisung, eigenen Werkzeugen und
+  frischem Kontext; zurück kommt nur sein Bericht. Die Anweisung steht als Datei in
+  `.claude/agents/architektur-pruefer.md`, oben im Kopf zwischen den `---`-Zeilen Name, Beschreibung,
+  Werkzeuge und Modell. Der frische Kontext ist der Punkt: Der Prüfer hat weder den Plan geschrieben
+  noch den Code gebaut und urteilt deshalb nur nach dem Leitfaden.
+- `tools: Read, Grep, Glob` ist eine **Positivliste**. Was nicht darin steht, kann der Agent nicht:
+  ohne `Edit`, `Write` und `Bash` keine Datei ändern, ohne `Agent` keine weiteren Agents starten. So
+  ist „nur lesen“ keine Bitte, sondern eingebaut. `Grep` braucht er, um „wer wen kennt“ zu beurteilen:
+  Wer `case_key_pressed` hört, findet nur eine Suche über ganz `src/`.
+- Ein neuer Agent-Typ steht erst in einer neuen Sitzung bereit. Fehler- und Planprobe liefen deshalb
+  über einen allgemeinen Agent, der zuerst die Datei des Prüfers las; „nur lesen“ stand dort
+  ausdrücklich im Auftrag, weil ein allgemeiner Agent alle Werkzeuge hat.
+- Die **Fehlerprobe** (`specs/008-architektur/fehlerprobe/`) misst den Prüfer wie eine Fehlerprobe
+  einen Test: absichtlich eingebaute Fehler, die er finden muss. Neben jedem Verstoß steht eine
+  ähnliche, erlaubte Stelle, etwa im Regal neben `get_parent().kasse_aktualisieren()` das Signal
+  `ware_gewaehlt`. Meldet er auch die erlaubte Stelle, urteilt er nach Geschmack und nicht nach
+  Regel. Die Lösung liegt außerhalb des Ordners, damit er sie nicht zufällig liest.
+- Die **Planprobe** am Plan von 006 zeigt, ob er einen Plan prüfen kann, bevor gebaut wird; dort
+  ist ein Fehler noch eine Zeile, später eine Phase.
+
+### T012 bis T016 Wo der Prüfer in der Arbeitsweise steht
+
+- Der Prüfer wird an denselben Stellen eingeplant wie Stil- und Text-Prüfer: im Skill
+  `dcl-phasenpruefung`, in der Aufgaben-Vorlage unter `.specify/templates/overrides/` und in
+  `ki_pruefung.md`. Die Vorlage liegt unter `overrides/`, weil Spec Kit dort zuerst sucht und ein
+  Update nur seine eigenen Vorlagen neu einspielt; deshalb bleiben `speckit-*` und die Vorlagen von
+  Spec Kit selbst unberührt.
+- Der Godot-Agent liest den Leitfaden jetzt vor jeder Aufgabe. Weicht er begründet ab, schreibt er
+  `# Ausnahme AR-NN: …` an die Stelle und meldet es; gültig wird die Ausnahme erst mit Klaus' Zeile
+  in der Tabelle des Leitfadens.

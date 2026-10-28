@@ -1,0 +1,10 @@
+; Probe für den Architektur-Prüfer (Feature 008): Ausschnitt aus res://project.godot nach einem
+; gedachten Feature „Ladenansicht“.
+
+[autoload]
+
+GameClock="*res://core/game_clock.gd"
+Timeline="*res://core/timeline.gd"
+GameWindow="*res://core/game_window.gd"
+GameSession="*res://core/game_session.gd"
+Events="*res://core/events.gd"

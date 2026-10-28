@@ -1,6 +1,6 @@
 ---
 name: dcl-phasenpruefung
-description: Führt die Phasenprüfung für „Der Computerladen“ durch. Stil-Prüfer und Text-Prüfer prüfen eine Phase gegen den Style-Guide, Claude prüft jeden Befund nach, zählt und schreibt den Bericht für die Abnahme. Nutze dies am Ende jeder Phase, die Sichtbares oder Texte ändert, bei der [C]-Aufgabe „Phasenprüfung“, für einen Probelauf an einem fertigen Feature oder wenn Klaus /dcl-phasenpruefung aufruft.
+description: Führt die Phasenprüfung für „Der Computerladen“ durch. Stil- und Text-Prüfer prüfen eine Phase gegen den Style-Guide, der Architektur-Prüfer gegen den Architektur-Leitfaden; Claude prüft jeden Befund nach, zählt und schreibt den Bericht für die Abnahme. Nutze dies am Ende jeder Phase, die Sichtbares, Texte oder Code ändert, bei der [C]-Aufgabe „Phasenprüfung“, für einen Probelauf an einem fertigen Feature oder wenn Klaus /dcl-phasenpruefung aufruft.
 argument-hint: "[Feature und Phase, etwa 004 Phase 4, oder: Probelauf <Bereich>]"
 ---
 
@@ -16,15 +16,20 @@ der freigegebenen Phase. Ein Probelauf an einem fertigen Feature repariert nicht
 ## Vorab: Prüfung des Vertrags bei der Checkliste
 
 Bei `/speckit-checklist` laufen Text- und Stil-Prüfer einmal über die Wortlaute und Zustände, die
-Spec und Vertrag festlegen, noch bevor gebaut wird (Klaus, 2026-10-27). Vorgehen wie unten in den
-Schritten 2 bis 4, nur mit Spec und `contracts/` statt Code und Fotos. Bestätigte Befunde ändern
+Spec und Vertrag festlegen, noch bevor gebaut wird (Klaus, 2026-10-27). Plant das Feature Code, liest
+der Architektur-Prüfer im Auftrag „Plan“ `plan.md`, `research.md`, `data-model.md` und `contracts/`
+gegen den Leitfaden: wer wen kennt, Signale, Autoloads, wo Logik und Daten liegen (Klaus,
+2026-10-28). Vorgehen wie unten in den Schritten 2 bis 4, nur mit Spec und `contracts/` statt Code
+und Fotos. Bestätigte Befunde ändern
 den Vertrag, mit Klaus' OK. Gezählt wird unter „Nachmessen“ als eigener Lauf.
 
 ## 1. Klären, was geprüft wird
 
 1. Feature und Phase aus dem Aufruf, sonst nachfragen (als Auswahl, Empfehlung zuerst).
 2. In `specs/<nummer>-<kurzname>/plan.md` unter „Prüfer je Phase“ nachsehen, welche Prüfer gelten.
-   Fehlt der Abschnitt: Stil, wenn die Phase Sichtbares ändert; Text, wenn sie Texte ändert.
+   Fehlt der Abschnitt: Stil, wenn die Phase Sichtbares ändert; Text, wenn sie Texte ändert;
+   Architektur, wenn sie Skripte, Szenen oder Resources unter `src/` ändert. Tests und `src/addons/`
+   allein lösen den Architektur-Prüfer nicht aus.
 3. Den Umfang festhalten: geänderte Dateien (`git diff --stat` gegen den Stand vor der Phase),
    betroffene Szenen, betroffene Texte.
 
@@ -47,7 +52,12 @@ den Vertrag, mit Klaus' OK. Gezählt wird unter „Nachmessen“ als eigener Lau
 - **Textliste** für den Text-Prüfer mit `scripts/texte_ziehen.py`, je Gruppe die betroffenen
   Ordner unter `src/`. Bei großen Listen ist sie die Arbeitsgrundlage, die Dateien liest der
   Prüfer nur an den Stellen.
-- **Was Tests schon messen**, aus `src/test/` heraussuchen. Das lässt der Prüfer aus.
+- **Für den Architektur-Prüfer** die Liste der geänderten `.gd`, `.tscn` und `.tres` aus dem Diff,
+  ohne `src/test/` und `src/addons/`, dazu `contracts/` des Features. Den Leitfaden
+  (`docs/architektur-leitfaden.md`) liest er selbst. Hat eine Schicht wie Wirtschaft oder Adventure
+  begonnen, steht das im Auftrag.
+- **Was Tests schon messen**, aus `src/test/` heraussuchen, beim Architektur-Prüfer aus
+  `test_architektur.gd`. Das lässt der Prüfer aus.
 
 ## 3. Prüfer starten
 
@@ -55,7 +65,8 @@ Alle Prüfer der Phase in **einer** Nachricht, damit sie gleichzeitig laufen. Je
 Repo-Wurzel, Maßstab mit Pfaden, Dateien, Fotos oder Textliste, was Tests schon messen und was
 ausdrücklich nicht dazugehört.
 
-- Stehen die Agent-Typen `stil-pruefer` und `text-pruefer` bereit, diese nehmen.
+- Stehen die Agent-Typen `stil-pruefer`, `text-pruefer` und `architektur-pruefer` bereit, diese
+  nehmen.
 - Sonst, etwa in der Sitzung, in der ein Prüfer neu entstanden ist, einen allgemeinen Agent mit
   diesem Anfang:
 
@@ -63,6 +74,9 @@ ausdrücklich nicht dazugehört.
   > `<Repo>/.claude/agents/stil-pruefer.md` und arbeite genau danach. Du darfst nur lesen:
   > Benutze ausschließlich Read, Grep und Glob. Kein Bash, kein Edit, kein Write, keine weiteren
   > Agents, keine Webzugriffe. Du änderst keine Datei.
+
+  Für den Architektur-Prüfer ebenso, mit `architektur-pruefer.md` und „Architektur-Prüfer“. Sein
+  Auftrag nennt die Art: Phase, Plan oder Bestand.
 
 ## 4. Jeden Befund nachprüfen
 
@@ -75,8 +89,10 @@ entscheiden:
   Beispiel zeigt bewusst die kurze Eingabe“.
 - **Widerspruch zum Vertrag:** Steht die Stelle so in Spec, Vertrag oder `research.md`, ist das
   kein Baufehler. Bestätigen und Klaus entscheiden lassen, ob Vertrag oder Style-Guide gilt.
-- **Lücke statt Fehler:** Regelt der Style-Guide etwas nicht oder widerspricht er sich, wird es
-  eine Lücke.
+- **Lücke statt Fehler:** Regelt der Style-Guide oder der Leitfaden etwas nicht oder widerspricht
+  er sich, wird es eine Lücke.
+- **Begründete Ausnahme:** Meldet der Architektur-Prüfer eine Stelle als Ausnahme, prüfen, ob
+  Kommentar und Zeile in der Tabelle „Ausnahmen“ des Leitfadens da sind.
 
 Auch die Lücken der Prüfer nachprüfen: Fehlte dem Prüfer nur ein Abschnitt, ist es keine Lücke.
 
@@ -92,8 +108,8 @@ Nur in einer freigegebenen Phase, nicht im Probelauf.
 1. In `docs/ki_workflow/ki_pruefung.md` unter „Nachmessen“ eine Zeile je Prüfer: Lauf, Befunde,
    bestätigt, verworfen, Lücken, nur er fand. „Nur er fand“ heißt: Claudes eigene Prüfung hatte es
    nicht gefunden.
-2. Lücken im Style-Guide und Entscheidungen für Klaus in `docs/offene-punkte.md`, je mit
-   Empfehlung.
+2. Lücken im Style-Guide oder im Leitfaden und Entscheidungen für Klaus in `docs/offene-punkte.md`,
+   je mit Empfehlung.
 3. Was sich am Ablauf neu gezeigt hat, als Vorschlag für „Erfahrungen“, mit Anlass. Eingetragen
    wird erst nach Klaus' OK (Pflege, `docs/ki_workflow/README.md`).
 4. Den Bericht in die Bitte um Abnahme unter „was geprüft ist“:
@@ -106,6 +122,8 @@ Stil-Prüfer: 3 Befunde, 2 bestätigt
   verworfen  Schatten unter dem Tresen: in wenigen Stufen gesetzt, nicht weich
 Text-Prüfer: 2 Befunde, 2 bestätigt
   hoch       „Bitte wählen Sie eine Ware“ → „Wähl eine Ware“ (Sprache, Anrede)
+Architektur-Prüfer: 1 Befund, 1 bestätigt
+  hoch       Regal ruft get_parent().kasse_aktualisieren() (AR-02)
 Für dich: Der Style-Guide regelt Preisschilder noch nicht. Wie sollen sie aussehen?
 ```
 

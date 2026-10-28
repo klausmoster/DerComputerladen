@@ -413,6 +413,36 @@ wenn Klaus es will.
   bitgleich rechnet, ist ungeprüft. Wichtig, sobald die Wirtschaft mit Seed rechnet und Spielstände
   aus Eingriffen nachspielt (`docs/recherche/architektur-quellen.md`, 6.3).
 
+### Feature 008, Lücken im Leitfaden aus Fehler- und Planprobe (2026-10-28)
+
+Gemeldet vom Architektur-Prüfer, von Claude nachgeprüft. Klaus hat am 2026-10-28 alle acht wie
+empfohlen entschieden; sie stehen im Leitfaden (AR-02, AR-04, AR-07, AR-08, AR-15, „Schwere“):
+- **L1 Stellschrauben und Werte aus dem Style-Guide (AR-04):** Fallen Tempi, Chancen, Pixelmuster
+  unter „gepflegte Spieldaten“? Empfehlung: AR-04 gilt für Spielinhalt, also was in die game_bible
+  gehört (Produkte, Preise, Kunden, Mieten). Stellschrauben einer Mechanik dürfen als benannte
+  Konstanten an einer Stelle im Kern stehen; Werte aus dem Style-Guide spiegelt der Code als
+  Konstanten wie `UiPalette`. Folge: Befund 1 der Planprobe wird verworfen, die Miete in der
+  Fehlerprobe bleibt ein Befund.
+- **L2 game_bible und `.tres` (AR-04, Verfassung V):** Werden Resources aus der game_bible erzeugt
+  oder von Hand gepflegt? Empfehlung: Die game_bible bleibt die Quelle; Resources entstehen daraus
+  über einen Importer (Backlog 02-01), nie von Hand, damit es keine zweite Quelle gibt.
+- **L3 Schwere bei Verstoß gegen die Verfassung:** Empfehlung: Verletzt eine Stelle zugleich die
+  Verfassung, gilt „kritisch“, auch wenn die Regel allein „mittel“ wäre.
+- **L4 Regelmäßige Buchungen und AR-07:** Ist die Miete am Monatsersten ein „Ereignis“? Empfehlung:
+  Ereignis heißt Eintrag im Katalog. Regelmäßiges wie Miete oder Zinsen ist Mechanik eines Kerns;
+  den Monatswechsel reicht die Hülle hinein (`GameClock.month_passed`). Ereignisse innerhalb eines
+  Kerns, etwa `SHOT` im Easter Egg, sind keine Ereignisse im Sinne von AR-07.
+- **L5 Signale übersetzen (AR-02):** Empfehlung: Ein Baustein darf das Signal eines inneren Teils in
+  ein eigenes Signal mit eigener Bedeutung übersetzen, wie `CaseKey.pressed` zu `case_key_pressed`;
+  verboten ist nur das bloße Durchreichen.
+- **L6 Spiel ohne Spielstand (AR-08, AR-09):** Empfehlung: AR-08 und AR-09 gelten für den
+  Spielverlauf, der in den Spielstand geht. Ein Minispiel ohne Spielstand darf seinen Startwert in
+  der Hülle zufällig wählen; der Kern bekommt ihn trotzdem von außen.
+- **L7 Lesbarer Zustand eines Kerns (AR-15):** Empfehlung: Felder, die die Oberfläche nur lesen
+  darf, tragen den Doku-Kommentar „Nur lesen.“; der Prüfer meldet Schreibzugriffe von außen.
+- **L8 Texte der Oberfläche (AR-04):** Empfehlung: Texte stehen je Bildschirm an einer Stelle als
+  Konstanten, wie `TitleTexts`; das ist kein Verstoß gegen AR-04. Dialoge regelt AR-20.
+
 ## Eigene Entscheidungen von Claude
 
 ### Arbeitsweise (2026-10-21)

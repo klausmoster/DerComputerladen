@@ -38,7 +38,8 @@ acht Teile:
 Nur Regeln mit dem Stand „gilt …“ zählen. Eine Regel für eine Schicht, die es noch nicht gibt, prüft
 der Prüfer erst, wenn ihr erstes Feature beginnt.
 
-**Schwere eines Befunds:**
+**Schwere eines Befunds** (verletzt eine Stelle zugleich die Verfassung, gilt „kritisch“, auch wenn
+die Regel allein „mittel“ wäre; Klaus, 2026-10-28):
 
 | Schwere | Wann | Beispiel |
 |---|---|---|
@@ -86,6 +87,8 @@ gibt sie mit dem Plan frei.
   ihn einsetzt, ruft ihn direkt auf und reicht ihm hinein, was er braucht. Geschwister reden über
   den gemeinsamen Eltern-Node. Kein Skript greift über `get_parent()`, einen Pfad mit `../` oder
   `/root/` nach oben. Signale werden nicht über mehrere Ebenen weitergereicht.
+  Ein Baustein darf das Signal eines inneren Teils in ein eigenes
+  Signal mit eigener Bedeutung übersetzen; verboten ist nur das bloße Durchreichen.
 - **Grund:** So lässt sich ein Baustein in eine andere Szene setzen, ohne ihn zu ändern, und für
   sich testen. Der Merksatz „Call down, signal up“ stammt aus der Godot-Gemeinde (KidsCanCode); die
   offizielle Doku sagt dasselbe sinngemäß.
@@ -130,6 +133,12 @@ gibt sie mit dem Plan frei.
   `.tres`-Dateien oder in einer Datendatei, die ein Werkzeug pflegt, nicht als Werte im Code. Eine
   geladene Resource ist nur zum Lesen da, weil Godot sie zwischen allen Nutzern teilt; was sich im
   Spiel ändert, gehört in einen Kern oder in eine Kopie. Spielstände sind ausgenommen (AR-13).
+  Spielinhalt heißt hier, was in die game_bible gehört: Produkte,
+  Preise, Kunden, Mieten. Die game_bible bleibt dafür die Quelle; Resources entstehen daraus über
+  einen Importer, nie von Hand, damit es keine zweite Quelle gibt. Keine Spieldaten in diesem Sinn
+  sind Stellschrauben einer Mechanik, etwa Tempi oder Chancen, und Werte, die der Style-Guide
+  festlegt: Sie stehen als benannte Konstanten an einer Stelle, wie `UiPalette`. Ebenso stehen die
+  Texte eines Bildschirms an einer Stelle als Konstanten, wie `TitleTexts`; Dialoge regelt AR-20.
 - **Grund:** Der Spielinhalt soll sich ohne Code ändern lassen, im Inspector oder in einem
   Werkzeug, wie die Ereignisse in der Werkstatt. Ein Produkt wie „486DX-33“ ist eine Datenzeile,
   keine eigene Klasse.
@@ -186,6 +195,10 @@ gibt sie mit dem Plan frei.
 
 - **Aussage:** Alles, was ein Ereignis auslösen kann, steht in der Zeitleiste. Kein anderes System
   führt einen eigenen Kalender von Ereignissen.
+  Ereignis heißt hier ein Eintrag im Katalog. Regelmäßiges wie Miete
+  oder Zinsen ist Mechanik eines Kerns; den Monatswechsel reicht ihm die Hülle hinein, etwa aus
+  `GameClock.month_passed`. Was ein Kern innerhalb eines Schritts meldet, etwa ein Schuss im Easter
+  Egg, ist kein Ereignis in diesem Sinn.
 - **Grund:** So lässt sich der Spielverlauf an einer Stelle prüfen und in der Werkstatt simulieren
   (Klaus, 2026-08-13).
 - **Beispiel:** Feste und variable Ereignisse stehen im Katalog, auch „Konkurrent eröffnet“.
@@ -201,6 +214,9 @@ gibt sie mit dem Plan frei.
   aus einem eigenen `RandomNumberGenerator`, dessen Startwert nur vom Seed, vom Zweck und von einem
   Schlüssel abhängt; nie aus `randi()`, `randf()` oder `randomize()`. Abgeleitete Werte werden
   entweder gespeichert oder beim Laden genauso neu berechnet wie im Spiel.
+  Das gilt für den Spielverlauf, der in den Spielstand geht. Ein
+  Spiel ohne Spielstand, etwa das Easter Egg, darf seinen Startwert in der Hülle zufällig wählen; der
+  Kern bekommt ihn trotzdem von außen. Ebenso gilt AR-09 nur für Eingriffe in den Spielverlauf.
 - **Grund:** Spielstände bauen darauf, statt den ganzen Zustand zu speichern; ein Fehler lässt sich
   mit demselben Seed nachstellen. Factorio zeigt, wie schon ein anders berechneter Zwischenwert zwei
   Läufe auseinanderlaufen lässt.
@@ -357,6 +373,8 @@ rechnet, und dem, was zeigt (Quellen 3.2, 4.2). Regeln: AR-02, AR-05, AR-09, AR-
 - **Aussage:** Die Oberfläche zeigt den Zustand eines Kerns und meldet, was der Spieler will. Sie
   ändert Daten eines Kerns nie an dessen Feldern, sondern über seine Methoden oder als Befehl
   (AR-09).
+  Felder eines Kerns, die die Oberfläche nur lesen darf, tragen den
+  Doku-Kommentar „Nur lesen.“.
 - **Grund:** Sonst gibt es zwei Stellen, an denen sich der Zustand ändert, und der Kern kann seine
   Regeln nicht durchsetzen.
 - **Beispiel:** Der Titel ruft `GameSession.start_new()` und baut den Lauf nicht selbst
@@ -492,4 +510,17 @@ dieselben Regeln, mit diesen Unterschieden:
 
 ## Geschichte
 
-Noch keine Änderungen.
+Ergänzt nach der Fehler- und der Planprobe in Phase 2 von Feature 008 (Klaus, 2026-10-28), weil
+der Architektur-Prüfer acht Lücken gemeldet hatte (`docs/offene-punkte.md`, „Feature 008, Lücken im
+Leitfaden“). Der bisherige Wortlaut gilt weiter; ergänzt wurde je ein Absatz am Ende der Aussage:
+
+| Regel | Ergänzt um | Wortlaut der Aussage bis 2026-10-28 |
+|---|---|---|
+| AR-02 | Übersetzen eines Signals ist erlaubt (L5) | Ein Baustein kennt den nicht, der ihn einsetzt. Er meldet nach oben per Signal; wer ihn einsetzt, ruft ihn direkt auf und reicht ihm hinein, was er braucht. Geschwister reden über den gemeinsamen Eltern-Node. Kein Skript greift über `get_parent()`, einen Pfad mit `../` oder `/root/` nach oben. Signale werden nicht über mehrere Ebenen weitergereicht. |
+| AR-04 | was Spielinhalt ist, game_bible als Quelle, Stellschrauben, Texte (L1, L2, L8) | Gepflegte Spieldaten, etwa Produkte, Kundentypen oder Objekte eines Raums, sind Datenobjekte und keine Klassen (Muster „Typ-Objekt“). Sie stehen als `Resource`-Klasse mit `.tres`-Dateien oder in einer Datendatei, die ein Werkzeug pflegt, nicht als Werte im Code. Eine geladene Resource ist nur zum Lesen da, weil Godot sie zwischen allen Nutzern teilt; was sich im Spiel ändert, gehört in einen Kern oder in eine Kopie. Spielstände sind ausgenommen (AR-13). |
+| AR-07 | was ein Ereignis ist (L4) | Alles, was ein Ereignis auslösen kann, steht in der Zeitleiste. Kein anderes System führt einen eigenen Kalender von Ereignissen. |
+| AR-08 | Spiele ohne Spielstand (L6) | Katalog, Seed, Grad und Eingriffe legen ein Spiel vollständig fest. Jeder Zufall kommt aus einem eigenen `RandomNumberGenerator`, dessen Startwert nur vom Seed, vom Zweck und von einem Schlüssel abhängt; nie aus `randi()`, `randf()` oder `randomize()`. Abgeleitete Werte werden entweder gespeichert oder beim Laden genauso neu berechnet wie im Spiel. |
+| AR-15 | Kommentar „Nur lesen.“ (L7) | Die Oberfläche zeigt den Zustand eines Kerns und meldet, was der Spieler will. Sie ändert Daten eines Kerns nie an dessen Feldern, sondern über seine Methoden oder als Befehl (AR-09). |
+
+Dazu die Regel für die Schwere bei einem Verstoß gegen die Verfassung (L3), unter „So liest man eine
+Regel“.

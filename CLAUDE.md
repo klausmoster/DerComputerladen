@@ -99,6 +99,7 @@ deren `README.md`.
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
 | `docs/game_bible/` | Obsidian-Vault mit den Spieldaten (Komponenten, Preise, Prospekte) |
 | `docs/game_design.md` | Game Design Document |
+| `docs/architektur-leitfaden.md` | Architektur-Leitfaden: Godot-Prinzipien, Muster und Schichten mit Regeln `AR-NN`; Maßstab des Architektur-Prüfers |
 | `docs/spielbeschreibung/` | Stand im Code, nach Systemen; Index `README.md` |
 | `docs/ki_workflow/` | Arbeitsweise mit KI: Abläufe, Prüfungen, Erfahrungen |
 | `docs/offene-punkte.md` | offene Fragen, Lücken und Claudes eigene Entscheidungen |
