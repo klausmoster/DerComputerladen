@@ -601,6 +601,17 @@ func test_versatz_misst_den_rahmen_samt_titelleiste_im_nutzbaren_bereich() -> vo
 		Vector2i(0, 31))
 
 
+func test_fenster_rechteck_nennt_lage_und_groesse_des_fensters() -> void:
+	# Arrange (Feature 008, T036a, M1): Die Abläufe lesen Größe und Lage nur über den Fahrer.
+	var fenster := get_tree().root
+
+	# Act
+	var rechteck := _fahrer.fenster_rechteck()
+
+	# Assert
+	assert_eq(rechteck, Rect2i(fenster.position, fenster.size))
+
+
 func test_lage_text_auf_einen_pixel_genau() -> void:
 	# Assert
 	assert_eq(SelbsttestFahrer.lage_text(Vector2i(1, -1)),

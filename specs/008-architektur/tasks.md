@@ -212,7 +212,7 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
   zwei Spielstände per Skript in `user://test_008_behebung/` anlegen (Mittel, Seed 4711, gespeichert
   1987; Schwer mit einem Eingriff, gespeichert 1993; CHK013), nicht im echten Ordner; Klaus bitten,
   für die Handprobe selbst einen Spielstand anzulegen (Analyse, U14, U15).
-- [ ] T036a [A] [US5] Teil 1, kleine Behebungen ohne Änderung am Verhalten, je mit Lernnotiz:
+- [x] T036a [A] [US5] Teil 1, kleine Behebungen ohne Änderung am Verhalten, je mit Lernnotiz:
   - K1 `src/core/game_clock.gd`: Obergrenze an Tagen je Bild in `_process()`, wie
     `InvadersPage.MAX_STEPS` (AR-10).
   - K2 `src/core/game_clock.gd`: `enum` für läuft, angehalten, am Ende statt `paused` und `_ended`;
@@ -261,7 +261,10 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
   - L16 `src/tools/werkstatt/`: gemeinsame Hilfen von `EventForm` und `EventList` in eine eigene
     Klasse; kein Aufruf privater Funktionen fremder Klassen mehr (`difficulty_panel.gd:274, 282,
     295`, `event_form.gd:471`) (AR-02).
-- [ ] T036c [C] [US5] M11: In `tools/selbsttest/vergleich.py` nennt je ein Kommentar die Stelle in
+  - Aus der Prüfung von Teil 1 (Klaus, 2026-10-29): `test_selbsttest_laeufer.gd` prüft, dass
+    die Kette der Abläufe nach dem Schließen des Fensters stillsteht; bisher fiel das in der
+    Fehlerprobe nur im folgenden Test auf.
+- [x] T036c [C] [US5] M11: In `tools/selbsttest/vergleich.py` nennt je ein Kommentar die Stelle in
   Godot, deren Wert oder Format das Skript ein zweites Mal kennt: Protokoll (`selbsttest_protokoll.gd`,
   `selbsttest_texte.gd`), Raster (`GameWindow.BASE_SIZE`), Kassenrot (`UiPalette.KASSENROT`).
 - [ ] T037 [C] [US5] Nach jedem Teil Vergleich nach R9: Fahrpläne `vorher/` gegen `nachher/` mit `cmp`, Startprobe,

@@ -44,8 +44,10 @@ const LAUF_SCHLUESSEL: Array[String] = ["selbsttest.version", "lauf.start", "lau
 	"lauf.zeitraffer"]
 ## Namen der Grafikschnittstellen, wie Godot sie meldet, für das Protokoll (data-model.md).
 const GRAFIK_API := {"metal": "Metal", "vulkan": "Vulkan", "d3d12": "D3D12", "opengl3": "OpenGL"}
-## Das Raster des Spiels, für den Faktor des Fensters.
-const RASTER := Vector2i(640, 360)
+## GameWindow hat als Autoload keinen class_name; seine Konstanten kommen über das Skript.
+const FENSTER_SCRIPT := preload("res://core/game_window.gd")
+## Das Raster des Spiels, für den Faktor des Fensters; es steht in GameWindow (AR-04).
+const RASTER := FENSTER_SCRIPT.BASE_SIZE
 ## Die Display-Server, deren screen_get_scale() immer 1.0 liefert; dort kommt die Skalierung aus
 ## den dpi (skalierung()). Namen wie DisplayServer.get_name().
 const SKALIERUNG_AUS_DPI: Array[String] = ["Windows", "X11"]

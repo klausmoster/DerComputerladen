@@ -46,8 +46,9 @@ const LIT_FONT_COLORS: Array[StringName] = [&"font_color", &"font_focus_color",
 ## Communicators.
 enum Look { PAPER, LCD }
 
-## Text der Kopfzeile, bisher fest „HAUPTMENÜ“ in der Szene.
-@export var header_text: String = "HAUPTMENÜ":
+## Text der Kopfzeile; leer, bis ihn setzt, wer das Menü einsetzt, etwa der Titel mit
+## TitleTexts.HEADER_MAIN. So steht jede Kopfzeile nur in TitleTexts.
+@export var header_text: String = "":
 	set(value):
 		header_text = value
 		if is_node_ready():

@@ -363,8 +363,8 @@ func play_until(day: int) -> void:
 ## „Neu starten mit Eingriffen“ bzw. „ohne Eingriffe“ (FR-043): ein frischer Lauf mit dem Seed des
 ## aktuellen Laufs auf dem Katalog, wie er jetzt dasteht. Ohne Eingriffe spielt er bis zu dem Tag,
 ## auf dem der alte Lauf stand. Mit Eingriffen spielt WhatIfProbe.build_run() die gesammelten an
-## ihren Tagen nach (R22), bis zum Endtag aus _end_day(); was nicht passt, nennt ein Hinweis. Die
-## gesammelten Eingriffe bleiben so oder so.
+## ihren Tagen nach (R22), bis zum Endtag aus WhatIfProbe.end_day(); was nicht passt, nennt ein
+## Hinweis. Die gesammelten Eingriffe bleiben so oder so.
 ##
 ## Beide behalten den Grad des Laufs (Feature 003). Die Probe des Panels bekommt ihn deshalb wie
 ## den Seed vor build_run(); sonst bliebe dort der Grad einer früher geladenen Probe, und nach
@@ -375,7 +375,7 @@ func restart(with_interventions: bool) -> void:
 	if with_interventions:
 		probe.seed = run.seed
 		probe.difficulty = run.difficulty
-		probe.until_day = _end_day()
+		probe.until_day = probe.end_day(run.today)
 		run = probe.build_run(_effective_catalog())
 		_start_run(probe.not_applicable)
 		return
@@ -399,10 +399,10 @@ func load_probe(loaded: WhatIfProbe) -> void:
 
 
 ## Schreibt die gesammelten Eingriffe mit Seed und Grad des aktuellen Laufs und dem Endtag aus
-## _end_day() als Probe [param probe_name] nach probe_folder (FR-051). Die Kennung, zugleich der
-## Dateiname, entsteht aus dem Namen; eine Probe mit derselben Kennung wird überschrieben, gefragt
-## wird vorher im Dialog. Danach gehören Name und Kennung zur Probe des Panels, „Probe löschen“
-## meint diese.
+## WhatIfProbe.end_day() als Probe [param probe_name] nach probe_folder (FR-051). Die Kennung,
+## zugleich der Dateiname, entsteht aus dem Namen; eine Probe mit derselben Kennung wird
+## überschrieben, gefragt wird vorher im Dialog. Danach gehören Name und Kennung zur Probe des
+## Panels, „Probe löschen“ meint diese.
 func save_probe(probe_name: String) -> Error:
 	if run == null:
 		return ERR_UNCONFIGURED
@@ -411,8 +411,8 @@ func save_probe(probe_name: String) -> Error:
 	saved.id = CatalogEditor.id_from(saved.name, "probe")
 	saved.seed = run.seed
 	saved.difficulty = run.difficulty
-	saved.until_day = _end_day()
 	saved.interventions = probe.interventions.duplicate(true)
+	saved.until_day = saved.end_day(run.today)
 	var error := saved.write_file(probe_folder)
 	if error == OK:
 		probe.id = saved.id
@@ -499,20 +499,6 @@ func _after_change() -> void:
 	_fill_modifiers()
 	_show_detail()
 	_update_controls()
-
-
-## Bis wohin „Neu starten mit Eingriffen“ spielt und welchen Stand „Probe speichern“ festhält: der
-## spätere Tag aus dem Stand des Laufs und dem letzten at_day der gesammelten Eingriffe, höchstens
-## der 31.12.1999. Früher geht es nicht, denn um einen Eingriff nachzuspielen, muss der Lauf bis zu
-## dessen Tag kommen, und zurück spielt er nie. Beispiel: Gesammelt ist ein Modifikator vom
-## 01.01.1992, dann kam „Fahrplan erzeugen“; der Lauf steht vor dem 01.01.1985, der Endtag ist der
-## 01.01.1992. Nur für einen Lauf, also run != null.
-func _end_day() -> int:
-	var day := run.today
-	for record in probe.interventions:
-		# Ohne lesbaren Tag gibt es −1; das hebt den Endtag nie.
-		day = maxi(day, TimelineRun.intervention_day(record))
-	return mini(day, TimelineRun.LAST_DAY)
 
 
 func _effective_catalog() -> EventCatalog:

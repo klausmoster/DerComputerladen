@@ -269,6 +269,75 @@ func test_angefangener_tag_verfaellt_beim_setzen() -> void:
 	assert_eq(str(_clock.date), "14.03.1986")
 
 
+# --- Obergrenze je Bild und Zustand (Feature 008, T036a, K1 und K2) -----
+
+func test_hoechstens_vier_tage_je_bild_der_rest_verfaellt() -> void:
+	# Arrange: Nach einem Hänger kommt ein Bild mit zehn Tagen Zeit (AR-10).
+	_clock.paused = false
+	watch_signals(_clock)
+
+	# Act
+	_clock._process(10.0 / _clock.days_per_second)
+	_clock._process(0.0)
+
+	# Assert
+	assert_eq(UHR.MAX_DAYS_PER_FRAME, 4, "Wie InvadersPage.MAX_STEPS.")
+	assert_signal_emit_count(_clock, "day_passed", 4, "Höchstens vier Tage in einem Bild.")
+	assert_eq(str(_clock.date), "05.01.1985", "Die übrigen sechs Tage verfallen.")
+
+
+func test_bis_zur_obergrenze_bleibt_der_angefangene_tag() -> void:
+	# Arrange: Vier Tage und ein halber, also genau die Obergrenze und ein angefangener Tag.
+	_clock.paused = false
+	watch_signals(_clock)
+
+	# Act
+	_clock._process(4.5 / _clock.days_per_second)
+	var nach_dem_ersten: String = str(_clock.date)
+	_clock._process(0.6 / _clock.days_per_second)
+
+	# Assert
+	assert_eq(nach_dem_ersten, "05.01.1985", "Vier Tage im ersten Bild.")
+	assert_eq(str(_clock.date), "06.01.1985", "Der halbe Tag zählt im nächsten Bild mit.")
+	assert_signal_emit_count(_clock, "day_passed", 5)
+
+
+func test_am_ende_bleibt_die_uhr_stehen_auch_mit_paused_false() -> void:
+	# Arrange: Die Uhr ist über den 31.12.1999 hinaus.
+	_clock.set_date(GameDate.new(1999, 12, 31))
+	_clock.paused = false
+	_clock.advance_day()
+
+	# Act
+	_clock.paused = false
+	var nach_dem_setzen: bool = _clock.paused
+	_clock.toggle_paused()
+	_clock.set_paused(false)
+	_clock._process(3.0 / _clock.days_per_second)
+
+	# Assert (K2): Am Ende ist die Uhr angehalten, was auch gesetzt wird.
+	assert_true(nach_dem_setzen, "paused = false holt die Uhr nicht aus dem Ende.")
+	assert_true(_clock.paused)
+	assert_true(_clock.is_finished())
+	assert_eq(str(_clock.date), "01.01.2000", "Sie rechnet keinen Tag weiter.")
+
+
+func test_aus_dem_ende_zurueckgesetzt_ist_die_uhr_angehalten() -> void:
+	# Arrange: Sie lief bis über das Ende hinaus.
+	_clock.set_date(GameDate.new(1999, 12, 31))
+	_clock.paused = false
+	_clock.advance_day()
+
+	# Act: Verlassen setzt sie zurück (data-model.md, „GameSession“).
+	_clock.set_date(GameDate.new(1985, 1, 1))
+
+	# Assert
+	assert_false(_clock.is_finished())
+	assert_true(_clock.paused, "Angehalten, wie am Ende.")
+	_clock.paused = false
+	assert_false(_clock.paused, "Danach lässt sie sich wieder starten.")
+
+
 # --- Helfer ---------------------------------------------------------------
 
 ## Schiebt die Uhr Tag für Tag bis zum Zieldatum, mit allen Signalen unterwegs.

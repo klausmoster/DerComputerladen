@@ -314,7 +314,8 @@ func test_kopfzeile_zeigt_header_text() -> void:
 	_menu.header_text = "SCHWIERIGKEIT"
 
 	# Assert
-	assert_eq(vorher, "HAUPTMENÜ", "Ohne Angabe steht HAUPTMENÜ da, wie bisher.")
+	assert_eq(vorher, "", "Ohne Angabe ist die Kopfzeile leer; den Text setzt, wer das Menü "
+		+ "einsetzt (Feature 008, S4).")
 	assert_eq(kopfzeile.text, "SCHWIERIGKEIT", "Die Kopfzeile folgt header_text sofort.")
 
 

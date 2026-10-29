@@ -122,6 +122,30 @@ func test_ohne_seed_wird_gewuerfelt() -> void:
 	assert_eq(zeitleiste.run.today, 0, "Der 01.01.1985 ist abgespielt.")
 
 
+func test_ohne_seed_wuerfelt_rng() -> void:
+	# Arrange (Feature 008, T036a, K3): Ein Würfel mit demselben Seed sagt voraus, was rng würfelt,
+	# wie bei GameSession.rng.
+	var zeitleiste := await _zeitleiste("catalog_us1_tagesablauf", _uhr())
+	zeitleiste.rng = RandomNumberGenerator.new()
+	zeitleiste.rng.seed = 20261029
+	var vergleich := RandomNumberGenerator.new()
+	vergleich.seed = 20261029
+	var erwartet := [vergleich.randi_range(0, ZEITLEISTE.MAX_SEED),
+		vergleich.randi_range(0, ZEITLEISTE.MAX_SEED)]
+
+	# Act
+	assert_eq(zeitleiste.start_game(), OK)
+	var erster: int = zeitleiste.get_seed()
+	assert_eq(zeitleiste.start_game(-1, Difficulty.Level.SCHWER), OK)
+	var zweiter: int = zeitleiste.get_seed()
+	assert_eq(zeitleiste.start_game(4711), OK)
+
+	# Assert
+	assert_eq([erster, zweiter], erwartet, "Gewürfelt mit rng, aus 0 bis 2.147.483.647.")
+	assert_eq(zeitleiste.get_seed(), 4711, "Mit Seed würfelt nichts.")
+	assert_eq(vergleich.state, zeitleiste.rng.state, "Der Start mit Seed zog keine Zahl aus rng.")
+
+
 # --- Schwierigkeitsgrade (Feature 003, T011) ----------------------------------------
 
 func test_ohne_grad_gilt_mittel() -> void:
@@ -169,10 +193,11 @@ func test_start_mit_schwer_nennt_seed_und_grad_und_sendet_keine_meldung_grad() -
 
 
 func test_szenario_2_zwei_starts_ohne_seed_haben_je_einen_eigenen_seed() -> void:
-	# Arrange (US1, Szenario 2; CHK027): Der globale Zufall ist festgesetzt, so ist der Test
-	# wiederholbar.
+	# Arrange (US1, Szenario 2; CHK027): Der Würfel ist festgesetzt, so ist der Test wiederholbar;
+	# seit Feature 008 (K3) das rng der Zeitleiste statt Godots globalem Zufall.
 	var zeitleiste := await _zeitleiste("catalog_us1_grade", _uhr())
-	seed(20261023)
+	zeitleiste.rng = RandomNumberGenerator.new()
+	zeitleiste.rng.seed = 20261023
 
 	# Act
 	assert_eq(zeitleiste.start_game(-1, Difficulty.Level.SCHWER), OK)
@@ -188,14 +213,16 @@ func test_szenario_2_zwei_starts_ohne_seed_haben_je_einen_eigenen_seed() -> void
 
 
 func test_der_gewuerfelte_seed_haengt_nicht_am_grad() -> void:
-	# Arrange (FR-008): derselbe globale Zufall vor jedem Start
+	# Arrange (FR-008): derselbe Würfel vor jedem Start; seit Feature 008 (K3) ist das rng der
+	# Zeitleiste, nicht mehr Godots globaler Zufall.
 	var zeitleiste := await _zeitleiste("catalog_us1_grade", _uhr())
 	var seeds := []
 
 	# Act
 	for grad: Difficulty.Level in [Difficulty.Level.LEICHT, Difficulty.Level.MITTEL,
 			Difficulty.Level.SCHWER]:
-		seed(4711)
+		zeitleiste.rng = RandomNumberGenerator.new()
+		zeitleiste.rng.seed = 4711
 		assert_eq(zeitleiste.start_game(-1, grad), OK)
 		seeds.append(zeitleiste.get_seed())
 

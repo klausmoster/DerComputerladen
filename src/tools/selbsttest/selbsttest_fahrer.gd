@@ -29,6 +29,11 @@ extends RefCounted
 ## Vorbereitungen, die nicht über Eingaben gehen (CHK001), macht auch der Fahrer: Spielstände über
 ## SaveStore anlegen, den Titel neu laden, ein Spiel mit Grad und Seed beginnen, das Fenster auf
 ## eine Größe stellen. Was er anlegt, räumt er mit raeume_spielstaende_weg() wieder weg.
+##
+## Der Fahrer ist ein Helfer der Hülle, kein Kern (Leitfaden, AR-01): ein RefCounted, das auf den
+## Baum zugreift. Er ist die eine Stelle, die das Spiel von außen über die Namen innerer Knoten
+## bedient (Leitfaden, „Werkzeuge“); auch Größe und Lage des Fensters lesen und setzen die Abläufe
+## nur über ihn (fenster_rechteck(), stelle_fenster()).
 
 ## Seiten des Titels unter ihrem Namen in title_screen.tscn.
 const SEITE_HAUPTMENUE := &"MainMenu"
@@ -45,11 +50,13 @@ const KNOPF_HAUPTMENUE := &"leave"
 ## Der Knoten des versteckten Spiels unter dem Communicator heißt SEITE_INVADERS; seine Partie
 ## kennt so viele Außerirdische (InvadersGame).
 const AUSSERIRDISCHE := InvadersGame.COLUMNS * InvadersGame.ROWS
-## Szenen, zu denen lade_titel_neu() und starte_spiel() wechseln.
+## Szenen, zu denen lade_titel_neu() und starte_spiel() wechseln. Den Titel laden auch die
+## Startszene und der Läufer mit diesem Pfad (AR-04).
 const TITEL := "res://scenes/title/title_screen.tscn"
 const SPIELBILDSCHIRM := "res://scenes/game/game_screen.tscn"
-## Seed der Spielstände, die lege_spielstaende_an() anlegt, wie im ganzen Selbsttest (R7).
-const SEED_SPIELSTAENDE := 4711
+## Der feste Seed des ganzen Selbsttests (R7): für die Spielstände, die lege_spielstaende_an()
+## anlegt, und in der Startszene für den Würfel neuer Spiele und Godots globalen Würfel.
+const SEED := 4711
 ## Für stelle_fenster(): die Lage bleibt, wie sie ist.
 const LAGE_BLEIBT := Vector2i(-1000000, -1000000)
 
@@ -263,6 +270,12 @@ func treffer() -> int:
 ## Das Fenster des Spiels: die Wurzel des Baums.
 func fenster() -> Window:
 	return _baum.root
+
+
+## Größe und Lage des Fensters in Bildschirmpixeln, ohne Titelleiste: position ist die Lage, size
+## die Größe, so wie stelle_fenster() sie nimmt.
+func fenster_rechteck() -> Rect2i:
+	return Rect2i(fenster().position, fenster().size)
 
 
 ## Der größte ganzzahlige Faktor, mit dem das Raster samt Fensterrahmen in den nutzbaren Bereich
@@ -539,7 +552,7 @@ func mausrad_auf_zeile(nummer: int, richtung: MouseButton, beschreibung: String)
 # Was nicht über Eingaben geht (CHK001). Ebenfalls mit await und "" oder dem Text für „gefunden:“.
 
 ## Legt im Ordner der Session die Spielstände 1 bis [param anzahl] an, über SaveStore wie ein neues
-## Spiel: Mittel, am ersten Tag, Seed SEED_SPIELSTAENDE, mit einer Kopie des Katalogs der Zeitleiste.
+## Spiel: Mittel, am ersten Tag, Seed SEED, mit einer Kopie des Katalogs der Zeitleiste.
 ## „Zuletzt gespielt“ ist die feste Zeit der Session für Spiel 1 und je eine Stunde früher für jedes
 ## weitere; so steht Spiel 1 in der Liste oben. Gibt "" zurück oder den Grund von SaveStore in
 ## Anführungszeichen.
@@ -554,7 +567,7 @@ func lege_spielstaende_an(anzahl: int) -> String:
 		spiel.number = nummer
 		spiel.name = SaveGame.default_name(nummer)
 		spiel.difficulty = Difficulty.Level.MITTEL
-		spiel.seed = SEED_SPIELSTAENDE
+		spiel.seed = SEED
 		spiel.day = TimelineRun.FIRST_DAY
 		spiel.created_at = zeit - (nummer - 1) * 3600
 		spiel.last_played_at = spiel.created_at

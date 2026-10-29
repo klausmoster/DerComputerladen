@@ -20,7 +20,8 @@ extends Control
 ## zurück, im Hauptmenü tut Esc nichts; im Löschmodus der Liste beenden beide nur den Modus. Die
 ## Einträge des Hauptmenüs entstehen zur Laufzeit aus den Spielständen im Ordner der Session, beim
 ## Erscheinen und bei jeder Rückkehr aus einem Blatt neu gelesen (Analyse, F2); ebenso liest „Spiel
-## laden“ den Ordner bei jedem Öffnen neu (CHK001). Alle Texte kommen aus TitleTexts.
+## laden“ den Ordner bei jedem Öffnen neu (CHK001). Alle Texte kommen aus TitleTexts, auch
+## Untertitel und Versionszeile; in der Szene stehen sie leer.
 ##
 ## Ein Spiel beginnt oder setzt fort nur über die Session, gelöscht wird nur über ihren SaveStore;
 ## den Spielbildschirm zeigt scene_callback. Wege und Vorwahl: data-model.md, „Titelbildschirm:
@@ -39,8 +40,6 @@ extends Control
 ## Hinweis führt er ohnehin. Meldet die Seite finished, steht alles wieder so da wie vorher. Das
 ## Easter Egg berührt weder die Session noch einen Spielstand (FR-007).
 
-## Kennzeichen in der Versionszeile, solange das Spiel ein Prototyp ist.
-const STAGE := "PROTOTYP"
 ## Der Spielbildschirm, zu dem ein begonnenes oder fortgesetztes Spiel führt.
 const GAME_SCENE := "res://scenes/game/game_screen.tscn"
 ## Die Grade der Gradwahl in der Reihenfolge der Zeilen (FR-004).
@@ -111,6 +110,7 @@ var _return_focus: Control = null
 @onready var _confirm_sheet: MainMenu = $Communicator/ConfirmSheet
 @onready var _invaders: InvadersPage = $Communicator/Invaders
 @onready var _version_line: Label = $VersionLine
+@onready var _subtitle: Label = $LogoBlock/Subtitle
 @onready var _logo: TextureRect = $LogoBlock/Logo
 @onready var _logo_shadow: TextureRect = $LogoBlock/Logo/Shadow
 
@@ -120,6 +120,7 @@ func _ready() -> void:
 	# Version des laufenden Spiels (FR-014).
 	var version: String = ProjectSettings.get_setting("application/config/version", "")
 	_version_line.text = version_text(version)
+	_subtitle.text = TitleTexts.SUBTITLE
 	# Der pixelschatten des Logos: dieselbe Form in tusche, 2 nach rechts unten, hinter dem Logo
 	# (show_behind_parent in der Szene). Die Farbe kommt aus UiPalette, nicht aus der Szene.
 	_logo_shadow.texture = silhouette(_logo.texture, UiPalette.TUSCHE)
@@ -172,8 +173,8 @@ func _unhandled_input(event: InputEvent) -> void:
 ## das Kennzeichen da, kein „V“ ohne Zahl.
 static func version_text(version: String) -> String:
 	if version.is_empty():
-		return STAGE
-	return "V%s · %s" % [version, STAGE]
+		return TitleTexts.STAGE
+	return TitleTexts.version_line(version)
 
 
 ## Die Silhouette von [param texture]: jedes Pixel, das nicht ganz durchsichtig ist, in

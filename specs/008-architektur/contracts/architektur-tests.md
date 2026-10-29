@@ -44,10 +44,7 @@ const ERLAUBT_NACH_OBEN: Array[Dictionary] = [
 ]
 
 ## Abweichungen, die Phase 5 behebt. Wird mit Phase 5 leer.
-const BIS_BEHEBUNG: Array[Dictionary] = [
-	{"datei": "res://tools/selbsttest/selbsttest_ergebnis.gd", "regel": "AR-02",
-		"grund": "B1: GameWindow über /root/; Naht kommt in T036a"},
-]
+const BIS_BEHEBUNG: Array[Dictionary] = []
 
 ## Abweichungen, die Klaus als eigenes Feature vorgemerkt hat: {"datei": …, "regel": "AR-NN",
 ## "feature": Eintrag in Feature_Ideas.md}. Leert sich mit dem Feature, das sie behebt.

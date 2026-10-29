@@ -55,8 +55,9 @@ static var time_zone_bias: int = SYSTEM_BIAS
 ## Die Nummer aus dem Dateinamen, ab 1; sie steht zusätzlich in der Datei, es gilt aber der
 ## Dateiname (R4).
 var number: int = 0
-## Der Name in der Liste, nie leer; beim Anlegen „Spiel N“ (FR-009).
+## Der Name in der Liste, nie leer; beim Anlegen „Spiel N“ (FR-009). Nur lesen.
 var name: String = ""
+## Der Schwierigkeitsgrad des Spiels. Nur lesen.
 var difficulty: Difficulty.Level = Difficulty.DEFAULT
 # Der Name kommt aus dem Vertrag und ist zugleich der einer globalen Funktion, seed(); die
 # Warnung darüber ist abgeschaltet, wie in TimelineRun.
@@ -65,9 +66,11 @@ var difficulty: Difficulty.Level = Difficulty.DEFAULT
 var seed: int = 0
 ## Spieldatum als Tagesindex, 0 bis TimelineRun.LAST_DAY. Der Lauf hat diesen Tag schon
 ## abgespielt; das erste Signal nach dem Fortsetzen gehört zum Tag danach (data-model.md).
+## Nur lesen.
 var day: int = 0
 ## Unix-Zeit, UTC.
 var created_at: int = 0
+## Zuletzt gespielt, Unix-Zeit, UTC. Nur lesen.
 var last_played_at: int = 0
 ## Die Version des Spiels, die zuletzt schrieb, etwa „0.1“ (FR-007).
 var game_version: String = ""

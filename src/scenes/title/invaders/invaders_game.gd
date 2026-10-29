@@ -92,13 +92,13 @@ const RESPAWN_STEPS := 60
 
 # --- Zustand --------------------------------------------------------------------------------------
 
-## Wo die Partie steht; nur lesen.
+## Wo die Partie steht. Nur lesen.
 var state: State = State.PLAYING
 ## Warum sie verloren ging; NONE, solange sie nicht verloren ist.
 var lost_reason: LostReason = LostReason.NONE
-## Punkte, 0 bis 640.
+## Punkte, 0 bis 640. Nur lesen.
 var score: int = 0
-## Verbleibende Leben, die Kanone im Feld eingeschlossen: 3 zu Beginn.
+## Verbleibende Leben, die Kanone im Feld eingeschlossen: 3 zu Beginn. Nur lesen.
 var lives: int = LIVES
 ## Linke Kante der Kanone in Bildpixeln.
 var cannon_x: int = CANNON_START_X

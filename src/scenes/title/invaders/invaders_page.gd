@@ -19,12 +19,21 @@ extends Control
 ## Fensters, nach finished und solange die Seite verborgen ist, taktet sie nicht; der Kern ruht bis
 ## zum nächsten start() (R11; Analyse, U1).
 ##
+## Zustand (AR-11): Vor dem ersten start() gibt es keine Partie (NO_GAME). Dann läuft sie
+## (PLAYING); ist sie gewonnen oder verloren, steht die Ergebnisanzeige erst gesperrt
+## (RESULT_LOCKED) und wartet dann auf eine Taste (RESULT_WAITING). Nach finished oder sobald die
+## Seite verborgen wird, ist sie beendet (ENDED), bis zum nächsten start(). Ob das Fenster den Fokus
+## hat, ist eine eigene Achse daneben (_window_focused).
+##
 ## Bild: _draw() malt jedes Pixel der Muster als 2 × 2 Oberflächenpixel in tusche auf die Anzeige,
 ## die selbst den Grund lcd hat. Die Kopfzeile zeigt Punkte und Leben, die Ergebnisanzeige drei
 ## Zeilen mittig; Lagen und Schriften aus dem Style-Guide.
 
 ## Das Spiel ist vorbei: nach der Ergebnisanzeige oder durch Esc. Der Bildschirm kehrt zurück.
 signal finished
+
+## Wo die Seite steht; siehe Kopf.
+enum State { NO_GAME, PLAYING, RESULT_LOCKED, RESULT_WAITING, ENDED }
 
 # --- Werte aus dem Style-Guide, Spiel auf der Anzeige ---------------------------------------------
 # Lagen der Kopfzeile in Bildpixeln wie im Kern; die Ergebnisanzeige in Oberflächenpixeln, wie der
@@ -61,9 +70,9 @@ var autoplay: bool = true
 
 ## Die laufende Partie; null bis zum ersten start().
 var _game: InvadersGame = null
-## Ob die Seite die Partie taktet und Eingaben annimmt: ab start() bis finished, oder bis sie
-## verborgen wird.
-var _active := false
+## Wo die Seite steht. Sie taktet die Partie und nimmt Eingaben an, solange _is_active() gilt: ab
+## start() bis finished, oder bis sie verborgen wird.
+var _state: State = State.NO_GAME
 ## Ob das Fenster den Fokus hat (R11). Ohne ihn steht alles, auch die Sperre der Ergebnisanzeige.
 var _window_focused := true
 ## Gesammelte Zeit, die noch keinen ganzen Schritt ergibt.
@@ -72,7 +81,7 @@ var _time_left := 0.0
 var _left_held := false
 var _right_held := false
 var _fire_pressed := false
-## Schritte, bis die Ergebnisanzeige eine Taste annimmt.
+## Schritte, bis die Ergebnisanzeige eine Taste annimmt; zählt in RESULT_LOCKED.
 var _lock_steps := 0
 
 @onready var _shot_sound: AudioStreamPlayer = $ShotSound
@@ -98,8 +107,8 @@ func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_VISIBILITY_CHANGED:
 			# Verborgen: Der Kern ruht bis zum nächsten start(), und die Töne verstummen (FR-044).
-			if not is_visible_in_tree() and _active:
-				_active = false
+			if not is_visible_in_tree() and _is_active():
+				_state = State.ENDED
 				_release_keys()
 				_stop_sounds()
 		NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -117,7 +126,7 @@ func _notification(what: int) -> void:
 
 func _draw() -> void:
 	# Kein Grund: Das ist die Anzeige selbst, lcd. Vor dem ersten start() bleibt sie leer.
-	if _game == null:
+	if _state == State.NO_GAME:
 		return
 	_draw_header()
 	if _is_over():
@@ -128,7 +137,7 @@ func _draw() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if not _active:
+	if not _is_active():
 		return
 	var key := event as InputEventKey
 	if key != null:
@@ -149,7 +158,7 @@ func _gui_input(event: InputEvent) -> void:
 func start(seed: int = -1) -> void:
 	_stop_sounds()
 	_game = InvadersGame.new(seed if seed != -1 else randi())
-	_active = true
+	_state = State.PLAYING
 	_time_left = 0.0
 	_release_keys()
 	_lock_steps = 0
@@ -161,7 +170,7 @@ func start(seed: int = -1) -> void:
 ## Taktet um [param seconds] weiter, mit festem Schritt und höchstens 4 Schritten je Aufruf (R6).
 ## Was über 4 Schritte hinausgeht, verfällt: Nach einem langen Bild springt das Spiel nicht.
 func advance(seconds: float) -> void:
-	if not _active or not _window_focused or not is_visible_in_tree():
+	if not _is_active() or not _window_focused or not is_visible_in_tree():
 		return
 	_time_left += seconds
 	# Der kleine Zuschlag fängt Rundungsfehler ab: 1/60 s ergibt genau einen Schritt.
@@ -184,22 +193,27 @@ func game() -> InvadersGame:
 
 ## Ob die Ergebnisanzeige steht und eine Taste annimmt.
 func is_waiting_for_key() -> bool:
-	return _active and _is_over() and _lock_steps <= 0
+	return _state == State.RESULT_WAITING
 
 
 # --- Takt und Töne --------------------------------------------------------
 
 ## Ein Schritt: in der Partie mit den gehaltenen Tasten, in der Ergebnisanzeige nur die Sperre.
+## Endet die Partie, steht die Ergebnisanzeige RESULT_LOCK lang gesperrt.
 func _step() -> void:
-	if _is_over():
-		_lock_steps = maxi(_lock_steps - 1, 0)
-		return
-	var events := _game.step(_left_held, _right_held, _fire_pressed)
-	# Ein Druck schießt höchstens einmal, auch wenn ein Bild mehrere Schritte hat.
-	_fire_pressed = false
-	_play(events)
-	if _is_over():
-		_lock_steps = roundi(RESULT_LOCK / InvadersGame.STEP)
+	match _state:
+		State.PLAYING:
+			var events := _game.step(_left_held, _right_held, _fire_pressed)
+			# Ein Druck schießt höchstens einmal, auch wenn ein Bild mehrere Schritte hat.
+			_fire_pressed = false
+			_play(events)
+			if _is_over():
+				_lock_steps = roundi(RESULT_LOCK / InvadersGame.STEP)
+				_state = State.RESULT_LOCKED if _lock_steps > 0 else State.RESULT_WAITING
+		State.RESULT_LOCKED:
+			_lock_steps = maxi(_lock_steps - 1, 0)
+			if _lock_steps == 0:
+				_state = State.RESULT_WAITING
 
 
 ## Spielt zu jedem Ereignis seinen Ton (contracts/invaders.md, „Töne“). play() beginnt einen Ton,
@@ -258,10 +272,13 @@ func _on_key(key: InputEventKey) -> void:
 		if is_new_press:
 			_finish()
 		return
-	if _is_over():
-		if is_new_press and is_waiting_for_key() and not _is_modifier(key.keycode):
-			_finish()
-		return
+	match _state:
+		State.RESULT_LOCKED:
+			return
+		State.RESULT_WAITING:
+			if is_new_press and not _is_modifier(key.keycode):
+				_finish()
+			return
 	match key.keycode:
 		KEY_LEFT:
 			if not key.echo:
@@ -287,7 +304,7 @@ func _release_keys() -> void:
 
 ## Das Ende der Seite: kein Takt, keine Töne mehr, dann [signal finished].
 func _finish() -> void:
-	_active = false
+	_state = State.ENDED
 	_release_keys()
 	_stop_sounds()
 	finished.emit()
@@ -298,13 +315,18 @@ func _finish() -> void:
 ## und zu sehen ist (Analyse, C5): Wer sie gerade verbirgt, bekommt den Fokus nicht wieder
 ## weggenommen.
 func _on_focus_exited() -> void:
-	if _active:
+	if _is_active():
 		_reclaim_focus.call_deferred()
 
 
 func _reclaim_focus() -> void:
-	if _active and not has_focus() and _can_take_focus():
+	if _is_active() and not has_focus() and _can_take_focus():
 		grab_focus()
+
+
+## Ob die Seite die Partie taktet und Eingaben annimmt: in der Partie und in der Ergebnisanzeige.
+func _is_active() -> bool:
+	return _state in [State.PLAYING, State.RESULT_LOCKED, State.RESULT_WAITING]
 
 
 ## Ob die Seite den Fokus nehmen kann: zu sehen und nicht gesperrt, etwa durch den Communicator,
@@ -315,6 +337,8 @@ func _can_take_focus() -> bool:
 
 # --- Malen ----------------------------------------------------------------
 
+## Ob die Partie gewonnen oder verloren ist; das sagt der Kern. Danach malt die Seite die
+## Ergebnisanzeige, auch wenn sie schon beendet ist.
 func _is_over() -> bool:
 	return _game != null and (_game.state == InvadersGame.State.WON
 			or _game.state == InvadersGame.State.LOST)

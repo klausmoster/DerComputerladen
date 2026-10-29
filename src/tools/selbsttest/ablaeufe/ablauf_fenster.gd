@@ -7,7 +7,8 @@ extends SelbsttestAblauf
 ## ringsum; zurück in der Startgröße wieder ohne Rand. Ohne Vollbild und ohne Zeitraffer, denn er
 ## wartet auf Fenster des Systems (R24). Er beginnt beim frischen Titel.
 ##
-## Die Größe stellt der Fahrer über das Fenster ein, nicht über Eingaben (Spec FR-004); im
+## Die Größe stellt der Fahrer über das Fenster ein, nicht über Eingaben (Spec FR-004), auch beim
+## Merken und Zurückstellen: Das Fenster kennt nur der Fahrer (Leitfaden, „Werkzeuge“). Im
 ## Protokoll steht „eingaben: Fenster …“. Geprüft werden Zahlen: Größe und Lage des Fensters, und
 ## wie Godot das Raster hineinsetzt, gelesen aus get_final_transform() der Wurzel. Die Fotos zeigen
 ## dennoch das Raster, immer 640 × 360. Schritt 04 stellt Größe und Lage vom Start wieder her.
@@ -66,9 +67,10 @@ func schritte(fahrer: SelbsttestFahrer) -> Array[Dictionary]:
 ## Ist ein Schritt des Ablaufs gescheitert, steht das Fenster vielleicht noch krumm; dann stellt
 ## dieser Haken Größe und Lage vom Start wieder her, damit die folgenden Abläufe gleich aussehen.
 func aufraeumen(fahrer: SelbsttestFahrer) -> void:
-	if _vorher_groesse != Vector2i.ZERO and fahrer.fenster().size != _vorher_groesse:
-		fahrer.fenster().size = _vorher_groesse
-		fahrer.fenster().position = _vorher_lage
+	if _vorher_groesse != Vector2i.ZERO and fahrer.fenster_rechteck().size != _vorher_groesse:
+		# Ohne await: Größe und Lage setzt stelle_fenster() sofort, das Bild danach wartet der
+		# frische Titel des nächsten Ablaufs ohnehin ab.
+		fahrer.stelle_fenster(_vorher_groesse, _vorher_lage)
 
 
 ## 01: Fenster und Bild wie [param start], mittig im nutzbaren Bereich. Dazu wartet der Schritt,
@@ -94,8 +96,9 @@ func _pruefe_fenster(fahrer: SelbsttestFahrer, erwartet: String) -> String:
 
 ## 02, Eingaben: merkt sich Größe und Lage vom Start, dann das Fenster auf [param groesse].
 func _merke_und_stelle(fahrer: SelbsttestFahrer, groesse: Vector2i) -> String:
-	_vorher_groesse = fahrer.fenster().size
-	_vorher_lage = fahrer.fenster().position
+	var vorher := fahrer.fenster_rechteck()
+	_vorher_groesse = vorher.size
+	_vorher_lage = vorher.position
 	return await fahrer.stelle_fenster(groesse)
 
 

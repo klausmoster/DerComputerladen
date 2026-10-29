@@ -189,3 +189,76 @@ Geschrieben vom Godot-Agent.
   die Fehlerprobe zeigt mit demselben Text ohne Kopf, dass der Kopf entscheidet.
 - **Grenze:** `var ziel := "../Kasse"` und später `get_node(ziel)` misst der Test nicht; das sieht
   der Prüfer. Der Test misst die Schreibweisen, die man direkt hinschreibt.
+
+### T036a Kleine Behebungen ohne Änderung am Verhalten
+
+Geschrieben vom Godot-Agent.
+
+- **Ein `enum` statt mehrerer Schalter (K2, S2, W4, B3; AR-11).** Zwei Schalter wie `paused` und
+  `_ended` in `src/core/game_clock.gd` ergeben vier Kombinationen, von denen eine Unsinn ist:
+  „am Ende, aber nicht angehalten“. Ein `enum State { RUNNING, PAUSED, ENDED }` hat genau die drei,
+  die es gibt; ein Wechsel ist eine Zuweisung an einer Stelle. Damit Tests und Werkzeuge weiter
+  `clock.paused = false` schreiben können, ist `paused` jetzt eine Eigenschaft mit `get:` und
+  `set:` ohne eigenen Speicher: Lesen fragt den Zustand, Setzen ändert ihn, am Ende nicht.
+  Genauso in `InvadersPage` (keine Partie, läuft, Ergebnis gesperrt, Ergebnis wartet, beendet),
+  `StatisticsPanel` (nie gerechnet, rechnet, abgebrochen, fertig) und `SelbsttestLaeufer` (bereit,
+  läuft, abgebrochen, geschrieben, beendet). Wo mehrere Zustände dasselbe tun, fasst eine kleine
+  Abfrage sie zusammen (`_is_active()`, `_hoert_auf()`), und `match _state:` zeigt, was je Zustand
+  geschieht, etwa in `InvadersPage._step()`. Was keine Sammlung ist, bleibt: `_window_focused` ist
+  eine eigene Achse, und `_lock_steps` ist ein Zähler im Zustand RESULT_LOCKED.
+- **Der Läufer und das kurze ABGEBROCHEN.** Nach dem Schließen läuft `_brich_ab()` in einem Zug
+  durch: ABGEBROCHEN, schreiben, GESCHRIEBEN, beenden, BEENDET. Die angehaltene Kette von `await`
+  sieht deshalb nie ABGEBROCHEN; sie fragt `_hoert_auf()`, also „nicht mehr LAEUFT“. Früher blieb
+  `_abgebrochen` einfach für immer true, jetzt sagt es der Zustand.
+- **Obergrenze je Bild (K1; AR-10).** `_process(delta)` sammelt Echtzeit in `_accumulator` und
+  rechnet daraus ganze Tage, wie `InvadersPage.advance()` ganze Schritte. Ohne Obergrenze holte die
+  Uhr nach einem Hänger von zehn Sekunden zwanzig Tage in einem Bild nach, mit zwanzig Runden
+  Signalen an Zeitleiste und später Wirtschaft. `MAX_DAYS_PER_FRAME = 4`: Bis vier Tage bleibt der
+  angefangene Tag erhalten, darüber verfällt der Rest. Am Spielverlauf ändert das nichts, denn der
+  hängt am Tag, nicht an der Echtzeit.
+- **Nähte (K3, W2, B1, B2; AR-08, AR-12).** Eine Naht ist eine Variable, über die ein Test etwas
+  von außen einsetzt, ohne den Code zu ändern. `Timeline.rng` ist der eigene Würfel für
+  `start_game()` ohne Seed, wie `GameSession.rng`: Ein Test setzt einen mit festem Seed und weiß
+  vorher, welcher Seed herauskommt. Der globale Würfel (`randi_range()`) hängt dagegen an allem, was
+  sonst würfelt, etwa am Easter Egg. Für Autoloads heißt die Naht `game_window` oder `session`;
+  leer heißt das Autoload. In `SelbsttestErgebnis._game_window()` steht dafür der Name
+  `GameWindow`, kein `/root/`-Pfad mehr; die Seite läuft nur mit Autoloads. In der Werkstatt bleibt
+  der Pfad, weil die Textausgabe sie mit `-s` lädt und GDScript dort den Namen beim Kompilieren
+  nicht kennt; dafür steht dort der Kommentar `# Ausnahme AR-02: …` wie in der Tabelle des
+  Leitfadens (W1). Die Startszene reicht ihre Naht an Fahrer und Läufer weiter.
+- **„Nur lesen.“ (K4, S5, L13, B8; AR-15).** GDScript kennt kein `readonly` für Felder. Der
+  Doku-Kommentar ist die Abmachung: Die Oberfläche liest `SaveSlot.state` oder
+  `GameSession.current`, ändert sie aber nur über Methoden des Kerns. Der Kommentar steht auch im
+  Tooltip des Editors.
+- **Texte an einer Stelle (S3, S4; AR-04).** Untertitel, `STAGE` und die Vorlage der Versionszeile
+  stehen jetzt in `TitleTexts`, der Titel setzt sie in `_ready()`. In `title_screen.tscn`,
+  `main_menu.tscn` und `save_list.tscn` steht kein Text mehr, und `MainMenu.header_text` ist
+  vorgegeben leer: Wer das Menü einsetzt, sagt, was oben steht. Ein Text in der Szene wäre eine
+  zweite Quelle, die beim nächsten Umbenennen vergessen wird. Ein Test prüft, dass die Szenen die
+  Wörter nicht mehr nennen.
+- **Eine Regel an einer Stelle (W3; AR-15).** Bis wohin eine Probe spielen muss, beschrieb
+  `WhatIfProbe.until_day`, gerechnet hat es der Simulator. Jetzt rechnet `WhatIfProbe.end_day()`;
+  der Simulator ruft es. Öffentlich und ohne Unterstrich, weil Geschwister keine privaten Funktionen
+  fremder Klassen rufen (AR-02).
+- **Geteilte Resource kopieren (B5; AR-04).** `load()` und eine Szene geben für dieselbe Datei
+  dasselbe Objekt; Godot hält es im Cache. Wer `theme.default_font` daran setzt, ändert es für jeden,
+  der `selbsttest_theme.tres` lädt, bis das Programm endet. `theme = theme.duplicate()` macht vorher
+  eine eigene Kopie, wie in der Werkstatt. Der Test prüft danach, dass die Datei keine Schrift hat.
+- **Werte einmal (B6, M8, B7; AR-04).** Eine Konstante darf eine andere lesen, auch aus einer
+  Klasse mit `class_name` (`const EIGENER_ORDNER := SelbsttestAblage.BASIS`) oder aus einem
+  vorgeladenen Skript (`const RASTER := FENSTER_SCRIPT.BASE_SIZE`; GameWindow hat als Autoload
+  keinen `class_name`). Seed und Pfad des Titels stehen beim Fahrer, der den Titel ohnehin kennt;
+  Startszene und Läufer lesen sie dort.
+- **Der Fahrer als einzige Stelle (M1, M10).** `ablauf_fenster.gd` liest Größe und Lage über
+  `fahrer.fenster_rechteck()` und stellt sie mit `fahrer.stelle_fenster()` zurück, ohne `await`:
+  Eine Koroutine ohne `await` läuft bis zu ihrem ersten `await` sofort, also sind Größe und Lage
+  gleich gesetzt; das Bild danach wartet der nächste Ablauf ohnehin ab. Fahrer und Eingabe sagen im
+  Kopf, dass sie Helfer der Hülle sind: ein `RefCounted`, das den Baum anfasst, ist kein Kern.
+
+Fehlerprobe an einer Kopie außerhalb des Repos: je ein Fehler eingebaut, je der passende Test rot
+(K1 ohne Obergrenze, K2 `paused` holt aus dem Ende, K3 globaler Zufall, S2 aktiv ohne Partie und
+Sperre übersprungen, S3 Untertitel wieder in der Szene, S4 Vorgabe „HAUPTMENÜ“, W3, W4 immer
+abgebrochen, B1 Naht übergangen, B5 ohne Kopie, B3 zweimal, M1, `/root/` zurück in
+`selbsttest_ergebnis.gd`). Die Naht der Werkstatt (W2) und der Startszene (B2) prüft kein Test:
+Die Werkstatt hält GameWindow nur mit echtem Fenster an, und die Startszene startet den ganzen
+Selbsttest.

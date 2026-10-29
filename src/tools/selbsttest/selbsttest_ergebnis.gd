@@ -9,7 +9,8 @@ extends Control
 ## Spiels ist aus, die Schrift Godots eingebaute (_richte_fenster_ein()). Das Fenster behält Größe
 ## und Lage aus dem Lauf; maximiert wird nicht (Klaus, 2026-10-28). Das
 ## Theme ist eine Kopie von werkstatt_theme.tres mit den Varianten für Felder und Einträge dieser
-## Seite; die Schrift kommt per Code dazu, weil sie keine Datei hat.
+## Seite; die Schrift kommt per Code dazu, weil sie keine Datei hat, und zwar in eine eigene Kopie
+## des geladenen Themes, wie in der Werkstatt.
 ##
 ## Von oben: Überschrift, Systemzeile, Summe, „Was nicht stimmt“ mit der Liste, Pfad, Knopfreihe.
 ## Was die Seite zeigt, kommt nur aus dem Lauf und SelbsttestTexte; der Text für „Kopieren“ aus
@@ -47,6 +48,9 @@ var zwischenablage: Callable = DisplayServer.clipboard_set
 var dateimanager: Callable = OS.shell_show_in_file_manager
 ## Beendet die App; ungültig heißt get_tree().quit().
 var beenden: Callable
+## GameWindow, das die Seite beim Einrichten des Fensters anhält (AR-12); null heißt das Autoload.
+## Tests setzen einen eigenen Knoten.
+var game_window: Node = null
 
 @onready var _ueberschrift: Label = %Ueberschrift
 @onready var _systemzeile: Label = %Systemzeile
@@ -76,9 +80,11 @@ static func erstelle(p_lauf: SelbsttestLauf, p_ordner: String, p_zip_pfad: Strin
 
 
 func _ready() -> void:
-	# Die Kopie des Themes gehört nur dieser Seite; die Schrift darf deshalb direkt hinein.
-	# Open Sans SemiBold ist Godots eingebaute Schrift und hat keine Datei, die das Theme nennen
-	# könnte (CHK017).
+	# Ressourcen sind geteilt: Wer das geladene Theme änderte, änderte es für alle, die
+	# selbsttest_theme.tres laden (AR-04). Die Schrift kommt deshalb in eine eigene Kopie, wie in
+	# der Werkstatt. Open Sans SemiBold ist Godots eingebaute Schrift und hat keine Datei, die das
+	# Theme nennen könnte (CHK017).
+	theme = theme.duplicate()
 	theme.default_font = ThemeDB.fallback_font
 	_richte_fenster_ein()
 	get_window().title = SelbsttestTexte.FENSTERTITEL_DANACH
@@ -147,17 +153,21 @@ func _richte_fenster_ein() -> void:
 	if DisplayServer.get_name() == "headless":
 		return
 	# GameWindow anhalten, damit es Größe und Lage nicht mehr anfasst: Es gäbe dem Fenster sonst
-	# beim Wechsel aus dem Vollbild wieder die ganzzahlige Spielgröße. Über den Pfad, wie in der
-	# Werkstatt.
-	var game_window := get_node_or_null(^"/root/GameWindow")
-	if game_window != null:
-		game_window.set_process(false)
-		game_window.set_process_input(false)
+	# beim Wechsel aus dem Vollbild wieder die ganzzahlige Spielgröße.
+	var window_node := _game_window()
+	window_node.set_process(false)
+	window_node.set_process_input(false)
 	var fenster := get_window()
 	fenster.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 	# Unter Windows und X11 kennt screen_get_scale() die Skalierung nicht; SelbsttestSystem rechnet
 	# sie dort aus den dpi (Klaus, Phase 8).
 	fenster.content_scale_factor = SelbsttestSystem.bildschirm_skalierung()
+
+
+## GameWindow: game_window oder das Autoload. Anders als die Werkstatt läuft die Seite nur in der
+## App und in ihrer Probeszene, beide mit Autoloads; der Name des Autoloads ist deshalb bekannt.
+func _game_window() -> Node:
+	return game_window if game_window != null else GameWindow
 
 
 func _richte_knoepfe_ein() -> void:

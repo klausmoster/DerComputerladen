@@ -72,6 +72,23 @@ func test_start_nimmt_den_fokus_und_beginnt_eine_partie() -> void:
 	assert_false(_seite.is_waiting_for_key())
 
 
+func test_vor_dem_ersten_start_ruht_die_seite() -> void:
+	# Arrange (Feature 008, T036a, S2): keine Partie, aber der Fokus, damit Tasten bei der Seite
+	# ankommen.
+	_seite.grab_focus()
+
+	# Act
+	_seite.advance(1.0)
+	_druecke(KEY_ESCAPE)
+	_druecke(KEY_SPACE)
+
+	# Assert
+	assert_null(_seite.game(), "Ohne start() keine Partie.")
+	assert_false(_seite.is_waiting_for_key())
+	assert_eq(_fertig, 0, "Esc beendet nichts, was nicht läuft.")
+	assert_eq(_gedrueckte_beim_bildschirm(), 2, "Die Tasten gehen an den Bildschirm darunter.")
+
+
 func test_zeiger_pfeil_und_fokus_fuer_tasten() -> void:
 	assert_eq(_seite.mouse_default_cursor_shape, Control.CURSOR_ARROW, "Der Zeiger bleibt der Pfeil.")
 	assert_eq(_seite.focus_mode, Control.FOCUS_ALL)

@@ -39,6 +39,9 @@ extends VBoxContainer
 ## Tabelle und Ergebnistext gehören trotzdem zum Ergebnis, das dasteht.
 
 enum Column { EVENT, MEAN, MINIMUM, MAXIMUM, WITHOUT, AT_MAX }
+## Wo die Statistik steht (AR-11): nie gerechnet, rechnet, abgebrochen oder fertig. Abgebrochen und
+## fertig zeigen beide ein Ergebnis, mit anderem Text; ein neuer Start rechnet aus beiden heraus.
+enum State { NEVER, RUNNING, ABORTED, DONE }
 ## Beim Vergleich die erste Spalte jeder Kennzahl; dahinter folgen die Grade in der Reihenfolge
 ## von COMPARED, etwa „Ø Schwer“ in Spalte MEAN + 2.
 enum CompareGroup { MEAN = 1, SPAN = 4, WITHOUT = 7 }
@@ -99,8 +102,7 @@ var interventions_source: Callable
 ## Die laufende oder zuletzt gerechnete Statistik; null bis zum ersten „Starten“.
 var statistics: TimelineStatistics
 
-var _running := false
-var _aborted := false
+var _state: State = State.NEVER
 var _started_usec := 0
 ## Wie lange die letzte Rechnung vom Start bis zum Ende oder Abbruch dauerte.
 var _elapsed_msec := 0.0
@@ -197,7 +199,7 @@ func refresh() -> void:
 ## Gerechnet wird mit dem Grad aus %DifficultyOption oder, beim Vergleich, mit allen drei; das
 ## Häkchen gilt dann für jeden Grad gleich (FR-020).
 func start() -> void:
-	if _running or not _can_start():
+	if _state == State.RUNNING or not _can_start():
 		return
 	statistics = TimelineStatistics.new(_effective_catalog(), _game_count(), 1,
 		_chosen_difficulties())
@@ -211,8 +213,7 @@ func start() -> void:
 	_run_key = _catalog_key()
 	_stale = false
 	_excluded = _excluded_titles()
-	_running = true
-	_aborted = false
+	_state = State.RUNNING
 	_results.clear()
 	_compared.clear()
 	_started_usec = Time.get_ticks_usec()
@@ -224,13 +225,13 @@ func start() -> void:
 ## „Abbrechen“: hält die Rechnung an. Die Tabelle zeigt sofort das Ergebnis der fertigen Spiele;
 ## das angefangene zählt nicht.
 func cancel() -> void:
-	if _running:
+	if _state == State.RUNNING:
 		_finish(true)
 
 
 ## Ob gerade gerechnet wird.
 func is_running() -> bool:
-	return _running
+	return _state == State.RUNNING
 
 
 ## Wie die Balken der Verteilung liegen, je Jahr ein Dictionary: "year" (1985 bis 1999), "value"
@@ -301,7 +302,7 @@ func _calculate(current: TimelineStatistics) -> void:
 		await get_tree().process_frame
 		# Abgebrochen oder neu gestartet: Diese Rechnung ist vorbei, eine neue hat ihre eigene
 		# Schleife.
-		if current != statistics or not _running or not is_inside_tree():
+		if current != statistics or _state != State.RUNNING or not is_inside_tree():
 			return
 
 
@@ -310,8 +311,7 @@ func _calculate(current: TimelineStatistics) -> void:
 ## kann schon das erste Spiel länger dauern als ein Häppchen. Mit dem ersten fertigen Spiel steht
 ## auch fest, welche Eingriffe gelten: Ob ein Lauf einen ablehnt, hängt nie am Seed.
 func _finish(aborted: bool) -> void:
-	_running = false
-	_aborted = aborted
+	_state = State.ABORTED if aborted else State.DONE
 	_elapsed_msec = (Time.get_ticks_usec() - _started_usec) / 1000.0
 	_results = []
 	_compared = []
@@ -424,14 +424,15 @@ func _update_all() -> void:
 	_update_notices()
 	_update_intervention_info()
 	_result_label.text = _result_text()
-	_result_label.theme_type_variation = &"MutedLabel" if statistics == null else &""
+	_result_label.theme_type_variation = &"MutedLabel" if _state == State.NEVER else &""
 
 
 ## Sperrt, was gerade nicht geht: Während gerechnet wird, gelten Anzahl, Grad und Häkchen erst für
 ## den nächsten Start.
 func _update_controls() -> void:
 	var count_ok := _game_count() > 0
-	_start_button.disabled = _running or not _can_start()
+	var running := _state == State.RUNNING
+	_start_button.disabled = running or not _can_start()
 	if not _has_catalog():
 		_start_button.tooltip_text = "Ohne lesbaren Katalog gibt es keine Statistik."
 	elif not count_ok:
@@ -441,11 +442,11 @@ func _update_controls() -> void:
 		_start_button.tooltip_text = ("%s Spiele mit den Seeds 1 bis %s durchrechnen, mit dem "
 			+ "Katalog, wie er gerade dasteht, auch ungespeichert. Die Spieluhr bleibt, wie sie "
 			+ "ist.") % [_grouped(_game_count()), _grouped(_game_count())]
-	_cancel_button.disabled = not _running
+	_cancel_button.disabled = not running
 	_cancel_button.tooltip_text = "Anhalten; das Ergebnis zeigt die fertigen Spiele."
-	_count_edit.editable = not _running
-	_difficulty_option.disabled = _running
-	_with_interventions.disabled = _running
+	_count_edit.editable = not running
+	_difficulty_option.disabled = running
+	_with_interventions.disabled = running
 	_count_hint.visible = not count_ok
 	_count_hint.text = "Gib eine Anzahl von 1 bis %s ein." % _grouped(MAX_GAMES)
 	# Solange der Hinweis dasteht, hat das Feld die Kontur des Fehlers (Style-Guide,
@@ -455,7 +456,7 @@ func _update_controls() -> void:
 
 func _apply_refresh() -> void:
 	_refresh_queued = false
-	_stale = statistics != null and _catalog_key() != _run_key
+	_stale = _state != State.NEVER and _catalog_key() != _run_key
 	_update_notices()
 	_update_controls()
 	_update_intervention_info()
@@ -465,12 +466,13 @@ func _apply_refresh() -> void:
 ## als gefülltes Feld in kassenrot mit „!“ (Style-Guide, „Farbrollen“). Abgelehnte Eingriffe sind
 ## eine Warnung wie „Nicht anwendbar“ im Simulator: Gerechnet wird trotzdem, nur ohne sie.
 func _update_notices() -> void:
-	_catalog_notice.visible = statistics != null and _stale
-	_excluded_notice.visible = statistics != null and not _excluded.is_empty()
+	var calculated := _state != State.NEVER
+	_catalog_notice.visible = calculated and _stale
+	_excluded_notice.visible = calculated and not _excluded.is_empty()
 	if _excluded_notice.visible:
 		_excluded_notice.text = ("! Ausgenommen, weil fehlerhaft: %s. Die Gründe stehen in der "
 			+ "Prüfung.") % ", ".join(_excluded)
-	_refused_notice.visible = statistics != null and not _refusals.is_empty()
+	_refused_notice.visible = calculated and not _refusals.is_empty()
 	if _refused_notice.visible:
 		_refused_notice.text = "? In jedem Spiel abgelehnt, deshalb nicht gezählt:\n%s" \
 			% "\n".join(_refusals)
@@ -519,23 +521,24 @@ func _update_intervention_info() -> void:
 ## anderen stehen, und der Text sagt, wozu das Ergebnis gehört. Beim Vergleich steht dort „Leicht,
 ## Mittel und Schwer“ und hinter „Spiele“ „je Grad“.
 func _result_text() -> String:
-	if statistics == null:
+	if _state == State.NEVER:
 		return "Noch keine Statistik. „Starten“ rechnet die Spiele mit den Seeds ab 1 durch."
 	var count := statistics.game_count
 	var per_level := _per_level_text()
 	var levels := _levels_text()
-	if _running:
-		return "Rechnet %s Spiele%s mit den Seeds 1 bis %s, %s …" % [_grouped(count), per_level,
-			_grouped(count), levels]
 	var done := statistics.games_done
 	var with_text := "ohne Eingriffe" if _applied == 0 else "mit %s aus dem Simulator" \
 		% _counted(_applied, "Eingriff", "Eingriffen")
-	if _aborted:
-		if done == 0:
-			return "Abgebrochen, bevor ein Spiel fertig war; es gibt noch kein Ergebnis."
-		return ("Abgebrochen nach %s von %s Spielen%s. Das Ergebnis zeigt die %s fertigen, Seeds 1 "
-			+ "bis %s, %s, %s.") % [_grouped(done), _grouped(count), per_level, _grouped(done),
-			_grouped(done), levels, with_text]
+	match _state:
+		State.RUNNING:
+			return "Rechnet %s Spiele%s mit den Seeds 1 bis %s, %s …" % [_grouped(count),
+				per_level, _grouped(count), levels]
+		State.ABORTED:
+			if done == 0:
+				return "Abgebrochen, bevor ein Spiel fertig war; es gibt noch kein Ergebnis."
+			return ("Abgebrochen nach %s von %s Spielen%s. Das Ergebnis zeigt die %s fertigen, "
+				+ "Seeds 1 bis %s, %s, %s.") % [_grouped(done), _grouped(count), per_level,
+				_grouped(done), _grouped(done), levels, with_text]
 	return "Ergebnis über %s Spiele%s, Seeds 1 bis %s, %s, %s; gerechnet in %s s." % [
 		_grouped(done), per_level, _grouped(done), levels, with_text,
 		_decimal(_elapsed_msec / 1000.0, 1)]
@@ -559,7 +562,7 @@ func _per_level_text() -> String:
 ## Fortschrittsbalken und daneben „37 % · 370 von 1.000 Spielen · 3,0 s“, beim Vergleich
 ## „… von 1.000 Spielen je Grad · …“. Der Text steht neben dem Balken, nicht auf seiner Farbfläche.
 func _show_progress() -> void:
-	if statistics == null:
+	if _state == State.NEVER:
 		_progress.max_value = 1
 		_progress.value = 0
 		_progress_label.text = ""
@@ -570,7 +573,7 @@ func _show_progress() -> void:
 	_progress.value = done
 	var percent := floori(100.0 * done / count) if count > 0 else 100
 	var elapsed := _elapsed_msec
-	if _running:
+	if _state == State.RUNNING:
 		elapsed = (Time.get_ticks_usec() - _started_usec) / 1000.0
 	_progress_label.text = "%d %% · %s von %s Spielen%s · %s s" % [percent, _grouped(done),
 		_grouped(count), _per_level_text(), _decimal(elapsed / 1000.0, 1)]

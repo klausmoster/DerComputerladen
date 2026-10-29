@@ -27,6 +27,9 @@ extends RefCounted
 ##
 ## Für Tests ohne Fenster gehen Ereignisse statt an Input an [member senke], etwa über
 ## fuer_das_spiel() an SubViewport.push_input(); einschalten() braucht es dann nicht.
+##
+## Die Eingabe ist ein Helfer der Hülle, kein Kern (Leitfaden, AR-01): ein RefCounted, das auf das
+## Fenster und seinen Baum zugreift.
 
 ## Kennung aller Eingaben des Selbsttests. Echte Geräte haben kleine Nummern.
 const DEVICE := 4711

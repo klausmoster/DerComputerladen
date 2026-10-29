@@ -318,6 +318,21 @@ func test_nach_dem_schreiben_hoert_der_laeufer_nicht_mehr_auf_das_schliessen() -
 	assert_eq(_zusammengefasst, 1)
 
 
+func test_vor_dem_start_hoert_der_laeufer_nicht_auf_das_schliessen() -> void:
+	# Arrange (Feature 008, T036a, B3): Der Läufer ist bereit, starte() kam noch nicht.
+	var fertig := []
+	_laeufer.fertig.connect(func(lauf: SelbsttestLauf) -> void: fertig.append(lauf))
+
+	# Act
+	_laeufer.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	_laeufer.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+
+	# Assert: Nichts geschrieben, nichts beendet, kein Fokusverlust vermerkt.
+	assert_eq([fertig.size(), _beendet, _zusammengefasst], [0, 0, 0])
+	assert_eq(_lauf.fokusverluste.size(), 0)
+	assert_false(FileAccess.file_exists(BASIS + LAUF_ID + "/protokoll.txt"))
+
+
 func test_ein_ordner_ausserhalb_des_selbsttests_wird_nie_geleert() -> void:
 	# Arrange: wie ein echter Ordner mit Spielständen, hier im Testordner
 	var fremd := BASIS + "spielstaende/"

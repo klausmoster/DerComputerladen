@@ -22,12 +22,13 @@ const REASON_UNREADABLE := "Lässt sich nicht lesen: Die Datei ist beschädigt."
 ## Grund, wenn „format“ eine ganze Zahl größer als SaveGame.FORMAT ist.
 const REASON_TOO_NEW := "Mit einer neueren Version gespeichert."
 
-## Die Nummer aus dem Dateinamen.
+## Die Nummer aus dem Dateinamen. Nur lesen.
 var number: int = 0
+## Ob sich der Spielstand fortsetzen lässt (OK) oder warum nicht. Nur lesen.
 var state: State = State.DAMAGED
-## Leer bei OK; sonst ein Satz für den Hinweis, höchstens zwei Zeilen (R10).
+## Leer bei OK; sonst ein Satz für den Hinweis, höchstens zwei Zeilen (R10). Nur lesen.
 var reason: String = ""
-## Nur bei OK, sonst null.
+## Nur bei OK, sonst null. Nur lesen.
 var game: SaveGame = null
 ## Die Datei, die gelesen wurde: .json, .json.neu oder .json.alt.
 var path: String = ""

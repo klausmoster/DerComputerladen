@@ -75,6 +75,34 @@ func test_szene_baut_headless_auf_und_laesst_das_fenster_in_ruhe() -> void:
 		assert_false(dialog.visible, "%s ist beim Start ohne Anlass offen." % dialog.name)
 
 
+func test_headless_haelt_die_werkstatt_game_window_nicht_an() -> void:
+	# Arrange (Feature 008, T036a, W2): eine Vertretung für GameWindow über die Naht game_window.
+	# Ohne Fenster richtet die Werkstatt keins ein und hält deshalb auch nichts an; mit Fenster
+	# hielte sie die Vertretung an statt des Autoloads. Das zeigt nur ein echtes Fenster (Prüfung
+	# von Hand).
+	var vertretung := Node.new()
+	vertretung.set_process(true)
+	vertretung.set_process_input(true)
+	add_child_autofree(vertretung)
+	var autoload := get_node(^"/root/GameWindow")
+	var vorher := [autoload.is_processing(), autoload.is_processing_input()]
+	var werkstatt: Werkstatt = SZENE.instantiate()
+	werkstatt.catalog_path = _kopieren(MINIMAL, ORDNER + "katalog.json")
+	werkstatt.editor.backup_folder = ORDNER
+	werkstatt.settings_path = ORDNER + "einstellungen.cfg"
+	werkstatt.game_window = vertretung
+
+	# Act
+	add_child_autofree(werkstatt)
+	await wait_process_frames(2)
+
+	# Assert
+	assert_eq([vertretung.is_processing(), vertretung.is_processing_input()], [true, true],
+		"Headless bleibt die Vertretung, wie sie ist.")
+	assert_eq([autoload.is_processing(), autoload.is_processing_input()], vorher,
+		"Das Autoload auch.")
+
+
 func test_schliessen_bleibt_der_werkstatt_ueberlassen() -> void:
 	# Arrange und Act
 	var werkstatt := await _werkstatt()

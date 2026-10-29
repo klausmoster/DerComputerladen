@@ -216,6 +216,23 @@ func test_logo_untertitel_und_versionszeile_mit_pixelschatten() -> void:
 			label.name)
 
 
+func test_untertitel_und_kopfzeilen_kommen_aus_titletexts() -> void:
+	# Arrange (Feature 008, S3, S4): In den Szenen stehen die Texte leer, der Code setzt sie.
+	var szenen := ["res://scenes/title/title_screen.tscn", "res://scenes/title/main_menu.tscn",
+		"res://scenes/title/save_list.tscn"]
+
+	# Act
+	await _zeige_titel()
+
+	# Assert
+	assert_eq((_titel.get_node(^"LogoBlock/Subtitle") as Label).text, TitleTexts.SUBTITLE)
+	assert_eq(_hauptmenue().header_text, TitleTexts.HEADER_MAIN)
+	for pfad: String in szenen:
+		var text := FileAccess.get_file_as_string(pfad)
+		for wort: String in [TitleTexts.SUBTITLE, TitleTexts.HEADER_MAIN, TitleTexts.HEADER_SAVES]:
+			assert_false(text.contains(wort), "%s nennt „%s“ ein zweites Mal." % [pfad, wort])
+
+
 func test_versionszeile_oben_rechts_im_himmel() -> void:
 	# Arrange
 	await _zeige_titel()
