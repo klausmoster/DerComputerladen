@@ -65,29 +65,29 @@ Einstellung sich ändert (FR-009, FR-009a; R6, R7).
 Verfassung hat Version 3.0.0; die Godot-Zeile im Style-Guide nennt den Renderer und hat den Satz aus
 FR-009a; die alte Regel steht mit „bis 2026-10-29“ da.
 
-- [ ] T002 [K] [US3] Den Wortlaut der neuen Regel beschließen, wie in spec.md, FR-009: „Der Renderer
+- [x] T002 [K] [US3] Den Wortlaut der neuen Regel beschließen, wie in spec.md, FR-009: „Der Renderer
   ist Compatibility, auf allen drei Systemen. Mittel, die es nur in Forward+ gibt (HDR,
   Kantenglättung des Bildes in 2D, Compute), werden nicht genutzt.“; dazu „Keine Rücksicht auf den
   Renderer Mobile“ statt des Satzes zu Compatibility, Mobile und GLES; Verfassung 3.0.0 als MAJOR
   (R6). Claude legt beide Stellen vorher als Diff vor.
-- [ ] T003 [C] [US3] `CLAUDE.md`, „Harte Rahmenbedingungen“, nach T002 ändern: neue Regel, alte als
+- [x] T003 [C] [US3] `CLAUDE.md`, „Harte Rahmenbedingungen“, nach T002 ändern: neue Regel, alte als
   „bis 2026-10-29: Renderer bleibt Forward+“ mit Verweis auf Feature 009; die Verbote für Mobile,
   Android, Touch bleiben (FR-009).
-- [ ] T004 [C] [US3] Verfassung über `/speckit-constitution` auf 3.0.0: Grundsatz I wie in T002, die
+- [x] T004 [C] [US3] Verfassung über `/speckit-constitution` auf 3.0.0: Grundsatz I wie in T002, die
   Begründung des Grundsatzes nennt den Anlass (Boot Camp, `docs/entscheidungen/renderer.md`);
   danach mit `git diff` prüfen, dass `.specify/templates/overrides/` unverändert ist
   (`.specify/memory/constitution.md`; `ki_dev.md`, „Spec Kit aktualisieren“).
-- [ ] T005 [C] [US3] Den Satz für den Style-Guide vorlegen (FR-009a, CHK013, CHK014, CHK018): Ende
+- [x] T005 [C] [US3] Den Satz für den Style-Guide vorlegen (FR-009a, CHK013, CHK014, CHK018): Ende
   der Zeile „Godot: …“ in `project/README.md`, „Raster und Auflösung“; dieselbe Zeile nennt den
   Renderer Compatibility (Verfassung, Grundsatz I) und `snap_2d_vertices_to_pixel`; Wortwahl
   „Kantenglättung des Bildes“ und „Glühen über Weiß, eine Folge von HDR (Farbwerte über 1,0)“; die
   Kantenglättung der Schrift bleibt beim Abschnitt Schrift.
-- [ ] T006 [K] [US3] Den Satz aus T005 freigeben oder ändern.
-- [ ] T007 [C] [US3] Den Style-Guide nach T006 veröffentlichen: Artifact lesen, nur die Zeile ändern,
-  veröffentlichen, die neue Version nennen.
-- [ ] T008 [C] Phasenprüfung Phase 2: entfällt laut plan.md, „Prüfer je Phase“ (keine Prüfer; der
+- [x] T006 [K] [US3] Den Satz aus T005 freigeben oder ändern.
+- [x] T007 [C] [US3] Den Style-Guide nach T006 veröffentlichen: Artifact lesen, nur die Zeile ändern,
+  veröffentlichen, die neue Version nennen. Erledigt 2026-10-29: Version 66.
+- [x] T008 [C] Phasenprüfung Phase 2: entfällt laut plan.md, „Prüfer je Phase“ (keine Prüfer; der
   Style-Guide ist selbst der Maßstab, Klaus gibt den Wortlaut in T006 frei).
-- [ ] T009 [K] [US3] Phase 2 abnehmen: Diff von CLAUDE.md und Verfassung, Zeile im Style-Guide.
+- [x] T009 [K] [US3] Phase 2 abnehmen: Diff von CLAUDE.md und Verfassung, Zeile im Style-Guide.
 
 **Checkpoint**: Die Regel erlaubt Compatibility; Phase 3 darf die Einstellung ändern.
 

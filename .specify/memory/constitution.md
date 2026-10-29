@@ -16,11 +16,15 @@ Spiel ist, steht in `docs/game_design.md`.
   `InputEventScreenTouch`, keine Orientierungswechsel und keine Safe Areas. Wischen mit zwei
   Fingern und Kneifen auf dem Trackpad (`InputEventPanGesture`, `InputEventMagnifyGesture`) sind
   Desktop-Eingabe und erlaubt.
-- Der Renderer bleibt Forward+. Auf Compatibility, Mobile oder GLES wird keine Rücksicht
-  genommen, und Android-Build-Templates werden nie installiert.
+- Der Renderer ist Compatibility, auf allen drei Systemen. Mittel, die es nur in Forward+ gibt
+  (HDR, Kantenglättung des Bildes in 2D, Compute), werden nicht genutzt. Auf den Renderer Mobile
+  wird keine Rücksicht genommen, und Android-Build-Templates werden nie installiert.
 
-Begründung: Die Entscheidung ist endgültig. Rücksicht auf andere Plattformen kostet
-Gestaltungsfreiheit und bringt diesem Spiel nichts.
+Begründung: Die Entscheidung für den Desktop ist endgültig. Rücksicht auf andere Plattformen kostet
+Gestaltungsfreiheit und bringt diesem Spiel nichts. Bis 2026-10-29 galt „Der Renderer bleibt
+Forward+“. Forward+ startete aber auf Windows-Rechnern mit älteren Treibern, etwa in Boot Camp,
+ohne Meldung nicht, und einem Spiel mit fester Palette auf 640 × 360 nimmt Compatibility nichts
+Wesentliches (Klaus, 2026-10-28; Feature 009, `docs/entscheidungen/renderer.md`).
 
 ### II. Klaus entscheidet, der Agent baut, Claude plant und prüft
 
@@ -159,4 +163,4 @@ und nicht nach Geschmack (Feature 008).
   ein Grundsatz wegfällt oder neu definiert wird; MINOR, wenn ein Grundsatz oder Abschnitt
   hinzukommt oder deutlich erweitert wird; PATCH für Klarstellungen und Wortlaut.
 
-**Version**: 2.3.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-28
+**Version**: 3.0.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-29

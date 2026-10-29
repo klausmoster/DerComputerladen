@@ -13,8 +13,12 @@ Android, iOS, Mobile, Touch oder Web. Das ist dauerhaft entschieden, nicht
 - Keine touch-taugliche Mindestgröße von Klickflächen, keine Touch-Gesten, kein
   `InputEventScreenTouch`, keine Orientierungswechsel, keine Safe Areas. Wischen
   und Kneifen auf dem Trackpad sind Desktop-Eingabe und erlaubt.
-- Renderer bleibt **Forward+**. Keine Rücksicht auf Compatibility/Mobile oder
-  GLES-Beschränkungen.
+- Der Renderer ist **Compatibility**, auf allen drei Systemen. Mittel, die es
+  nur in Forward+ gibt (HDR, Kantenglättung des Bildes in 2D, Compute), werden
+  nicht genutzt. Keine Rücksicht auf den Renderer Mobile. Bis 2026-10-29 galt
+  „Renderer bleibt Forward+“; gewechselt wurde, weil Forward+ auf älteren
+  Windows-Rechnern ohne Meldung nicht startet (Feature 009,
+  `docs/entscheidungen/renderer.md`).
 - Android-Build-Templates werden nie installiert.
 
 **Rollenverteilung.** Gearbeitet wird featureweise: „wir arbeiten jetzt an
