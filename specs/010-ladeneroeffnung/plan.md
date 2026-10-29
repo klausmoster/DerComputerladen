@@ -167,6 +167,21 @@ src/
 Der neue Ordner `src/core/shop/` sammelt alles zum Laden; `src/scenes/opening/` ist das Büro, das ein
 späterer Umzug wieder öffnet.
 
+## Änderungen nach der Analyse
+
+`/speckit-analyze` vom 2026-10-29 fand 13 Befunde, keinen kritischen; Klaus hat alle nach Empfehlung
+freigegeben. Eingearbeitet:
+- **U1** Vertrag Ladenwahl: Im Büro liegt immer das Blatt des Schritts vorn; was Stadtplan und
+  Schreibtisch im Raum tun.
+- **U2** Vertrag Ladenwahl: Tabelle Anlass → Auslöser für die Sätze des Maklers, `abschied` als
+  linearer Ablauf.
+- **I1** Spec: Parkplätze in FR-006, FR-007, FR-028.
+- **D1** Tasks: T002a, T002b ziehen das Minuszeichen vor Phase 3.
+- **D2** Tasks: T047 und T053 ziehen den Fahrer des Selbsttests mit.
+- **C1** Tasks: T025 misst 15 Jahre in unter 2 s.
+- **K1** Tasks: T048 prüft, dass der Übergang aus T026 weg ist.
+- **A1 bis A6** Wortlaute in Spec, Quickstart und Vertrag Spielbildschirm.
+
 ## Complexity Tracking
 
 Keine Verstöße gegen die Verfassung.

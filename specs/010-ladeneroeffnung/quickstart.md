@@ -54,8 +54,8 @@ Spiel starten:
    4.320,00 DM Kaution, Mietbeginn 01.01.1985. „Unterschreiben“.
 5. **Name:** Leeres Feld: „Anmelden“ gesperrt, Grund steht da. Ein Zeichen wie „@“ lässt sich nicht
    tippen. „Computer Klaus“ eintippen, „Anmelden“.
-6. **Laden:** Spielbildschirm mit Ladenbild (Platzhalter bis zur Phase „Bilder“), Name, Datum
-   01.01.1985, Kontostand 25.680,00 DM. Die Uhr steht.
+6. **Laden:** Spielbildschirm mit Ladenbild (Platzhalter bis zur Phase „Bilder“), Name, in der
+   Leuchtanzeige DI 01.01.1985 und 25.680,00 DM. Die Uhr steht.
 7. **Miete:** Uhr laufen lassen bis 01.02.1985: Kontostand 24.240,00 DM. Tempo wechseln, anhalten.
 8. **Speichern:** „Zum Hauptmenü“. „Weiterspielen“ zeigt „Weiter mit Computer Klaus, Schwer, am …“.
    Fortsetzen: gleicher Laden, gleicher Kontostand, Uhr steht.

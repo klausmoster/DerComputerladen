@@ -81,6 +81,12 @@ flowchart LR
 ```
 
 - Das Büro erscheint mit herangeholtem Stadtplan; der Makler sagt seinen Satz zu `betreten`.
+- **Immer ein Blatt vorn** (Analyse, U1): Im Büro liegt immer genau das Blatt des Schritts vorn,
+  einen Zustand ohne Blatt gibt es nicht. Die Hotspots im Raum bleiben daneben klickbar, Stadtplan
+  und Schreibtisch nur in den Schritten MAP und EXPOSE: Der Stadtplan an der Wand führt zum Schritt
+  MAP, der Schreibtisch zum Exposé des gewählten Ladens (Schritt EXPOSE). Der Makler spricht in
+  jedem Schritt. Während Mietvertrag oder Anmeldung vorn liegen, führen nur „Zurück“ und Esc
+  zurück.
 - Esc und „Zurück“ gehen je einen Schritt zurück (FR-002). Esc im Eingabefeld der Anmeldung geht
   ebenso zurück. Zurück von der Anmeldung nimmt die Unterschrift weg; der eingetippte Name bleibt,
   solange die Eröffnung offen ist, auch bei einem anderen Laden (CHK008). Er steht dafür in
@@ -149,7 +155,21 @@ jeder nennt Funktion und Taste, sobald Phase 4 die Tasten festlegt (CHK024).
 
 Aus `FigureData.lines` (data-model.md). Die Sprechblase steht neben dem Makler, solange der
 Spieler nichts tut, höchstens 4 s, oder bis zum nächsten Klick. Je Anlass der nächste Satz der
-Reihe nach. Beispiele für den Ton, endgültig nach R17:
+Reihe nach.
+
+Wann welcher Anlass fällt (Analyse, U2):
+
+| Anlass | Auslöser |
+|---|---|
+| `betreten` | das Büro erscheint |
+| `stadtplan` | der Spieler kehrt zum Stadtplan zurück (nicht beim Erscheinen) |
+| `expose_<id>` | ein Exposé eines mietbaren Ladens kommt nach vorn |
+| `expose_zu_teuer` | ein Exposé eines nicht mietbaren Ladens kommt nach vorn |
+| `mietvertrag` | der Mietvertrag kommt nach vorn |
+| `unterschrieben` | der Spieler unterschreibt |
+| `anmeldung` | die Gewerbeanmeldung kommt nach vorn |
+| `abschied` | „Anmelden“ ist gelungen: Das Büro nimmt keine Eingabe mehr an, der Makler sagt den Satz, nach höchstens 2 s oder einem Klick folgt der Wechsel zum Spielbildschirm; als linearer Ablauf mit `await` (AR-19) |
+| `klick` | der Spieler klickt den Makler an | Beispiele für den Ton, endgültig nach R17:
 - `betreten`: „Setzen Sie sich. Ich habe da ein paar Objekte, die sind praktisch schon weg.“
 - `expose_gewerbegebiet`: „Viel Platz, viele Parkplätze. Kunden bringen Sie selbst mit.“
 - `expose_zu_teuer`: „Da müsste ich die Bank fragen. Die Bank fragt dann Sie.“

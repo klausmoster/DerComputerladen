@@ -18,6 +18,8 @@ src/scenes/game/
 src/ui/
 ├── frame/picture_frame.tscn / .gd # neu: Baustein Bildrahmen
 └── bar/control_bar.tscn / .gd     # neu: Baustein Bedienleiste, in 010 mit Ortsbild, Anzeige, Uhr
+src/core/
+└── game_clock.gd                  # geändert: set_speed() (CHK039)
 src/test/
 ├── test_game_screen.gd            # geändert
 ├── test_picture_frame.gd, test_control_bar.gd

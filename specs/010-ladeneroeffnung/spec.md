@@ -109,6 +109,14 @@ SC-001, SC-002, SC-006 und drei Annahmen. Die wichtigsten:
 - Q: Tooltip oder Hinweis im Büro und auf dem Spielbildschirm? → A: Tooltips, denn kein Knopf
   steht dort allein; auch „Zum Hauptmenü“ (CHK032).
 
+### Analyse 2026-10-29
+
+Aus `/speckit-analyze` mit 13 Befunden, keiner kritisch; Klaus hat am 2026-10-29 alle nach
+Empfehlung freigegeben. An der Spec geändert: Parkplätze in FR-006, FR-007 und FR-028 (I1),
+„gemessen in den Tests“ in FR-016 (A1), „bezahlbar, mietbar“ unter „Key Entities“ (A4), zwei
+Annahmen (A2, A3). Alles Übrige betraf Verträge, Quickstart, Tasks und Plan (plan.md, „Änderungen
+nach der Analyse“).
+
 ## Überblick
 
 Bisher führt die Gradwahl direkt in einen leeren Spielbildschirm mit dem Knopf „Zum Hauptmenü“.
@@ -342,10 +350,10 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   | Nähe Bahnhof | Innenstadt, Rand | niedrig | klein bis mittel | hoch | mittel | viel Durchgang, Ruf der Gegend zweifelhaft |
 
   Jeder Laden hat: Anschrift, Viertel, Fläche in m², Monatsmiete in
-  DM, Kaution, Laufkundschaft und Sichtbarkeit als Stufe, eine kurze Beschreibung,
+  DM, Kaution, Laufkundschaft, Sichtbarkeit und Parkplätze als Stufe, eine kurze Beschreibung,
   Kleingedrucktes, ein Foto von außen und ein Bild von innen, leer.
-- **FR-007**: Laufkundschaft und Sichtbarkeit MUST gespeichert und im Exposé in Worten
-  angedeutet werden; sie haben in diesem Feature keine Wirkung auf das Spiel.
+- **FR-007**: Laufkundschaft, Sichtbarkeit und Parkplätze MUST gespeichert und im Exposé in Worten
+  angedeutet werden (Game Design §5 nennt alle drei); sie haben in diesem Feature keine Wirkung auf das Spiel.
 - **FR-008**: Die Daten der Stadt und der Läden MUST in der game_bible gepflegt werden, je Laden
   eine Notiz nach einer eigenen Vorlage, Preise als Range wie dort üblich. Ein Importer bringt sie
   ins Spiel; Klaus ändert Mieten und Texte in der game_bible, ohne Code anzufassen. Ein Bau des
@@ -384,8 +392,8 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
 **Gewerbeanmeldung und Ladenname**
 
 - **FR-016**: Die Gewerbeanmeldung MUST als amtliches Formular erscheinen, mit einem Feld für den
-  Ladennamen, das der Spieler eintippt. Der Name hat 1 bis 24 Zeichen (vorläufig; im Plan gegen
-  den Platz in Liste und Spielbildschirm geprüft), Leerzeichen am Anfang und Ende zählen nicht.
+  Ladennamen, das der Spieler eintippt. Der Name hat 1 bis 24 Zeichen (vorläufig; gemessen in den
+  Tests gegen den Platz in Hinweisen, Rückfrage und Spielbildschirm, T049), Leerzeichen am Anfang und Ende zählen nicht.
 - **FR-017**: Der Ladenname MUST der angezeigte Name des Spielstands werden: in „Spiel laden“, im
   Hinweis zu „Weiterspielen“, in der Rückfrage beim Löschen und im Tooltip zu „Zum Hauptmenü“.
   Die Datei behält ihre Nummer (`spiel_N.json`).
@@ -449,7 +457,7 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
 **Spielstand**
 
 - **FR-028**: Der Spielstand MUST zusätzlich festhalten: welcher Laden, den Ladennamen, den
-  Kontostand, Laufkundschaft und Sichtbarkeit des Ladens und bis zu welchem Monat die Miete
+  Kontostand, Laufkundschaft, Sichtbarkeit und Parkplätze des Ladens und bis zu welchem Monat die Miete
   abgebucht ist.
 - **FR-029**: Speichern und Fortsetzen MUST denselben Laden, Namen und Kontostand ergeben; ein
   fortgesetztes Spiel bucht dieselben Mieten an denselben Tagen ab wie eines ohne Pause.
@@ -482,6 +490,9 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
 - **Startkapital**: der Betrag, mit dem ein Spiel beginnt; hängt vom Grad ab.
 - **Kapitalnachweis**: was der Vermieter an Kapital sehen will, bevor er vermietet: Kaution plus
   sechs Monatsmieten. Er wird nur geprüft, nicht abgebucht.
+- **bezahlbar, mietbar**: dasselbe: Das Startkapital deckt den Kapitalnachweis. Ein Laden, der es
+  nicht ist, heißt „nicht mietbar“; „grau“ ist nur Klaus' Wort für seine Darstellung, die der
+  Style-Guide regelt.
 
 ## Success Criteria *(mandatory)*
 
@@ -528,7 +539,7 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   Gewerbeanmeldung im Büro des Maklers ausgefüllt wird statt auf dem Amt, ist eine Vereinfachung
   (Festlegung von Claude): Der Makler hat das Formular vom Gewerbeamt schon bereitliegen.
 - **Texteingabe ist neu:** Bisher gibt es im Spiel kein Feld zum Eintippen. Die Gewerbeanmeldung
-  braucht eines; im Plan wird geklärt, wie es im Stil des Spiels aussieht.
+  braucht eines; wie es im Stil des Spiels aussieht, regelt der Style-Guide (Phase 4).
 - **Grafiken:** Zehn Bilder (Büro des Maklers, Stadtplan, vier Läden von außen, vier leere
   Läden von innen) und die Figur des Maklers entstehen mit dem Skill `dcl-grafik` in einer eigenen
   Phase am Ende des Features. Bis dahin stehen Platzhalter in Bildgröße mit Beschriftung, etwa
@@ -540,7 +551,7 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   Ereignisse; angezeigt werden sie erst mit 10-04. In 010 sieht der Spieler davon nichts.
 - **Kein Speichern während des Spiels** (CHK011): Gespeichert wird beim Verlassen, Schließen und
   Fortsetzen; Speichern während des Spiels kommt mit 11-01. Bis dahin geht nach einem Absturz
-  verloren, was seit dem Fortsetzen geschah.
+  verloren, was seit dem letzten Speichern geschah.
 - **Ende 1999** (CHK016): Am 31.12.1999 hält die Uhr an; Spielende und Bilanz kommen mit 11-05.
 - **Tests spulen vor:** Wie in Feature 004 belegen automatische Tests die Mieten über viele
   Monate, indem sie das Spiel selbst vorspulen, unabhängig davon, ob die Uhr im Spiel läuft.

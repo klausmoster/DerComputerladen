@@ -20,7 +20,9 @@ von Prüfungen; dazu die Startprobe. Der Importer hat eigene Tests mit `unittest
 Abschluss. Umgesetzt wird nach Grundsatz II der Verfassung: eine Phase nach der anderen, nur auf
 Klaus' Auftrag, `/speckit-implement` nie. Große Phasen (3, 6) laufen in zwei Teilen, erst der Kern,
 dann der Rest, dazwischen prüft Claude (`ki_dev.md`, Punkt 4). Kürzel wie „CHK030“ verweisen auf
-[review.md](checklists/review.md), „R14“ auf [research.md](research.md).
+[review.md](checklists/review.md), „R14“ auf [research.md](research.md). Nach der Analyse vom
+2026-10-29 kamen T002a und T002b dazu; T013, T025, T047, T048 und T053 sind genauer (Befunde D1,
+D2, C1, K1, von Klaus nach Empfehlung freigegeben).
 
 ## Format: `[ID] [Besitzer] [P?] [Story] Beschreibung`
 
@@ -58,7 +60,11 @@ dann der Rest, dazwischen prüft Claude (`ki_dev.md`, Punkt 4). Kürzel wie „C
 - [ ] T002 [C] In `docs/architektur-leitfaden.md` den Stand von AR-16 bis AR-20 von „gilt ab dem
   ersten Feature der Schicht …“ auf „gilt seit 2026-10-29, Klaus (Feature 010)“ setzen; die Kopfzeile
   „Stand“ nachziehen (plan.md, „Ausnahmen vom Leitfaden“, Hinweis).
-- [ ] T003 [K] Phase 1 abnehmen: den Diff des Leitfadens lesen.
+- [ ] T002a [C] Frage 16 aus research.md, R14 vorziehen, nur den Teil zum Minuszeichen: „-“ oder
+  „−“ in Beträgen, nach den Zeichen, die Ark Pixel und Doto haben; als Auswahl mit Empfehlung
+  (Analyse, D1). Antwort in R14 und im Style-Guide, Abschnitt „Sprache“.
+- [ ] T002b [K] Das Minuszeichen aus T002a entscheiden.
+- [ ] T003 [K] Phase 1 abnehmen: den Diff des Leitfadens lesen, dazu die Antwort aus T002b.
 
 ---
 
@@ -116,7 +122,7 @@ drei Tagen ohne Unterschied (SC-004); `test_fahrplan_laden.gd` belegt den bytegl
   `TimelineRun.FIRST_DAY` abgeleitet, `RENT_FREE_MONTHS = 1` (CHK040); statische `deposit()`,
   `proof()`, `affordable()`. Test `src/test/test_shop_rules.gd` mit der Tabelle „bezahlbar je Grad“.
 - [ ] T013 [P] [A] [US3] `Money` in `src/core/shop/money.gd`: Pfennig → „25.680,00 DM“, negativ mit
-  Minus und SOLL nach dem Baustein Anzeige (das Minuszeichen nach T034); Test `src/test/test_money.gd`
+  Minus und SOLL nach dem Baustein Anzeige (das Minuszeichen aus T002b); Test `src/test/test_money.gd`
   mit 0, 1, 99, 100, 2.568.000, −23.208.000 Pfennig.
 - [ ] T014 [P] [A] [US1] Datenklassen als `Resource` mit `class_name`: `ShopOffer`
   (`src/core/shop/shop_offer.gd`, Felder aus data-model.md, `enum Level { LOW, MEDIUM, HIGH }` mit
@@ -174,7 +180,8 @@ drei Tagen ohne Unterschied (SC-004); `test_fahrplan_laden.gd` belegt den bytegl
   Spielstand, beim Fortsetzen daraus neu; `leave()` hält die Uhr an. Dazu `GameClock.set_speed()` in
   `src/core/game_clock.gd` (CHK039). `src/test/test_game_session.gd`: Mieten über Speichern und
   Fortsetzen an einem Ersten, am Tag davor und am 15.03.1985 gleich (SC-004); nichts geschrieben vor
-  `start_new()` (SC-007).
+  `start_new()` (SC-007); ein Spiel über 15 Jahre mit Konto im Test vorgespult in unter 2 s
+  (plan.md, „Performance Goals“; Analyse, C1).
 - [ ] T026 [A] Übergang bis Phase 6, damit das Spiel startbar bleibt: `TitleScreen._start_new()` in
   `src/scenes/title/title_screen.gd` ruft `begin_opening(grad)`, nimmt den vorgewählten Laden, und
   `start_new(SaveGame.default_name(n))`. Mit dem Kommentar `# Übergang bis T047 (Feature 010)`;
@@ -272,11 +279,16 @@ grün.
 
 - [ ] T047 [A] [US1] [US2] Titel anbinden in `src/scenes/title/title_screen.gd`: Gradwahl ruft
   `begin_opening()`, nach der Fahrt hinaus `OPENING_SCENE`; Rückkehr vom Stadtplan zeigt die Gradwahl
-  mit dem Grad vorgewählt und ruft `end_opening()`; den Übergang aus T026 entfernen.
+  mit dem Grad vorgewählt und ruft `end_opening()`; den Übergang aus T026 entfernen. Den Fahrer des
+  Selbsttests (`src/tools/selbsttest/selbsttest_fahrer.gd`) und seine Tests mitziehen, damit sie
+  grün bleiben; die Knotennamen sind seine Schnittstelle (Leitfaden, „Werkzeuge“; Analyse, D2).
+  Neue Schritte im Selbsttest kommen erst in T064.
 - [ ] T048 [A] [US1] [US2] `src/test/test_broker_office.gd`: jeder Weg aus dem Vertrag mit Maus und
   Tastatur, Esc und „Zurück“ aus jedem Schritt, Name bleibt beim Zurückgehen (CHK008), kein
   Spielstand vor „Anmelden“ an jeder Stelle (SC-007), scheiterndes Speichern zeigt die Meldung;
-  jedes Blatt erscheint in unter 0,2 s (SC-001).
+  jedes Blatt erscheint in unter 0,2 s (SC-001); immer ein Blatt vorn und die Anlässe des Maklers
+  nach der Tabelle im Vertrag; im Titel steht der Kommentar „Übergang bis T047“ nicht mehr
+  (Analyse, K1).
 - [ ] T049 [A] [US2] `src/test/test_title_texts.gd`: Hinweise, Rückfrage und „{Name} löschen“ mit dem
   breitesten erlaubten Namen aus 24 Zeichen messen (CHK027, SC-006). Passt einer nicht, hält der
   Agent an; Klaus entscheidet über eine kleinere `ShopName.MAX_LENGTH`.
@@ -300,7 +312,9 @@ grün.
   Ortsbild, Leuchtanzeige und Uhr; Naht `clock` (CHK039); erscheint angehalten; Tempi
   `SPEEDS = [1.0, 2.0, 7.0]` über `set_speed()`; Leertaste gehört der Uhr (CHK035); Datum blinkt bei
   laufender Uhr nicht, Kontostand bei jeder Buchung (CHK034); am Ende Uhr aus ohne Tooltip
-  (CHK031); „Zum Hauptmenü“ mit Tooltip statt Hinweis, Meldung links daneben (CHK032).
+  (CHK031); „Zum Hauptmenü“ mit Tooltip statt Hinweis, Meldung links daneben (CHK032). Fahrer
+  des Selbsttests und seine Tests mitziehen, er liest `LeaveButton` und `MenuHint` des
+  Spielbildschirms (Analyse, D2).
 - [ ] T054 [A] [US3] [US4] `src/test/test_game_screen.gd`: Laden, Name, Datum mit Wochentag,
   Kontostand; Buchung am Ersten im selben Bild; SOLL bei negativem Kontostand; Leertaste; Fortsetzen
   zeigt denselben Stand angehalten.
