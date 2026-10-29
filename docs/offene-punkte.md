@@ -300,7 +300,8 @@ Auslegungen des Agents beim Baustein Communicator, von Claude übernommen. Klaus
   Version 37): Der Rand bis 616 gilt für Anzeige und Seiten, das Gehäuse darf bis an den Bildrand;
   der Hinweis fährt mit hinaus. Die Auslegungen oben hat Klaus mit der Abnahme bestätigt.
 - **Für Phase 5 merken:** Ruft der Titel während der Sperre `select()` an Menü oder Liste, druckt
-  Godot „can't grab focus“, und die Startprobe würde laut. Das Flag `_leaving` muss deshalb auch vor
+  Godot „can't grab focus“, und die Startprobe würde laut. Das Flag `_leaving` (seit Feature 008 die
+  Phase `LEAVING` in `TitleScreen.Phase`) muss deshalb auch vor
   jedem `select()` greifen (T029).
 
 ### Feature 005, Plan (2026-10-27)
@@ -316,7 +317,8 @@ Eigene Festlegungen von Claude in `specs/005-communicator/research.md`. Klaus be
   dauert auch bei 30 Bildern je Sekunde gut 233 ms. Bis zur Analyse (C2) stand hier 1/30 s für
   jeden Schritt, was im ersten Bild 42 % ergab.
 - **Erst anlegen, dann hinausfahren** (R8): Scheitert das Anlegen, fährt nichts, und die Meldung
-  kommt sofort. Dazu sperren Communicator und ein Flag `_leaving` im Titel jede Eingabe während der
+  kommt sofort. Dazu sperren Communicator und ein Flag `_leaving` im Titel (seit Feature 008 die Phase
+  `LEAVING`) jede Eingabe während der
   Fahrt hinaus (Analyse, B2, C20).
 - **Helle Schrift der gewählten Zeile aus dem Code** (R15), weil ein Button unter der Maus die
   Hover-Farbe nimmt und das Theme allein eine Zeile unsichtbar machte (Analyse, B1).
@@ -610,51 +612,17 @@ wenn Klaus es will.
   bitgleich rechnet, ist ungeprüft. Wichtig, sobald die Wirtschaft mit Seed rechnet und Spielstände
   aus Eingriffen nachspielt (`docs/recherche/architektur-quellen.md`, 6.3).
 
-### Feature 008, Lücken im Style-Guide aus der Phasenprüfung Phase 4 (2026-10-28)
+### Feature 008, nach dem Abschluss (2026-10-29)
 
-Vom Text-Prüfer an den Testmeldungen von `test_architektur.gd` gemeldet, je mit Empfehlung von
-Claude. Klaus hat am 2026-10-28 alle wie empfohlen entschieden; die ersten vier stehen im Style-Guide
-unter „Sprache“, Abschnitt „Texte für Entwickler“, die Einzahl bleibt als künftiger Test vorgemerkt:
-- **Geltung für Testmeldungen:** „Ausgenommen sind Testausgaben“ steht nur unter „Anrede“.
-  Empfehlung: ein Satz im Abschnitt „Sprache“: Für Testausgaben gelten klares Deutsch und die
-  Begriffe des Maßstabs, den der Test misst; Ton und Wortschatz der Zeit nicht.
-- **„das Spiel“ in Texten für Entwickler:** Empfehlung: Die Regel „Das Programm heißt nicht ‚das
-  Spiel‘“ gilt nur für Texte, die der Spieler sieht.
-- **Ort und Regel in Testmeldungen:** Empfehlung: einheitlich „pfad:zeile:“ und die Regelnummer
-  einmal am Ende in Klammern.
-- **Namen aus Code und Engine** (Autoload, Node, RefCounted) in Texten für Entwickler: Empfehlung:
-  bleiben stehen.
-- **Einzahl bei Zahlen** („1 Stelle“): schon als künftiger Test in `ki_pruefung.md` vorgemerkt.
-
-### Feature 008, Lücken im Leitfaden aus Fehler- und Planprobe (2026-10-28)
-
-Gemeldet vom Architektur-Prüfer, von Claude nachgeprüft. Klaus hat am 2026-10-28 alle acht wie
-empfohlen entschieden; sie stehen im Leitfaden (AR-02, AR-04, AR-07, AR-08, AR-15, „Schwere“):
-- **L1 Stellschrauben und Werte aus dem Style-Guide (AR-04):** Fallen Tempi, Chancen, Pixelmuster
-  unter „gepflegte Spieldaten“? Empfehlung: AR-04 gilt für Spielinhalt, also was in die game_bible
-  gehört (Produkte, Preise, Kunden, Mieten). Stellschrauben einer Mechanik dürfen als benannte
-  Konstanten an einer Stelle im Kern stehen; Werte aus dem Style-Guide spiegelt der Code als
-  Konstanten wie `UiPalette`. Folge: Befund 1 der Planprobe wird verworfen, die Miete in der
-  Fehlerprobe bleibt ein Befund.
-- **L2 game_bible und `.tres` (AR-04, Verfassung V):** Werden Resources aus der game_bible erzeugt
-  oder von Hand gepflegt? Empfehlung: Die game_bible bleibt die Quelle; Resources entstehen daraus
-  über einen Importer (Backlog 02-01), nie von Hand, damit es keine zweite Quelle gibt.
-- **L3 Schwere bei Verstoß gegen die Verfassung:** Empfehlung: Verletzt eine Stelle zugleich die
-  Verfassung, gilt „kritisch“, auch wenn die Regel allein „mittel“ wäre.
-- **L4 Regelmäßige Buchungen und AR-07:** Ist die Miete am Monatsersten ein „Ereignis“? Empfehlung:
-  Ereignis heißt Eintrag im Katalog. Regelmäßiges wie Miete oder Zinsen ist Mechanik eines Kerns;
-  den Monatswechsel reicht die Hülle hinein (`GameClock.month_passed`). Ereignisse innerhalb eines
-  Kerns, etwa `SHOT` im Easter Egg, sind keine Ereignisse im Sinne von AR-07.
-- **L5 Signale übersetzen (AR-02):** Empfehlung: Ein Baustein darf das Signal eines inneren Teils in
-  ein eigenes Signal mit eigener Bedeutung übersetzen, wie `CaseKey.pressed` zu `case_key_pressed`;
-  verboten ist nur das bloße Durchreichen.
-- **L6 Spiel ohne Spielstand (AR-08, AR-09):** Empfehlung: AR-08 und AR-09 gelten für den
-  Spielverlauf, der in den Spielstand geht. Ein Minispiel ohne Spielstand darf seinen Startwert in
-  der Hülle zufällig wählen; der Kern bekommt ihn trotzdem von außen.
-- **L7 Lesbarer Zustand eines Kerns (AR-15):** Empfehlung: Felder, die die Oberfläche nur lesen
-  darf, tragen den Doku-Kommentar „Nur lesen.“; der Prüfer meldet Schreibzugriffe von außen.
-- **L8 Texte der Oberfläche (AR-04):** Empfehlung: Texte stehen je Bildschirm an einer Stelle als
-  Konstanten, wie `TitleTexts`; das ist kein Verstoß gegen AR-04. Dialoge regelt AR-20.
+- **Beschreibungstexte der Godot-Referenz (T039d) und Handbuch `godot-docs` (T039b):** offen, nur
+  mit Klaus' Erlaubnis zum Download; Quelle und Größe nennt Claude vorher. Bis dahin hat
+  `godot_referenz/klassen/` nur Signaturen.
+- **SC-005, SC-006, SC-007 von Feature 008:** werden im ersten Feature nach 008 mit Code belegt:
+  Bestandsberichte bleiben bei null neuen Abweichungen, `plan.md` und `tasks.md` nennen den
+  Architektur-Prüfer von selbst, und nach den Code-Phasen entscheidet Klaus anhand der Zählung in
+  `ki_pruefung.md`, ob der Prüfer bleibt.
+- **Folge-Features 11-09 und 11-10** in `docs/features/Feature_Ideas.md`: Gemeinsames in `core/`
+  und `ui/`, Werkstatt entkoppeln; Klaus entscheidet, wann.
 
 ## Eigene Entscheidungen von Claude
 
@@ -1061,6 +1029,10 @@ Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder 
 
 ## Erledigt
 
+- **Lücken aus Feature 008, alle von Klaus entschieden und eingearbeitet** (2026-10-28):
+  die fünf Lücken im Style-Guide (Abschnitt „Texte für Entwickler“) und die acht Lücken im
+  Leitfaden aus Fehler- und Planprobe; Wortlaut der Entscheidungen in der Git-Geschichte dieser
+  Datei und im Leitfaden unter „Geschichte“.
 - **Nachzug der Arbeitsweise auf `main`** (Klaus, 2026-10-27): Prüfung ergab elf veraltete Stellen.
   Behoben: Phasenprüfung fest statt „in Einführung“, Tagebuch im Einstieg, Spec Kit 1.2.3 mit
   eigener Vorlage, Regel „Aufwand“ nach `ki_dev.md`, Godot-Agent liest die Spielbeschreibung.

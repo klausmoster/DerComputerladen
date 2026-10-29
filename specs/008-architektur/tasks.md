@@ -333,14 +333,16 @@ T040 fest.
 - [x] T040 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
   Feature“), dazu der Architektur-Prüfer einmal über alles, was 008 an Code geändert hat. Lücken
   werden eine eigene Phase mit Klaus' Freigabe.
-- [ ] T040a [A] Selbsttest-Abläufe anpassen (vor der Gesamtabnahme; `docs/ki_workflow/ki_dev.md`,
+- [x] T040a [A] Selbsttest-Abläufe anpassen (vor der Gesamtabnahme; `docs/ki_workflow/ki_dev.md`,
   Punkt 11): Abläufe unter `src/tools/selbsttest/ablaeufe/`; entfällt, wenn 008 nichts ändert, was
   der Selbsttest durchspielt.
-- [ ] T040b [C] Selbsttest zur Gesamtabnahme: `tools/build/baue_alles.sh`, Lauf auf dem Mac,
+  Entfällt (Claude, 2026-10-29): 008 ändert keine Seite, keinen Weg, keine Eingabe; Texte sind nur
+  umgezogen, wortgleich. `ablauf_fenster.gd` ist schon in T036a (M1) angepasst.
+- [x] T040b [C] Selbsttest zur Gesamtabnahme: `tools/build/baue_alles.sh`, Lauf auf dem Mac,
   `tools/selbsttest/vergleich.py`; Ergebnis in der Bitte um Gesamtabnahme; neue Referenzbilder nur
   mit Klaus' OK.
-- [ ] T041 [K] Gesamtabnahme nach dem ganzen Quickstart.
-- [ ] T042 [C] Doku nachziehen: `docs/features/Features.md` (008 fertig, System 11);
+- [x] T041 [K] Gesamtabnahme nach dem ganzen Quickstart.
+- [x] T042 [C] Doku nachziehen: `docs/features/Features.md` (008 fertig, System 11);
   `docs/features/Feature_Ideas.md` (11-06 gebaut); `docs/offene-punkte.md`; in `ki_pruefung.md` die
   Auswertung der Läufe aus 008 und die Notiz, dass SC-005, SC-006 und SC-007 im nächsten Feature
   mit Code nachgetragen werden (Analyse, C16).

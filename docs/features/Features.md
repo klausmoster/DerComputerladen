@@ -25,7 +25,7 @@ Die Nummer ist Teil der `feature_id` (`SS-NN`) und stabil.
 | 08 | Qualität & Risiko | Idee |
 | 09 | Adventure-Layer | Idee (Orte, Dialoge, Interaktion) |
 | 10 | Präsentation & UI | In Arbeit (Feature 001: Start bis zum Hauptmenü; Feature 004: Blätter im Titel, Liste der Spielstände, leerer Spielbildschirm; Feature 005: Titel auf dem Communicator; Feature 006: Gehäusetasten und Spiel auf der Anzeige) |
-| 11 | Infrastruktur | In Arbeit (Feature 004: Spielstände anlegen, fortsetzen, löschen; Feature 006: Ton mit Kanal `Effekte` und erzeugten Klängen; Feature 007: Exporte für macOS, Windows und Linux mit einem Befehl, Selbsttest-App mit Vergleich gegen Referenzbilder) |
+| 11 | Infrastruktur | In Arbeit (Feature 004: Spielstände anlegen, fortsetzen, löschen; Feature 006: Ton mit Kanal `Effekte` und erzeugten Klängen; Feature 007: Exporte für macOS, Windows und Linux mit einem Befehl, Selbsttest-App mit Vergleich gegen Referenzbilder; Feature 008: Architektur-Leitfaden, Architektur-Prüfer, Architektur-Tests, Bestand nach dem Leitfaden behoben, lokale Godot-Referenz) |
 
 01–08 entsprechen den Kernsystemen aus dem GDD. 09–11 stehen dort verstreut bzw.
 unter „Offene Fragen", sind aber eigene Systeme.
@@ -44,6 +44,7 @@ unter „Offene Fragen", sind aber eigene Systeme.
 | 005 | [Communicator als Steuerelement](../../specs/005-communicator/spec.md), System 10, Titel auf dem Communicator | fertig | tasks |
 | 006 | [Easter Egg 01: Space Invaders](../../specs/006-easter-egg-space-invaders/spec.md), System 10 und 11, Spiel auf der Anzeige des Communicators, erster Ton | fertig | tasks |
 | 007 | [Build & Export mit Selbsttest](../../specs/007-build-export-selbsttest/spec.md), System 11, Selbsttest-App auf drei Systemen, Exporte für Windows und Linux, Vergleich mit Referenzbildern | fertig | tasks |
+| 008 | [Godot- und Spielarchitektur](../../specs/008-architektur/spec.md), System 11, Architektur-Leitfaden mit 20 Regeln, Architektur-Prüfer, `test_architektur.gd`, Bestand geprüft und behoben, lokale Godot-Referenz | fertig | tasks |
 
 Diese Tabelle wird derzeit von Hand gepflegt. Ab etwa zehn Features lohnt ein
 Generator, der sie aus dem Frontmatter baut — gleiches Prinzip wie

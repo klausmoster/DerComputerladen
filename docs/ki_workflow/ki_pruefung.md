@@ -359,6 +359,22 @@ Jeder bestätigte Befund war einer, den Claudes eigene Prüfung nicht gefunden h
 falsch. Drei standen so im Vertrag, den Claude geschrieben hatte. Die Lücken wiederholen sich:
 „schon bekannt“ kam in fünf Läufen vor.
 
+**Auswertung des Architektur-Prüfers in Feature 008** (2026-10-28 und 2026-10-29), aus den Zeilen
+oben, Fehlerprobe und Planprobe eingeschlossen:
+
+| Prüfer | Läufe | Befunde | bestätigt | verworfen | nur er fand | Lücken gemeldet |
+|---|---|---|---|---|---|---|
+| Architektur | 9 | 37 | 32, dazu 1 zum Teil | 4 | 24 | 50 |
+| Text (Testmeldungen, Phase 4) | 1 | 6 | 4 | 2 | 4 | 5 |
+
+Der Prüfer fand in der Fehlerprobe alle fünf eingebauten Verstöße mit der richtigen Regel und
+meldete keine erlaubte Stelle. Verworfen wurden nur Befunde, die eine Lücke im Leitfaden berührten;
+nach Klaus' Entscheidung stehen die Lücken jetzt im Leitfaden, und die späteren Läufe meldeten
+weniger: 5 bis 9 Lücken je Lauf der Bestandsprüfung, 5 in der Phasenprüfung, 0 im Nachlauf. Zwei Grenzen zeigten sich:
+Ohne Suchwerkzeuge prüft er nur, was er liest (Erfahrung oben), und große Dateien liest er in der
+Bestandsprüfung nur gezielt. Ob er bleibt, entscheidet Klaus nach den Code-Phasen des nächsten
+Features (Spec 008, SC-007; „Offen“ unten).
+
 Jede Phasenprüfung kostet zwei bis drei Prüfer-Läufe und läuft nur in Phasen, die Sichtbares, Texte
 oder Code ändern. Sitzt der Ablauf, lässt er sich als gespeicherter Workflow fest einrichten.
 
