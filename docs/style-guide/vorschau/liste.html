@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<title>Vorschau Liste</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="bundle.css">
+<style>body { margin: 0; background: #fff; }</style>
+</head><body>
+<!-- @dsCard group="Bedienelemente" height=500 width=1400 subtitle="Liste der Spielstände: links mit Auswahl und Rollmarke, rechts im Löschmodus · Oberflächenpixel ×2" -->
+<div class="pv" style="background: var(--nacht)">
+  <div class="pv-col">
+    <nav class="cl-liste" aria-label="Spielstände">
+      <span class="cl-lochrand links" aria-hidden="true"></span>
+      <span class="cl-lochrand rechts" aria-hidden="true"></span>
+      <p class="kopfzeile">SPIELSTÄNDE</p>
+      <button type="button" class="ist-aktiv"><span>Spiel 7</span><span>Schwer</span><span>14.03.1986</span><span>26.10.2026 21:40</span></button>
+      <button type="button"><span>Spiel 6</span><span>Mittel</span><span>01.01.1985</span><span>25.10.2026 18:05</span></button>
+      <button type="button"><span>Spiel 5</span><span>Leicht</span><span>02.07.1991</span><span>24.10.2026 09:12</span></button>
+      <button type="button"><span>Spiel 4</span><span>Mittel</span><span>31.12.1999</span><span>20.10.2026 22:30</span></button>
+      <button type="button"><span>Spiel 2</span><span>Schwer</span><span>15.02.1985</span><span>19.10.2026 13:47</span></button>
+      <button type="button" disabled><span>Spiel 3</span><span class="zustand">beschädigt</span></button>
+      <button type="button" class="einfach"><span>Löschen …</span><span class="rollmarke runter" aria-label="unten mehr"></span></button>
+      <button type="button" class="einfach"><span>Zurück</span></button>
+    </nav>
+    <span class="pv-cap hell">Sechs von sieben Spielständen, unten mehr</span>
+  </div>
+  <div class="pv-col">
+    <nav class="cl-liste" aria-label="Spielstände im Löschmodus">
+      <span class="cl-lochrand links" aria-hidden="true"></span>
+      <span class="cl-lochrand rechts" aria-hidden="true"></span>
+      <p class="kopfzeile">WELCHES LÖSCHEN?</p>
+      <button type="button"><span>Spiel 7</span><span>Schwer</span><span>14.03.1986</span><span>26.10.2026 21:40</span></button>
+      <button type="button" class="ist-aktiv"><span>Spiel 6</span><span>Mittel</span><span>01.01.1985</span><span>25.10.2026 18:05</span></button>
+      <button type="button"><span>Spiel 3</span><span class="zustand">neuere Version</span></button>
+      <button type="button" class="einfach" disabled><span>Löschen …</span></button>
+      <button type="button" class="einfach"><span>Zurück</span></button>
+    </nav>
+    <span class="pv-cap hell">Löschmodus: jeder Spielstand löschbar, „Löschen …“ gedämpft, „Zurück“ beendet den Modus</span>
+  </div>
+</div>
+</body></html>

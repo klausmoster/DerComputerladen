@@ -1,0 +1,11 @@
+{
+  "userIgnoreFilters": [
+    "src/",
+    "build/",
+    "godot_referenz/",
+    "res/"
+  ],
+  "useMarkdownLinks": true,
+  "newLinkFormat": "relative",
+  "showUnsupportedFiles": false
+}

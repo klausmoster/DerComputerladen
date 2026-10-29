@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<title>Vorschau Menü</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="bundle.css">
+<style>body { margin: 0; background: #fff; }</style>
+</head><body>
+<!-- @dsCard group="Bedienelemente" height=290 width=720 subtitle="Hauptmenü auf Endlospapier: links alles verfügbar, rechts der Prototyp mit drei nicht verfügbaren Einträgen · Oberflächenpixel ×2" -->
+<div class="pv" style="background: var(--nacht)">
+  <div class="pv-col">
+    <nav class="cl-menue" aria-label="Hauptmenü">
+      <span class="cl-lochrand links" aria-hidden="true"></span>
+      <span class="cl-lochrand rechts" aria-hidden="true"></span>
+      <p class="kopfzeile">HAUPTMENÜ</p>
+      <button type="button" class="ist-aktiv">Neues Spiel</button>
+      <button type="button">Spiel laden</button>
+      <button type="button">Einstellungen</button>
+      <button type="button">Beenden</button>
+    </nav>
+    <span class="pv-cap hell">Alles verfügbar, erster Eintrag ausgewählt</span>
+  </div>
+  <div class="pv-col">
+    <nav class="cl-menue" aria-label="Hauptmenü im Prototyp">
+      <span class="cl-lochrand links" aria-hidden="true"></span>
+      <span class="cl-lochrand rechts" aria-hidden="true"></span>
+      <p class="kopfzeile">HAUPTMENÜ</p>
+      <button type="button" class="ist-aktiv" disabled>Neues Spiel</button>
+      <button type="button" disabled>Spiel laden</button>
+      <button type="button" disabled>Einstellungen</button>
+      <button type="button">Beenden</button>
+    </nav>
+    <span class="pv-cap hell">Prototyp: nur „Beenden“ verfügbar</span>
+  </div>
+</div>
+</body></html>

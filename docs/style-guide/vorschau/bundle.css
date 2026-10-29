@@ -1,0 +1,139 @@
+/* Computerladen Style-Guide: Bausteine. Alle Maße in Oberflächenpixeln (640 × 360). */
+@import url("https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Saira:ital,wdth,wght@0,125,800..900;1,125,800..900&display=swap");
+
+/* Vorschau: Oberflächenpixel doppelt groß */
+.pv { box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; padding: 12px; zoom: 2; background: var(--papier); color: var(--tusche); font-family: var(--font-pixel-10); }
+.pv-col { display: flex; flex-direction: column; align-items: flex-start; gap: var(--raster-2); }
+.pv-cap { font-size: 10px; line-height: 14px; color: var(--gehaeuse-dunkel); }
+.pv-cap.hell { color: var(--papier); }
+.pv-szene { position: relative; width: 320px; height: 120px; }
+
+/* Pixel-Symbole und Skizzen: Füllungen aus den Tokens */
+.px { display: block; width: 16px; height: 16px; shape-rendering: crispEdges; }
+.f-tusche { fill: var(--tusche); }
+.f-nacht { fill: var(--nacht); }
+.f-nacht-hell { fill: var(--nacht-hell); }
+.f-gehaeuse-dunkel { fill: var(--gehaeuse-dunkel); }
+.f-gehaeuse { fill: var(--gehaeuse); }
+.f-gehaeuse-hell { fill: var(--gehaeuse-hell); }
+.f-papier { fill: var(--papier); }
+.f-endlos-gruen { fill: var(--endlos-gruen); }
+.f-anzeige-grund { fill: var(--anzeige-grund); }
+.f-anzeige { fill: var(--anzeige); }
+.f-kassenrot { fill: var(--kassenrot); }
+.f-signalgelb { fill: var(--signalgelb); }
+.f-petrol { fill: var(--petrol); }
+.f-holz { fill: var(--holz); }
+.f-holz-dunkel { fill: var(--holz-dunkel); }
+
+/* Knopf */
+.cl-knopf { appearance: none; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: var(--raster-2); min-height: 20px; margin: 0; padding: 0 var(--raster-8); border: 1px solid var(--tusche); border-radius: var(--ecke-0); background: var(--gehaeuse); box-shadow: var(--relief-erhaben); color: var(--tusche); font-family: var(--font-pixel-12); font-size: 12px; line-height: 16px; font-weight: 400; cursor: pointer; }
+.cl-knopf:hover, .cl-knopf.ist-hover { background: var(--signalgelb); }
+.cl-knopf:active, .cl-knopf.ist-gedrueckt, .cl-knopf[aria-pressed="true"] { box-shadow: var(--relief-gedrueckt); padding-top: 1px; }
+.cl-knopf:focus-visible, .cl-knopf.ist-fokus { outline: 1px solid var(--tusche); outline-offset: 1px; }
+.cl-knopf:disabled { background: var(--gehaeuse); color: var(--gehaeuse-dunkel); cursor: default; }
+.cl-knopf.symbol { width: 26px; height: 26px; min-height: 0; padding: 0; }
+.cl-knopf.dunkel:focus-visible, .cl-knopf.dunkel.ist-fokus { outline-color: var(--papier); }
+
+/* Leuchtanzeige */
+.cl-anzeige { box-sizing: border-box; display: inline-flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: var(--raster-2); padding: var(--raster-4) 6px; border: 1px solid var(--tusche); background: var(--anzeige-grund); color: var(--anzeige); font-family: var(--font-matrix); font-size: 14px; line-height: 16px; font-weight: 700; letter-spacing: 1px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cl-anzeige .zeile-klein { font-size: 10px; line-height: 12px; font-weight: 600; }
+
+/* Lochrand des Endlospapiers */
+.cl-lochrand { position: absolute; top: 0; bottom: 0; width: var(--rahmen-breite); background-image: radial-gradient(circle, var(--tusche) 0 2px, transparent 2px); background-size: 8px 12px; background-position: 0 4px; }
+.cl-lochrand.links { left: 0; }
+.cl-lochrand.rechts { right: 0; }
+
+/* Spielbildschirm: Rahmen, Szene */
+.cl-bildschirm { display: flex; flex-direction: column; width: var(--bild-breite); height: var(--bild-hoehe); overflow: hidden; }
+.cl-rahmen { position: relative; box-sizing: border-box; width: var(--bild-breite); padding: var(--rahmen-breite) var(--rahmen-breite) 0; background: linear-gradient(var(--endlos-gruen), var(--endlos-gruen)) 0 0 / 100% 4px no-repeat, var(--papier); }
+.cl-rahmen .szene { display: block; width: var(--szene-breite); height: var(--szene-hoehe); image-rendering: pixelated; }
+.platzhalter { display: flex; align-items: center; justify-content: center; background: var(--nacht-hell); color: var(--papier); font-family: var(--font-pixel-10); font-size: 10px; line-height: 14px; }
+
+/* Bedienleiste */
+.cl-leiste { box-sizing: border-box; display: flex; align-items: stretch; gap: var(--raster-4); width: var(--bild-breite); height: var(--leiste-hoehe); padding: 3px var(--raster-4) var(--raster-4); border-top: 1px solid var(--tusche); background: var(--gehaeuse); box-shadow: var(--relief-erhaben); }
+.cl-leiste .ortsbild { appearance: none; flex: none; width: 120px; height: 56px; margin: 0; padding: 0; border: 0; outline: 1px solid var(--tusche); background: var(--nacht); cursor: pointer; }
+.cl-leiste .ortsbild:hover { outline: 2px solid var(--signalgelb); }
+.cl-leiste .ortsbild svg, .cl-leiste .portraet svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
+.cl-leiste .knoepfe { display: grid; grid-template-columns: repeat(3, 26px); grid-template-rows: repeat(2, 26px); gap: var(--raster-4); }
+.cl-leiste .cl-anzeige { margin-left: auto; width: 128px; }
+.cl-leiste .portraet { flex: none; width: 48px; height: 56px; outline: 1px solid var(--tusche); }
+.cl-leiste .weiter { width: 32px; height: 56px; min-height: 0; padding: 0; }
+
+/* Menü auf Endlospapier */
+.cl-menue { position: relative; box-sizing: border-box; display: flex; flex-direction: column; width: 144px; padding: 0 12px; background: repeating-linear-gradient(var(--papier) 0 20px, var(--endlos-gruen) 20px 40px); box-shadow: var(--pixelschatten); }
+.cl-menue .kopfzeile { display: flex; align-items: center; justify-content: center; height: 20px; margin: 0; color: var(--tusche); font-family: var(--font-matrix); font-size: 10px; font-weight: 600; letter-spacing: 1px; }
+.cl-menue button { appearance: none; display: flex; align-items: center; gap: var(--raster-4); width: 100%; height: 20px; margin: 0; padding: 0 var(--raster-4); border: 0; background: transparent; color: var(--tusche); font-family: var(--font-pixel-12); font-size: 12px; line-height: 16px; font-weight: 400; text-align: left; cursor: pointer; }
+.cl-menue button::before { content: ""; flex: none; width: 4px; height: 7px; }
+.cl-menue button:hover, .cl-menue button:focus-visible, .cl-menue button.ist-aktiv { background: var(--signalgelb); outline: none; }
+.cl-menue button:hover::before, .cl-menue button:focus-visible::before, .cl-menue button.ist-aktiv::before { background: var(--tusche); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.cl-menue button:disabled { color: var(--gehaeuse-dunkel); cursor: default; }
+.cl-menue button:disabled:hover::before, .cl-menue button:disabled.ist-aktiv::before { background: var(--gehaeuse-dunkel); }
+
+/* Liste: breites Blatt mit Spalten, rollt mit höchstens 6 Zeilen, auf der Anzeige 5 */
+.cl-liste { position: relative; box-sizing: border-box; display: flex; flex-direction: column; width: 304px; padding: 0 12px; background: repeating-linear-gradient(var(--papier) 0 20px, var(--endlos-gruen) 20px 40px); box-shadow: var(--pixelschatten); }
+.cl-liste .kopfzeile { position: relative; display: flex; align-items: center; justify-content: center; height: 20px; margin: 0; color: var(--tusche); font-family: var(--font-matrix); font-size: 10px; font-weight: 600; letter-spacing: 1px; }
+.cl-liste button { appearance: none; position: relative; display: grid; grid-template-columns: 8px 64px 44px 64px 1fr; align-items: center; width: 100%; height: 20px; margin: 0; padding: 0 var(--raster-4); border: 0; background: transparent; color: var(--tusche); font-family: var(--font-pixel-12); font-size: 12px; line-height: 16px; font-weight: 400; text-align: left; white-space: nowrap; cursor: pointer; }
+.cl-liste button > span { overflow: hidden; text-overflow: ellipsis; }
+.cl-liste button .zustand { grid-column: span 2; }
+.cl-liste button.einfach > span { grid-column: 2 / -1; }
+.cl-liste button::before { content: ""; width: 4px; height: 7px; }
+.cl-liste button:hover, .cl-liste button:focus-visible, .cl-liste button.ist-aktiv { background: var(--signalgelb); outline: none; }
+.cl-liste button:hover::before, .cl-liste button:focus-visible::before, .cl-liste button.ist-aktiv::before { background: var(--tusche); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.cl-liste button:disabled { color: var(--gehaeuse-dunkel); cursor: default; }
+.cl-liste button:disabled:hover::before, .cl-liste button:disabled.ist-aktiv::before { background: var(--gehaeuse-dunkel); }
+.cl-liste .rollmarke { position: absolute; right: 0; top: 8px; width: 7px; height: 4px; background: var(--tusche); }
+.cl-liste .rollmarke.hoch { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.cl-liste .rollmarke.runter { clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.cl-liste .kopfzeile .rollmarke { right: 0; }
+
+/* Communicator: Platzhalter für das Gehäuse (im Spiel das Bild G-03) mit Anzeige in lcd, Seiten darauf */
+.f-lcd { fill: var(--lcd); }
+.cl-communicator { position: relative; box-sizing: border-box; width: 392px; height: 268px; border: 1px solid var(--tusche); background: var(--gehaeuse); box-shadow: var(--relief-erhaben); }
+.cl-communicator .lcd { position: absolute; left: 36px; top: 28px; width: var(--geraet-anzeige-breite); height: var(--geraet-anzeige-hoehe); overflow: hidden; background: var(--lcd); }
+.cl-communicator .tasten { position: absolute; left: 36px; right: 36px; top: 220px; height: 48px; background: repeating-linear-gradient(90deg, var(--gehaeuse-dunkel) 0 20px, transparent 20px 24px) 0 4px / 100% 10px no-repeat, repeating-linear-gradient(90deg, var(--gehaeuse-dunkel) 0 20px, transparent 20px 24px) 0 18px / 100% 10px no-repeat; }
+.cl-menue.auf-lcd, .cl-liste.auf-lcd { width: 100%; padding: 0 var(--raster-4); background: none; box-shadow: none; }
+.cl-menue.auf-lcd button:hover, .cl-menue.auf-lcd button:focus-visible, .cl-menue.auf-lcd button.ist-aktiv,
+.cl-liste.auf-lcd button:hover, .cl-liste.auf-lcd button:focus-visible, .cl-liste.auf-lcd button.ist-aktiv { background: var(--tusche); color: var(--lcd); }
+.cl-menue.auf-lcd button:hover::before, .cl-menue.auf-lcd button:focus-visible::before, .cl-menue.auf-lcd button.ist-aktiv::before,
+.cl-liste.auf-lcd button:hover::before, .cl-liste.auf-lcd button:focus-visible::before, .cl-liste.auf-lcd button.ist-aktiv::before { background: var(--lcd); }
+.cl-menue.auf-lcd button:disabled, .cl-liste.auf-lcd button:disabled { color: var(--gehaeuse-dunkel); }
+.cl-menue.auf-lcd button:disabled:hover::before, .cl-menue.auf-lcd button:disabled.ist-aktiv::before,
+.cl-liste.auf-lcd button:disabled:hover::before, .cl-liste.auf-lcd button:disabled.ist-aktiv::before { background: var(--gehaeuse-dunkel); }
+.cl-liste.auf-lcd .rollmarke { right: 4px; }
+.cl-liste.auf-lcd button.ist-aktiv .rollmarke { background: var(--lcd); }
+
+/* Spiel auf der Anzeige: Feld 160 × 80 Bildpixel auf lcd, gezeigt ×2 */
+.cl-spiel { position: relative; width: var(--geraet-anzeige-breite); height: var(--geraet-anzeige-hoehe); overflow: hidden; background: var(--lcd); }
+.cl-spiel svg { position: absolute; left: 0; top: 0; display: block; shape-rendering: crispEdges; }
+.cl-spiel .punkte { position: absolute; left: 4px; top: 2px; margin: 0; color: var(--tusche); font-family: var(--font-matrix); font-size: 10px; line-height: 12px; font-weight: 600; letter-spacing: 1px; }
+.cl-spiel .ergebnis { position: absolute; left: 0; right: 0; top: 50px; display: flex; flex-direction: column; }
+.cl-spiel .ergebnis p { display: flex; align-items: center; justify-content: center; height: 20px; margin: 0; color: var(--tusche); font-family: var(--font-pixel-12); font-size: 12px; line-height: 16px; }
+.cl-spiel .ergebnis p.gross { font-family: var(--font-matrix); font-size: 10px; font-weight: 600; letter-spacing: 1px; }
+
+/* Meldung: Hinweis mit Kontur in kassenrot */
+.cl-meldung { box-sizing: border-box; max-width: 160px; margin: 0; padding: var(--raster-4); border: 1px solid var(--kassenrot); background: var(--papier); box-shadow: var(--pixelschatten); color: var(--tusche); font-family: var(--font-pixel-10); font-size: 10px; line-height: 14px; }
+
+/* Hinweis neben der gewählten Menüzeile */
+.cl-hinweis { box-sizing: border-box; max-width: 160px; margin: 0; padding: var(--raster-4); border: 1px solid var(--tusche); background: var(--papier); box-shadow: var(--pixelschatten); color: var(--tusche); font-family: var(--font-pixel-10); font-size: 10px; line-height: 14px; }
+
+/* Zeitungsmeldung */
+.cl-zeitung { box-sizing: border-box; width: 240px; padding: var(--raster-8); background: var(--papier); color: var(--tusche); box-shadow: var(--pixelschatten); font-family: var(--font-pixel-10); }
+.cl-zeitung .kopf { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 var(--raster-4); padding-bottom: var(--raster-2); border-bottom: 2px solid var(--tusche); font-family: var(--font-display); font-stretch: 125%; font-style: italic; font-weight: 900; font-size: 14px; line-height: 16px; }
+.cl-zeitung .datum { font-family: var(--font-matrix); font-stretch: 100%; font-style: normal; font-weight: 600; font-size: 10px; letter-spacing: 1px; }
+.cl-zeitung .rubrik { display: inline-block; padding: 0 3px; background: var(--kassenrot); color: var(--papier); font-size: 10px; line-height: 14px; }
+.cl-zeitung .rubrik.technik { background: var(--petrol); }
+.cl-zeitung h3 { margin: var(--raster-4) 0; font-family: var(--font-display); font-stretch: 125%; font-style: italic; font-weight: 800; font-size: 20px; line-height: 1.05; }
+.cl-zeitung p { margin: 0; font-size: 10px; line-height: 14px; }
+
+/* Cover des Style-Guides */
+.cv { position: relative; width: 960px; height: 312px; overflow: hidden; background: var(--papier); }
+.cv svg { position: absolute; left: 0; top: 0; }
+.cv-nacht { fill: var(--nacht); }
+.cv-gehaeuse { fill: var(--gehaeuse); }
+.cv-gruen { fill: var(--endlos-gruen); }
+.cv-gelb { fill: var(--signalgelb); }
+.cv-loch { fill: var(--papier); }
+.cv-text { position: absolute; left: 32px; top: 136px; }
+.cv-name { margin: 0; color: var(--tusche); font-family: var(--font-display); font-stretch: 125%; font-style: italic; font-weight: 900; font-size: 64px; line-height: .95; }
+.cv-tag { margin: 12px 0 0; color: var(--gehaeuse-dunkel); font-family: var(--font-pixel-12); font-size: 12px; line-height: 16px; }

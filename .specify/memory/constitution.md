@@ -71,14 +71,15 @@ In sechs Monaten zählt vor allem, warum etwas so und nicht anders gebaut wurde.
 ### IV. Ein Look: der Style-Guide
 
 - Alles Sichtbare folgt dem
-  [Computerladen Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX): Raster und
-  Auflösung, Farben, Schriften, Logo, Oberfläche, Figuren, Bewegung und Symbole.
+  [Computerladen Style-Guide](../../docs/style-guide/README.md) unter `docs/style-guide/`:
+  Raster und Auflösung, Farben, Schriften, Logo, Oberfläche, Figuren, Bewegung und Symbole.
 - Der Style-Guide ist die einzige Quelle für diese Werte. Specs und Pläne verweisen auf ihn,
   statt Werte abzuschreiben.
 - Braucht ein Feature etwas, das der Style-Guide nicht abdeckt oder anders regelt, wird zuerst
   der Style-Guide ergänzt und dann das Feature gebaut.
 - Grafiken entstehen nach dem Leonardo-Workflow im Style-Guide. Jedes freigegebene Bild steht
-  mit Prompt, Modell und Seed in `docs/art/leonardo/prompt-log.md`.
+  mit Prompt, Modell und Seed in `docs/art/leonardo/prompt-log.md` und nach Inhalt geordnet im
+  Bildkatalog `docs/art/bildkatalog.md`.
 
 Begründung: Das Spiel soll wie aus einem Guss wirken, im Retro-Look der frühen 90er und modern
 bedienbar.
@@ -163,4 +164,4 @@ und nicht nach Geschmack (Feature 008).
   ein Grundsatz wegfällt oder neu definiert wird; MINOR, wenn ein Grundsatz oder Abschnitt
   hinzukommt oder deutlich erweitert wird; PATCH für Klarstellungen und Wortlaut.
 
-**Version**: 3.0.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-29
+**Version**: 3.0.1 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-29

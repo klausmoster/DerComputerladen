@@ -37,14 +37,13 @@ den Vertrag, mit Klaus' OK. Gezählt wird unter „Nachmessen“ als eigener Lau
 
 - **Tests und Startprobe** zweimal, wie in `docs/ki_workflow/ki_dev.md`, „Prüfen, bevor Klaus es
   sieht“. Sind sie rot, erst das klären; geprüft wird ein grüner Stand.
-- **Maßstab:** die Abschnitte des Style-Guides mit dem Artifact-Tool lesen
-  (https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Dateien unter `project/`):
-  - Stil: `README.md` und die Bausteine der betroffenen Oberfläche unter `components/`, bei
-    Werkzeugen `Werkzeuge.md`, dazu `tokens.json`.
-  - Text: `Sprache.md`, bei Werkzeugen zusätzlich `Werkzeuge.md`.
+- **Maßstab:** die Abschnitte des Style-Guides unter `docs/style-guide/` auswählen:
+  - Stil: `README.md` und die Bausteine der betroffenen Oberfläche unter `bausteine/`, bei
+    Werkzeugen `werkzeuge.md`, dazu `tokens.md`.
+  - Text: `sprache.md`, bei Werkzeugen zusätzlich `werkzeuge.md`.
   - **Auch, worauf ein Abschnitt verweist**, etwa „Lochränder wie beim Bildrahmen“. Sonst meldet
     der Prüfer Lücken, die keine sind.
-  Die Dateien liegen danach im Scratchpad; ihre Pfade gehen in den Auftrag.
+  Ihre Pfade gehen in den Auftrag; der Prüfer liest sie selbst.
 - **Bildschirmfotos** für den Stil-Prüfer mit `scripts/fotos.gd` (Raster 640 × 360 und dreifach).
   Für Zustände wie Überfahren, Auswahl oder einen offenen Dialog das Skript in den Scratchpad
   kopieren und in `_zustaende()` ergänzen. Werkzeuge zusätzlich im echten Fenster bei Klaus'

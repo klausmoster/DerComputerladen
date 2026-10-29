@@ -1,0 +1,48 @@
+/* Computerladen Style-Guide — erzeugt aus tokens.json für die Vorschauen. */
+@font-face { font-family: "Ark Pixel 10"; src: url("../../../src/assets/fonts/ark-pixel-10px-proportional-latin.otf"); font-weight: 400; }
+@font-face { font-family: "Ark Pixel 12"; src: url("../../../src/assets/fonts/ark-pixel-12px-proportional-latin.woff2"); font-weight: 400; }
+@font-face { font-family: "Doto"; src: url("../../../src/assets/fonts/Doto-Variable.ttf"); font-weight: 100 900; }
+:root {
+  --tusche: #1d1916;
+  --nacht: #18233b;
+  --nacht-hell: #2c3d63;
+  --gehaeuse-dunkel: #6f6654;
+  --gehaeuse: #bdb39a;
+  --gehaeuse-hell: #e4dcc6;
+  --papier: #f5f0e2;
+  --endlos-gruen: #cfe2c3;
+  --lcd: #b8c4a8;
+  --anzeige-grund: #0d1716;
+  --anzeige: #6ff0cf;
+  --kassenrot: #c0392b;
+  --signalgelb: #f2bf2f;
+  --petrol: #1f6f75;
+  --holz: #8b5a34;
+  --holz-dunkel: #57351d;
+  --font-display: Saira, "Arial Black", sans-serif;
+  --font-pixel-10: "Ark Pixel 10", ui-monospace, monospace;
+  --font-pixel-12: "Ark Pixel 12", ui-monospace, monospace;
+  --font-matrix: Doto, "Courier New", monospace;
+  --font-werkzeug: "Open Sans", system-ui, sans-serif;
+  --raster-2: 2px;
+  --raster-4: 4px;
+  --raster-8: 8px;
+  --raster-16: 16px;
+  --ecke-0: 0;
+  --ecke-2: 2px;
+  --ecke-rund: 50%;
+  --relief-erhaben: inset 1px 1px 0 #e4dcc6, inset -1px -1px 0 #6f6654;
+  --relief-gedrueckt: inset 1px 1px 0 #6f6654, inset -1px -1px 0 #e4dcc6;
+  --pixelschatten: 2px 2px 0 #1d1916;
+  --bild-breite: 640px;
+  --bild-hoehe: 360px;
+  --bildraster-breite: 320px;
+  --bildraster-hoehe: 180px;
+  --bildpixel: 2px;
+  --szene-breite: 624px;
+  --szene-hoehe: 288px;
+  --rahmen-breite: 8px;
+  --leiste-hoehe: 64px;
+  --geraet-anzeige-breite: 320px;
+  --geraet-anzeige-hoehe: 160px;
+}

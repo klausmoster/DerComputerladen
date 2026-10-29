@@ -1,6 +1,6 @@
 ---
 name: dcl-grafik
-description: Erzeugt und rastert Grafiken für „Der Computerladen“. Claude bedient Leonardo.ai selbst über Claude in Chrome, Klaus wählt nur aus; danach Rasterfassung mit tools/raster/, Montage zum Prüfen, Prompt-Log. Nutze dies bei jedem neuen oder geänderten Bild (Titelbild, Szene, Gehäuse des Communicators, Figur, Cover, Logo), bei jedem Prompt für Leonardo und bei jeder Nachbearbeitung eines gerasterten Bilds.
+description: Erzeugt und rastert Grafiken für „Der Computerladen“. Claude bedient Leonardo.ai selbst über Claude in Chrome, Klaus wählt nur aus; danach Rasterfassung mit tools/raster/, Montage zum Prüfen, Prompt-Log und Bildkatalog. Nutze dies bei jedem neuen oder geänderten Bild (Titelbild, Szene, Gehäuse des Communicators, Figur, Cover, Logo), bei jedem Prompt für Leonardo und bei jeder Nachbearbeitung eines gerasterten Bilds.
 argument-hint: "[Bild-ID und Zweck, etwa G-03 Gehäuse des Communicators]"
 ---
 
@@ -11,22 +11,25 @@ Projekts. Klaus wählt das Bild aus und gibt es frei. Claude fragt nicht, ob Kla
 und schreibt keine Anleitung zum Selbermachen (Klaus, 2026-10-27; `docs/ki_workflow/ki_dev.md`,
 Grafik).
 
-Vorher lesen: im Style-Guide (https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX) den
-Leonardo-Workflow (Modelle, Stilblock, Formate, Nachbearbeitung, Prompt-Bibliothek) und den
-Baustein, zu dem das Bild gehört; `tools/raster/README.md`; den letzten passenden Eintrag in
-`docs/art/leonardo/prompt-log.md` als Beispiel für die Rasterfassung.
+Vorher lesen: im Style-Guide den Leonardo-Workflow (`docs/style-guide/leonardo-workflow.md`:
+Modelle, Stilblock, Formate, Nachbearbeitung, Prompt-Bibliothek) und den Baustein, zu dem das
+Bild gehört (`docs/style-guide/bausteine/`); den Bildkatalog `docs/art/bildkatalog.md` für die
+festen Bausteine von Figuren, Orten und Geräten; `tools/raster/README.md`; den letzten passenden
+Eintrag in `docs/art/leonardo/prompt-log.md` als Beispiel für die Rasterfassung.
 
 ## 1. Prompt
 
-1. Bild-ID vergeben (T- Titel, S- Szene, F- Figur, G- Gerät, C- Cover), Zweck und Endgröße aus dem
-   Leonardo-Workflow, Abschnitt „Formate“, oder aus der Spec.
-2. Prompt auf Englisch, am Ende unverändert der Stilblock. Kein echter Markenname, kein Logo, keine
-   Schrift; ein echtes Vorbild nur in Worten beschreiben, nie ein Foto davon als Bildvorlage.
+1. Bild-ID vergeben (T- Titel, S- Szene, F- Figur, G- Gerät, C- Cover, L- Logo), Zweck und
+   Endgröße aus dem Leonardo-Workflow, Abschnitt „Formate“, oder aus der Spec.
+2. Prompt auf Englisch, am Ende unverändert der Stilblock. Kommt eine Figur, ein Ort oder ein
+   Gerät aus dem Bildkatalog vor, steht sein fester Baustein wörtlich im Prompt. Kein echter
+   Markenname, kein Logo, keine Schrift; ein echtes Vorbild nur in Worten beschreiben, nie ein
+   Foto davon als Bildvorlage.
    Was die Oberfläche später darüber malt (etwa ein LCD), als leere Fläche mit genauem
    Seitenverhältnis verlangen.
 3. Den Prompt **vor** dem Erzeugen in die Prompt-Bibliothek des Style-Guides schreiben (Abschnitt
-   „Prompts“, mit Modell, Format, Zweck und Vorbild) und den Style-Guide veröffentlichen
-   (Grundsatz IV der Verfassung).
+   „Prompts“ in `docs/style-guide/leonardo-workflow.md`, mit Modell, Format, Zweck und Vorbild;
+   Grundsatz IV der Verfassung). Committet wird er mit dem Bild.
 
 ## 2. Erzeugen in Leonardo
 
@@ -90,5 +93,9 @@ dem Ordner mit den geladenen Bildern.
 3. **Prompt-Log** `docs/art/leonardo/prompt-log.md`: Datei, Datum, Durchgang, Bild und Seed,
    Format und Einstellungen, Auswahl mit Grund, die ganze Rasterfassung mit allen Zahlen, Status,
    und der Prompt im Wortlaut.
-4. Ändern sich dabei Maße (Lage der Anzeige, Größe des Gehäuses), gehen sie zuerst in den
+4. **Bildkatalog** `docs/art/bildkatalog.md`: die Kennung in der Übersicht mit Original, Ergebnis
+   im Spiel und Stand; beim Inhalt (Figur, Ort, Gerät, Logo oder Cover) Bild und Kennung
+   ergänzen. Ein neuer Inhalt bekommt einen eigenen Eintrag mit Aussehen und festem Baustein. Ein
+   abgelöstes Bild bleibt mit seinem Stand stehen.
+5. Ändern sich dabei Maße (Lage der Anzeige, Größe des Gehäuses), gehen sie zuerst in den
    Style-Guide und die Specs, dann als Auftrag an den Godot-Agent.
