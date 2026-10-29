@@ -94,6 +94,21 @@ Fragen aus `/speckit-plan`, einzeln an Klaus:
   Inkl. der ganzen Beschreibung. Name, Alter, Optik (die dann auch wieder als Referenzbild genommen
   wird) … Stuff für die KI und für die Doku.“ Umgesetzt als FR-001c.
 
+### Review 2026-10-29
+
+Aus der Checkliste [review.md](checklists/review.md) mit 47 Punkten, 20 von Claude und 27 aus der
+Vorab-Prüfung durch Text-, Stil- und Architektur-Prüfer; Klaus hat am 2026-10-29 alle Vorschläge
+freigegeben, auch die Ausnahme zu AR-13. An der Spec geändert: Überblick (Beträge, Leuchtanzeige),
+US1 (Vorwahl, „nicht mietbar“), US2 (Feld leer, Text unter dem Feld), US3, US4, Edge Cases (langer
+Name, Zurück, Meldung), FR-001a, FR-008, FR-010, FR-011, FR-015, FR-017, FR-019, FR-026, FR-027,
+SC-001, SC-002, SC-006 und drei Annahmen. Die wichtigsten:
+- Q: Wo ist der Ladenname ganz zu lesen? → A: Auf dem Spielbildschirm, in den Hinweisen und der
+  Rückfrage; in der Spalte der Liste wird er nach dem Baustein Liste gekürzt (CHK006).
+- Q: Darf eine nicht mietbare Markierung ihr Exposé öffnen, obwohl „gedämpft“ im Style-Guide
+  „löst nichts aus“ heißt? → A: Ja; der Style-Guide bekommt dafür einen eigenen Zustand (CHK030).
+- Q: Tooltip oder Hinweis im Büro und auf dem Spielbildschirm? → A: Tooltips, denn kein Knopf
+  steht dort allein; auch „Zum Hauptmenü“ (CHK032).
+
 ## Überblick
 
 Bisher führt die Gradwahl direkt in einen leeren Spielbildschirm mit dem Knopf „Zum Hauptmenü“.
@@ -103,10 +118,10 @@ dann in seinem leeren Laden, mit Geld auf dem Konto und der ersten Miete vor Aug
 
 Beispiel: Klaus wählt „Schwer“. Auf dem Stadtplan von Wesselbach (Name vorläufig) sind vier
 Läden markiert. Der Laden in der Fußgängerzone ist grau; sein Exposé sagt: „Der Vermieter
-verlangt einen Kapitalnachweis über 43.200 DM. Sie haben 30.000 DM.“ Er nimmt den Laden im
+verlangt einen Kapitalnachweis über 43.200,00 DM. Sie haben 30.000,00 DM.“ Er nimmt den Laden im
 Stadtteilzentrum, unterschreibt den Mietvertrag, meldet „Computer Klaus“ an und steht am
-01.01.1985 im leeren Laden. Unten in der Leiste stehen das Datum 01.01.1985 und der Kontostand 25.680,00 DM (30.000 DM
-Startkapital minus 4.320 DM Kaution). Im Hauptmenü heißt sein Spielstand jetzt „Computer Klaus“,
+01.01.1985 im leeren Laden. Die Leuchtanzeige in der Leiste zeigt DI 01.01.1985 und 25.680,00 DM
+(30.000,00 DM Startkapital minus 4.320,00 DM Kaution). Im Hauptmenü heißt sein Spielstand jetzt „Computer Klaus“,
 die Datei bleibt `spiel_7.json`. (Name der Stadt und Wortlaute sind vorläufig.)
 
 ## User Scenarios & Testing *(mandatory)*
@@ -124,12 +139,13 @@ gibt es keinen Laden, an dem alles Spätere hängt.
 
 **Independent Test**: Ein neues Spiel auf „Mittel“ beginnen: Der Stadtplan erscheint mit allen
 Läden. Jeden Laden wählen: Sein Exposé zeigt Foto, Miete, Fläche, Lage und Kleingedrucktes. Auf
-„Schwer“ ist mindestens ein Laden grau, und sein Exposé nennt den Grund.
+„Schwer“ ist die Fußgängerzone als nicht mietbar gekennzeichnet, und ihr Exposé nennt den Grund.
 
 **Acceptance Scenarios**:
 
 1. **Given** der Spieler hat einen Grad gewählt, **When** der Stadtplan erscheint, **Then** sind
-   alle Läden der Stadt darauf markiert, je mit Lage im Viertel, und einer ist vorgewählt.
+   alle Läden der Stadt darauf markiert, je mit Lage im Viertel, und vorgewählt ist der erste
+   bezahlbare in der Reihenfolge der Läden.
 2. **Given** der Stadtplan ist zu sehen, **When** der Spieler einen Laden wählt, **Then** liegt
    dessen Exposé vor ihm, mit Foto, Monatsmiete, Kaution, Fläche, Lage, einer Beschreibung und
    dem Kleingedruckten.
@@ -138,7 +154,7 @@ Läden. Jeden Laden wählen: Sein Exposé zeigt Foto, Miete, Fläche, Lage und K
    etwas festgelegt ist.
 4. **Given** der Kapitalnachweis eines Ladens (Kaution plus sechs Monatsmieten) übersteigt das
    Startkapital des Grads, **When** der Spieler den Stadtplan sieht, **Then** ist dieser Laden
-   grau; **When** er sein Exposé öffnet, **Then** nennt es den verlangten Nachweis und das
+   als nicht mietbar gekennzeichnet („grau“); **When** er sein Exposé öffnet, **Then** nennt es den verlangten Nachweis und das
    Kapital des Spielers in DM und bietet keinen Mietvertrag an.
 5. **Given** der Stadtplan ist zu sehen, **When** der Spieler zurückgeht, **Then** ist er wieder
    in der Gradwahl, und es ist kein Spielstand angelegt.
@@ -167,13 +183,13 @@ Spielstand „Elektro Test“ mit Grad Leicht und dem 01.01.1985.
 2. **Given** der Mietvertrag liegt vor ihm, **When** er nicht unterschreibt und zurückgeht,
    **Then** liegt wieder das Exposé vor ihm, und nichts ist festgelegt.
 3. **Given** er hat unterschrieben, **When** die Gewerbeanmeldung erscheint, **Then** ist das
-   Feld für den Ladennamen leer oder mit einem Vorschlag gefüllt, und er kann einen eigenen Namen
-   eintippen.
+   Feld für den Ladennamen leer, und er tippt einen eigenen Namen ein. Einen Vorschlag gibt es
+   nicht, weil das Spiel den Namen des Spielers nicht kennt.
 4. **Given** die Gewerbeanmeldung mit einem gültigen Namen, **When** er sie abgibt, **Then** ist
    ein Spielstand mit diesem Namen, dem Grad, dem Laden und dem Kontostand nach Abzug der Kaution
    angelegt, und der Spielbildschirm erscheint.
 5. **Given** der Name ist leer oder besteht nur aus Leerzeichen, **When** er die Anmeldung abgeben
-   will, **Then** geht das nicht, und ein Hinweis sagt, dass ein Name fehlt.
+   will, **Then** geht das nicht, und ein Text unter dem Feld sagt, dass ein Name fehlt.
 6. **Given** irgendein Schritt vor der Abgabe der Anmeldung, **When** der Spieler die App beendet
    oder ins Hauptmenü zurückgeht, **Then** entsteht kein Spielstand.
 
@@ -194,7 +210,8 @@ mit „Weiterspielen“ fortsetzen: Der Bildschirm zeigt denselben Laden, Namen 
 **Acceptance Scenarios**:
 
 1. **Given** ein Spiel wurde eben angelegt, **When** der Spielbildschirm erscheint, **Then** zeigt
-   er das Innere des gewählten Ladens, leer, dazu Ladenname, Datum 01.01.1985 und Kontostand.
+   er das Innere des gewählten Ladens, leer, dazu den Ladennamen und in der Leuchtanzeige DI
+   01.01.1985 und den Kontostand.
 2. **Given** zwei Spiele mit verschiedenen Läden, **When** der Spieler jedes fortsetzt, **Then**
    zeigt jedes sein eigenes Ladenbild, seinen Namen und seinen Kontostand.
 3. **Given** ein laufendes Spiel, **When** der Spieler „Zum Hauptmenü“ wählt, **Then** wird wie
@@ -217,7 +234,8 @@ gesunken, wie Monatserste vergangen sind, und bleibt nach Speichern und Fortsetz
 **Acceptance Scenarios**:
 
 1. **Given** ein Spiel im Stadtteilzentrum (1.440 DM Monatsmiete) am 31.01.1985, **When** der
-   01.02.1985 beginnt, **Then** sinkt der Kontostand um 1.440 DM, und der Spielbildschirm zeigt den neuen Stand.
+   01.02.1985 beginnt, **Then** sinkt der Kontostand um 1.440,00 DM, und der Spielbildschirm
+   zeigt den neuen Stand.
 2. **Given** ein Spiel wird am 15.03.1985 gespeichert und fortgesetzt, **When** der 01.04.1985
    beginnt, **Then** wird die Miete genau einmal abgebucht, nicht doppelt und nicht gar nicht.
 3. **Given** ein Spiel läuft über mehrere Monatserste, **When** man die Abbuchungen zählt,
@@ -255,18 +273,20 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   am 01.07.1985 leer.
 - **Konto im Minus:** Ohne Einnahmen sinkt das Konto Monat für Monat und fällt irgendwann unter
   null. Was dann geschieht, regelt FR-025.
-- **Langer Name:** Der Ladenname ist auf eine Länge begrenzt, die im Spielbildschirm, in der
-  Liste der Spielstände und im Hauptmenü ganz zu sehen ist (FR-016).
+- **Langer Name:** Der Ladenname ist auf eine Länge begrenzt, die auf dem Spielbildschirm, in den
+  Hinweisen des Hauptmenüs und der Liste und in der Rückfrage ganz zu sehen ist (FR-016, SC-006).
+  In der Spalte der Liste wird er nach dem Baustein Liste mit „…“ gekürzt.
 - **Zeichen im Namen:** Umlaute und ß sind erlaubt; Zeichen, die die Schrift des Spiels nicht
   zeigen kann, lassen sich nicht eintippen.
 - **Gleicher Name zweimal:** Erlaubt; Grad, Spieldatum und „zuletzt gespielt“ unterscheiden
   die Spielstände (FR-018).
 - **Zurück aus jedem Schritt:** Esc und „Zurück“ führen je einen Schritt zurück: Anmeldung →
-  Mietvertrag → Exposé → Stadtplan → Gradwahl. Nach der Unterschrift bleibt die Unterschrift
-  beim Zurückgehen nicht stehen; erst die abgegebene Anmeldung legt etwas fest.
+  Mietvertrag → Exposé → Stadtplan → Gradwahl. Zurück von der Anmeldung nimmt die Unterschrift
+  weg; der eingetippte Name bleibt, solange die Eröffnung offen ist, auch bei einem anderen Laden.
+  Erst die abgegebene Anmeldung legt etwas fest.
 - **Speichern scheitert beim Anlegen:** Wie bisher entsteht kein Spiel; die Meldung „Speichern
-  ging nicht. Es ist kein Spiel angelegt.“ erscheint auf der Gewerbeanmeldung, die Eingaben
-  bleiben stehen, und der Spieler kann es erneut versuchen.
+  ging nicht. Es ist kein Spiel angelegt.“ erscheint als Meldung neben „Anmelden“, Name und
+  Unterschrift bleiben stehen, und der Spieler kann es erneut versuchen.
 - **Fenster schließen mitten in der Ladenwahl:** Die App endet ohne Rückfrage, und es bleibt kein
   Spielstand zurück, weil noch keiner angelegt ist.
 - **Spielende 31.12.1999:** Die Miete am 01.12.1999 ist die letzte; danach gibt es keinen
@@ -285,9 +305,10 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   ersten vier spielen im Büro des Maklers, einer Szene im Adventure-Stil: Der Stadtplan hängt an
   der Wand, Exposés, Mietvertrag und Formular liegen auf dem Schreibtisch, der Makler sitzt
   dahinter. Ein Klick auf einen Gegenstand holt ihn heran, etwa den Stadtplan oder ein Exposé.
-- **FR-001a**: Anklickbare Dinge im Büro MUST sich beim Überfahren mit der Maus zu erkennen geben,
-  etwa durch Cursorwechsel und eine kurze Beschriftung („Stadtplan“), und sich auch mit der
-  Tastatur der Reihe nach anwählen lassen.
+- **FR-001a**: Anklickbare Dinge im Büro MUST den Regeln des Style-Guides für anklickbare Stellen
+  folgen: Beim Überfahren wechselt der Mauszeiger, die Stelle wird `signalgelb` hervorgehoben, ein
+  Tooltip nennt Funktion und Taste („Stadtplan ansehen.“); Rechtsklick zeigt den Tooltip, löst aber
+  nichts aus. Mit der Tastatur lassen sie sich in fester Reihenfolge anwählen (Vertrag).
 - **FR-001b**: Der Makler MUST eine eigene Figur mit Steckbrief sein (Name, Alter, Aussehen, Art zu
   reden), den Klaus freigibt; er soll in späteren Features wiederkommen, etwa beim Umzug. Er
   sagt in einer Sprechblase feste Sätze: einen beim Betreten des Büros, je einen zu jedem Exposé,
@@ -327,21 +348,23 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   angedeutet werden; sie haben in diesem Feature keine Wirkung auf das Spiel.
 - **FR-008**: Die Daten der Stadt und der Läden MUST in der game_bible gepflegt werden, je Laden
   eine Notiz nach einer eigenen Vorlage, Preise als Range wie dort üblich. Ein Importer bringt sie
-  ins Spiel; Klaus ändert Mieten und Texte in der game_bible, ohne Code anzufassen.
+  ins Spiel; Klaus ändert Mieten und Texte in der game_bible, ohne Code anzufassen. Ein Bau des
+  Spiels bricht ab, wenn die erzeugten Daten nicht zur game_bible passen.
 
 **Stadtplan**
 
 - **FR-009**: Der Stadtplan MUST die ganze Stadt als ein Bild zeigen, mit den Vierteln und je
   einer Markierung pro Laden. Er hängt an der Wand des Büros und wird zum Lesen herangeholt;
   ein Klick auf eine Markierung öffnet das Exposé dieses Ladens.
-- **FR-010**: Eine Markierung MUST zeigen, ob der Laden bezahlbar ist; ein zu teurer ist grau.
-  Hover über einer Markierung zeigt Viertel und Monatsmiete.
+- **FR-010**: Eine Markierung MUST zeigen, ob der Laden bezahlbar ist; ein zu teurer ist als nicht
+  mietbar gekennzeichnet („grau“, Darstellung nach Style-Guide), öffnet aber trotzdem sein Exposé.
+  Der Tooltip einer Markierung nennt Funktion, Viertel und Monatsmiete.
 
 **Exposé**
 
 - **FR-011**: Das Exposé MUST als Blatt Papier eines Maklers erscheinen, mit Foto von außen,
-  Anschrift, Viertel, Fläche, Monatsmiete, Kaution, Beschreibung und Kleingedrucktem in kleinerer
-  Schrift am Fuß des Blatts.
+  Anschrift, Viertel, Fläche, Monatsmiete, Kaution, Beschreibung und Kleingedrucktem am Fuß des
+  Blatts, in einer kleineren Schrift als der Text des Blatts (Schriften nach Style-Guide).
 - **FR-012**: Das Kleingedruckte MUST fester Text je Laden sein, der Hinweise auf Vor- und
   Nachteile des Standorts gibt, etwa „Parkplätze nur in der Tiefgarage am Markt“. Es verweist auf
   keine Ereignisse der Zeitleiste (Ortsbezug ist 05-03).
@@ -353,8 +376,9 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
 
 **Mietvertrag**
 
-- **FR-015**: Der Mietvertrag MUST als Blatt Papier erscheinen, mit Vermieter, Mieter (noch ohne
-  Ladennamen), Anschrift, Fläche, Monatsmiete, Kaution von drei Monatsmieten, Mietbeginn
+- **FR-015**: Der Mietvertrag MUST als Blatt Papier erscheinen, mit Vermieter, Mieter (eine leere
+  Zeile, auf der die Unterschrift des Spielers steht, ein gezeichneter Schriftzug, kein Name),
+  Anschrift, Fläche, Monatsmiete, Kaution von drei Monatsmieten, Mietbeginn
   01.01.1985 und einer Unterschriftszeile. Unterschreiben ist eine eigene, bewusste Handlung.
 
 **Gewerbeanmeldung und Ladenname**
@@ -363,13 +387,13 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   Ladennamen, das der Spieler eintippt. Der Name hat 1 bis 24 Zeichen (vorläufig; im Plan gegen
   den Platz in Liste und Spielbildschirm geprüft), Leerzeichen am Anfang und Ende zählen nicht.
 - **FR-017**: Der Ladenname MUST der angezeigte Name des Spielstands werden: in „Spiel laden“, im
-  Hinweis zu „Weiterspielen“, in der Rückfrage beim Löschen und auf dem Knopf „Zum Hauptmenü“.
+  Hinweis zu „Weiterspielen“, in der Rückfrage beim Löschen und im Tooltip zu „Zum Hauptmenü“.
   Die Datei behält ihre Nummer (`spiel_N.json`).
 - **FR-018**: Zwei Spiele MUST denselben Ladennamen tragen dürfen; jedes Spiel ist eine eigene
   Welt. Auseinander hält man sie wie bisher an Grad, Spieldatum und „zuletzt gespielt“ in der
   Liste; die Rückfrage beim Löschen nennt neben dem Namen auch Grad und Spieldatum.
-- **FR-019**: Die Anmeldung MUST sich erst abgeben lassen, wenn der Name gültig ist; ein Hinweis
-  sagt, was fehlt.
+- **FR-019**: Die Anmeldung MUST sich erst abgeben lassen, wenn der Name gültig ist; bis dahin ist
+  „Anmelden“ aus, und ein Text des Formulars unter dem Feld sagt, was fehlt.
 
 **Geld**
 
@@ -408,13 +432,16 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
 
 **Spielbildschirm**
 
-- **FR-026**: Der Spielbildschirm MUST das Innere des gewählten Ladens als Bild zeigen, leer,
-  dazu Ladenname, Spieldatum und Kontostand, und weiterhin den Knopf „Zum Hauptmenü“.
-- **FR-027**: Die Spieluhr MUST auf dem Spielbildschirm laufen, mit Pause und zwei bis drei
-  Tempostufen (etwa 1, 2 und 7 Tage je Sekunde, im Plan festgelegt), bedienbar mit Maus und
+- **FR-026**: Der Spielbildschirm MUST das Innere des gewählten Ladens als Bild zeigen, leer, dazu
+  den Ladennamen (wo er steht, regelt der Style-Guide) und Datum und Kontostand in der
+  Leuchtanzeige nach dem Baustein Anzeige, etwa DI 01.01.1985 und 25.680,00 DM, und weiterhin den
+  Knopf „Zum Hauptmenü“, jetzt mit Tooltip statt Hinweis daneben, weil er nicht mehr allein steht.
+- **FR-027**: Die Spieluhr MUST auf dem Spielbildschirm laufen, mit Pause und drei Tempostufen
+  (1, 2 und 7 Tage je Sekunde), bedienbar mit Maus und
   Tastatur, Pause auch mit der Leertaste. Der Spielbildschirm erscheint pausiert, auch nach dem
   Fortsetzen, damit niemand Tage verliert, während er sich umsieht (Festlegung von Claude). Ändert
-  sich das Datum, aktualisieren sich Datum und Kontostand sofort. Am 31.12.1999 hält die Uhr an.
+  sich das Datum, aktualisieren sich Datum und Kontostand sofort. Am 31.12.1999 hält die Uhr an,
+  und ihr Knopf ist aus; mehr geschieht dann in diesem Feature nicht.
 - **FR-027a**: Pause und Tempo MUST sichtbar sein. Verlassen, Fenster schließen und Cmd+Q
   speichern wie bisher das aktuelle Spieldatum; ein Speichern während des Laufs ist darüber
   hinaus nicht nötig.
@@ -461,9 +488,10 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
 ### Measurable Outcomes
 
 - **SC-001**: Vom Bestätigen des Grads bis zum eigenen Laden braucht ein Spieler, der die Schritte
-  kennt, höchstens 60 Sekunden; jedes Papier erscheint ohne spürbare Wartezeit (unter 0,2 s).
-- **SC-002**: In jedem Grad ist mindestens ein Laden bezahlbar, auf „Schwer“ mindestens einer zu
-  teuer; geprüft für alle drei Grade.
+  kennt, höchstens 60 Sekunden, gemessen im Selbsttest-Ablauf `ladenwahl` mit festen Eingaben;
+  jedes Papier erscheint ohne spürbare Wartezeit, unter 0,2 s, gemessen in einem Test.
+- **SC-002**: Auf „Schwer“ ist genau die Fußgängerzone nicht mietbar, auf „Mittel“ und „Leicht“
+  keiner; geprüft mit den Daten aus der game_bible.
 - **SC-003**: Für ein Spiel, das ohne Pause bis zum 31.12.1999 läuft, sind genau 179 Mieten
   abgebucht (Februar 1985 bis Dezember 1999), und der Kontostand ist Startkapital minus Kaution
   minus 179 Monatsmieten, auf die Mark genau.
@@ -472,9 +500,10 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   darunter ein Monatserster und der Tag davor.
 - **SC-005**: Der Fahrplan der Zeitleiste ist für die Seeds 1, 4711 und 99999 in allen drei Graden
   bytegleich zu vorher, unabhängig vom gewählten Laden.
-- **SC-006**: Jeder Ladenname mit 1 bis zur Höchstlänge Zeichen, auch mit Umlauten, ist im
-  Spielbildschirm, in der Liste der Spielstände und im Hinweis des Hauptmenüs vollständig zu
-  lesen.
+- **SC-006**: Jeder Ladenname mit 1 bis zur Höchstlänge Zeichen, auch mit Umlauten und aus den
+  breitesten erlaubten Zeichen, ist auf dem Spielbildschirm, im Hinweis zu „Weiterspielen“, in den
+  Hinweisen der Liste und in der Rückfrage vollständig zu lesen. In der Spalte der Liste wird er
+  nach dem Baustein Liste gekürzt.
 - **SC-007**: Wer vor der Abgabe der Anmeldung abbricht, an welcher Stelle auch immer, hinterlässt
   keine Datei im Ordner der Spielstände.
 
@@ -485,7 +514,7 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   Kleingedrucktem für den Ausbau mietfrei, wie es bei Gewerbemieten üblich ist. Am ersten Tag geht
   also nur die Kaution ab.
 - **Konto im Minus ohne Folgen** (Festlegung von Claude): Pleite, Dispo, Kredit und Zinsen kommen
-  mit 03-06 Finanzen. Bis dahin darf das Konto ins Minus und wird nur auffällig angezeigt.
+  mit 03-06 Finanzen. Bis dahin darf das Konto ins Minus und zeigt Minus und „SOLL“.
 - **Kein Ortsbezug:** Die Ereignisse der Zeitleiste gelten weiter für alle Läden gleich (05-03).
 - **Keine Einnahmen:** In diesem Feature gibt es nur Abgänge. Verkäufe, Nebenkosten, Strom und
   Steuern kommen mit der Wirtschaft.
@@ -507,5 +536,11 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   dem echten Plan angepasst. Exposé, Mietvertrag und Gewerbeanmeldung werden gezeichnet, nicht generiert.
 - **Selbsttest:** Der Ablauf `neues_spiel` des Selbsttests führt heute von der Gradwahl direkt ins
   Spiel und muss um die neuen Schritte ergänzt werden (`ki_dev.md`, Punkt 11).
+- **Zeitleiste läuft still mit** (CHK010): Mit der Uhr läuft die Zeitleiste und meldet ihre
+  Ereignisse; angezeigt werden sie erst mit 10-04. In 010 sieht der Spieler davon nichts.
+- **Kein Speichern während des Spiels** (CHK011): Gespeichert wird beim Verlassen, Schließen und
+  Fortsetzen; Speichern während des Spiels kommt mit 11-01. Bis dahin geht nach einem Absturz
+  verloren, was seit dem Fortsetzen geschah.
+- **Ende 1999** (CHK016): Am 31.12.1999 hält die Uhr an; Spielende und Bilanz kommen mit 11-05.
 - **Tests spulen vor:** Wie in Feature 004 belegen automatische Tests die Mieten über viele
   Monate, indem sie das Spiel selbst vorspulen, unabhängig davon, ob die Uhr im Spiel läuft.

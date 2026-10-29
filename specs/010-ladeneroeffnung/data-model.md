@@ -55,10 +55,15 @@ Godot teilt geladene Resources zwischen allen Nutzern (AR-04).
 | `parking` | `ShopOffer.Level` | wie oben; nur gespeichert und angedeutet | `lage_parkplaetze` |
 | `description` | String | zwei, drei Sätze des Maklers | `text_beschreibung` |
 | `fine_print` | String | Kleingedrucktes, fester Text (FR-012) | `text_kleingedrucktes` |
-| `exterior` | Texture2D | `res://assets/images/laeden/<id>_aussen.png` | aus der ID |
-| `interior` | Texture2D | `res://assets/images/laeden/<id>_innen.png`, 312 × 144 | aus der ID |
+| `exterior` | Texture2D | `<id>_aussen.png`, Größe nach Style-Guide (R14) | aus der ID |
+| `interior` | Texture2D | `<id>_innen.png`, 312 × 144 Bildpixel | aus der ID |
+| `location` | Texture2D | `<id>_ort.png`, 60 × 28 Bildpixel, Ausschnitt aus dem Foto ohne Skalierung, fürs Ortsbild (CHK028) | aus der ID |
 
 Kaution und Kapitalnachweis stehen nicht in der Datei; sie folgen aus der Miete (`ShopRules`).
+Die Bildpfade unter `res://assets/images/laeden/` gibt `ShopOffer.image_path(id, art)` an einer
+Stelle (CHK041). Einen Laden nach seiner ID lädt `ShopOffer.load_by_id(id)`; Spielstand und
+Spielbildschirm nutzen beide diese eine Funktion (CHK044). `ShopOffer.Level` (`LOW`, `MEDIUM`,
+`HIGH`) mit den Schlüsseln `niedrig`, `mittel`, `hoch` steht ebenso nur dort.
 
 ### FigureData — `src/data/figuren/<id>.tres`
 
@@ -72,7 +77,7 @@ Kaution und Kapitalnachweis stehen nicht in der Datei; sie folgen aus der Miete 
 Steckbrief, Optik und Referenzbild bleiben in der game_bible (Doku und Vorlage für Bilder, FR-001c);
 ins Spiel kommt nur, was das Spiel braucht.
 
-**Anlässe des Maklers:** `betreten`, `stadtplan`, `expose_<id>` je Laden, `expose_zu_teuer`,
+**Anlässe des Maklers** (`FigureData.OCCASIONS`, eine Stelle, CHK041): `betreten`, `stadtplan`, `expose_<id>` je Laden, `expose_zu_teuer`,
 `mietvertrag`, `unterschrieben`, `anmeldung`, `abschied`, `klick`. Fehlt ein Anlass, sagt er
 nichts; der Importer meldet das als Fehler, bevor es ins Spiel kommt.
 
@@ -83,8 +88,8 @@ nichts; der Importer meldet das als Fehler, bevor es ins Spiel kommt.
 | `START_CAPITAL` | Leicht 10.000.000, Mittel 6.000.000, Schwer 3.000.000 | Startkapital je Grad (FR-020) |
 | `DEPOSIT_MONTHS` | 3 | Kaution in Monatsmieten (FR-022) |
 | `PROOF_MONTHS` | 6 | Kapitalnachweis: Kaution plus so viele Monatsmieten (FR-021) |
-| `LEASE_START_DAY` | 0 (01.01.1985) | Mietbeginn |
-| `RENT_FREE_MONTHS` | 1 | Januar mietfrei, erste Miete 01.02.1985 (FR-023) |
+| `LEASE_START_DAY` | `TimelineRun.FIRST_DAY` (01.01.1985), daraus abgeleitet, nicht als Zahl (CHK040) | Mietbeginn |
+| `RENT_FREE_MONTHS` | 1 | Januar mietfrei, erste Miete 01.02.1985 (FR-023); `rent_paid_through` beim Öffnen = Monat des Mietbeginns + `RENT_FREE_MONTHS` − 1 |
 
 Abgeleitet: `deposit(offer) = rent · 3`, `proof(offer) = rent · (3 + 6)`, `affordable(offer, grad) =
 START_CAPITAL[grad] >= proof(offer)`.
@@ -108,6 +113,8 @@ gespeichert.
 | `offers` | Array[ShopOffer] | Läden der Stadt in `order`. Nur lesen. |
 | `step` | `Step` | `MAP`, `EXPOSE`, `LEASE`, `REGISTRATION`. Nur lesen. |
 | `selected` | int | Index in `offers`; auf dem Plan vorgewählt der erste bezahlbare. Nur lesen. |
+| `typed_name` | String | was im Namensfeld steht; bleibt, solange die Eröffnung offen ist (CHK008). Nur lesen. |
+| `signed` | ergibt sich aus `step`: unterschrieben heißt `step == REGISTRATION`; kein eigener Schalter (AR-11) | |
 
 ```mermaid
 stateDiagram-v2
@@ -139,8 +146,8 @@ stateDiagram-v2
 |---|---|
 | säubern | Leerzeichen am Anfang und Ende weg, mehrere Leerzeichen zu einem |
 | Länge | 1 bis `MAX_LENGTH` = 24 Zeichen nach dem Säubern (vorläufig, research.md R7) |
-| Zeichen | `ALLOWED`: A–Z, a–z, ÄÖÜäöüß, 0–9, Leerzeichen, `. , - & ' / + ! ? ( )` |
-| Gründe | `REASON_EMPTY` „Der Laden braucht einen Namen.“, `REASON_SIGN` für unerlaubte Zeichen; Wortlaute im Vertrag |
+| Zeichen | `ALLOWED`: A–Z, a–z, ÄÖÜäöüß, 0–9, Leerzeichen, `. , - & ' / + ( )`; ohne „!“ und „?“, damit ein Name mitten im Satz nicht wie ein Satzende wirkt (CHK026). Kleinschreibung ist erlaubt, der Name gilt als Name |
+| Gründe | `REASON_EMPTY` „Der Laden braucht einen Namen.“, `REASON_SIGN` „Nur Buchstaben, Ziffern und einfache Satzzeichen.“ (CHK023); er erscheint, wenn eingefügter Text unerlaubte Zeichen hat |
 
 ## ShopLease — der gemietete Laden im Spielstand
 
@@ -170,7 +177,7 @@ Die Bilder des Spielbildschirms kommen über `id` aus `src/data/laeden/<id>.tres
 
 | Methode | Ergebnis |
 |---|---|
-| `ShopAccount.opened(capital, lease)` | neues Konto: `balance = capital − lease.deposit`, `rent_paid_through = 0` |
+| `ShopAccount.opened(capital, lease)` | neues Konto: `balance = capital − lease.deposit`, `rent_paid_through` nach `ShopRules` (CHK040) |
 | `month_begins(date)` | ist `date` ein Erster und sein Monat > `rent_paid_through`: bucht die Miete, setzt den Monat, gibt den Betrag zurück; sonst 0 |
 | `to_dict()`, `from_data()` | JSON `{"balance": int, "rent_paid_through": "JJJJ-MM"}` |
 
@@ -180,7 +187,7 @@ still, und dann ist nichts zu buchen, weil der Spielstand schon bis dahin gebuch
 
 **Rechnung für SC-003:** Ein Spiel bis 31.12.1999 bucht die Mieten Februar 1985 bis Dezember 1999,
 das sind 11 + 14 · 12 = 179. Stadtteilzentrum auf Schwer: 3.000.000 − 432.000 − 179 · 144.000 =
-−23.208.000 Pfennig, angezeigt „−232.080,00 DM SOLL“.
+−23.208.000 Pfennig, angezeigt mit Minus und SOLL nach dem Baustein Anzeige.
 
 ## SaveGame — Änderungen
 
@@ -203,11 +210,15 @@ Ladenname wird beim Lesen nicht gegen `ShopName` geprüft, nur auf „nicht leer
 |---|---|
 | `opening: ShopOpening` | die offene Eröffnung oder `null`. Nur lesen. |
 | `account: ShopAccount` | das Konto des laufenden Spiels oder `null`. Nur lesen. |
-| `begin_opening(grad) -> Error` | baut `ShopOpening` mit den Daten der Stadt; `ERR_INVALID_PARAMETER` bei unbekanntem Grad |
+| `begin_opening(grad) -> Error` | baut `ShopOpening` mit den Daten der Stadt; `ERR_INVALID_PARAMETER` bei unbekanntem Grad, `ERR_ALREADY_IN_USE`, wenn ein Spiel läuft (CHK046) |
 | `end_opening()` | verwirft die offene Eröffnung |
 | `start_new(shop_name: String, seed: int = -1) -> Error` | statt `start_new(grad, seed)`: nimmt Grad und Laden aus `opening`, prüft den Namen mit `opening.finish()`, baut den Spielstand über `SaveGameFactory`, schreibt erst und startet dann; danach ist `opening` `null`. Ohne offene Eröffnung `ERR_UNCONFIGURED`, mit ungültigem Namen `ERR_INVALID_PARAMETER` |
 | `signal account_changed(balance: int)` | nach jeder Buchung |
 | `leave()` | hält zusätzlich die Uhr an |
+
+Das Konto gibt es nur einmal, als Kern in `GameSession.account`. `SaveGame` hält nur die Werte für
+die Datei und bekommt sie beim Speichern, wie Tag und Eingriffe; beim Fortsetzen baut `GameSession`
+daraus das Konto neu (CHK046).
 
 ## Texte
 

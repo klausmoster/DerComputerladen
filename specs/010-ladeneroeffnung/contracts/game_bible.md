@@ -96,9 +96,14 @@ viertel: []                     # [innenstadt, wohngebiet, gewerbegebiet]
 - IDs aus dem Dateinamen: klein, Umlaute als ae, oe, ue, ss, Leerzeichen als `_`.
 - Ausgabe kanonisch: gleiche Notizen, gleiche Dateien, Byte für Byte; Kopfkommentar „Erzeugt von
   tools/bible/importiere.py aus docs/game_bible/…; nicht von Hand ändern.“
-- Beträge in Pfennig (DM · 100). Die Bildpfade folgen der ID (data-model.md).
-- Ein Werkzeug außerhalb von `src/`: Der Kopf nennt die Klassen in Godot, deren Format es ein zweites
-  Mal kennt (`ShopOffer`, `CityData`, `FigureData`; Leitfaden, „Werkzeuge“).
+- Beträge in Pfennig, mit Ganzzahlen gerechnet; ein Betrag, der keine ganzen Pfennige ergibt, ist
+  ein Fehler (CHK047). Die Bildpfade folgen der ID über `ShopOffer.image_path()` (data-model.md).
+- Ein Werkzeug außerhalb von `src/`: Der Kopf nennt die Stellen in Godot, deren Format oder Werte
+  es ein zweites Mal kennt: die Klassen `ShopOffer`, `CityData`, `FigureData`, die Anlässe
+  `FigureData.OCCASIONS`, die Stufen `ShopOffer.Level` und `ShopOffer.image_path()` (Leitfaden,
+  „Werkzeuge“; CHK041).
+- Gleichschritt (CHK015): `tools/build/baue_alles.sh` ruft vor dem Bau `importiere.py --pruefen` und
+  bricht bei einem Unterschied ab. Ändert Klaus die game_bible, lässt Claude den Importer laufen.
 
 ## Feste Größen
 

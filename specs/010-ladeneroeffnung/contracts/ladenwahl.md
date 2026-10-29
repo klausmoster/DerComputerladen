@@ -82,16 +82,27 @@ flowchart LR
 
 - Das Büro erscheint mit herangeholtem Stadtplan; der Makler sagt seinen Satz zu `betreten`.
 - Esc und „Zurück“ gehen je einen Schritt zurück (FR-002). Esc im Eingabefeld der Anmeldung geht
-  ebenso zurück; die Eingabe bleibt stehen, wenn der Spieler wiederkommt.
+  ebenso zurück. Zurück von der Anmeldung nimmt die Unterschrift weg; der eingetippte Name bleibt,
+  solange die Eröffnung offen ist, auch bei einem anderen Laden (CHK008). Er steht dafür in
+  `ShopOpening`, nicht im Feld.
 - Vom Stadtplan zurück: Szenenwechsel zum Titel; der Titel zeigt die Gradwahl mit dem gewählten Grad
   vorgewählt, ruft `GameSession.end_opening()`, und der Communicator fährt herein wie bei jedem
   Erscheinen.
 - „Anmelden“: `GameSession.start_new(name)`. Gelingt es, wechselt das Büro zum Spielbildschirm.
-  Scheitert das Speichern, steht `GameSession.MESSAGE_NOT_CREATED` als Meldung an der Anmeldung,
-  Name und Unterschrift bleiben, der Spieler kann es noch einmal versuchen.
-- Mit der Maus: Klick auf Stadtplan, Schreibtisch oder Makler an der Wand holt heran bzw. lässt ihn
-  sprechen; Klick auf eine Markierung öffnet das Exposé. Mit der Tastatur: Tab und Pfeiltasten
-  wählen der Reihe nach, Enter löst aus (FR-001a, FR-004).
+  Scheitert das Speichern, steht `GameSession.MESSAGE_NOT_CREATED` als Baustein Meldung links neben
+  „Anmelden“, Name und Unterschrift bleiben, der Spieler kann es noch einmal versuchen (CHK033).
+- Mit der Maus: Klick auf Stadtplan, Schreibtisch oder Makler holt heran bzw. lässt ihn sprechen;
+  Klick auf eine Markierung öffnet das Exposé, auch bei einer nicht mietbaren. Überfahren:
+  Mauszeiger, `signalgelb`, Tooltip mit Funktion und Taste; Rechtsklick zeigt den Tooltip und löst
+  nichts aus (FR-001a). Mit der Tastatur: Tab und Pfeiltasten wählen in fester Reihenfolge, Enter
+  löst aus (FR-004). Reihenfolge im Büro: Stadtplan, Schreibtisch, Makler; auf dem Stadtplan die
+  Markierungen in der Reihenfolge der Läden, dann „Zurück“; auf einem Blatt die Handlung, dann
+  „Zurück“, im Exposé davor „Voriges Exposé“ und „Nächstes Exposé“ (CHK014).
+- Was hineingereicht wird (AR-02, AR-05; CHK045): Das Büro hält `ShopOpening` aus
+  `GameSession.opening` und reicht es jedem Blatt hinein; Blätter kennen `GameSession` nicht. Die
+  Bausteine bekommen nur Texte, Bilder und Zustände und melden per Signal.
+- Sätze des Maklers: Den Zähler für „der nächste Satz der Reihe nach“ hält das Büro je Anlass; in
+  `FigureData` stünde er in einer geteilten Resource (AR-04, CHK043).
 - Während eines Szenenwechsels nimmt das Büro keine Eingabe an (ein `enum` für die Phase wie im
   Titel, AR-11).
 
@@ -100,30 +111,38 @@ flowchart LR
 Jedes Blatt ist ein `PaperSheet` mit dem Knopf „Zurück“ und höchstens einer Handlung. Werte kommen
 aus `ShopOpening` und `Money`, nie als Zahl aus der Szene.
 
+Fließtext der Blätter in `menue`, Kleingedrucktes in `text` (CHK029); Blatt, Stempel, Unterschrift
+und Eingabefeld nach den Abschnitten aus Phase 4 im Style-Guide.
+
 | Blatt | Inhalt | Handlung |
 |---|---|---|
-| Stadtplan | Bild der Stadt, je Laden eine Markierung; grau, wenn nicht bezahlbar; Tooltip: Viertel und Monatsmiete | keine; Markierung öffnet das Exposé |
-| Exposé | Foto außen, Titel, Anschrift, Viertel, Fläche, Monatsmiete, Kaution, Laufkundschaft, Sichtbarkeit, Parkplätze in Worten, Beschreibung, Kleingedrucktes klein am Fuß; bei nicht bezahlbar der Vermerk des Maklers | „Diesen Laden mieten“, fehlt bei nicht bezahlbar |
-| Mietvertrag | Vermieter, Mieter (Platzhalterlinie), Anschrift, Fläche, Monatsmiete, Kaution, Mietbeginn 01.01.1985, „Erster Monat mietfrei für den Ausbau.“, Unterschriftszeile | „Unterschreiben“ |
-| Gewerbeanmeldung | amtliches Formular, Anschrift der Betriebsstätte, Tätigkeit „Handel mit Computern und Zubehör“, Feld „Name des Betriebs“, darunter der Grund, wenn der Name nicht passt | „Anmelden“, gesperrt, solange der Name nicht passt |
+| Stadtplan | Bild der Stadt, je Laden eine Markierung; Zustand „nicht mietbar“ nach Style-Guide (CHK030); Tooltip mit Funktion, Viertel und Monatsmiete | keine; Markierung öffnet das Exposé, auch nicht mietbar |
+| Exposé | Foto außen, Titel, Anschrift, Viertel, Fläche, Monatsmiete, Kaution, Laufkundschaft, Sichtbarkeit, Parkplätze in Worten, Beschreibung, Kleingedrucktes am Fuß; bei nicht bezahlbar der Stempel „ZU TEUER“ mit dem Vermerk; „Voriges Exposé“, „Nächstes Exposé“ | „Diesen Laden mieten“, fehlt bei nicht bezahlbar |
+| Mietvertrag | Vermieter, Mieter (leere Zeile für die Unterschrift, ein gezeichneter Schriftzug), Anschrift, Fläche, Monatsmiete, Kaution, Mietbeginn 01.01.1985, „Erster Monat mietfrei für den Ausbau.“, Unterschriftszeile | „Unterschreiben“ |
+| Gewerbeanmeldung | amtliches Formular, Anschrift der Betriebsstätte, Tätigkeit „Handel mit Computern und Zubehör“, Feld „Name des Betriebs“, darunter als Text des Formulars der Grund, wenn der Name nicht passt (kein Hinweis, CHK033) | „Anmelden“, aus, solange der Name nicht passt |
 
 ## Wortlaute (vorläufig, Text-Prüfer bei der Checkliste)
 
 Bedienung duzt, Papiere und der Makler siezen (Style-Guide, „Sprache“). Namen von Stadt, Straßen
-und Makler kommen aus R17.
+und Makler kommen aus R17. Kein Knopf steht hier allein, deshalb Tooltips statt Hinweise (CHK032);
+jeder nennt Funktion und Taste, sobald Phase 4 die Tasten festlegt (CHK024).
 
 | Stelle | Text |
 |---|---|
-| Knopf | „Zurück“, „Diesen Laden mieten“, „Unterschreiben“, „Anmelden“ |
-| Hotspot Stadtplan | „Stadtplan“ |
-| Hotspot Makler | „{Name des Maklers}“ |
-| Tooltip Markierung | „{Viertel}, {Miete} im Monat“ |
+| Knopf | „Zurück“, „Diesen Laden mieten“, „Unterschreiben“, „Anmelden“, „Voriges Exposé“, „Nächstes Exposé“ |
+| Tooltip Stadtplan | „Stadtplan ansehen.“ |
+| Tooltip Schreibtisch | „Papiere ansehen.“ |
+| Tooltip Makler | „Mit {Name des Maklers} reden.“ |
+| Tooltip Markierung | „Exposé öffnen: {Viertel}, {Miete} im Monat.“ |
+| Tooltip „Zurück“ | auf dem Stadtplan „Zurück zur Wahl des Grads. Esc geht auch.“, im Exposé „Zurück zum Stadtplan. Esc geht auch.“, im Mietvertrag „Zurück zum Exposé. Esc geht auch.“, in der Anmeldung „Zurück zum Mietvertrag. Esc geht auch.“ |
+| Tooltip „Voriges Exposé“, „Nächstes Exposé“ | „Voriger Laden. Pfeil links.“, „Nächster Laden. Pfeil rechts.“ |
+| Stempel nicht bezahlbar | „ZU TEUER“ |
 | Vermerk nicht bezahlbar | „Der Vermieter verlangt einen Kapitalnachweis über {Nachweis}. Sie haben {Kapital}.“ |
-| Hinweis „Diesen Laden mieten“ | „Weiter zum Mietvertrag. Noch ist nichts unterschrieben.“ |
-| Hinweis „Unterschreiben“ | „Unterschreibt den Vertrag. Fest ist er erst mit der Anmeldung.“ |
+| Tooltip „Diesen Laden mieten“ | „Weiter zum Mietvertrag. Noch ist nichts unterschrieben.“ |
+| Tooltip „Unterschreiben“ | „Unterschreibt den Vertrag. Fest ist er erst mit der Anmeldung.“ |
 | Grund, Name leer | „Der Laden braucht einen Namen.“ |
-| Grund, Zeichen | „Dieses Zeichen nimmt das Gewerbeamt nicht.“ |
-| Hinweis „Anmelden“ | „Meldet {Name} an und eröffnet den Laden. Die Kaution von {Kaution} geht ab.“ |
+| Grund, Zeichen | „Nur Buchstaben, Ziffern und einfache Satzzeichen.“ (CHK023) |
+| Tooltip „Anmelden“ | „Meldet {Name} an. Die Kaution geht ab.“ (CHK021) |
 | Stufen | Laufkundschaft „wenig“, „mittel“, „viel“; Sichtbarkeit und Parkplätze „schlecht“, „mittel“, „gut“ |
 
 ## Sätze des Maklers

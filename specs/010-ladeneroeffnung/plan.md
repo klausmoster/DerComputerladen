@@ -101,7 +101,12 @@ Adventure und Wirtschaft beginnen (Fahrplan, D0; Klaus, 2026-10-29).
 
 ## Ausnahmen vom Leitfaden
 
-Keine.
+| Regel | Stelle | Grund |
+|---|---|---|
+| AR-13 | `src/core/save/save_game.gd`, `FORMAT` | Zwei neue Pflichtteile (`shop`, `account`), die Formatversion bleibt trotzdem 1, und ein alter Spielstand bekommt nur den allgemeinen Grund. Vor der ersten Herausgabe keine Rücksicht auf alte Spielstände: „Ich möchte keinen Code drin haben, der Sonderlocken für alten Käse hat.“ (Klaus, 2026-10-29; freigegeben mit der Checkliste, CHK038). Kommentar an der Stelle und Zeile in der Tabelle „Ausnahmen“ des Leitfadens in Phase 3 |
+
+Dazu in Phase 3: `res://core/shop/` kommt in `KERNORDNER` von `test_architektur.gd`, damit der Test
+AR-01 auch für die neuen Kerne misst (CHK042).
 
 Hinweis für Klaus: Mit diesem Feature gelten AR-16 bis AR-20 zum ersten Mal (Klaus, 2026-10-29).
 Der Stand im Leitfaden ändert sich dafür von „gilt ab dem ersten Feature der Schicht …“ auf „gilt

@@ -137,7 +137,8 @@ Klaus verworfen). Den Importer in GDScript als Editor-Plugin: Die game_bible lie
 **Entscheidung:** `ShopName` (`src/core/shop/shop_name.gd`) prüft und säubert: Leerzeichen am
 Anfang und Ende fallen weg, mehrere Leerzeichen werden eines, dann 1 bis 24 Zeichen
 (`MAX_LENGTH`), nur Zeichen aus `ALLOWED`: Buchstaben A–Z und a–z, ÄÖÜäöüß, Ziffern, Leerzeichen und
-`. , - & ' / + ! ? ( )`. Das Feld auf der Gewerbeanmeldung ist ein `LineEdit` mit `max_length` 24,
+`. , - & ' / + ( )`; „!“ und „?“ nicht, damit ein Name im Satz kein Satzende vortäuscht (Checkliste,
+CHK026). Das Feld auf der Gewerbeanmeldung ist ein `LineEdit` mit `max_length` 24,
 das unerlaubte Zeichen beim Tippen nicht annimmt. Ein Test prüft, dass Ark Pixel 10 und 12 jedes
 erlaubte Zeichen haben.
 
@@ -214,8 +215,12 @@ kleines Skript `tools/raster/platzhalter.py` (`[C]`) erzeugt sie: Fläche in `na
 `tusche`, Beschriftung wie „FOTO FUSSGÄNGERZONE“. Die Phase „Bilder“ ersetzt die Dateien, der Code
 bleibt.
 
+Dazu je Laden `<id>_ort.png` mit 60 × 28 Bildpixeln fürs Ortsbild (Checkliste, CHK028).
+
 **Grund:** Kein Code für „Bild fehlt“, den später niemand mehr braucht (Klaus' Satz zu
-Sonderlocken gilt sinngemäß). Pfade und Größen stehen von Anfang an fest.
+Sonderlocken gilt sinngemäß). Pfade und Größen stehen von Anfang an fest. Dass die Platzhalter
+Text im Bild tragen, verstößt bewusst und nur bis Phase 8 gegen „kein Text im Szenenbild“; ein
+Test vor der Gesamtabnahme prüft, dass keiner mehr da ist (CHK036).
 
 **Verworfen:** Fehlende Bilder im Code durch farbige Flächen ersetzen.
 
@@ -258,7 +263,27 @@ IV). Offen sind:
 4. **Neue Bausteine:** anklickbare Stelle, Sprechblase, Papierblatt (Exposé, Mietvertrag,
    Formular, Stempel „zu teuer“, Kleingedrucktes), Eingabefeld, Markierung auf dem Stadtplan
    (bezahlbar, grau, gewählt).
-5. **Größe des Stadtplans** und der Fotos auf dem Exposé.
+5. **Größe des Stadtplans** und der Fotos auf dem Exposé; Bilder auf Blättern stehen auf geraden
+   Koordinaten, damit sie auf dem Bildraster liegen.
+
+Ergänzt nach der Checkliste (CHK012, CHK030 bis CHK037, Klaus, 2026-10-29):
+6. **Ortsbild** in 010 ohne Klick, nur mit Tooltip; der Stadtplan ist im Büro.
+7. **Markierung „nicht mietbar“**: ein eigener Zustand, der kein „gedämpft“ ist, weil er das Exposé
+   öffnet; Farbe aus der Palette. Wählt die Markierung wie ein Menü oder wie ein Knopf mit Fokus?
+8. **Hotspot**: Hover in `signalgelb` und Fokuslinie auf einem unruhigen Bild.
+9. **Blatt**: einzelner Bogen mit oder ohne Lochrand; Fließtext `menue`, Kleingedrucktes `text`;
+   Lage der Knöpfe; `pixelschatten`; Übergang beim Heranholen und Blättern; Preise in `kassenrot`?
+10. **Stempel** ungedreht, Farbe; **Unterschrift** als gezeichneter Schriftzug.
+11. **Eingabefeld**: Grund, Schreibmarke, Markierung, Fokus; der Grund unter dem Feld als Text des
+    Formulars; Meldung links neben „Anmelden“.
+12. **Sprechblase** (Feld, Zipfel, Schrift, Breite, Zeilen, Lage, Erscheinen) und ob das Porträt in
+    der Leiste den Sprechenden zeigt.
+13. **„Zum Hauptmenü“** neben Rahmen und Leiste, mit Tooltip statt Hinweis.
+14. **Anzeige**: Größe von `anzeige-ziffern`, fehlendes Token `zeile-klein`; Datum blinkt bei
+    laufender Uhr nicht, der Kontostand bei jeder Buchung.
+15. **Leertaste** gehört auf dem Spielbildschirm der Uhr; Knöpfe lösen dort nicht mit ihr aus.
+16. **Ton der Papiere der Spielwelt** (Exposé, Mietvertrag, Formular) im Abschnitt „Sprache“; Minus
+    als „-“ oder „−“, je nachdem, welche Zeichen die Schriften haben.
 
 ## R15 Fahrplan der Zeitleiste bleibt unberührt
 
@@ -294,6 +319,10 @@ Treffer bei echten Orten über 10.000 Einwohnern), Straßennamen der vier Läden
 Exposés mit Kleingedrucktem und den Steckbrief des Maklers mit seinen Sätzen. Klaus wählt und gibt
 frei (`[K]`), dann trägt Claude sie in die game_bible ein. Der Text-Prüfer liest sie vorher gegen
 den Abschnitt „Sprache“ im Style-Guide.
+
+Für das Referenzbild des Ladenbesitzers sucht Claude das Figurenblatt F-01 im Prompt-Log und unter
+`docs/art/`; fehlt die Datei, bleibt `bild_referenz` leer mit Vermerk, und Klaus entscheidet, ob
+F-01 nachgeholt wird (Checkliste, CHK020).
 
 **Grund:** Name und Ton prägen das Spiel; das ist Klaus' Entscheidung. Die game_bible darf Claude
 selbstständig befüllen (CLAUDE.md), aber nicht ohne seine Wahl der Namen.
