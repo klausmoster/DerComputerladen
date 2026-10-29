@@ -127,3 +127,11 @@ man durch die Zeit (Klaus, 2026-10-26).
   ([recherche/navigation-taschengeraet.md](recherche/navigation-taschengeraet.md)).
 - Offen: Wo kommt er vor, etwa in einer Zeitschrift, im Fernsehen oder als Spielzeug im Laden?
   Ist die Reise ein Gag, eine Abkürzung zu einem anderen Jahr oder ein Werkzeug zum Testen?
+
+## 2026-10-29 · Skill, der den Stand eines Features zeigt
+
+Ein Skill `/dcl-fahrplan` liest `tasks.md` des laufenden Features und sagt, wo es steht und was als
+Nächstes kommt, etwa „C4 von Phase 3, als Nächstes deine Abnahme“.
+
+- Bezug: [ki_workflow/feature_fahrplan.md](ki_workflow/feature_fahrplan.md), Frage 4.
+- Offen: erst, wenn sich der Fahrplan in einem Feature bewährt hat (Klaus, 2026-10-29).

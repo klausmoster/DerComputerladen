@@ -131,3 +131,28 @@ recommendations, seven phases, the last one from a gap search after the build.
 - **Why:** The next feature is written from these templates. A missing line there would mean the new
   reviewer is simply not asked.
 - **Evidence:** `7ea84f8`, `specs/008-architektur/tasks.md` ("Phase 7: Convergence").
+
+### 2026-10-29 · One route map for a whole feature `[Workflow]`
+
+- **Decision:** A new document describes a feature from "we are working on feature xy" to the merge,
+  step by step: who acts, what comes out, where I am asked and where the rule lives. The diagram in
+  the workflow rules now shows the self-test before the final acceptance and the guide exceptions at
+  the plan.
+- **Alternatives:** keep the steps spread over the rules, the constitution and the task template; a
+  skill that shows where a running feature stands, which I postponed until the route map has proven
+  itself.
+- **Why:** The rules grew by date, not in the order a feature runs, and after features 007 and 008
+  I could no longer follow the whole sequence in one place.
+- **Evidence:** [feature_fahrplan.md](../ki_workflow/feature_fahrplan.md), `cf5f521`.
+
+### 2026-10-29 · Templates carry the review sections and the first task `[Workflow]` `[Tools]`
+
+- **Decision:** Our own plan template brings the sections "Prüfer je Phase" and "Ausnahmen vom
+  Leitfaden"; the task template starts with providing the Godot reference and adds an inventory
+  review by the architecture reviewer when a new layer begins and every fifth feature after 008.
+- **Alternatives:** Claude writes the sections and tasks by hand; an inventory review only on request.
+- **Why:** The analysis of 008 found the missing plan sections as finding C6. What is in a template
+  cannot be forgotten, and Spec Kit leaves `overrides/` untouched on updates.
+- **Evidence:** [plan-template.md](../../.specify/templates/overrides/plan-template.md),
+  [tasks-template.md](../../.specify/templates/overrides/tasks-template.md),
+  [ki_pruefung.md](../ki_workflow/ki_pruefung.md).
