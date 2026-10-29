@@ -21,7 +21,7 @@ Written in English. A German translation comes at some point later, not during d
 | [08-feature-006-easter-egg.md](08-feature-006-easter-egg.md) | 2026-10-27 to 2026-10-28 | Hidden game on the LCD, secret case keys, first sound, gap search |
 | [09-feature-007-build-selftest.md](09-feature-007-build-selftest.md) | 2026-10-28 | One command builds three systems, self-test app, pixel-exact comparison, Windows icon, renderer finding |
 | [10-feature-008-architecture.md](10-feature-008-architecture.md) | 2026-10-28 to 2026-10-29 | Architecture guide with 20 rules, architecture reviewer, architecture test, review and fix of the existing code, local Godot reference, a route map for every feature |
-| [11-feature-009-renderer.md](11-feature-009-renderer.md) | 2026-10-28 to 2026-10-29 | Compatibility instead of Forward+, a feature of its own, Apple's OpenGL, rule before setting, a look at the real window |
+| [11-feature-009-renderer.md](11-feature-009-renderer.md) | 2026-10-28 to 2026-10-29 | Compatibility instead of Forward+, a feature of its own, Apple's OpenGL, rule before setting, a look at the real window; a blueprint of the workflow for other projects |
 
 ## Entry format
 
