@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<title>Vorschau Communicator</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="bundle.css">
+<style>body { margin: 0; background: #fff; }</style>
+</head><body>
+<!-- @dsCard group="Bedienelemente" height=1180 width=1260 subtitle="Communicator mit Platzhalter für das Gehäuse G-03: oben das Hauptmenü mit Hinweis links neben dem Gehäuse, unten die Liste der Spielstände mit „Löschen …“ gewählt · Oberflächenpixel ×2" -->
+<div class="pv" style="background: var(--nacht); flex-direction: column">
+  <div class="pv-col">
+    <div class="pv-szene" style="width: 600px; height: 268px">
+      <p class="cl-hinweis" style="position: absolute; right: 396px; top: 69px; width: 160px">Einen neuen Laden aufmachen. Los geht es am 01.01.1985.</p>
+      <div class="cl-communicator" style="position: absolute; right: 0; top: 0">
+        <div class="lcd">
+          <nav class="cl-menue auf-lcd" aria-label="Hauptmenü auf dem Communicator">
+            <p class="kopfzeile">HAUPTMENÜ</p>
+            <button type="button" disabled>Weiterspielen</button>
+            <button type="button" class="ist-aktiv">Neues Spiel</button>
+            <button type="button" disabled>Spiel laden</button>
+            <button type="button" disabled>Einstellungen</button>
+            <button type="button">Beenden</button>
+          </nav>
+        </div>
+        <span class="tasten" aria-hidden="true"></span>
+      </div>
+    </div>
+    <span class="pv-cap hell">Hauptmenü ohne Spielstände: gewählt als dunkler Balken, nicht verfügbar gedämpft; der Hinweis steht links neben dem Gehäuse auf Höhe der Zeile</span>
+  </div>
+  <div class="pv-col">
+    <div class="pv-szene" style="width: 600px; height: 268px">
+      <div class="cl-communicator" style="position: absolute; right: 0; top: 0">
+        <div class="lcd">
+          <nav class="cl-liste auf-lcd" aria-label="Spielstände auf dem Communicator">
+            <p class="kopfzeile">SPIELSTÄNDE</p>
+            <button type="button"><span>Spiel 7</span><span>Schwer</span><span>14.03.1986</span><span>26.10.2026 21:40</span></button>
+            <button type="button"><span>Spiel 6</span><span>Mittel</span><span>01.01.1985</span><span>25.10.2026 18:05</span></button>
+            <button type="button"><span>Spiel 5</span><span>Leicht</span><span>02.07.1991</span><span>24.10.2026 09:12</span></button>
+            <button type="button"><span>Spiel 4</span><span>Mittel</span><span>31.12.1999</span><span>20.10.2026 22:30</span></button>
+            <button type="button" disabled><span>Spiel 3</span><span class="zustand">beschädigt</span></button>
+            <button type="button" class="einfach ist-aktiv"><span>Löschen …</span><span class="rollmarke runter" aria-label="unten mehr"></span></button>
+            <button type="button" class="einfach"><span>Zurück</span></button>
+          </nav>
+        </div>
+        <span class="tasten" aria-hidden="true"></span>
+      </div>
+    </div>
+    <span class="pv-cap hell">Liste mit sieben Spielständen, „Löschen …“ gewählt: Die Rollmarke steht hell im dunklen Balken</span>
+  </div>
+</div>
+</body></html>

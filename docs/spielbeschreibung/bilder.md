@@ -7,10 +7,10 @@
   `tools/raster/README.md`); Originale in `docs/art/leonardo/`, Palette `docs/art/hauptpalette.gpl`,
   Ebenen des Symbols `docs/art/app_icon/`; Ergebnisse in `src/assets/images/`, `src/assets/icon/`;
   Ablauf für Claude im Skill `.claude/skills/dcl-grafik/SKILL.md`, Protokoll jedes Bilds in
-  `docs/art/leonardo/prompt-log.md`
+  `docs/art/leonardo/prompt-log.md`, nach Inhalt im Bildkatalog `docs/art/bildkatalog.md`
 - **Herkunft:** `specs/001-hauptmenue/` (`research.md`, R5 bis R7), ICO aus
   `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R14); Leonardo-Workflow
-  im [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX)
+  im [Style-Guide](../style-guide/leonardo-workflow.md)
 - **Stand:** Feature 007, 2026-10-28
 
 ## Stil

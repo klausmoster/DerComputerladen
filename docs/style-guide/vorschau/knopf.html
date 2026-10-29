@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<title>Vorschau Knopf</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="bundle.css">
+<style>body { margin: 0; background: #fff; }</style>
+</head><body>
+<!-- @dsCard group="Bedienelemente" height=290 width=1100 subtitle="Ruhe, überfahren, gedrückt, Fokus, aus; Symbolknöpfe; darunter allein auf dunklem Grund mit Hinweis · Oberflächenpixel ×2" -->
+<div class="pv">
+  <div class="pv-col"><button class="cl-knopf" type="button">Kaufen</button><span class="pv-cap">Ruhe</span></div>
+  <div class="pv-col"><button class="cl-knopf ist-hover" type="button">Kaufen</button><span class="pv-cap">Überfahren</span></div>
+  <div class="pv-col"><button class="cl-knopf ist-gedrueckt" type="button">Kaufen</button><span class="pv-cap">Gedrückt</span></div>
+  <div class="pv-col"><button class="cl-knopf ist-fokus" type="button">Kaufen</button><span class="pv-cap">Fokus</span></div>
+  <div class="pv-col"><button class="cl-knopf" type="button" disabled>Kaufen</button><span class="pv-cap">Aus</span></div>
+  <div class="pv-col">
+    <button class="cl-knopf symbol" type="button" aria-label="Telefon: Lieferanten anrufen">
+      <svg class="px" viewBox="0 0 16 16" aria-hidden="true"><rect class="f-tusche" x="2" y="3" width="12" height="3"/><rect class="f-kassenrot" x="3" y="4" width="10" height="1"/><rect class="f-tusche" x="2" y="6" width="3" height="2"/><rect class="f-tusche" x="11" y="6" width="3" height="2"/><rect class="f-tusche" x="4" y="8" width="8" height="6"/><rect class="f-kassenrot" x="5" y="9" width="6" height="4"/><rect class="f-papier" x="7" y="10" width="2" height="2"/></svg>
+    </button>
+    <span class="pv-cap">Telefon</span>
+  </div>
+  <div class="pv-col">
+    <button class="cl-knopf symbol ist-hover" type="button" aria-label="Spiel speichern">
+      <svg class="px" viewBox="0 0 16 16" aria-hidden="true"><rect class="f-tusche" x="2" y="2" width="12" height="12"/><rect class="f-nacht-hell" x="3" y="3" width="10" height="10"/><rect class="f-gehaeuse-hell" x="5" y="3" width="6" height="4"/><rect class="f-tusche" x="9" y="4" width="1" height="2"/><rect class="f-papier" x="4" y="9" width="8" height="4"/><rect class="f-kassenrot" x="5" y="10" width="6" height="1"/></svg>
+    </button>
+    <span class="pv-cap">Speichern, überfahren</span>
+  </div>
+</div>
+<div class="pv" style="background: var(--nacht)">
+  <div class="pv-col">
+    <div class="pv-szene">
+      <p class="cl-hinweis" style="position: absolute; right: 105px; top: 30px">Speichert Spiel 2 und führt ins Hauptmenü.</p>
+      <button class="cl-knopf dunkel ist-fokus" type="button" style="position: absolute; right: 0; top: 30px">Zum Hauptmenü</button>
+    </div>
+    <span class="pv-cap hell">Allein auf dem Spielbildschirm: Fokus in papier, Hinweis statt Tooltip</span>
+  </div>
+</div>
+</body></html>

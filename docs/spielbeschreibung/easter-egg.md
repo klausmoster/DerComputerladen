@@ -11,7 +11,7 @@
   `src/test/fixtures/invaders_probe.tscn`
 - **Herkunft:** `specs/006-easter-egg-space-invaders/` (`contracts/invaders.md`, `data-model.md`,
   `research.md` R6 bis R11); Baustein „Spiel auf der Anzeige“ im
-  [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX) mit Maßen, Pixelmustern und
+  [Style-Guide](../style-guide/bausteine/spiel.md) mit Maßen, Pixelmustern und
   Ergebnisanzeige; Zustand der Seite aus `specs/008-architektur/` (T036a)
 - **Stand:** Feature 008, 2026-10-29
 - **Nachbarn:** Gehäusetasten in [communicator.md](communicator.md), Folge, Start und Rückweg im

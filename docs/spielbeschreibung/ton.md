@@ -8,7 +8,7 @@
   `tools/ton/make_sounds.py` und `tools/ton/README.md`; Tests `src/test/test_ton.gd` mit
   `src/test/fixtures/ton_pruefsummen.txt`
 - **Herkunft:** `specs/006-easter-egg-space-invaders/` (`contracts/ton.md`, `research.md` R13 bis
-  R15); Abschnitt „Ton“ im [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX), der
+  R15); Abschnitt „Ton“ im [Style-Guide](../style-guide/ton.md), der
   Klang, Längen und Pegel regelt
 - **Stand:** Feature 006, 2026-10-28
 - **Nachbarn:** wer die Töne spielt in [communicator.md](communicator.md) und

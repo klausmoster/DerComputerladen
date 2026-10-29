@@ -72,7 +72,7 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Spieluhr | `GameClock` | treibt die Spielzeit voran | [spielzeit.md](spielzeit.md) |
 | Start-Modifikator | `ChanceModifier` im Profil, `TimelineRun.start_modifiers` | Modifikator, den ein Grad beim Spielstart setzt | [schwierigkeitsgrade.md](schwierigkeitsgrade.md) |
 | Stichtag | — | Tag, an dem der Lauf etwas zu tun hat; dazwischen springt er | [zeitleiste.md](zeitleiste.md) |
-| Style-Guide | Artifact, `UiPalette` | verbindliche Quelle für Look und Sprache | [darstellung.md](darstellung.md) |
+| Style-Guide | `docs/style-guide/`, `UiPalette` | verbindliche Quelle für Look und Sprache | [darstellung.md](darstellung.md) |
 | Tagesindex | `int`, `GameDate.to_day_index()` | Tage seit 01.01.1985 (= 0), bis 5477 | [spielzeit.md](spielzeit.md) |
 | Termin | `ScheduleEntry` | ein Vorkommen eines Ereignisses im Fahrplan | [zeitleiste.md](zeitleiste.md) |
 | Textausgabe | `fahrplan_ausgabe.gd`, `ScheduleText` | Fahrplan oder Protokoll auf der Konsole | [werkstatt.md](werkstatt.md) |

@@ -120,12 +120,12 @@ Nicht vorgesehen:
 
 ## Maßstäbe
 
-- **Style-Guide:** Er liegt als Artifact vor, das ein Prüfer nicht selbst lesen kann. Claude gibt
-  ihm die passenden Abschnitte mit. So bleibt der Style-Guide die einzige Quelle (Verfassung,
-  Grundsatz IV).
+- **Style-Guide:** `docs/style-guide/` im Repo, seit 2026-10-29; vorher ein Artifact, das ein
+  Prüfer nicht selbst lesen konnte. Claude nennt im Auftrag die passenden Abschnitte, der Prüfer
+  liest sie selbst. So bleibt der Style-Guide die einzige Quelle (Verfassung, Grundsatz IV).
 - **Sprache:** ein Abschnitt im Style-Guide seit Schritt 4: Leitsätze zum Ton, Anrede, Zahlen und
   Geld, Wortschatz von 1985 bis 1999 mit Jahreszahlen, Beispiele. Klaus hat den Ort und den Ton
-  entschieden (2026-10-22). Claude gibt den Abschnitt dem Text-Prüfer mit, wie dem Stil-Prüfer
+  entschieden (2026-10-22). Claude nennt den Abschnitt dem Text-Prüfer, wie dem Stil-Prüfer
   die seinen.
 - **Architektur-Leitfaden:** `docs/architektur-leitfaden.md` liegt im Repo, der Architektur-Prüfer
   liest ihn selbst. Er hat Regeln mit festen Nummern `AR-NN`; nur Regeln mit dem Stand „gilt …“
