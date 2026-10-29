@@ -69,3 +69,34 @@ price.
   the renderer paints around it. A changed renderer is exactly what could change that.
 - **Evidence:** `6eeb110`, `specs/009-renderer-compatibility/checklists/review.md` (CHK016, CHK017);
   `9e18b02`, `specs/009-renderer-compatibility/tasks.md` (T021).
+
+### 2026-10-29 · A blueprint to take the workflow to other projects `[Workflow]`
+
+- **Decision:** The way I work with Claude becomes a blueprint of its own: one file without any
+  reference to this game, with roles instead of names, modules to switch on or off, skeletons for
+  `CLAUDE.md`, constitution, templates, agents and skill, the token script, and the steps to set up a
+  new project. What only applies here moves into a project profile. For a new project I copy one file
+  and say "set up the project from the blueprint". It also explains why we never run
+  `/speckit-implement`: it builds all phases in one go, in the session itself, so the acceptance of
+  each phase and the split between building and reviewing would be gone.
+- **Alternatives:** keeping the workflow documents as they were, mixed with game details and
+  presented as a template; a separate repository for the blueprint.
+- **Why:** Memory in the repository, Spec Kit, the folders and the order of steps would fit any
+  project, but until now they were tangled with Godot commands and anecdotes from single features.
+- **Evidence:** `8da13ae`, `133c2ad`, [blaupause.md](../ki_workflow/blaupause.md),
+  [projekt.md](../ki_workflow/projekt.md).
+
+### 2026-10-29 · The blueprint tested on an empty project `[Workflow]`
+
+- **Decision:** A fresh agent that knew nothing of this project set up an invented one, a web app for
+  a club's membership fees, using only the blueprint, and reported every gap. The first run found 22,
+  among them a step that could not be done and an example that contradicted the blueprint itself.
+  After a revision the second run got through to a working setup and found 21 smaller gaps. Both went
+  into version 0.3; a third run I left out. Two findings hold for this project too: our task template
+  still calls tests optional and says "commit after each task", and Spec Kit updates never reach our
+  own templates. They are open points.
+- **Alternatives:** reviewing the blueprint by reading it myself.
+- **Why:** Whoever writes a blueprint knows too much to see what it leaves out. Only someone without
+  that knowledge can show whether one file is enough.
+- **Evidence:** `133c2ad`, [blaupause.md](../ki_workflow/blaupause.md) ("Änderungen"),
+  [offene-punkte.md](../offene-punkte.md).
