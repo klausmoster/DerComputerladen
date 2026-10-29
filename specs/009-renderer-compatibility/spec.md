@@ -34,6 +34,25 @@ entschieden, Frage für Frage als Auswahl:
 - Q: Welcher Treiber unter macOS? → A: **Godots Vorgabe, Apples OpenGL** (Klaus, nach Empfehlung).
   ANGLE über Metal nur, wenn der Lauf auf dem Mac Abweichungen zeigt.
 
+### Clarify 2026-10-29
+
+Fragen aus `/speckit-clarify`, von Klaus einzeln als Auswahl beantwortet:
+
+- Q: Wie soll die neue Regel zum Renderer in CLAUDE.md und Verfassung Grundsatz I lauten? → A:
+  fest (Klaus, nach Empfehlung): „Der Renderer ist Compatibility, auf allen drei Systemen. Mittel,
+  die es nur in Forward+ gibt (HDR, Kantenglättung, Compute), werden nicht genutzt.“ Die Verbote für
+  Mobile und Android bleiben; die alte Regel bleibt mit „bis 2026-10-29“ sichtbar. Verworfen: nur
+  „Der Renderer ist Compatibility“ ohne Satz zu den Mitteln, weil dann jeder Plan neu klären müsste,
+  was erlaubt ist; Compatibility mit ausdrücklich offenem Rückweg zu Forward+, aus demselben Grund.
+- Q: Soll der Style-Guide einen Satz bekommen, dass HDR, Kantenglättung und Glühen über Weiß keine
+  Mittel mehr sind? → A: ja, ein Satz mit Verweis auf die Verfassung, Wortlaut mit Klaus' Freigabe
+  (Klaus, nach Empfehlung). Verworfen: Style-Guide unverändert, weil der Stil-Prüfer sonst nichts
+  davon weiß.
+- Q: Muss der Selbsttest auch unter Windows in Parallels laufen, bevor Klaus das Feature abnimmt? →
+  A: willkommen, kein Muss (Klaus, nach Empfehlung). Pflicht sind Mac, Linux und der
+  Boot-Camp-Rechner; ein Lauf in Parallels steht im Quickstart als Kann. Verworfen: Parallels als
+  Pflicht.
+
 ### Begriffe
 
 - **Renderer:** der Teil von Godot, der das Bild malt. Bisher Forward+, das auf dem Rechner Vulkan,
@@ -113,8 +132,10 @@ Geschichte (ältere Specs, alte Regel mit Datum) oder geändert.
 **Acceptance Scenarios**:
 
 1. **Given** Klaus' Beschluss zur neuen Regel, **When** die Aufgabe dazu erledigt ist, **Then**
-   nennen CLAUDE.md und Verfassung Grundsatz I Compatibility als Renderer, die Verfassung mit neuer
-   Version.
+   nennen CLAUDE.md und Verfassung Grundsatz I Compatibility als Renderer und schließen die Mittel
+   aus, die es nur in Forward+ gibt; die Verfassung mit neuer Version.
+3. **Given** der Style-Guide, **When** dieses Feature fertig ist, **Then** hält er in einem Satz
+   fest, dass HDR, Kantenglättung und Glühen über Weiß keine Mittel sind.
 2. **Given** die Spec von Feature 007, **When** dieses Feature fertig ist, **Then** tragen FR-017
    und die Recherche zum Renderer (R13) einen sichtbaren Vermerk „bis 2026-10-29: Forward+“ mit
    Verweis auf dieses Feature.
@@ -172,8 +193,13 @@ Geschichte (ältere Specs, alte Regel mit Datum) oder geändert.
 **Regeln und Doku**
 
 - **FR-009**: CLAUDE.md („Harte Rahmenbedingungen“) und Verfassung Grundsatz I MÜSSEN nach Klaus'
-  Beschluss Compatibility als Renderer nennen; die Verfassung über `/speckit-constitution` mit neuer
-  Version. Das ist eine eigene Aufgabe, die erst mit Klaus' Beschluss erledigt ist.
+  Beschluss lauten: „Der Renderer ist Compatibility, auf allen drei Systemen. Mittel, die es nur in
+  Forward+ gibt (HDR, Kantenglättung, Compute), werden nicht genutzt.“ Die Verbote für Mobile und
+  Android bleiben, die alte Regel bleibt mit „bis 2026-10-29“ sichtbar. Die Verfassung ändert sich
+  über `/speckit-constitution` mit neuer Version. Das ist eine eigene Aufgabe, die erst mit Klaus'
+  Beschluss erledigt ist.
+- **FR-009a**: Der Style-Guide MUSS einen Satz bekommen, dass HDR, Kantenglättung und Glühen über
+  Weiß keine Mittel sind, mit Verweis auf die Verfassung. Den Wortlaut gibt Klaus frei.
 - **FR-010**: In Feature 007 MÜSSEN FR-017, die Klärung „Was passiert ohne Forward+?“, R13,
   `quickstart.md` und die Lernnotiz zum Renderer einen Vermerk „bis 2026-10-29“ mit Verweis auf
   dieses Feature bekommen; der alte Text bleibt lesbar.
@@ -203,7 +229,8 @@ Geschichte (ältere Specs, alte Regel mit Datum) oder geändert.
 - **SC-002**: Auf dem Mac sind alle Fotos des Selbsttests gleich den Referenzbildern, oder jede
   Abweichung ist von Klaus beurteilt und die Referenz danach abgenommen.
 - **SC-003**: Auf Linux und dem Boot-Camp-Rechner zeigt der Vergleich mit den Referenzbildern des
-  Macs 0 Abweichungen, oder jede ist benannt und beurteilt.
+  Macs 0 Abweichungen, oder jede ist benannt und beurteilt. Ein Lauf in Parallels zählt dazu, wenn
+  es ihn gibt, ist aber keine Bedingung.
 - **SC-004**: Alle drei Protokolle nennen Compatibility als Renderer.
 - **SC-005**: Eine Suche nach „Forward+“ in CLAUDE.md, Verfassung, Spielbeschreibung und den Regeln
   der Arbeitsweise findet nur noch Stellen mit Datum, die die alte Regel als Geschichte zeigen.
@@ -219,12 +246,11 @@ Geschichte (ältere Specs, alte Regel mit Datum) oder geändert.
   mit dem neuen Export ohne Startoption.
 - Die Läufe auf Linux und Windows macht Klaus auf denselben Rechnern wie in Feature 007: Linux mit
   AMD R7 200, Windows auf dem Boot-Camp-Rechner. Ein Lauf unter Parallels ist willkommen, aber kein
-  Muss.
+  Muss (Klaus, 2026-10-29).
 - Fehlt einem Rechner auch für Compatibility die Grafik, bleibt es bei Godots eigener Meldung; eine
   eigene Prüfung beim Start wäre ein eigenes Feature (`renderer.md`, 4).
-- Der Style-Guide bleibt unverändert: Farben, Raster, Schriften und Einrasten hängen nicht am
-  Renderer. Ob ein Satz festhält, dass HDR, Kantenglättung und Glow über Weiß keine Mittel mehr sind,
-  klärt `/speckit-clarify`.
+- Farben, Raster, Schriften und Einrasten im Style-Guide hängen nicht am Renderer und bleiben; neu
+  ist nur der Satz aus FR-009a.
 - Feature 008 ist vor diesem Feature nach `main` gegangen; die Verfassung, die dieses Feature ändert,
   ist die Fassung 2.3.0.
 - Ältere Specs (001 bis 006, 008) bleiben als Geschichte unverändert.

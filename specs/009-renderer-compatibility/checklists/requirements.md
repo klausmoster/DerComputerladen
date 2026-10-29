@@ -35,5 +35,5 @@
   und Metal sind deshalb Gegenstand der Spec, nicht Umsetzungsdetail; Einstellungsnamen, Dateien
   im Godot-Projekt und Nodes stehen erst im Plan.
 - Keine Marker [NEEDS CLARIFICATION]: Klaus' drei Antworten vom 2026-10-28 decken den Umfang ab.
-  Für `/speckit-clarify` offen: ein Satz im Style-Guide zu HDR, Kantenglättung und Glow; ob ein
-  Lauf unter Parallels Pflicht ist; der Wortlaut der neuen Regel in CLAUDE.md und Verfassung.
+  Die drei offenen Punkte (Satz im Style-Guide, Parallels, Wortlaut der neuen Regel) hat
+  `/speckit-clarify` am 2026-10-29 geklärt.
