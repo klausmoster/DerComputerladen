@@ -12,6 +12,28 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 009, Plan und Checkliste (2026-10-29)
+
+- **Lücken im Maßstab** aus der Vorab-Prüfung (`specs/009-renderer-compatibility/checklists/review.md`),
+  nicht Teil von Feature 009:
+  - Leitfaden, „Werkzeuge“: Sind Produktnamen, die ein Werkzeug aus Engine-Schlüsseln übersetzt
+    („Metal“, „ANGLE“), Texte für die Textklasse oder eine Zuordnung von Daten? Feature 009 legt sie in
+    `SelbsttestTexte` (Architektur-Prüfer, L1). Empfehlung: im Leitfaden als Texte festhalten.
+  - Style-Guide, „Bewegung“: Womit flackernde Leuchtschrift und Monitorflimmern gemacht werden,
+    Phasenbilder in Palettenfarben oder Effekte; ob ein `modulate` über 1,0 erlaubt ist
+    (Stil-Prüfer). Empfehlung: Phasenbilder in Palettenfarben, kein `modulate` über 1,0.
+  - Style-Guide, „Bildaufbau“, „Startgrund“: Ob die Ränder auch während des Startgrunds schwarz sind
+    oder dort `anzeige-grund` gilt (Stil-Prüfer). Empfehlung: festhalten, was Godot tut, sobald der
+    Mac-Lauf es zeigt.
+  - Style-Guide, „Werkzeuge“, „Texte“: Ob Anzeigenamen der Grafikschnittstellen der Kurzform der
+    Engine folgen („D3D12“) oder ausgeschrieben werden („Direct3D 12“); bisher gilt „D3D12 bleibt als
+    Messwert“ (Feature 007, Abschluss) (Text-Prüfer). Empfehlung: Kurzform, wie im Protokoll.
+- **Eigene Entscheidungen von Claude im Plan** (`specs/009-renderer-compatibility/research.md`):
+  Vorgaben für Compatibility nicht eintragen (R1); `export_angle = 0` bleibt, weil ANGLE in den
+  Vorlagen fest eingebaut ist (R2); Anzeigenamen „ANGLE“ und „OpenGL ES“ (R3); neue Tests der
+  Projekteinstellungen (R4); Verfassung 3.0.0 als MAJOR (R6); erst die Regel, dann die Einstellung
+  (R7).
+
 ### Feature 007, Abschluss (2026-10-28)
 
 - **Klaus:** Regel „Selbsttest zur Gesamtabnahme“ in `ki_dev.md` (Punkt 11), Aufgaben-Vorlage und

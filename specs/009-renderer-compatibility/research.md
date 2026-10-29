@@ -72,10 +72,18 @@ ES“, damit ein Rückfall im Protokoll und auf der Zusammenfassung lesbar ist s
 `metal`, `vulkan` und `d3d12` bleiben, denn ein Start mit `--rendering-method forward_plus` bleibt
 möglich und soll dann richtig heißen.
 
-Die Beispieldaten der Tests (`src/test/fixtures/selbsttest/kopieren_erwartet.txt`,
-`test_selbsttest_protokoll.gd`, `test_selbsttest_ergebnis.gd`) nennen `forward_plus` und Metal. Sie
-prüfen das Format, nicht den Rechner; sie bekommen trotzdem `gl_compatibility` und OpenGL, damit
-niemand sie für den Stand des Spiels hält (FR-005).
+**Wohin (Klaus, 2026-10-29, Checkliste CHK012):** Die ganze Konstante `GRAFIK_API` zieht von
+`SelbsttestSystem` nach `SelbsttestTexte`; `SelbsttestSystem` liest sie dort. Grund: Der Leitfaden
+gibt dem Selbsttest eine Textklasse (Abschnitt „Werkzeuge“), und die Namen erscheinen über
+`SelbsttestTexte.systemzeile()` auf der Zusammenfassung. Verworfen: die Namen beim Erheber lassen
+und als Daten begründen; ob übersetzte Produktnamen Texte sind, regelt der Leitfaden nicht (Lücke in
+`docs/offene-punkte.md`).
+
+Die Beispieldaten der Tests nennen `forward_plus` und Metal: `src/test/fixtures/selbsttest/`
+`kopieren_erwartet.txt`, `protokoll_erwartet.txt` und `kopieren_nicht_beschreibbar.txt`, dazu
+`test_selbsttest_protokoll.gd` (Zeilen 261, 327, 328) und `test_selbsttest_ergebnis.gd` (Zeilen 27,
+90, 277). Sie prüfen das Format, nicht den Rechner; sie bekommen trotzdem `gl_compatibility` und
+OpenGL, damit niemand sie für den Stand des Spiels hält (FR-005; vollständige Liste aus CHK010).
 
 ## R4 Tests der Projekteinstellungen
 
@@ -93,7 +101,7 @@ Systemen gleich (belegt durch die Tests aus 007).
 
 ## R5 Belege und Referenzbilder
 
-**Entscheidung (Klaus, 2026-10-29, Spec und Klärung):** Pflicht sind drei Läufe des Selbsttests:
+**Entscheidung (Klaus, 2026-10-29, Spec, Klärung und Checkliste):** Pflicht sind drei Läufe des Selbsttests:
 Mac, Linux (AMD R7 200), Boot-Camp-Rechner; Parallels ist willkommen. Der Mac-Lauf ist der Maßstab.
 Vergleich mit `tools/selbsttest/vergleich.py` gegen `tools/selbsttest/referenz/macos/`.
 
@@ -101,6 +109,13 @@ Vergleich mit `tools/selbsttest/vergleich.py` gegen `tools/selbsttest/referenz/m
 - Weichen Fotos ab, legt Claude jede mit Bild vor. Klaus entscheidet je Fall: ANGLE über Metal
   versuchen (FR-002; der Probestart in R2 zeigt, dass es geht) oder neue Referenzbilder abnehmen.
   Neue Bilder kommen nur nach seiner Abnahme (FR-008).
+
+Die Fotos zeigen nur das Bild des Viewports in 640 × 360 (`selbsttest_laeufer.gd`, `_foto()`).
+Vergrößerung ins Fenster, schwarze Ränder und Startgrund malt der Renderer außerhalb davon. Deshalb
+kommt je System ein Blick ins echte Fenster dazu (SC-007, CHK017): auf dem Mac Bildschirmfotos durch
+Claude beim Start und bei einer krummen Fenstergröße, dazu die Werkstatt bei 1920 × 925 (CHK003);
+unter Windows und Linux ein Blick durch Klaus nach der Prüfliste im Quickstart. Die Dauer eines
+Laufs vergleicht Claude mit dem Beleg aus 007; mehr als doppelt so lang geht an Klaus (CHK006).
 
 Vermutung: Die Fotos bleiben gleich. In 007 ergab Windows mit OpenGL dieselben 35 Fotos wie der Mac
 mit Metal, und das Spiel nutzt keinen Shader, kein Licht und keine Partikel.
@@ -113,7 +128,15 @@ weil Grundsatz I neu definiert wird: 2.3.0 → 3.0.0. Verworfen: MINOR, weil ein
 ihr Gegenteil umschlägt.
 
 Der Style-Guide ist ein Artifact (`https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX`). Claude
-liest ihn, legt Klaus den Satz vor und veröffentlicht erst nach seinem OK (FR-009a).
+liest ihn, legt Klaus den Satz vor und veröffentlicht erst nach seinem OK (FR-009a). Der Satz steht
+am Ende der Zeile „Godot: …“ in `project/README.md`, „Raster und Auflösung“; dieselbe Zeile nennt
+dann den Renderer und `snap_2d_vertices_to_pixel` (CHK018). Wortwahl nach der Checkliste:
+„Kantenglättung des Bildes“, „Glühen über Weiß, eine Folge von HDR (Farbwerte über 1,0)“; die
+Kantenglättung der Schrift bleibt beim Abschnitt Schrift (CHK013, CHK014).
+
+Grundlage für die Klammer der Regel ist `godot_referenz/handbuch/tutorials/rendering/renderers.rst`
+(belegt): In Compatibility fehlen 2D-HDR-Viewport, HDR-Ausgabe, MSAA in 2D, FXAA und SMAA; MSAA in
+3D und Glow gibt es dort.
 
 Zu ändern sind, mit „bis 2026-10-29“ für die alte Fassung, wo sie Geschichte ist:
 - `CLAUDE.md`, „Harte Rahmenbedingungen“; `.specify/memory/constitution.md`, Grundsatz I.
@@ -124,14 +147,26 @@ Zu ändern sind, mit „bis 2026-10-29“ für die alte Fassung, wo sie Geschich
   `selbsttest.md` (Abschnitt „Grenzen“ und „Belegte Läufe“). Das gleicht die feste Aufgabe
   „Spielbeschreibung prüfen“ ab; hier steht es, damit nichts vergessen wird.
 - `docs/offene-punkte.md`: Punkte „Renderer“ und „Abweichung von FR-017“ schließen, ebenso die Frage
-  nach den Direct3D-12-Dateien (FR-012).
+  nach den Direct3D-12-Dateien (FR-012). Die vier Lücken im Maßstab aus der Checkliste stehen dort
+  seit 2026-10-29.
 - `docs/entscheidungen/renderer.md`: ein Vermerk „umgesetzt in Feature 009“ (FR-013).
 
 Nicht geändert werden ältere Specs (001 bis 006, 008) und `docs/tagebuch/`.
 
 ## R7 Reihenfolge: erst die Regel, dann die Einstellung
 
-**Entscheidung (Claude, 2026-10-29):** Die Regel ändert sich in der ersten Phase, vor der Einstellung.
+**Entscheidung (Claude, 2026-10-29):** Die Regel ändert sich in Phase 2, vor der Einstellung in
+Phase 3 (Phase 1 ist die Vorbereitung; Wortlaut nach CHK011).
 Sonst stünde zwischen den Phasen ein Commit, der gegen die geltende Verfassung verstößt, und der
 Architektur-Prüfer müsste ihn melden. Verworfen: Regel zuletzt, mit der Doku; das spart nichts, weil
 Klaus' Beschluss ohnehin vorliegt.
+
+## R8 Ohne OpenGL 3.3 und Direct3D 11
+
+**Stand (2026-10-29, Checkliste CHK005): Vermutung.** Für Forward+ ist belegt, dass Godot „Unable to
+initialize video driver“ zeigt und endet (Feature 007, R13). Für Compatibility steht das weder in
+der Klassenreferenz noch im Handbuch; das Handbuch nennt nur die Mindestanforderung „full OpenGL 3.3
+support“ (`about/system_requirements.rst`). In Phase 3 sieht Claude im Quelltext von Godot 4.7.2 nach
+(`platform/windows/display_server_windows.cpp`, `platform/linuxbsd/x11/display_server_x11.cpp`), ob
+und mit welchem Text Godot meldet. Das Ergebnis kommt hierher und in die Spec unter „Edge Cases“.
+Eine eigene Meldung des Spiels bleibt außerhalb dieses Features.

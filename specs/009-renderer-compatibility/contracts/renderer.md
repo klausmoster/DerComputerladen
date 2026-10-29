@@ -12,8 +12,10 @@ Was nach Feature 009 gilt und woran die Tests es messen. Gründe in [research.md
 | `rendering/gl_compatibility/driver.macos` | Vorgabe `opengl3`, nicht eingetragen (FR-002) | `test_projekt_einstellungen.gd` |
 | `rendering/gl_compatibility/fallback_to_angle`, `fallback_to_gles`, `fallback_to_native` | Vorgabe true, nicht eingetragen | `test_projekt_einstellungen.gd`, Text der Datei |
 
-Unverändert und nicht Teil dieses Features: Texturfilter, Einrasten, Viewport, Skalierung,
-Hintergrundfarbe, `textures/vram_compression/import_etc2_astc`.
+Unverändert und nicht Teil dieses Features, aber bildwirksam (FR-004, SC-007): Texturfilter,
+Einrasten von Transformationen und Ecken, Viewport, Skalierung, `boot_splash/bg_color` (Startgrund
+in `anzeige-grund`), `boot_splash/show_image = false`, `environment/defaults/default_clear_color`.
+Ebenfalls unverändert: `textures/vram_compression/import_etc2_astc`.
 
 Die Tests aus R13 von Feature 007 (`test_kein_ausweichen_auf_opengl`,
 `test_wechsel_zwischen_vulkan_und_direct3d_12_bleibt_erlaubt`,
@@ -27,7 +29,8 @@ er, entscheidet Klaus über `export_angle = 1`.
 
 ## Protokoll des Selbsttests
 
-Die Schlüssel bleiben. Neu sind nur Anzeigenamen in `selbsttest_system.gd`:
+Die Schlüssel bleiben. Die Anzeigenamen stehen künftig in `SelbsttestTexte.GRAFIK_API`
+(`selbsttest_texte.gd`); `SelbsttestSystem` liest sie dort (research.md, R3). Neu sind zwei Namen:
 
 | Treiber laut Godot | `system.grafik_api` |
 |---|---|
@@ -46,5 +49,6 @@ Erwartet nach dem Wechsel, ohne Startoption:
 | Windows | `gl_compatibility` | OpenGL, auf schwachen Treibern ANGLE |
 
 Die Beispieldaten der Tests nennen danach `gl_compatibility` und OpenGL statt `forward_plus` und
-Metal: `src/test/fixtures/selbsttest/kopieren_erwartet.txt`, `test_selbsttest_protokoll.gd`,
+Metal: unter `src/test/fixtures/selbsttest/` `kopieren_erwartet.txt`, `protokoll_erwartet.txt` und
+`kopieren_nicht_beschreibbar.txt`, dazu `test_selbsttest_protokoll.gd` und
 `test_selbsttest_ergebnis.gd`.

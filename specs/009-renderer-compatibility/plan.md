@@ -13,7 +13,9 @@ Godots Vorgabe, unter macOS also Apples OpenGL. ANGLE ist in den Vorlagen für W
 eingebaut, unter macOS läuft es über Metal (R2, belegt per Probestart). Das Protokoll des Selbsttests
 liest schon, was läuft (R3); es bekommt nur zwei Anzeigenamen. Den Rest machen Tests, drei Läufe des
 Selbsttests und die Regeln: erst Klaus' Beschluss in CLAUDE.md, Verfassung und Style-Guide, dann die
-Einstellung (R7).
+Einstellung (R7). Weil die Fotos nur das Bild in 640 × 360 zeigen, kommt je System ein Blick ins
+echte Fenster dazu, auf dem Mac auch für die Werkstatt (R5, SC-007). Die Spec ist nach der
+Checkliste vom 2026-10-29 angepasst (`checklists/review.md`).
 
 ## Technical Context
 
@@ -83,13 +85,16 @@ Grundlage für `/speckit-tasks`; die Aufgaben selbst entstehen dort.
    `/speckit-constitution` die Verfassung auf 3.0.0 (R6); Claude legt den Satz für den Style-Guide vor
    und veröffentlicht ihn nach Klaus' OK. Abnahme durch Klaus.
 3. **Umstellung** `[A]`, `[C]`: `project.godot` nach [contracts/renderer.md](contracts/renderer.md);
-   Anzeigenamen in `selbsttest_system.gd`; Tests der Projekteinstellungen neu (R4); Beispieldaten der
-   Tests (R3). Claude prüft: Tests zweimal, Probestart nach dem Quickstart mit der Zeile
-   „Compatibility“, Phasenprüfung. Abnahme durch Klaus.
+   `GRAFIK_API` zieht nach `SelbsttestTexte`, mit zwei neuen Namen; Tests der Projekteinstellungen
+   neu (R4); Beispieldaten der Tests, alle fünf Dateien (R3). Claude sieht im Quelltext nach, was
+   Godot ohne OpenGL 3.3 meldet (R8). Claude prüft: Tests zweimal, Probestart nach dem Quickstart mit
+   der Zeile „Compatibility“, Phasenprüfung. Abnahme durch Klaus.
 4. **Läufe** `[C]`, `[K]`: Claude baut mit `tools/build/baue_alles.sh` und lässt den Selbsttest auf
    dem Mac laufen; Klaus auf Linux und dem Boot-Camp-Rechner, dort auch mit `opengl3_angle`;
    Parallels nach Lust. Claude vergleicht und legt Belege unter `belege/` ab. Abweichungen gehen an
-   Klaus (R5). Das ist zugleich der Selbsttest aus der Aufgaben-Vorlage.
+   Klaus (R5). Dazu der Blick ins echte Fenster (SC-007): auf dem Mac Bildschirmfotos von Start,
+   krummer Fenstergröße und Werkstatt durch Claude, unter Windows und Linux durch Klaus nach der
+   Prüfliste. Das ist zugleich der Selbsttest aus der Aufgaben-Vorlage.
 5. **Doku** `[C]`: Vermerke in Feature 007, Spielbeschreibung, offene Punkte, Vermerk in
    `renderer.md` (R6). Abnahme durch Klaus.
 
@@ -122,12 +127,15 @@ specs/009-renderer-compatibility/
 ```text
 src/
 ├── project.godot                                   Renderer, Forward+-Einstellungen gestrichen
-├── tools/selbsttest/selbsttest_system.gd           Anzeigenamen ANGLE und OpenGL ES
+├── tools/selbsttest/selbsttest_system.gd           liest GRAFIK_API aus SelbsttestTexte
+├── tools/selbsttest/selbsttest_texte.gd            GRAFIK_API mit ANGLE und OpenGL ES (R3)
 └── test/
     ├── test_projekt_einstellungen.gd               Tests zum Renderer neu (R4)
     ├── test_selbsttest_protokoll.gd                Beispieldaten
     ├── test_selbsttest_ergebnis.gd                 Beispieldaten
-    └── fixtures/selbsttest/kopieren_erwartet.txt   Beispieldaten
+    └── fixtures/selbsttest/                        Beispieldaten: kopieren_erwartet.txt,
+                                                    protokoll_erwartet.txt,
+                                                    kopieren_nicht_beschreibbar.txt
 
 tools/selbsttest/referenz/macos/                    nur bei Abweichung und nach Klaus' Abnahme
 

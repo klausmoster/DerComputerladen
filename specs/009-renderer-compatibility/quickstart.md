@@ -66,6 +66,26 @@ Erwartet:
 - alle Fotos `gleich` gegenüber `tools/selbsttest/referenz/macos/` (SC-002). Weicht eins ab, legt
   Claude es Klaus mit Bild vor; ersetzt wird nichts ohne seine Abnahme (FR-008).
 
+Danach das echte Fenster (SC-007), mit Bildschirmfotos durch Claude:
+- Beim Start des Spiels: Vor dem Titel ist nur der dunkle Startgrund zu sehen, kein Logo von Godot.
+- Das Fenster auf eine krumme Größe ziehen, etwa 1500 × 900: Das Bild bleibt ganzzahlig vergrößert,
+  die Pixel bleiben hart, der Rest ist schwarz.
+- Die Werkstatt im echten Fenster bei 1920 × 925:
+
+  ```bash
+  /Applications/Godot.app/Contents/MacOS/Godot --path src res://tools/werkstatt/werkstatt.tscn
+  ```
+
+  Erwartet: Sie startet maximiert, die Schrift ist geglättet und so scharf wie vor dem Wechsel.
+- Die Dauer des Laufs steht im Protokoll; mehr als doppelt so lang wie im Beleg aus 007 geht an
+  Klaus.
+
+## Prüfliste fürs echte Fenster (Windows und Linux, Klaus)
+
+1. Beim Start: nur der dunkle Startgrund, kein Logo von Godot.
+2. Fenster auf eine krumme Größe ziehen: Bild ganzzahlig vergrößert, Pixel hart, Rest schwarz.
+3. Titel, Hauptmenü und Communicator sehen aus wie auf dem Mac.
+
 ## Windows auf dem Boot-Camp-Rechner
 
 1. `build/abnahme/0.1_windows.zip` kopieren und entpacken.
@@ -89,6 +109,8 @@ Erwartet:
    OpenGL, hat Godot ANGLE nicht gefunden und ist zurückgefallen; dann entscheidet Klaus über
    `export_angle = 1` (contracts/renderer.md).
 
+5. Die Prüfliste fürs echte Fenster oben.
+
 **Kann:** Dasselbe unter Windows in Parallels (Klärung vom 2026-10-29). Ein Lauf dort ist willkommen,
 keine Bedingung.
 
@@ -96,7 +118,7 @@ keine Bedingung.
 
 `build/abnahme/0.1_linux.zip` auf den Linux-Rechner, Selbsttest per Doppelklick starten, Zip zurück
 und vergleichen wie unter Windows. Erwartet: alle Schritte in Ordnung, `gl_compatibility` und OpenGL,
-alle Fotos gleich (SC-003, SC-004).
+alle Fotos gleich (SC-003, SC-004). Dazu die Prüfliste fürs echte Fenster.
 
 ## Regeln und Doku
 
@@ -112,8 +134,8 @@ Dazu von Hand: Der Style-Guide hat den Satz zu HDR, Kantenglättung und Glühen 
 
 ## Wenn ein Rechner gar nicht startet
 
-Fehlen OpenGL 3.3 und unter Windows auch Direct3D 11, zeigt Godot seine eigene Meldung und beendet
-sich; das Spiel schreibt dann nichts. Eine eigene Meldung des Spiels gehört nicht zu diesem Feature.
+Fehlen OpenGL 3.3 und unter Windows auch Direct3D 11, beendet sich Godot; ob mit eigener Meldung,
+klärt research.md, R8. Das Spiel schreibt dann nichts. Eine eigene Meldung des Spiels gehört nicht zu diesem Feature.
 
 ## Aufräumen
 
