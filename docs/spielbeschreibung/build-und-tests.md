@@ -8,9 +8,10 @@
 - **Herkunft:** `specs/001-hauptmenue/` (Export, GUT), `specs/002-zeitleisten-werkstatt/`
   (Fixtures, Grundlinien), `specs/006-easter-egg-space-invaders/` (Töne, Probeszene),
   `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R14, R26),
-  `specs/008-architektur/` (`contracts/architektur-tests.md`, `research.md` R6; T039a), Regeln in
+  `specs/008-architektur/` (`contracts/architektur-tests.md`, `research.md` R6; T039a),
+  `specs/009-renderer-compatibility/` (`research.md` R2 ANGLE in der Vorlage, R4 Tests), Regeln in
   `docs/ki_workflow/ki_dev.md`, „Tests“
-- **Stand:** Feature 008, 2026-10-29
+- **Stand:** Feature 009, 2026-10-29
 
 ## Starten
 
@@ -57,7 +58,8 @@ also auch die Werkstatt. Was der Feature-Tag bewirkt, steht in [selbsttest.md](s
 - **Windows:** ohne Signatur. `application/modify_resources = true`: Godot schreibt Symbol und
   Versionsangaben selbst in die `.exe`, ohne `rcedit`. Symbol ist die ICO
   `res://assets/icon/app_icon.ico` (`application/icon`), Firmen- und Produktname „Der
-  Computerladen“. Direct3D 12 ist als Treiber gesetzt (`rendering_device/driver.windows`).
+  Computerladen“. ANGLE ist in die Vorlage eingebaut; `application/export_angle = 0` bleibt, es gibt
+  keine Datei zum Mitkopieren (Feature 009, R2).
 - **Windows und Linux:** `binary_format/embed_pck = true`, das Paket steckt in der ausführbaren
   Datei; eine Datei reicht.
 - **Version** aus `application/config/version` in `project.godot`, heute 0.1.
@@ -137,8 +139,8 @@ Regeln:
   eigenes `game_window`, der Simulator einen eigenen Würfel `SimulatorPanel.rng` (Nähte, siehe
   [architektur.md](architektur.md)). Kein Test schreibt in `user://spielstaende/`.
 - **Selbsttest (Feature 007):** `test_selbsttest_*.gd` prüfen Lauf, Protokoll, Fahrer, Eingabe,
-  Läufer, Abläufe und Zusammenfassung ohne Fenster; `test_projekt_einstellungen.gd` Renderer,
-  Vollbildtasten, Overrides und Symbol. Die Probeszene `test/fixtures/selbsttest_ergebnis_probe.tscn`
+  Läufer, Abläufe und Zusammenfassung ohne Fenster; `test_projekt_einstellungen.gd` Renderer
+  Compatibility (Feature 009), Vollbildtasten, Overrides und Symbol. Die Probeszene `test/fixtures/selbsttest_ergebnis_probe.tscn`
   zeigt die Zusammenfassung mit erfundenen Läufen. Den Lauf im echten Fenster beschreibt
   [selbsttest.md](selbsttest.md).
 - **Ausgaben als Ganzes vergleichen:** Bytevergleich gegen gespeicherte Erwartungen.

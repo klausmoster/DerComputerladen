@@ -42,8 +42,6 @@ const PROGRAMM_SCHLUESSEL: Array[String] = ["computerladen.version", "godot.vers
 ## Die Schlüssel der Tabelle „Systemdaten“, die SelbsttestLauf hält.
 const LAUF_SCHLUESSEL: Array[String] = ["selbsttest.version", "lauf.start", "lauf.feste_zeit",
 	"lauf.zeitraffer"]
-## Namen der Grafikschnittstellen, wie Godot sie meldet, für das Protokoll (data-model.md).
-const GRAFIK_API := {"metal": "Metal", "vulkan": "Vulkan", "d3d12": "D3D12", "opengl3": "OpenGL"}
 ## GameWindow hat als Autoload keinen class_name; seine Konstanten kommen über das Skript.
 const FENSTER_SCRIPT := preload("res://core/game_window.gd")
 ## Das Raster des Spiels, für den Faktor des Fensters; es steht in GameWindow (AR-04).
@@ -82,7 +80,7 @@ func erhebe() -> void:
 	werte["system.gpu_vendor"] = _text(RenderingServer.get_video_adapter_vendor())
 	werte["system.renderer"] = _text(RenderingServer.get_current_rendering_method())
 	var api := RenderingServer.get_current_rendering_driver_name()
-	werte["system.grafik_api"] = _text(GRAFIK_API.get(api, api))
+	werte["system.grafik_api"] = _text(SelbsttestTexte.grafik_api_name(api))
 	werte["system.grafik_api_version"] = _text(RenderingServer.get_video_adapter_api_version())
 
 	# Ohne Fenster (headless) ist der Bildschirm -1 und alle Maße 0; das heißt „unbekannt“.

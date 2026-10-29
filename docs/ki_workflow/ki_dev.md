@@ -116,7 +116,8 @@ nach, mit wer, was und wo Klaus gefragt wird, stehen im [Fahrplan](feature_fahrp
     Referenzbilder gibt es nur nach Klaus' Abnahme. Auf Windows und Linux startet Klaus ihn, wenn
     das Feature Fenster, Eingabe, Grafik, Dateien oder Export ändert, sonst spätestens jedes dritte
     Feature. Warum: Tests ohne Fenster sehen weder Treiber noch echtes Fenster; in 007 fand der
-    Selbsttest die falsche Fenstermitte und einen Windows-Rechner, auf dem Forward+ nicht startet.
+    Selbsttest die falsche Fenstermitte und einen Windows-Rechner, auf dem Forward+ nicht startet
+    (deshalb seit 2026-10-29, Feature 009, Compatibility).
 
 ## Git
 

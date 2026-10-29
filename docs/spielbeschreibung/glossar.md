@@ -58,6 +58,7 @@ Spielinhalt sind (`"preis"`, `"leicht"`), sonst englisch (`"fixed"`, `"once"`).
 | Profil | `DifficultyProfile` | Liste der Start-Modifikatoren eines Grads | [schwierigkeitsgrade.md](schwierigkeitsgrade.md) |
 | Protokoll | `TimelineRun.protocol` | alle Meldungen eines Laufs | [zeitleiste.md](zeitleiste.md) |
 | Prüfmeldung | `CatalogIssue` | Fehler oder Warnung zu einer Regel V01–V31 | [ereigniskatalog.md](ereigniskatalog.md) |
+| Renderer | `rendering/renderer/rendering_method` in `project.godot`, zur Laufzeit `RenderingServer.get_current_rendering_method()` | der Teil von Godot, der das Bild malt; heute Compatibility (`gl_compatibility`) auf allen drei Systemen, bis 2026-10-29 Forward+ | [darstellung.md](darstellung.md) |
 | Referenzbild | `tools/selbsttest/referenz/macos/<kennung>.png` | Foto eines Schritts von einem abgenommenen Mac-Lauf; `vergleich.py` vergleicht jeden Lauf Pixel für Pixel damit | [selbsttest.md](selbsttest.md) |
 | Schritt (Selbsttest) | Dictionary aus `SelbsttestAblauf.neuer_schritt()`, Kennung `<ablauf>.<nn_kurz>` | Eingaben, erwarteter Zustand, Foto; Ergebnis `OK`, `FEHLER` oder `NICHT_GELAUFEN` | [selbsttest.md](selbsttest.md) |
 | Seed | `TimelineRun.seed` | Zahl 0–2.147.483.647, aus der alle Zufallsentscheidungen eines Spiels folgen | [zeitleiste.md](zeitleiste.md) |

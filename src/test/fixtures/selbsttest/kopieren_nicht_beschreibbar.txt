@@ -18,9 +18,9 @@ system.cpu: Apple M3 Pro
 system.gpu: Apple M3 Pro
 system.gpu_vendor: Apple
 system.gpu_driver: unbekannt
-system.renderer: forward_plus
-system.grafik_api: Metal
-system.grafik_api_version: 4.0
+system.renderer: gl_compatibility
+system.grafik_api: OpenGL
+system.grafik_api_version: 4.1 Metal - 91.7
 system.bildschirm: 3024x1964
 system.bildschirm_skalierung: 2.0
 system.bildschirm_dpi: 254

@@ -213,6 +213,9 @@ nicht, sondern bleibt im Fenster des Laufs (Klaus, Phase 4).
 
 ## R13 Renderer: kein Ausweichen auf OpenGL
 
+**Bis 2026-10-29.** Seit Feature 009 läuft das Spiel mit Compatibility; die Einstellungen unten
+sind gestrichen (`specs/009-renderer-compatibility/research.md`, R1). Der Text bleibt als Geschichte.
+
 **Entscheidung (Klaus, 2026-10-28, Spec):** `rendering/rendering_device/fallback_to_opengl3 = false`
 in `project.godot`. `fallback_to_vulkan` und `fallback_to_d3d12` bleiben true: Unter Windows darf
 Godot zwischen Direct3D 12 und Vulkan wechseln, beides ist Forward+ (belegt: getrennt schaltbar).

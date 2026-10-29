@@ -258,8 +258,8 @@ func test_wortlaute_aus_dem_vertrag() -> void:
 	assert_eq(SelbsttestTexte.FENSTERTITEL_DANACH, "Der Computerladen Selbsttest")
 	assert_eq(SelbsttestTexte.ueberschrift(START), "Selbsttest vom 28.10.2026, 14:03 Uhr")
 	assert_eq(SelbsttestTexte.systemzeile({"system.os": "macOS", "system.os_version": "26.0.0",
-		"system.gpu": "Apple M3 Pro", "system.grafik_api": "Metal"}),
-		"macOS 26.0.0 · Apple M3 Pro · Metal")
+		"system.gpu": "Apple M3 Pro", "system.grafik_api": "OpenGL"}),
+		"macOS 26.0.0 · Apple M3 Pro · OpenGL")
 	assert_eq(SelbsttestTexte.systemzeile({}), "unbekannt unbekannt · unbekannt · unbekannt")
 	assert_eq(SelbsttestTexte.BEREICHSTITEL, "Was nicht stimmt")
 	assert_eq(SelbsttestTexte.eintrag("laden.03_liste", "Spiel laden"),
@@ -324,9 +324,9 @@ func _erfundener_lauf(mit_schritten: bool = true) -> SelbsttestLauf:
 		"system.cpu": "Apple M3 Pro",
 		"system.gpu": "Apple M3 Pro",
 		"system.gpu_vendor": "Apple",
-		"system.renderer": "forward_plus",
-		"system.grafik_api": "Metal",
-		"system.grafik_api_version": "4.0",
+		"system.renderer": "gl_compatibility",
+		"system.grafik_api": "OpenGL",
+		"system.grafik_api_version": "4.1 Metal - 91.7",
 		"system.bildschirm": Vector2i(3024, 1964),
 		"system.bildschirm_skalierung": 2.0,
 		"system.bildschirm_dpi": 254,
