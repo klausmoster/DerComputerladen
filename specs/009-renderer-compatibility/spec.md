@@ -74,7 +74,7 @@ allen Vorschlägen freigegeben. Was sich an der Spec ändert:
   Direct3D 12 oder Metal braucht. Künftig Compatibility, das mit OpenGL 3.3 auskommt, wie es auch
   ein Büro-PC von 2012 hat.
 - **Grafikschnittstelle:** die Sprache, in der der Renderer mit der Grafikkarte spricht, etwa
-  OpenGL, Direct3D 12 oder Metal. Das Protokoll des Selbsttests nennt sie unter „Grafik-API“.
+  OpenGL, Direct3D 12 oder Metal. Das Protokoll des Selbsttests nennt sie unter `system.grafik_api`.
 - **ANGLE:** ein Übersetzer, der OpenGL-Befehle in eine andere Schnittstelle übersetzt: unter
   Windows in Direct3D 11, unter macOS in Metal. Godot nimmt ihn unter Windows von selbst, wenn der
   Treiber kein brauchbares OpenGL hat.

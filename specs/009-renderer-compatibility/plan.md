@@ -39,8 +39,10 @@ ANGLE über Direct3D 11), Linux x86_64 (OpenGL 3.3, unter X11 sonst OpenGL ES 3.
 **Constraints**: Bild Pixel für Pixel gleich den Referenzbildern oder jede Abweichung von Klaus
 beurteilt; keine Startoption und keine Zusatzdatei beim Spieler
 
-**Scale/Scope**: eine Einstellungsdatei, ein Skript des Selbsttests, drei Testdateien, eine
-Testvorlage; Regeln und Doku an rund 15 Stellen (R6)
+**Scale/Scope**: eine Einstellungsdatei, zwei Skripte des Selbsttests (`selbsttest_system.gd`,
+`selbsttest_texte.gd`), drei Testskripte (`test_projekt_einstellungen.gd`, `test_selbsttest_system.gd`,
+dazu Beispieldaten in `test_selbsttest_protokoll.gd` und `test_selbsttest_ergebnis.gd`) und drei
+Vorlagen unter `fixtures/selbsttest/`; Regeln und Doku an rund 15 Stellen (R6)
 
 ## Constitution Check
 
@@ -66,7 +68,7 @@ gegen Grundsatz I; er steht unter „Complexity Tracking“ und endet mit Phase 
 | Phase 1: Vorbereitung (Godot-Referenz) | nichts davon | keine |
 | Phase 2: Regeln (CLAUDE.md, Verfassung, Style-Guide) | Regeln, ein Satz im Style-Guide | keine; der Style-Guide ist selbst der Maßstab, Klaus gibt den Wortlaut frei |
 | Phase 3: Umstellung (Einstellung, Anzeigenamen, Tests) | Code, Texte (Anzeigenamen im Protokoll und auf der Zusammenfassung) | Architektur, Text |
-| Phase 4: Läufe auf drei Systemen | nichts davon; Referenzbilder nur nach Klaus' Abnahme | keine |
+| Phase 4: Läufe auf drei Systemen | nichts davon; Referenzbilder nur nach Klaus' Abnahme. Ändert T026 doch `project.godot` oder `export_presets.cfg` (ANGLE über Metal, `export_angle`), dann Code | keine; im Ausnahmefall Architektur (T026a) |
 | Phase 5: Doku (Feature 007, Spielbeschreibung, offene Punkte) | Doku | keine |
 
 Das Bild selbst prüft kein Prüfer, sondern der Vergleich mit den Referenzbildern in Phase 4.

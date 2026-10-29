@@ -20,7 +20,8 @@ Vorbereitung, Phase 2 Regeln, Phase 3 Umstellung, Phase 4 Läufe, Phase 5 Doku, 
 Umgesetzt wird nach Grundsatz II der Verfassung: eine Phase nach der anderen, nur auf Klaus' Auftrag,
 `/speckit-implement` nie. Phase 2 kommt vor Phase 3, damit kein Commit gegen die geltende Verfassung
 verstößt (R7). Kürzel wie „CHK016“ verweisen auf [review.md](checklists/review.md), „R7“ auf
-[research.md](research.md).
+[research.md](research.md). Nach der Analyse vom 2026-10-29 kam T026a dazu; T010, T012, T018 und
+T027 sind genauer (Befunde D1, U1, C1, I3, von Klaus nach Empfehlung freigegeben).
 
 ## Format: `[ID] [Besitzer] [P?] [Story] Beschreibung`
 
@@ -105,8 +106,9 @@ contracts/renderer.md).
   = "gl_compatibility"`, `config/features` mit `"GL Compatibility"` statt `"Forward Plus"`;
   `rendering_device/driver.windows` und `rendering_device/fallback_to_opengl3` streichen; für
   `gl_compatibility/` nichts eintragen. Startgrund, Hintergrundfarbe, Texturfilter, Einrasten,
-  Viewport und Skalierung bleiben unverändert (FR-004, CHK016). Am besten über den Editor-Dialog oder
-  per Hand mit anschließendem `--import`; Ergebnis als Diff.
+  Viewport und Skalierung bleiben unverändert (FR-004, CHK016). Per Hand in der Datei, nicht über
+  den Editor, der beim Umschalten weitere Schlüssel schreiben kann; nur die Schlüssel aus dem Vertrag;
+  danach `--import`; Ergebnis als Diff (Analyse U1).
 - [ ] T011 [A] [US1] `src/test/test_projekt_einstellungen.gd` nach R4: die drei Tests zu Forward+
   entfallen; neu: Renderer ist `gl_compatibility`; kein Schlüssel unter `rendering_device/` im Text der
   Datei; `fallback_to_angle`, `fallback_to_gles`, `fallback_to_native` sind true und nicht
@@ -115,7 +117,8 @@ contracts/renderer.md).
 - [ ] T012 [A] [US2] Die Konstante `GRAFIK_API` zieht von `src/tools/selbsttest/selbsttest_system.gd`
   nach `src/tools/selbsttest/selbsttest_texte.gd` (`SelbsttestTexte`), mit den neuen Einträgen
   `opengl3_angle` → „ANGLE“ und `opengl3_es` → „OpenGL ES“; `SelbsttestSystem` liest sie dort (R3,
-  CHK012). Ein Test prüft die beiden neuen Namen und dass ein unbekannter Schlüssel unverändert
+  CHK012). Benutzt wird die Konstante heute nur in `selbsttest_system.gd`, Zeilen 46 und 85 (Analyse
+  C1). Ein Test prüft die beiden neuen Namen und dass ein unbekannter Schlüssel unverändert
   durchgeht (`src/test/test_selbsttest_system.gd`).
 - [ ] T013 [A] [P] [US2] Beispieldaten auf `gl_compatibility` und OpenGL umstellen, Format unverändert
   (R3, CHK010): `src/test/fixtures/selbsttest/kopieren_erwartet.txt`, `protokoll_erwartet.txt`,
@@ -135,7 +138,8 @@ contracts/renderer.md).
 - [ ] T017 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, Prüfer laut plan.md: Architektur
   (`project.godot`, `selbsttest_system.gd`, `selbsttest_texte.gd`) und Text (Anzeigenamen „ANGLE“,
   „OpenGL ES“); vor Klaus' Abnahme (`docs/ki_workflow/ki_pruefung.md`).
-- [ ] T018 [K] [US1] Phase 3 abnehmen: Diff, Lernnotizen, Testergebnis, Ausgabe des Probestarts.
+- [ ] T018 [K] [US1] Phase 3 abnehmen: Diff, Lernnotizen, Testergebnis, Ausgabe des Probestarts; die
+  Bitte um Abnahme enthält den Startbefehl laut quickstart.md, „Probestart auf dem Mac“ (Analyse I3).
 
 **Checkpoint**: Das Spiel läuft auf dem Mac mit Compatibility; Läufe auf allen Systemen können
 beginnen.
@@ -173,7 +177,11 @@ auf dem Mac; Klaus' Prüfliste für Windows und Linux abgehakt.
 - [ ] T026 [K] [US2] Nur bei Abweichungen: je Abweichung entscheiden, ANGLE über Metal versuchen oder
   neue Referenzbilder abnehmen (FR-002, FR-008); nur wenn T022 mit `opengl3_angle` auf OpenGL
   zurückfällt: über `export_angle = 1` entscheiden (FR-006). Claude legt jede Abweichung mit Bild vor.
-- [ ] T027 [K] [US1] Phase 4 abnehmen: Belege, Bildschirmfotos, Ergebnis der Prüflisten.
+- [ ] T026a [C] Nur wenn T026 `src/project.godot` oder `src/export_presets.cfg` ändert: der Agent
+  setzt es um und schreibt die Lernnotiz, danach Phasenprüfung mit `/dcl-phasenpruefung` und dem
+  Architektur-Prüfer, vor Klaus' Abnahme (Verfassung VI; Analyse D1). Sonst entfällt sie.
+- [ ] T027 [K] [US1] Phase 4 abnehmen: Belege, Bildschirmfotos, Ergebnis der Prüflisten; die Bitte um
+  Abnahme enthält den Startweg der App laut quickstart.md, „Selbsttest auf dem Mac“ (Analyse I3).
 
 **Checkpoint**: US1 und US2 sind belegt.
 
@@ -239,7 +247,7 @@ oder in älteren Specs.
 - **Phase 2 (Regeln)** zuerst; sie blockiert Phase 3 (R7).
 - **Phase 3 (Umstellung)** nach Phase 2; sie blockiert Phase 4.
 - **Phase 4 (Läufe)** nach Phase 3. T022 bis T024 laufen auf Klaus' Rechnern und können gleichzeitig
-  mit T020 und T021 laufen; T025 wartet auf ihre Zips, T026 auf T020 und T025.
+  mit T020 und T021 laufen; T025 wartet auf ihre Zips, T026 auf T020 und T025, T026a auf T026.
 - **Phase 5 (Doku)** nach Phase 4, weil Spielbeschreibung und 007 die Belege nennen.
 - **Abschluss** nach Phase 5.
 
