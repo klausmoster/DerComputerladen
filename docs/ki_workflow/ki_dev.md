@@ -26,7 +26,7 @@ Claude bleibt frei für Planung und Review.
 flowchart TD
     subgraph beschreiben["Beschreiben mit Spec Kit"]
         direction LR
-        S1["specify<br/>neue Sitzung für das Feature"] --> S2["clarify"] --> S3["plan"] --> S4["checklist<br/>+ Prüfer lesen den Vertrag"] --> S5["tasks"] --> S6["analyze"]
+        S1["specify<br/>neue Sitzung für das Feature"] --> S2["clarify"] --> S3["plan<br/>+ Ausnahmen vom Leitfaden"] --> S4["checklist<br/>+ Prüfer lesen den Vertrag"] --> S5["tasks"] --> S6["analyze"]
     end
     beschreiben --> F{"Klaus gibt eine<br/>Phase frei"}
     subgraph phase["Je Phase"]
@@ -40,13 +40,16 @@ flowchart TD
     CO -->|"nächste Phase"| F
     CO -->|"letzte Phase"| CV["Lückensuche mit converge"]
     CV -->|"Lücken: eine neue Phase"| F
-    CV -->|"keine Lücken"| GA["Gesamtabnahme durch Klaus"]
+    CV -->|"keine Lücken"| ST["Selbsttest: Abläufe anpassen,<br/>bauen, Mac, Vergleich"]
+    ST --> GA["Gesamtabnahme durch Klaus"]
     GA --> SB["Claude prüft die Spielbeschreibung,<br/>Klaus gibt Änderungen frei"]
     SB --> TB["Claude schreibt das Tagebuch,<br/>Klaus nimmt ab"]
     TB --> M["Merge auf Klaus' Wort,<br/>Klaus pusht"]
 ```
 
-Wann die Phasenprüfung läuft, sagt Punkt 8.
+Wann die Phasenprüfung läuft, sagt Punkt 8, wann der Selbsttest, Punkt 11. Alle Schritte der Reihe
+nach, mit wer, was und wo Klaus gefragt wird, stehen im [Fahrplan](feature_fahrplan.md) (Konzept,
+2026-10-29).
 
 1. **Ein Branch pro Feature:** `feature/NNN-kurzname`, Ordner `specs/NNN-kurzname/`.
 2. **Spec Kit vollständig, auch die optionalen Schritte:**
