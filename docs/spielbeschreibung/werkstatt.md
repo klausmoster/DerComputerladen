@@ -5,12 +5,14 @@
 - **Laden, wenn:** die Werkstatt benutzt, erweitert oder getestet wird, oder wenn eine Änderung am
   Katalog oder an der Zeitleiste auch in der Werkstatt sichtbar werden muss.
 - **Code:** `src/tools/werkstatt/`; Tests `src/test/test_catalog_editor.gd`, `test_event_form.gd`,
-  `test_timeline_view.gd`, `test_simulator.gd`, `test_statistics_panel.gd`,
-  `test_difficulty_panel.gd`, `test_what_if_probe.gd`, `test_werkstatt_*.gd`,
-  `test_fahrplan_ausgabe.gd`
+  `test_field_helpers.gd`, `test_timeline_view.gd`, `test_simulator.gd`,
+  `test_statistics_panel.gd`, `test_difficulty_panel.gd`, `test_what_if_probe.gd`,
+  `test_werkstatt_*.gd`, `test_fahrplan_ausgabe.gd`
 - **Herkunft:** `specs/002-zeitleisten-werkstatt/contracts/werkstatt.md`, ergänzt durch
-  `specs/003-schwierigkeitsgrade/contracts/werkstatt.md`
-- **Stand:** Feature 004, 2026-10-27
+  `specs/003-schwierigkeitsgrade/contracts/werkstatt.md`; umgebaut in `specs/008-architektur/`
+  (T036a, T036b, T036e)
+- **Stand:** Feature 008, 2026-10-29 (Abschnitte, die 008 nicht berührt, auf dem Stand von
+  Feature 004)
 - **Nachbarn:** Modell in [zeitleiste.md](zeitleiste.md), Dateiformat in
   [ereigniskatalog.md](ereigniskatalog.md), Grade in [schwierigkeitsgrade.md](schwierigkeitsgrade.md)
 
@@ -33,7 +35,9 @@ und Statistik in einem und arbeitet immer mit dem aktuellen, auch ungespeicherte
   Mit `-- --katalog res://test/fixtures/catalog_500.json` öffnet sie einen anderen Katalog.
 - Beim Start schaltet sie die Skalierung des Spiels ab, nimmt den Skalierungsfaktor des Bildschirms
   (scharfe Schrift auf Retina), maximiert das Fenster und schaltet `GameWindow` für ihren Prozess
-  ab.
+  ab. Das geschieht über die Naht `Werkstatt.game_window` (AR-12); leer heißt `/root/GameWindow`.
+  Der Pfad ist eine begründete Ausnahme von AR-02 im Leitfaden: Mit `-s` geladen, etwa von der
+  Textausgabe, kennt GDScript den Namen des Autoloads beim Kompilieren nicht.
 
 ## Aufbau
 
@@ -95,6 +99,16 @@ Solange ein Textfeld den Fokus hat, gehört Cmd+Z dem Feld.
 - **Prüfung:** alle Meldungen mit Stufe, Ereignis, Feld und Text. Ein Klick führt zum Feld, bei
   Profilen in den Reiter „Schwierigkeitsgrade“.
 
+**Gemeinsame Hilfen** (`FieldHelpers`, `src/tools/werkstatt/field_helpers.gd`): Was mehrere Panels
+brauchen, liegt in einer Klasse mit nur statischen Funktionen, nicht als private Funktion in einem
+Panel (AR-02, AR-04): Eingaben lesen (`parse_*`, Rückgabe `[true, Wert]` oder `[false, Grund]`),
+Werte zeigen (`format_*`), die Fehlerkontur eines Felds (`mark_error()`), der Grund einer Meldung
+ohne den Ort davor (`reason()`) und der Name einer Kategorie in einer Auswahl
+(`category_label()`). Formular, Liste, Zeitstrahl, Reiter „Schwierigkeitsgrade“, Simulator und
+Eingriffsdialog rufen sie dort. Den Wert eines Start-Modifikators zeigt der Reiter
+„Schwierigkeitsgrade“ mit `TimelineRun.format_points()`, so wie er in der Begründung eines Termins
+steht, und liest ihn mit `FieldHelpers.parse_percent()` wieder.
+
 ## Zeitstrahl
 
 1985 bis 1999 mit einer Zeile je Kategorie. Fixe Ereignisse sind Punkte oder mit Dauer Balken,
@@ -121,9 +135,10 @@ Wahrscheinlichkeit kommt.
 Spielt ein Spiel auf einer Kopie des aktuellen Katalogs ohne Fehlerhaftes, ohne Spieluhr und
 ohne den Katalog zu ändern.
 
-- **Lauf:** Seed (oder „Würfeln“), Grad, „Fahrplan erzeugen“; dann „+1 Tag“, „+1 Monat“,
-  „+1 Jahr“, „Bis …“ und „Bis zum Ende“. Ein Wechsel des Grads baut den Lauf mit denselben
-  Eingriffen neu.
+- **Lauf:** Seed (oder „Würfeln“ aus dem eigenen Würfel `SimulatorPanel.rng`, nicht aus Godots
+  globalem; Tests setzen einen mit festem Seed), Grad, „Fahrplan erzeugen“; dann „+1 Tag“,
+  „+1 Monat“, „+1 Jahr“, „Bis …“ und „Bis zum Ende“. Ein Wechsel des Grads baut den Lauf mit
+  denselben Eingriffen neu.
 - **Anzeige:** der Fahrplan als Tabelle (Datum, Ereignis, Herkunft, Zustand), darunter die
   Begründung des gewählten Termins und seine verzögerten Wirkungen; rechts das Protokoll.
   Ausgenommene Ereignisse und Start-Modifikatoren nennt ein Hinweis. Ändert sich der Katalog, sagt
@@ -133,7 +148,9 @@ ohne den Katalog zu ändern.
 - **Was wäre, wenn:** Mit Eingriffen rechnet der Simulator denselben Seed ohne Eingriffe mit und
   markiert Unterschiede (neu, verschoben, anderer Zustand, weggefallen durchgestrichen), auf Wunsch
   gegen Mittel statt gegen denselben Grad. „Neu starten mit“ und „ohne Eingriffe“ spielen bis
-  zum selben Tag.
+  zum selben Tag. Den Endtag für „Neu starten mit Eingriffen“ und „Probe speichern“ rechnet
+  `WhatIfProbe.end_day(run_day)`: der spätere Tag aus dem Stand des Laufs und dem letzten `at_day`
+  der gesammelten Eingriffe, höchstens der 31.12.1999.
 
 **Proben:** Seed, Grad, Endtag und Eingriffsprotokoll lassen sich als Probe speichern, als JSON
 unter `src/tools/werkstatt/proben/<kennung>.json` (heute leer). Laden spielt das Protokoll mit
@@ -150,6 +167,9 @@ Rechnet viele Spiele mit den Seeds 1 bis N (Vorgabe 1.000, höchstens 100.000) i
   mit erreichter Obergrenze; für die gewählte Zeile die Verteilung auf die Jahre als Balken.
 - **Alle drei vergleichen:** jeder Seed in Leicht, Mittel und Schwer; je Ereignis Mittelwert,
   Spanne und „ohne“ je Grad. Ein Abbruch verwirft den angefangenen Seed in allen Graden.
+- **Zustand** (AR-11): `StatisticsPanel.State { NEVER, RUNNING, ABORTED, DONE }`: nie gerechnet,
+  rechnet, abgebrochen, fertig. Abgebrochen und fertig zeigen beide ein Ergebnis, mit anderem Text;
+  ein neuer Start rechnet aus beiden heraus.
 
 ## Textausgabe
 

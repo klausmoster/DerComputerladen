@@ -4,9 +4,10 @@
 - **Laden, wenn:** eine Arbeit mehrere Systeme berührt, neue Dateien, Autoloads oder Systeme
   dazukommen, oder ein System an ein anderes angebunden wird.
 - **Code:** `src/project.godot`, `src/core/`, `src/scenes/`, `src/ui/`, `src/tools/`
-- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/007-build-export-selbsttest/`,
-  Verfassung `.specify/memory/constitution.md`
-- **Stand:** Feature 007, 2026-10-28
+- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/008-architektur/`,
+  Verfassung `.specify/memory/constitution.md`, Architektur-Leitfaden
+  `docs/architektur-leitfaden.md`
+- **Stand:** Feature 008, 2026-10-29
 
 ## Das Spiel in einem Absatz
 
@@ -18,8 +19,9 @@ Beginnen, Speichern und Fortsetzen von Spielen (004) und der Communicator, ein T
 Steuerelement, auf dem heute das Menü des Titels läuft (005). Feature 006 brachte die ersten Töne
 und ein Easter Egg: Drei Gehäusetasten des Communicators starten im Titel ein verstecktes Spiel auf
 seiner Anzeige. Feature 007 brachte die Exporte für Windows und Linux und den Selbsttest, eine
-eigene App, die den Titel von selbst durchspielt. Der Spielbildschirm ist noch leer: Die Uhr steht, Wirtschaft und Laden gibt es noch
-nicht.
+eigene App, die den Titel von selbst durchspielt. Feature 008 brachte keine Spielfunktion, sondern
+den Architektur-Leitfaden mit Prüfer und Tests und baute den Bestand danach um. Der Spielbildschirm
+ist noch leer: Die Uhr steht, Wirtschaft und Laden gibt es noch nicht.
 
 ## Ordner
 
@@ -42,7 +44,8 @@ nicht.
 | `tools/ton/` | `make_sounds.py`: erzeugt alle Töne, außerhalb von Godot |
 | `tools/selbsttest/` | `vergleich.py`: Fotos eines Selbsttest-Laufs gegen die Referenzbilder in `referenz/macos/` |
 | `tools/build/` | `baue_alles.sh`: baut alle sechs Presets, prüft auf Testcode, packt je System ein Zip |
-| `docs/` | Vision (`game_design.md`), Spielinhalt (`game_bible/`), Bauplan (`features/`), diese Beschreibung, Arbeitsweise (`ki_workflow/`) |
+| `tools/godot_referenz/` | `erzeuge.sh`: Klassenreferenz der installierten Godot nach `godot_referenz/klassen/`, nicht im Repo |
+| `docs/` | Vision (`game_design.md`), Spielinhalt (`game_bible/`), Bauplan (`features/`), Architektur-Leitfaden (`architektur-leitfaden.md`), diese Beschreibung, Arbeitsweise (`ki_workflow/`) |
 | `specs/NNN-*/` | Spec Kit je Feature: Spec, Plan, Datenmodell, Verträge, Recherche, Aufgaben, Lernnotizen |
 
 ## Wer wen kennt
@@ -123,22 +126,54 @@ Selbsttest-Presets setzen, ersetzen Overrides mit Punkt (`run/main_scene.selbstt
 
 ## Grundsätze
 
-- **Kern ohne Node, Hülle als Autoload.** Logik steckt in `RefCounted`-Klassen, die weder
+Verbindlich stehen sie im Architektur-Leitfaden `docs/architektur-leitfaden.md`: Regeln AR-01 bis
+AR-20, je mit Grund, Beispiel aus dem Code, Prüfweise und Stand, dazu die Muster und die Tabelle
+der begründeten Ausnahmen. Hier die Kurzfassung mit den Nummern:
+
+- **Kern ohne Node, Hülle als Autoload (AR-01).** Logik steckt in `RefCounted`-Klassen, die weder
   Szenenbaum noch Uhr brauchen. So laufen sie gleich im Spiel, in Werkzeugen und in Tests. Das
   Autoload verbindet nur und macht Signale daraus. Ebenso `KeySequence` und `InvadersGame`: Die
   Hülle ist dort der Titel und die Seite `InvadersPage`.
-- **Melden statt anwenden.** Die Zeitleiste meldet Ereignisse und Wirkungen; was daraus folgt,
-  entscheidet das System, das zuhört. Systeme sind über Signale entkoppelt, nicht über direkte
-  Aufrufe.
-- **Wiederholbar.** Katalog, Seed, Grad und Eingriffe legen ein Spiel vollständig fest. Spielstände
-  bauen darauf, statt den ganzen Zustand zu speichern (siehe [spielstaende.md](spielstaende.md)).
-- **Daten statt Code.** Ereignisse und Profile stehen in der Katalogdatei und werden in der
+- **Melden statt anwenden (AR-06, AR-02).** Die Zeitleiste meldet Ereignisse und Wirkungen; was
+  daraus folgt, entscheidet das System, das zuhört. Systeme sind über Signale entkoppelt, nicht über
+  direkte Aufrufe. Ein Baustein meldet nach oben per Signal, wer ihn einsetzt, ruft ihn direkt auf;
+  kein Skript greift über `get_parent()`, `../` oder `/root/` nach oben.
+- **Wiederholbar (AR-08).** Katalog, Seed, Grad und Eingriffe legen ein Spiel vollständig fest.
+  Jeder Zufall kommt aus einem eigenen `RandomNumberGenerator`, nie aus Godots globalem Würfel.
+  Spielstände bauen darauf, statt den ganzen Zustand zu speichern (siehe
+  [spielstaende.md](spielstaende.md)).
+- **Daten statt Code (AR-04).** Ereignisse und Profile stehen in der Katalogdatei und werden in der
   Werkstatt gepflegt; Menüeinträge sind `MenuEntry`-Resources; Texte des Titels stehen an einer
   Stelle (`TitleTexts`); Farben heißen über Tokens; Töne entstehen aus einem Skript, nicht aus
   fremden Quellen.
-- **Ein Look.** Der Style-Guide ist die einzige Quelle für Farben, Raster, Schriften und Sprache.
-  Texte duzen den Spieler.
-- **Nur Desktop.** Maus und Tastatur, Forward+.
+- **Ein Look (Style-Guide).** Der Style-Guide ist die einzige Quelle für Farben, Raster, Schriften
+  und Sprache. Texte duzen den Spieler.
+- **Nur Desktop (Verfassung, Grundsatz I).** Maus und Tastatur, Forward+.
+
+**Kern, Hülle und Helfer der Hülle.** Der Kern rechnet und hält den Zustand; er kennt weder
+Szenenbaum noch Autoloads noch den globalen Zufall. Die Hülle, eine Szene oder ein Autoload, reicht
+ihm Zeit, Seed und Daten hinein und macht aus seinen Ergebnissen Signale und Bilder. Ein
+`RefCounted`, das auf den Baum zugreift, ist kein Kern, sondern ein Helfer der Hülle und sagt das
+im Doku-Kommentar am Kopf, etwa `SelbsttestFahrer` und `SelbsttestEingabe`.
+
+**Nähte (AR-12).** Wer ein Autoload nutzt, nutzt es über eine Variable, die ein Test oder ein
+Werkzeug vorher setzen kann; leer heißt das Autoload, etwa
+`session if session != null else GameSession` im Titel. So gibt es `session` in Titel,
+Spielbildschirm und Selbsttest, `clock` in `Timeline` und `game_window` in `Werkstatt` und
+`SelbsttestErgebnis`. Ebenso für Zufall: `GameSession.rng`, `Timeline.rng` und `SimulatorPanel.rng`
+sind eigene Würfel, die Tests mit festem Seed setzen.
+
+**Zustände als `enum` (AR-11).** Hat etwas mehr als zwei Zustände mit eigenem Verhalten, steht der
+Zustand als `enum` mit `match`, nicht als Sammlung von Schaltern: `GameClock.State`,
+`TitleScreen.Phase` und `TitleScreen.Layer`, `InvadersPage.State`, `StatisticsPanel.State`,
+`SelbsttestLaeufer.Zustand`. Einen Zustand, den ein anderer Baustein besitzt, fragt man dort, statt
+ihn doppelt zu speichern, etwa den Löschmodus der Liste (`TitleScreen._current_layer()`).
+
+**Wer den Leitfaden durchsetzt.** Der Architektur-Prüfer (`.claude/agents/architektur-pruefer.md`)
+liest Pläne, Code und Szenen gegen den Leitfaden, bei der Phasenprüfung und der Bestandsprüfung.
+Was sich messen lässt, misst `src/test/test_architektur.gd` bei jedem Testlauf (siehe
+[build-und-tests.md](build-und-tests.md)). Eine Stelle, die eine Regel bewusst verletzt, trägt
+`# Ausnahme AR-NN: <Grund> (Klaus, Datum)` und steht in der Tabelle „Ausnahmen“ des Leitfadens.
 
 ## Code-Stil
 

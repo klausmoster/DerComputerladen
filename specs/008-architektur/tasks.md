@@ -346,7 +346,7 @@ T040 fest.
   `docs/features/Feature_Ideas.md` (11-06 gebaut); `docs/offene-punkte.md`; in `ki_pruefung.md` die
   Auswertung der Läufe aus 008 und die Notiz, dass SC-005, SC-006 und SC-007 im nächsten Feature
   mit Code nachgetragen werden (Analyse, C16).
-- [ ] T043 [C] Spielbeschreibung prüfen (die letzte Aufgabe vor dem Tagebuch, nach der
+- [x] T043 [C] Spielbeschreibung prüfen (die letzte Aufgabe vor dem Tagebuch, nach der
   Gesamtabnahme und vor dem Merge; `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“): Claude
   gleicht `docs/spielbeschreibung/` mit dem Code ab und legt Klaus eine Liste vor, welche Dateien
   veralten und welche neu angelegt werden sollten, mit Grund, mindestens `architektur.md` (FR-029:

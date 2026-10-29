@@ -6,8 +6,10 @@
   betroffen sind, oder wenn ein System (Wirtschaft, Nachfrage, Ruf) an die Zeitleiste angebunden
   wird.
 - **Code:** `src/core/timeline.gd` (Autoload `Timeline`), `src/core/timeline/` (Kern ohne Node)
-- **Herkunft:** `specs/002-zeitleisten-werkstatt/`, ergänzt durch `specs/003-schwierigkeitsgrade/`
-- **Stand:** Feature 004, 2026-10-27
+- **Herkunft:** `specs/002-zeitleisten-werkstatt/`, ergänzt durch `specs/003-schwierigkeitsgrade/`;
+  Würfel `Timeline.rng` und `TimelineRun.format_points()` aus `specs/008-architektur/` (T036a,
+  T036d)
+- **Stand:** Feature 008, 2026-10-29
 - **Nachbarn:** Dateiformat und Prüfregeln in [ereigniskatalog.md](ereigniskatalog.md), Grade in
   [schwierigkeitsgrade.md](schwierigkeitsgrade.md), Datum und Uhr in [spielzeit.md](spielzeit.md)
 
@@ -55,13 +57,18 @@ Feature 004 startete sie am Ende des ersten Bilds eins mit Mittel); das tut `Gam
 
 | Methode | Wirkung |
 |---|---|
-| `start_game(seed = -1, difficulty = Difficulty.DEFAULT) -> Error` | neuer Lauf auf dem Katalog der Zeitleiste, ersetzt einen laufenden; spielt den 01.01.1985 und sendet dessen Meldungen. `seed < 0` heißt würfeln aus 0 bis 2.147.483.647 (`MAX_SEED`) |
+| `start_game(seed = -1, difficulty = Difficulty.DEFAULT) -> Error` | neuer Lauf auf dem Katalog der Zeitleiste, ersetzt einen laufenden; spielt den 01.01.1985 und sendet dessen Meldungen. `seed < 0` heißt würfeln aus 0 bis 2.147.483.647 (`MAX_SEED`) mit dem eigenen Würfel `Timeline.rng` |
 | `resume_game(catalog, seed, difficulty, interventions, day) -> Error` | setzt ein gespeichertes Spiel fort: prüft den mitgegebenen Katalog wie den eigenen, legt den Lauf an und spielt die Eingriffe mit `TimelineRun.replay()` bis `day` nach, **ohne Signale**. Das erste Signal kommt für den Tag danach. Abgelehnte Eingriffe kommen als Warnung, der Rest gilt |
 | `stop_game()` | beendet das laufende Spiel; danach kein Signal mehr |
 | `is_running()`, `get_seed()`, `get_difficulty()`, `get_event(id)`, `running_entries()` | Abfragen; Seed und Grad −1 ohne Spiel |
 
 Ein Seed außerhalb, ein unbekannter Grad oder ein Tag außerhalb des Spiels ergibt
 `ERR_INVALID_PARAMETER`, das laufende Spiel bleibt.
+
+`Timeline.rng` ist eine Naht (AR-08, AR-12): ein eigener `RandomNumberGenerator` statt Godots
+globalem Würfel, nur für `start_game()` ohne Seed. Tests setzen einen mit festem Seed und wissen so
+vorher, welcher Seed herauskommt. Ein Spiel bekommt seinen Seed immer von `GameSession`, die ihn aus
+`GameSession.rng` zieht.
 
 ## Signale
 
@@ -203,6 +210,10 @@ jeweils die, deren Zeitraum d enthält. Ein **Modifikator** (`ChanceModifier`) h
 Ereignis, Wert in Prozentpunkten als Anteil (+0,05 = +5 Prozentpunkte), Grund und `from_day` bis
 `to_day`; ein Ende ist Pflicht, „unbegrenzt“ ist 5477. Beispiel: „Ware vom windigen Händler:
 Reklamationswelle +5 ab 1990“. `chance_info(event_id, day)` zeigt die Rechnung.
+`TimelineRun.format_points(share)` schreibt den Wert, wie er in der Begründung eines Termins steht:
+Prozentpunkte mit Vorzeichen, deutschem Komma und einfachem Minus, etwa +0,05 als „+5“ und −0,025
+als „-2,5“. Die Funktion ist öffentlich und statisch; die Werkstatt zeigt Werte genauso und liest
+sie wieder.
 
 **Eingriffe** sind die Stellen, an denen später Spielteile in die Zeitleiste greifen. `Timeline`
 reicht sie an den Lauf durch:

@@ -4,12 +4,13 @@
 - **Laden, wenn:** exportiert wird, Tests geschrieben oder laufen gelassen werden, oder neue
   Dateien zum Export oder Repo dazukommen.
 - **Code:** `src/export_presets.cfg`, `tools/build/baue_alles.sh`, `src/.gutconfig.json`,
-  `src/test/`, `src/addons/gut/`, `tools/ton/make_sounds.py`
+  `src/test/`, `src/addons/gut/`, `tools/ton/make_sounds.py`, `tools/godot_referenz/erzeuge.sh`
 - **Herkunft:** `specs/001-hauptmenue/` (Export, GUT), `specs/002-zeitleisten-werkstatt/`
   (Fixtures, Grundlinien), `specs/006-easter-egg-space-invaders/` (Töne, Probeszene),
-  `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R14, R26), Regeln in
+  `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R14, R26),
+  `specs/008-architektur/` (`contracts/architektur-tests.md`, `research.md` R6; T039a), Regeln in
   `docs/ki_workflow/ki_dev.md`, „Tests“
-- **Stand:** Feature 007, 2026-10-28
+- **Stand:** Feature 008, 2026-10-29
 
 ## Starten
 
@@ -100,6 +101,17 @@ wirkt dort aber nicht.
   die Import-Einstellungen. Fehlen sie, brechen Szenen-Referenzen nach einem Clone. Bei den Tönen
   hält die `.import` den Import als PCM ohne Trimmen, Normalisieren und Schleife.
 
+## Godot-Referenz
+
+`tools/godot_referenz/erzeuge.sh`, vom Repo-Root, schreibt die Klassenreferenz der installierten
+Godot mit `--doctool` nach `godot_referenz/klassen/<Klasse>.xml`, etwa `Node.xml` oder
+`RegEx.xml`, und die Version nach `godot_referenz/version.txt`. Die Dateien haben nur Signaturen:
+Erbfolge, Methoden mit Parametern, Eigenschaften, Signale, Konstanten und Enums, keine
+Beschreibungen. Passt die Godot nicht zur Version in `src/project.godot`, bricht das Skript ab
+(Exit 2). Der Ordner steht in `.gitignore` und ist nicht im Repo; in jedem Worktree läuft das
+Skript einmal. Bei API-Fragen sehen Claude, der Godot-Agent und der Architektur-Prüfer dort nach
+statt aus dem Gedächtnis; für das Verhalten bleibt die Doku zu Godot 4.7.
+
 ## Tests
 
 GUT 9.7.1, alle Tests unter `src/test/`, Dateien `test_*.gd`. Headless:
@@ -113,10 +125,12 @@ Regeln:
 - **Nie in echte Daten:** Tests lesen eigene Kataloge aus `src/test/fixtures/` und schreiben nur
   in eigene Ordner unter `user://`. Dafür lassen sich Pfade umstellen, etwa
   `Timeline.catalog_path`, `CatalogEditor.backup_folder`, `Werkstatt.settings_path`,
-  `GameSession.folder`; die Uhr der Zeitleiste über `Timeline.clock`. `GameSession` nimmt dazu
-  eigene Uhr, Zeitleiste, Uhrzeit (`now`), Würfel (`rng`) und `quit_callback`. Titel- und
-  Spielbildschirm nehmen eine eigene `session` und prüfen Szenenwechsel über `scene_callback`.
-  Kein Test schreibt in `user://spielstaende/`.
+  `GameSession.folder`; Uhr und Würfel der Zeitleiste über `Timeline.clock` und `Timeline.rng`.
+  `GameSession` nimmt dazu eigene Uhr, Zeitleiste, Uhrzeit (`now`), Würfel (`rng`) und
+  `quit_callback`. Titel- und Spielbildschirm nehmen eine eigene `session` und prüfen
+  Szenenwechsel über `scene_callback`. Werkstatt und Zusammenfassung des Selbsttests nehmen ein
+  eigenes `game_window`, der Simulator einen eigenen Würfel `SimulatorPanel.rng` (Nähte, siehe
+  [architektur.md](architektur.md)). Kein Test schreibt in `user://spielstaende/`.
 - **Selbsttest (Feature 007):** `test_selbsttest_*.gd` prüfen Lauf, Protokoll, Fahrer, Eingabe,
   Läufer, Abläufe und Zusammenfassung ohne Fenster; `test_projekt_einstellungen.gd` Renderer,
   Vollbildtasten, Overrides und Symbol. Die Probeszene `test/fixtures/selbsttest_ergebnis_probe.tscn`
@@ -167,6 +181,38 @@ anläuft, nicht, was zu hören ist.
 - `test_texte.gd`: Texte in Szenen und Skripten unter `scenes/`, `tools/werkstatt/` und `core/`
   duzen. Seit Feature 006 findet er die Anrede auch in Versalien („SIE“, „IHNEN“).
 - `test_ton.gd`: Die Töne im Projekt sind bytegleich mit dem, was `make_sounds.py` erzeugt.
+
+**Architektur-Test (Feature 008):** `test_architektur.gd` misst die Regeln des Leitfadens, die sich
+am Quelltext messen lassen; den Rest prüft der Architektur-Prüfer. Er liest Skripte und Szenen als
+Text und trennt Code, Zeichenketten und Kommentare; Kommentare zählen nie. `addons/` und `test/`
+durchsucht er nicht.
+- **AR-01, AR-08** (`test_kerne_ohne_node`): Jedes Skript in `core/timeline/`, `core/save/` und
+  in der Liste `KERNE` erbt von `RefCounted` oder `Resource`, nennt kein Autoload, ruft weder
+  `get_tree()` noch `Engine.get_main_loop()` und keinen globalen Zufall (`randi()`, `randf()`,
+  `randi_range()`, `randf_range()`, `randfn()`, `randomize()`, `shuffle()`, `pick_random()`).
+- **AR-03** (`test_genau_diese_autoloads`): In `project.godot` stehen genau die Autoloads aus
+  `AUTOLOADS`, in dieser Reihenfolge.
+- **AR-02** (`test_kein_weg_nach_oben`): Kein Skript nennt `/root/` oder einen Knotenpfad mit
+  `../`, keine Szene `../` oder `/root/`. Ein Knotenpfad ist eine Zeichenkette nach `^`, `$`,
+  `NodePath(`, `get_node(`, `get_node_or_null(` oder `has_node(`; ein Dateipfad wie
+  `"../Resources"` zählt nicht.
+- **AR-14** (`test_spiel_kennt_werkzeuge_nicht`): Außerhalb von `tools/` verweist nichts auf
+  `res://tools/`.
+
+Die Listen am Kopf: `KERNE` (Kerne außerhalb der beiden Kernordner), `AUTOLOADS`,
+`ERLAUBT_NACH_OBEN` (begründete Ausnahmen; heute nur `werkstatt.gd` mit `/root/GameWindow`),
+`BIS_BEHEBUNG` (Abweichungen bis zur Behebung, seit Phase 5 von 008 leer) und `VORGEMERKT`
+(Abweichungen, die ein eigenes Feature behebt; leer). `test_listen_ohne_leichen` meldet veraltete
+Einträge: einen Pfad, den es nicht mehr gibt, oder mehr Einträge als Wege nach oben in der Datei.
+`test_ausnahmen_wie_im_leitfaden` prüft, dass jede erlaubte Stelle in der Tabelle „Ausnahmen“ des
+Leitfadens steht. Die Prüffunktionen nehmen einen Text; Fehlerproben an erfundenen Texten zeigen,
+dass jede den Verstoß findet und die erlaubte Stelle daneben nicht.
+
+**Tests aus Feature 008:** neu `test_architektur.gd` und `test_field_helpers.gd` (gemeinsame Hilfen
+der Werkstatt); erweitert für die Umbauten, etwa `test_game_clock.gd` (Tage je Bild, Ende),
+`test_title_screen.gd` (Phasen, Ebene und sichtbare Seite, Texte aus `TitleTexts`),
+`test_timeline.gd` und `test_werkstatt_scene.gd` (Würfel über `rng`),
+`test_selbsttest_laeufer.gd` (Stillstand nach dem Schließen).
 
 Was Tests nicht sehen, prüft Klaus von Hand nach dem `quickstart.md` des Features: Look,
 Fensterverhalten, Zeitstrahl, Formulare, Klang der Töne.

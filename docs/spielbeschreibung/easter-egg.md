@@ -12,8 +12,8 @@
 - **Herkunft:** `specs/006-easter-egg-space-invaders/` (`contracts/invaders.md`, `data-model.md`,
   `research.md` R6 bis R11); Baustein „Spiel auf der Anzeige“ im
   [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX) mit Maßen, Pixelmustern und
-  Ergebnisanzeige
-- **Stand:** Feature 007, 2026-10-28
+  Ergebnisanzeige; Zustand der Seite aus `specs/008-architektur/` (T036a)
+- **Stand:** Feature 008, 2026-10-29
 - **Nachbarn:** Gehäusetasten in [communicator.md](communicator.md), Folge, Start und Rückweg im
   Titel in [titel-und-hauptmenue.md](titel-und-hauptmenue.md), die Töne in [ton.md](ton.md),
   Bildraster und Farben in [darstellung.md](darstellung.md)
@@ -121,6 +121,29 @@ Größe. Die Muster sind eigene Entwürfe und stammen Zeichen für Zeichen aus d
 `invaders_page.tscn` ist ein `Control` mit `focus_mode` ALL und sechs `AudioStreamPlayer`n auf dem
 Kanal `Effekte`. `start(seed = -1)` beginnt eine Partie, −1 heißt zufälliger Seed; der Titel ruft es
 ohne Seed. Am Ende meldet die Seite `finished`.
+
+### Zustand der Seite
+
+`InvadersPage.State { NO_GAME, PLAYING, RESULT_LOCKED, RESULT_WAITING, ENDED }` in `_state`
+(AR-11), neben dem Zustand der Partie im Kern:
+
+```mermaid
+stateDiagram-v2
+    [*] --> NO_GAME
+    NO_GAME --> PLAYING: start()
+    PLAYING --> RESULT_LOCKED: Partie WON oder LOST
+    RESULT_LOCKED --> RESULT_WAITING: nach RESULT_LOCK
+    RESULT_WAITING --> ENDED: Taste, Klick, Esc oder verborgen
+    PLAYING --> ENDED: Esc oder verborgen
+    RESULT_LOCKED --> ENDED: Esc oder verborgen
+    ENDED --> PLAYING: start()
+```
+
+Takt und Eingaben gibt es in `PLAYING`, `RESULT_LOCKED` und `RESULT_WAITING` (`_is_active()`).
+Vor dem ersten `start()` malt die Seite nichts. Ob das Fenster den Fokus hat, ist eine eigene Achse
+daneben (`_window_focused`), kein Wert des Zustands. Nach außen bleibt alles wie vorher:
+`game()` gibt die Partie, `is_waiting_for_key()` heißt `RESULT_WAITING`, und welche Seite der
+Communicator zeigt, sagt weiter `Communicator.current_page()`.
 
 ### Takt
 

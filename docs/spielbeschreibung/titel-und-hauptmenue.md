@@ -14,8 +14,8 @@
   `specs/004-neues-spiel/` (`contracts/titelbildschirm.md`, `data-model.md`, `research.md` R11 bis
   R14), `specs/005-communicator/` (`contracts/titelbildschirm.md`, `research.md` R8 bis R10) und
   `specs/006-easter-egg-space-invaders/` (`contracts/titelbildschirm.md`, `research.md` R5, R10,
-  R16)
-- **Stand:** Feature 006, 2026-10-28
+  R16); umgebaut in `specs/008-architektur/` (T036a, T036b: Phase und Ebene, Texte)
+- **Stand:** Feature 008, 2026-10-29
 - **Nachbarn:** der Baustein Communicator in [communicator.md](communicator.md), was beim
   Beginnen und Fortsetzen passiert in [spielablauf.md](spielablauf.md), Spielstände in
   [spielstaende.md](spielstaende.md), Fenster, Farben und Schriften in
@@ -30,8 +30,30 @@ Es läuft dabei kein Spiel; eins beginnt erst über das Menü.
 
 Bei jedem Erscheinen, auch nach „Zum Hauptmenü“, steht der Communicator erst draußen. Der Titel
 setzt die Einträge des Hauptmenüs und wählt vor, dann fährt das Gerät herein. Bis das Hauptmenü
-seine Einträge hat, fängt die Wache `_ready_for_input` jede Eingabe ab, auch Esc. Während der
+seine Einträge hat, fängt die Phase `BEFORE_ENTRIES` jede Eingabe ab, auch Esc. Während der
 Fahrt herein lässt sich schon wählen und auslösen.
+
+## Phase und Ebene
+
+Der Titel führt zwei Zustände als `enum`, zwei unabhängige Achsen (AR-11):
+
+| Zustand | Werte | sagt |
+|---|---|---|
+| `TitleScreen.Phase` | `BEFORE_ENTRIES`, `ACCEPTING`, `LEAVING` | ob eine Eingabe etwas tun darf |
+| `TitleScreen.Layer` | `MAIN_MENU`, `DIFFICULTY`, `LIST`, `DELETE_MODE`, `CONFIRM`, `INVADERS` | welche Ebene oben liegt |
+
+- **Phase** (`_phase`): `BEFORE_ENTRIES`, bis das Hauptmenü Einträge und Auswahl hat;
+  `ACCEPTING`, solange der Spieler bedient; `LEAVING`, sobald ein Spiel begonnen oder fortgesetzt
+  ist und der Communicator hinausfährt. Jede kommt einmal und nur in dieser Reihenfolge; nur
+  `_build_sheets()` und `_leave()` ändern sie. `_accepts_input()` ist `_phase == Phase.ACCEPTING`.
+- **Ebene** (`_layer`): Ebene und sichtbare Seite setzt nur `_show_layer()`, beide im selben Zug;
+  die Seite zur Ebene gibt `_page_of()`, Liste und Löschmodus teilen sich eine. `_layer` ist nie
+  `DELETE_MODE`: Den Löschmodus schaltet die Liste selbst, und `_current_layer()` fragt sie mit
+  `is_delete_mode()`. Esc und die Gehäusetasten entscheiden mit `match _current_layer()`, nicht
+  nach der Sichtbarkeit der Seiten.
+
+Nach außen bleibt die Sichtbarkeit die Schnittstelle: Der Selbsttest liest `current_page()` des
+Communicators und die Sichtbarkeit, nicht die Ebene.
 
 ## Aufbau
 
@@ -60,8 +82,13 @@ Pfeil malen beide über `MenuPaper`. Der Schatten des Logos ist eine Silhouette 
 `TitleScreen` setzt nur zusammen und verbindet. Seiten und Communicator kennen einander nur so weit,
 wie der Communicator sie hinstellt und zeigt: Eine Seite meldet per Signal, der Titelbildschirm
 reicht weiter, entscheidet, was ein Eintrag bewirkt, und zeigt mit `Communicator.show_page()` die
-nächste Seite. Ein Spiel beginnt oder setzt fort nur über `GameSession`, gelöscht wird nur über deren
-`SaveStore`. Alle Texte stehen in `TitleTexts`.
+nächste Seite (über `_show_layer()`, siehe oben). Ein Spiel beginnt oder setzt fort nur über
+`GameSession`, gelöscht wird nur über deren `SaveStore`. Alle Texte stehen in `TitleTexts`, auch
+Untertitel (`SUBTITLE`) und Versionszeile; in den Szenen stehen Untertitel und Kopfzeilen leer.
+Der Titel setzt sie in `_ready()`: den Untertitel und die Kopfzeilen von Hauptmenü, Gradwahl und
+Rückfrage über `MainMenu.header_text` (Vorgabe leer) mit `HEADER_MAIN`, `HEADER_DIFFICULTY` und
+`HEADER_CONFIRM`. Die Liste setzt ihre Kopfzeile selbst aus `TitleTexts` (`HEADER_SAVES`, im
+Löschmodus `HEADER_DELETE_MODE`).
 
 ## Wege
 
@@ -84,9 +111,9 @@ flowchart LR
 Esc führt eine Ebene zurück, im Hauptmenü tut es nichts. Zurück im Hauptmenü steht die Auswahl
 auf dem Eintrag, der die Seite geöffnet hat. Ein Seitenwechsel bewegt den Communicator nicht.
 
-**Spielstart:** Erst legt `GameSession` das Spiel an oder setzt es fort. Klappt das, sperrt
-`_leaving` jede weitere Eingabe, der Communicator fährt hinaus, und erst `slide_finished(false)`
-wechselt zum Spielbildschirm. Scheitert es, fährt nichts.
+**Spielstart:** Erst legt `GameSession` das Spiel an oder setzt es fort. Klappt das, sperrt die
+Phase `LEAVING` jede weitere Eingabe, der Communicator fährt hinaus, und erst
+`slide_finished(false)` wechselt zum Spielbildschirm (`GAME_SCENE`). Scheitert es, fährt nichts.
 
 ## Hauptmenü
 
@@ -175,8 +202,8 @@ nächste Taste zählt eins weiter; eine falsche setzt zurück, und ist sie die e
 sie gleich als neuer Anfang. So startet 1-1-2-3; 1-2-2-3 und 2-1-3 starten nicht. Dazwischen darf
 der Spieler im Menü wählen. Jeder Titel bekommt eine neue Folge, auch nach „Zum Hauptmenü“.
 
-Ein Druck zählt nur, wenn der Titel Eingaben annimmt (`_accepts_input()`: Einträge da, nicht beim
-Hinausfahren) und das Spiel nicht schon auf der Anzeige steht. Sonst klickt die Taste nur und drückt
+Ein Druck zählt nur, wenn der Titel Eingaben annimmt (`_accepts_input()`: Phase `ACCEPTING`) und
+die Ebene nicht `INVADERS` ist. Sonst klickt die Taste nur und drückt
 sich ein. Damit zählt die Folge auch schon während der Fahrt herein, wie die Seiten dann Eingaben
 annehmen.
 
@@ -186,19 +213,21 @@ flowchart LR
     I -->|"finished: Esc oder<br/>Ergebnisanzeige"| P
 ```
 
-- **Start** (`_start_invaders()`): Folge zurücksetzen, die sichtbare Seite in `_return_page` und das
+- **Start** (`_start_invaders()`): Folge zurücksetzen, die Ebene in `_return_layer` und das
   Control mit dem Fokus in `_return_focus` merken, Hinweis und Meldung ausblenden (`_hide_hint()`),
-  dann `show_page(Invaders)` und erst danach `Invaders.start()`; nur eine sichtbare Seite kann den
-  Fokus nehmen. Zeile und Hinweis führt der Titel ohnehin in `_selected_row` und `_selected_hint`.
-  Gerät, Logo und Versionszeile bewegen sich nicht.
-- **Ende** (`_on_invaders_finished()`): Folge zurücksetzen, die gemerkte Seite zeigen, ohne eine
-  das Hauptmenü; den Fokus zurückgeben (`_restore_focus()`): dem gemerkten Control, ist es noch
-  nicht sichtbar, nach diesem Bild; fehlt es, wählt die Seite ihre gemerkte Zeile neu. Dann den
+  dann `_show_layer(Layer.INVADERS)` und erst danach `Invaders.start()`; nur eine sichtbare Seite
+  kann den Fokus nehmen. Ein Löschmodus bleibt in der Liste stehen, gemerkt wird dann `LIST`. Zeile
+  und Hinweis führt der Titel ohnehin in `_selected_row` und `_selected_hint`. Gerät, Logo und
+  Versionszeile bewegen sich nicht.
+- **Ende** (`_on_invaders_finished()`): Folge zurücksetzen, die gemerkte Ebene mit
+  `_show_layer()` wieder zeigen; den Fokus zurückgeben (`_restore_focus()`): dem gemerkten
+  Control, ist es noch nicht sichtbar, nach diesem Bild; fehlt es, wählt die Seite ihre gemerkte
+  Zeile neu. Dann den
   Hinweis der Zeile wieder zeigen. Eine Meldung, die beim Start stand, etwa „Löschen ging
   nicht.“, kommt nicht zurück; an ihrer Stelle steht der Hinweis der Zeile.
 - **Esc:** Im Spiel nimmt die Seite Esc selbst. Erreicht Esc trotzdem `_unhandled_input()` des
   Titels, etwa in dem Bild, in dem die Seite ihren Fokus zurückholt, markiert der Titel es als
-  behandelt und führt keine Ebene zurück, solange `Invaders` sichtbar ist.
+  behandelt und führt keine Ebene zurück, solange die Ebene `INVADERS` ist.
 - **Kein Spielstand:** Das Spiel ruft `GameSession` nicht, braucht keinen Spielstand und legt keinen
   an, auch nicht, wenn das Fenster während des Spiels schließt. Es startet auch mit einem
   beschädigten Spielstand im Ordner. Nach dem Spiel läuft alles wie vorher.
@@ -206,8 +235,10 @@ flowchart LR
 ## Versionszeile
 
 Oben rechts im Himmel des Titelbilds, rechtsbündig, 16 vom Rand, mit `pixelschatten`.
-`"V%s · %s" % [version, "PROTOTYP"]`. Die Nummer kommt aus `application/config/version` in
-`project.godot` (heute `0.1`) und wird nur dort gepflegt. Ist sie leer, steht nur „PROTOTYP“ da.
+`TitleScreen.version_text()` nimmt `TitleTexts.version_line(version)`, die Vorlage
+`VERSION_LINE` („V{version} · {kennzeichen}“) mit dem Kennzeichen `STAGE` („PROTOTYP“). Die
+Nummer kommt aus `application/config/version` in `project.godot` (heute `0.1`) und wird nur dort
+gepflegt. Ist sie leer, steht nur `STAGE` da.
 
 ## Für Tests
 
