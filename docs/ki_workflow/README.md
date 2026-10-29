@@ -2,8 +2,9 @@
 
 Wie Klaus, Claude und die Agents bei „Der Computerladen“ zusammenarbeiten: Abläufe und Regeln, die
 sich bewährt haben, jeweils mit Grund. Die Dokumente in diesem Ordner gelten für Claude in diesem
-Projekt (`CLAUDE.md`, „Arbeitsweise“). Gedacht sind sie als Vorlage, die sich auf spätere Projekte
-übertragen lässt.
+Projekt (`CLAUDE.md`, „Arbeitsweise“). Was davon jedes Projekt übernehmen kann, fasst die
+[Blaupause](blaupause.md) zusammen (Konzept, 2026-10-29); die Werte dieses Projekts stehen im
+[Projektsteckbrief](projekt.md).
 
 ## Wer macht was
 
@@ -32,6 +33,9 @@ Die Prüfer arbeiten Claude zu, wenn eine Phase Sichtbares, Texte oder Code änd
 
 | Datei | Inhalt |
 |---|---|
+| [blaupause.md](blaupause.md) | Konzept: die Arbeitsweise ohne Projektbezug, mit Gerüsten und Anleitung zum Einrichten; für ein neues Projekt genügt diese Datei |
+| [projekt.md](projekt.md) | Konzept: Projektsteckbrief, die Werte dieses Projekts zu den Feldern der Blaupause und die Abweichungen |
+| [feature_fahrplan.md](feature_fahrplan.md) | Konzept: alle Schritte eines Features der Reihe nach, mit wer, was und wo Klaus gefragt wird |
 | [ki_dev.md](ki_dev.md) | Entwickeln mit KI: Rollen, Ablauf je Feature, Git, Aufträge an den Agent, Prüfen und Abnahme, Tests, Dokumentation, Zusammenarbeit, Werkzeuge, Grafik |
 | [ki_pruefung.md](ki_pruefung.md) | Prüfen mit KI: Grundsätze, Prüfer und ihre Maßstäbe, Ablauf einer Phasenprüfung, Tests, Stand der Einführung |
 | `CLAUDE.md` | die verbindliche Arbeitsanweisung für Claude Code in diesem Projekt |
