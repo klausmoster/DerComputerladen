@@ -1049,6 +1049,16 @@ Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder 
   „Spiel kennt Werkzeuge nicht“, die Probe „speichern, laden, vergleichen“ entfällt. Alle 20 Regeln
   des Leitfadens hat Klaus wie vorgeschlagen übernommen.
 
+### Feature 008, Behebung Phase 5 (2026-10-29)
+
+- **Zwei Formen für Prozentpunkte bleiben:** `TimelineRun.format_points()` schreibt „+5“ und
+  „-2,5“ mit einfachem Minus, damit das Panel „Je Grad“ den Wert mit `FieldHelpers.parse_percent()`
+  wieder liest; `SimulatorPanel._points()` zeigt ihn nur an, mit echtem Minus „−“ und „0“ ohne
+  Vorzeichen nach Style-Guide. Keine Doppelung im Sinn von AR-04, weil die Formen verschiedenen
+  Zwecken dienen (T036d).
+- **Kein eigener Test für `format_points()`:** Die Fehlerprobe zeigt, dass 8 bis 26 vorhandene
+  Tests rot werden, wenn Vorzeichen, Plus oder Komma falsch sind (T036d).
+
 ## Erledigt
 
 - **Nachzug der Arbeitsweise auf `main`** (Klaus, 2026-10-27): Prüfung ergab elf veraltete Stellen.

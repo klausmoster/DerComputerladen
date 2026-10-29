@@ -314,3 +314,25 @@ Einträgen, falsche Rückkehr-Ebene, Ebene ohne Seite; in der Werkstatt `parse_d
 am Hinweis, Kategorie ohne `category_label()`; im Läufer `_hoert_auf()` nur in ABGEBROCHEN und je
 eine fehlende Abbruchprüfung beim Warten, nach den Eingaben und beim Foto. Esc im Hauptmenü und
 Eingaben vor den Einträgen fing zuerst kein Test; die zwei neuen Titeltests prüfen sie jetzt.
+
+### T036d `TimelineRun.format_points()` wird öffentlich
+
+Geschrieben vom Godot-Agent.
+
+- **Wer von außen ruft, braucht einen öffentlichen Namen (AR-02).** `DifficultyPanel` zeigte den
+  Wert eines Start-Modifikators mit `TimelineRun._points()`, damit Tabelle und Begründung im
+  Fahrplan dieselbe Zahl schreiben, „+5“ oder „-2,5“. Der Wunsch war richtig, nur der Weg nicht: Der
+  Unterstrich sagt „Inneres des Kerns“, und der Kern darf es umbenennen, ohne nach der Werkstatt zu
+  schauen. Jetzt heißt die Funktion `format_points()`, ohne Unterstrich und mit Doku-Kommentar, der
+  sagt, wer sie teilt. Damit ist die Form ein Versprechen des Kerns, kein Zufall seines Inneren.
+- **Warum nicht in `FieldHelpers`.** Die Werkstatt ist vom Export ausgeschlossen; der Kern darf
+  sie nicht kennen. Die Form gehört dem Kern, weil die Begründung eines Termins sie braucht, und die
+  Werkstatt liest sie dort ab, nach unten. Der Name folgt `FieldHelpers.format_date()`, das in
+  derselben Zeile des Panels die Tage zeigt.
+- **`static func` über den Klassennamen.** `TimelineRun.format_points(0.05)` braucht keinen Lauf;
+  `class_name` macht die Klasse überall bekannt. Innerhalb von `timeline_run.gd` reicht der Name
+  allein, so in `_modifier_notes()` und `_points_text()`.
+- **Fahrpläne prüfen das nicht.** Die Textausgabe zeigt die Begründungen nicht, `cmp` bliebe also
+  auch bei einer falschen Form gleich. Die Fehlerprobe zeigt, dass die Tests es fangen:
+  `test_timeline_run.gd` vergleicht die Begründung „Abzug -2,5“, `test_difficulty_panel.gd` die
+  Zelle der Tabelle.

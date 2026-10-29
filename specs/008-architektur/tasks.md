@@ -264,7 +264,7 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
   - Aus der Prüfung von Teil 1 (Klaus, 2026-10-29): `test_selbsttest_laeufer.gd` prüft, dass
     die Kette der Abläufe nach dem Schließen des Fensters stillsteht; bisher fiel das in der
     Fehlerprobe nur im folgenden Test auf.
-- [ ] T036d [A] [US5] Fund aus T036b (Klaus, 2026-10-29; `bestandsbericht.md`, „Fund bei der
+- [x] T036d [A] [US5] Fund aus T036b (Klaus, 2026-10-29; `bestandsbericht.md`, „Fund bei der
   Behebung“): `TimelineRun._points()` wird öffentlich, etwa `points()`, und
   `src/tools/werkstatt/difficulty_panel.gd` ruft sie unter diesem Namen; kein Aufruf privater
   Funktionen fremder Klassen mehr in `src/` außer in Tests (AR-02). Fahrpläne bytegleich; mit
