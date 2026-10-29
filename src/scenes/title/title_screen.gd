@@ -16,11 +16,13 @@ extends Control
 ## Hauptmenü, Gradwahl und Rückfrage sind je eine Instanz von main_menu.tscn, die Liste der
 ## Spielstände ist eine SaveList. Seit Feature 005 stehen sie als Seiten auf der Anzeige des
 ## Communicators (look = LCD); welche zu sehen ist, sagt Communicator.show_page(). Es ist immer
-## genau eine zu sehen; eine unsichtbare hat keinen Fokus. Esc und „Zurück“ führen eine Ebene
+## genau eine zu sehen; eine unsichtbare hat keinen Fokus. Welche, folgt aus der Ebene (Layer,
+## Feature 008, AR-11): _show_layer() setzt beide im selben Zug. Esc und „Zurück“ führen eine Ebene
 ## zurück, im Hauptmenü tut Esc nichts; im Löschmodus der Liste beenden beide nur den Modus. Die
 ## Einträge des Hauptmenüs entstehen zur Laufzeit aus den Spielständen im Ordner der Session, beim
 ## Erscheinen und bei jeder Rückkehr aus einem Blatt neu gelesen (Analyse, F2); ebenso liest „Spiel
-## laden“ den Ordner bei jedem Öffnen neu (CHK001). Alle Texte kommen aus TitleTexts.
+## laden“ den Ordner bei jedem Öffnen neu (CHK001). Alle Texte kommen aus TitleTexts, auch
+## Untertitel und Versionszeile; in der Szene stehen sie leer.
 ##
 ## Ein Spiel beginnt oder setzt fort nur über die Session, gelöscht wird nur über ihren SaveStore;
 ## den Spielbildschirm zeigt scene_callback. Wege und Vorwahl: data-model.md, „Titelbildschirm:
@@ -28,9 +30,9 @@ extends Control
 ##
 ## Der Communicator fährt (Feature 005, contracts/titelbildschirm.md, „Verhalten“; R8): Beim
 ## Erscheinen steht er draußen und fährt herein, sobald das Hauptmenü Einträge und Auswahl hat; bis
-## dahin fängt die Wache _ready_for_input jede Eingabe ab. Beginnt oder setzt der Spieler ein Spiel
-## fort, fährt er erst hinaus, und der Spielbildschirm kommt mit slide_finished. Ab dann fängt
-## _leaving jede Eingabe ab, zusätzlich zur Sperre im Communicator.
+## dahin fängt die Phase BEFORE_ENTRIES jede Eingabe ab. Beginnt oder setzt der Spieler ein Spiel
+## fort, fährt er erst hinaus, und der Spielbildschirm kommt mit slide_finished. Ab dann fängt die
+## Phase LEAVING jede Eingabe ab, zusätzlich zur Sperre im Communicator.
 ##
 ## Das Easter Egg (Feature 006, contracts/titelbildschirm.md, „TitleScreen, neu“): Die drei grauen
 ## Tasten im Gehäuse melden sich mit case_key_pressed. Was die Drücke bedeuten, weiß der Titel, nicht
@@ -39,8 +41,18 @@ extends Control
 ## Hinweis führt er ohnehin. Meldet die Seite finished, steht alles wieder so da wie vorher. Das
 ## Easter Egg berührt weder die Session noch einen Spielstand (FR-007).
 
-## Kennzeichen in der Versionszeile, solange das Spiel ein Prototyp ist.
-const STAGE := "PROTOTYP"
+## Ob der Titel Eingaben annimmt (AR-11): BEFORE_ENTRIES, bis das Hauptmenü Einträge und Auswahl
+## hat; ACCEPTING, solange der Spieler bedient; LEAVING, sobald ein Spiel begonnen oder fortgesetzt
+## ist und der Communicator hinausfährt. Jede Phase kommt einmal und nur in dieser Reihenfolge; ein
+## neuer Titel beginnt wieder vorn.
+enum Phase { BEFORE_ENTRIES, ACCEPTING, LEAVING }
+
+## Welche Ebene oben liegt (AR-11): Hauptmenü, Gradwahl, Liste, Liste im Löschmodus, Rückfrage oder
+## Space Invaders. Daraus folgt die sichtbare Seite (_page_of()); Esc und die Gehäusetasten fragen
+## die Ebene, nicht die Sichtbarkeit der Seiten. Eine eigene Achse neben Phase: Jede Ebene gibt es
+## in jeder Phase, beim Hinausfahren etwa Hauptmenü oder Gradwahl.
+enum Layer { MAIN_MENU, DIFFICULTY, LIST, DELETE_MODE, CONFIRM, INVADERS }
+
 ## Der Spielbildschirm, zu dem ein begonnenes oder fortgesetztes Spiel führt.
 const GAME_SCENE := "res://scenes/game/game_screen.tscn"
 ## Die Grade der Gradwahl in der Reihenfolge der Zeilen (FR-004).
@@ -77,13 +89,16 @@ var _opener_id: StringName = &""
 var _selected_row := Rect2()
 ## Der Hinweis der gewählten Zeile; beim Hinausfahren steht er wieder da und fährt mit dem Gerät.
 var _selected_hint := ""
-## Die Wache vor den Einträgen: false, bis das Hauptmenü Einträge und Auswahl hat. Die Sichtbarkeit
+## Die Phase der Eingabe, siehe Phase. Vor den Einträgen tut keine Eingabe etwas; die Sichtbarkeit
 ## des Hauptmenüs taugt dafür nicht, denn der Communicator verbirgt alle Seiten schon in seinem
-## _ready() (Analyse, C4).
-var _ready_for_input := false
-## true ab dem Moment, in dem ein Spiel begonnen oder fortgesetzt ist und der Communicator
-## hinausfährt; dann tut keine Eingabe mehr etwas, und es entsteht kein zweites Spiel (R8; B2).
-var _leaving := false
+## _ready() (Analyse, C4). Beim Hinausfahren tut keine Eingabe mehr etwas, und es entsteht kein
+## zweites Spiel (R8; B2). Nur _build_sheets() und _leave() ändern sie.
+var _phase: Phase = Phase.BEFORE_ENTRIES
+## Die Ebene, deren Seite zu sehen ist. Nur _show_layer() setzt sie, im selben Zug wie die Seite.
+## Nie DELETE_MODE: Den Löschmodus schaltet die Liste selbst ein (save_list.gd, Kopf), und
+## _current_layer() fragt sie. Vor den Einträgen ist noch keine Seite zu sehen; dann fragt niemand
+## die Ebene, denn BEFORE_ENTRIES lässt keine Eingabe durch.
+var _layer: Layer = Layer.MAIN_MENU
 ## Die Spielstände, die die Liste gerade zeigt, in ihrer Reihenfolge. Fortsetzen und Löschen nehmen
 ## den Stand, den die Liste gelesen hat (CHK001).
 var _list_slots: Array[SaveSlot] = []
@@ -98,10 +113,11 @@ var _warning_number := -1
 ## Wie weit die Folge der Gehäusetasten gekommen ist. Ein neuer Titel beginnt mit einer neuen Folge,
 ## also bei 0, auch nach „Zum Hauptmenü“.
 var _sequence := KeySequence.new(EASTER_EGG_KEYS)
-## Die Seite, die beim Start des Easter Eggs zu sehen war, und das Control, das den Fokus hatte;
-## null, solange kein Spiel auf der Anzeige steht. Zeile und Hinweis stehen schon in _selected_row und
+## Die Ebene, die beim Start des Easter Eggs oben lag, und das Control, das den Fokus hatte; das
+## Control ist null, solange kein Spiel auf der Anzeige steht. Ein Löschmodus bleibt in der Liste
+## stehen, die Ebene ist dann LIST. Zeile und Hinweis stehen schon in _selected_row und
 ## _selected_hint (Analyse, D1).
-var _return_page: Control = null
+var _return_layer: Layer = Layer.MAIN_MENU
 var _return_focus: Control = null
 
 @onready var _communicator: Communicator = $Communicator
@@ -111,6 +127,7 @@ var _return_focus: Control = null
 @onready var _confirm_sheet: MainMenu = $Communicator/ConfirmSheet
 @onready var _invaders: InvadersPage = $Communicator/Invaders
 @onready var _version_line: Label = $VersionLine
+@onready var _subtitle: Label = $LogoBlock/Subtitle
 @onready var _logo: TextureRect = $LogoBlock/Logo
 @onready var _logo_shadow: TextureRect = $LogoBlock/Logo/Shadow
 
@@ -120,6 +137,7 @@ func _ready() -> void:
 	# Version des laufenden Spiels (FR-014).
 	var version: String = ProjectSettings.get_setting("application/config/version", "")
 	_version_line.text = version_text(version)
+	_subtitle.text = TitleTexts.SUBTITLE
 	# Der pixelschatten des Logos: dieselbe Form in tusche, 2 nach rechts unten, hinter dem Logo
 	# (show_behind_parent in der Szene). Die Farbe kommt aus UiPalette, nicht aus der Szene.
 	_logo_shadow.texture = silhouette(_logo.texture, UiPalette.TUSCHE)
@@ -151,29 +169,33 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not _accepts_input():
 		get_viewport().set_input_as_handled()
 		return
-	# Steht das Spiel auf der Anzeige, gehört Esc ihm. Kommt es trotzdem hier an, etwa in dem Bild,
-	# in dem die Seite ihren Fokus zurückholt, führt es nicht eine Ebene zurück (Analyse, C3).
-	if _invaders.visible:
-		get_viewport().set_input_as_handled()
-		return
-	if _main_menu.visible:
-		return
-	get_viewport().set_input_as_handled()
-	if _confirm_sheet.visible:
-		_cancel_delete()
-	elif _save_list.visible:
-		# Esc wirkt wie „Zurück“ in der Liste, im Löschmodus wie außerhalb.
-		_on_save_list_back_requested()
-	else:
-		_go_back()
+	match _current_layer():
+		Layer.MAIN_MENU:
+			# Hier gibt es keine Ebene darüber; Esc bleibt für andere frei.
+			return
+		Layer.INVADERS:
+			# Steht das Spiel auf der Anzeige, gehört Esc ihm. Kommt es trotzdem hier an, etwa in
+			# dem Bild, in dem die Seite ihren Fokus zurückholt, führt es nicht eine Ebene zurück
+			# (Analyse, C3).
+			get_viewport().set_input_as_handled()
+		Layer.CONFIRM:
+			get_viewport().set_input_as_handled()
+			_cancel_delete()
+		Layer.LIST, Layer.DELETE_MODE:
+			# Esc wirkt wie „Zurück“ in der Liste: im Löschmodus endet nur der Modus.
+			get_viewport().set_input_as_handled()
+			_on_save_list_back_requested()
+		Layer.DIFFICULTY:
+			get_viewport().set_input_as_handled()
+			_go_back()
 
 
 ## Der Text der Versionszeile: Aus „0.1“ wird „V0.1 · PROTOTYP“. Ohne Version steht nur
 ## das Kennzeichen da, kein „V“ ohne Zahl.
 static func version_text(version: String) -> String:
 	if version.is_empty():
-		return STAGE
-	return "V%s · %s" % [version, STAGE]
+		return TitleTexts.STAGE
+	return TitleTexts.version_line(version)
 
 
 ## Die Silhouette von [param texture]: jedes Pixel, das nicht ganz durchsichtig ist, in
@@ -229,8 +251,8 @@ func _on_difficulty_sheet_entry_activated(id: StringName) -> void:
 ## Zeigt den Hinweis zur gewählten Zeile neben ihr, für jedes Blatt aus main_menu.tscn. Alle drei
 ## sind in title_screen.tscn mit dieser einen Methode verbunden; gemeldet wird nur vom sichtbaren.
 ##
-## Ohne Wache: Die erste Auswahl kommt aus _build_sheets(), noch bevor _ready_for_input true ist,
-## und ihr Hinweis soll stehen. Während der Fahrt hinaus meldet keine Seite eine Auswahl, denn der
+## Ohne Wache: Die erste Auswahl kommt aus _build_sheets(), noch in der Phase BEFORE_ENTRIES, und
+## ihr Hinweis soll stehen. Während der Fahrt hinaus meldet keine Seite eine Auswahl, denn der
 ## Communicator sperrt sie.
 func _on_sheet_selection_changed(entry: MenuEntry, row_rect: Rect2) -> void:
 	_remember_row(row_rect, entry.hint)
@@ -281,7 +303,7 @@ func _on_save_list_delete_requested(slot: SaveSlot) -> void:
 	_hide_hint()
 	_confirm_slot = slot
 	_confirm_index = maxi(_list_slots.find(slot), 0)
-	_show_only(_confirm_sheet)
+	_show_layer(Layer.CONFIRM)
 	# Erst sichtbar, dann die Einträge: So nimmt „Abbrechen“ gleich den Fokus, und sein Hinweis
 	# kommt mit selection_changed (data-model.md, „Vorwahl in Blättern“).
 	_confirm_sheet.set_entries(_confirm_entries(slot), 0)
@@ -294,7 +316,7 @@ func _on_save_list_back_requested() -> void:
 	if not _accepts_input():
 		return
 	_hide_hint()
-	if _save_list.is_delete_mode():
+	if _current_layer() == Layer.DELETE_MODE:
 		# Die Liste ist sichtbar: set_delete_mode() wählt die Zeile neu und bringt ihren Hinweis.
 		_save_list.set_delete_mode(false)
 		return
@@ -316,7 +338,7 @@ func _on_confirm_sheet_entry_activated(id: StringName) -> void:
 ## Die Fahrt hinaus ist zu Ende: Erst jetzt kommt der Spielbildschirm (R8). Verbunden in
 ## title_screen.tscn. Die Fahrt herein meldet sich auch; dann ist nichts zu tun.
 func _on_communicator_slide_finished(arrived_in: bool) -> void:
-	if arrived_in or not _leaving:
+	if arrived_in or _phase != Phase.LEAVING:
 		return
 	_change_scene(GAME_SCENE)
 
@@ -325,22 +347,26 @@ func _on_communicator_slide_finished(arrived_in: bool) -> void:
 ## und das Spiel nicht schon auf der Anzeige steht; sonst klickt sie nur (R5, R16; FR-004). Ist die
 ## Folge damit voll, startet das Spiel.
 func _on_communicator_case_key_pressed(index: int) -> void:
-	if not _accepts_input() or _invaders.visible:
+	if not _accepts_input():
 		return
-	if _sequence.press(index):
-		_start_invaders()
+	match _current_layer():
+		Layer.INVADERS:
+			return
+		_:
+			if _sequence.press(index):
+				_start_invaders()
 
 
 ## Startet Space Invaders auf der Anzeige (contracts/titelbildschirm.md, „Start“). Gemerkt werden
-## Seite und Fokus; dann gehen Hinweis und Meldung weg (Analyse, C2). Erst wird die Seite gezeigt,
+## Ebene und Fokus; dann gehen Hinweis und Meldung weg (Analyse, C2). Erst wird die Seite gezeigt,
 ## dann gestartet: Nur eine sichtbare Seite kann den Fokus nehmen (Analyse, C1). Das Gerät bewegt
 ## sich nicht (FR-010).
 func _start_invaders() -> void:
 	_sequence.reset()
-	_return_page = _communicator.current_page()
+	_return_layer = _layer
 	_return_focus = get_viewport().gui_get_focus_owner()
 	_hide_hint()
-	_communicator.show_page(_invaders)
+	_show_layer(Layer.INVADERS)
 	_invaders.start()
 
 
@@ -351,15 +377,13 @@ func _start_invaders() -> void:
 ## Die Taste, die das Spiel beendet hat, wird gleich danach losgelassen. Das Loslassen geht an die
 ## Zeile mit dem Fokus und löst dort nichts aus, denn ihr Drücken kam nie dort an.
 func _on_invaders_finished() -> void:
-	var page := _return_page
+	var layer := _return_layer
 	var focus := _return_focus
-	_return_page = null
+	_return_layer = Layer.MAIN_MENU
 	_return_focus = null
 	_sequence.reset()
-	if page == null:
-		page = _main_menu
-	_communicator.show_page(page)
-	_restore_focus(page, focus)
+	_show_layer(layer)
+	_restore_focus(_page_of(layer), focus)
 	_communicator.show_hint(_selected_hint, _current_row())
 
 
@@ -385,7 +409,7 @@ func _build_sheets() -> void:
 	_show_main_menu(&"")
 	# Erst Einträge und Auswahl, dann die Wache auf und die Fahrt (Analyse, C4, C5). Herein ist
 	# alles bedienbar (FR-003).
-	_ready_for_input = true
+	_phase = Phase.ACCEPTING
 	_communicator.slide_in()
 
 
@@ -400,7 +424,7 @@ func _show_main_menu(opener_id: StringName) -> void:
 		if entries[row].id == opener_id:
 			index = row
 	_opener_id = &""
-	_show_only(_main_menu)
+	_show_layer(Layer.MAIN_MENU)
 	# Das Menü ist jetzt sichtbar: set_entries() baut die Zeilen und gibt der gewählten den Fokus,
 	# und deren selection_changed bringt den Hinweis.
 	_main_menu.set_entries(entries, index)
@@ -408,7 +432,7 @@ func _show_main_menu(opener_id: StringName) -> void:
 
 func _open_difficulty_sheet() -> void:
 	_opener_id = &"new_game"
-	_show_only(_difficulty_sheet)
+	_show_layer(Layer.DIFFICULTY)
 	# Jedes Öffnen beginnt bei Mittel (FR-004). Erst jetzt ist das Blatt sichtbar und nimmt den
 	# Fokus.
 	_difficulty_sheet.select(_medium_index())
@@ -441,7 +465,7 @@ func _reload_save_list(index: int) -> bool:
 ## Zeigt die Liste mit der Zeile, die sie sich gemerkt hat. Unsichtbar meldet sie keine Auswahl und
 ## nimmt keinen Fokus; erst select() nach dem Zeigen bringt beides und den Hinweis.
 func _show_save_list() -> void:
-	_show_only(_save_list)
+	_show_layer(Layer.LIST)
 	_save_list.select(_save_list.selected_index())
 
 
@@ -503,11 +527,38 @@ func _hide_hint() -> void:
 	_communicator.hide_hint()
 
 
-## Zeigt [param sheet] als Seite des Communicators und verbirgt jede andere; der Communicator bewegt
-## sich dabei nicht (FR-005). Er verbirgt erst und zeigt dann: Ein Control, das unsichtbar wird,
-## gibt den Fokus ab, auch den eines Buttons darin.
-func _show_only(sheet: Control) -> void:
-	_communicator.show_page(sheet)
+## Legt die Ebene [param layer] nach oben und zeigt ihre Seite als Seite des Communicators; jede
+## andere verbirgt er, und er bewegt sich dabei nicht (FR-005). Er verbirgt erst und zeigt dann: Ein
+## Control, das unsichtbar wird, gibt den Fokus ab, auch den eines Buttons darin.
+##
+## Der einzige Ort, der Ebene und Seite setzt, beide im selben Zug: So laufen sie nie auseinander.
+## Den Löschmodus lässt er, wie er ist; ihn schalten die Liste und die Aufrufer selbst.
+func _show_layer(layer: Layer) -> void:
+	_layer = layer
+	_communicator.show_page(_page_of(layer))
+
+
+## Die Seite der Ebene [param layer]; Liste und Löschmodus teilen sich eine.
+func _page_of(layer: Layer) -> Control:
+	match layer:
+		Layer.DIFFICULTY:
+			return _difficulty_sheet
+		Layer.LIST, Layer.DELETE_MODE:
+			return _save_list
+		Layer.CONFIRM:
+			return _confirm_sheet
+		Layer.INVADERS:
+			return _invaders
+	return _main_menu
+
+
+## Die Ebene, die oben liegt: _layer, in der Liste aber DELETE_MODE, solange sie im Löschmodus ist.
+## Den Modus schaltet die Liste selbst ein (save_list.gd, Kopf); ein zweiter Schalter hier könnte
+## ihr widersprechen, deshalb fragt der Titel sie.
+func _current_layer() -> Layer:
+	if _layer == Layer.LIST and _save_list.is_delete_mode():
+		return Layer.DELETE_MODE
+	return _layer
 
 
 ## Beginnt ein Spiel mit [param level] (FR-006). Gelingt das Anlegen, führt es zum Spielbildschirm;
@@ -534,20 +585,20 @@ func _continue() -> void:
 	_show_main_menu(&"")
 
 
-## Das Spiel läuft schon: _leaving sperrt jede weitere Eingabe, dann fährt der Communicator hinaus,
-## und _on_communicator_slide_finished() wechselt die Szene. Der Hinweis der gewählten Zeile steht
-## wieder da und fährt mit dem Gerät hinaus; eine Meldung endete schon beim Auslösen. Schließt der
-## Spieler während der Fahrt das Fenster, speichert die Session wie in Feature 004.
+## Das Spiel läuft schon: Die Phase LEAVING sperrt jede weitere Eingabe, dann fährt der Communicator
+## hinaus, und _on_communicator_slide_finished() wechselt die Szene. Der Hinweis der gewählten Zeile
+## steht wieder da und fährt mit dem Gerät hinaus; eine Meldung endete schon beim Auslösen. Schließt
+## der Spieler während der Fahrt das Fenster, speichert die Session wie in Feature 004.
 func _leave() -> void:
-	_leaving = true
+	_phase = Phase.LEAVING
 	_communicator.show_hint(_selected_hint, _current_row())
 	_communicator.slide_out()
 
 
 ## Ob eine Eingabe etwas tun darf: erst wenn das Hauptmenü Einträge hat, und nicht mehr beim
-## Hinausfahren.
+## Hinausfahren; also nur in der Phase ACCEPTING.
 func _accepts_input() -> bool:
-	return _ready_for_input and not _leaving
+	return _phase == Phase.ACCEPTING
 
 
 ## Merkt sich die gewählte Zeile [param row_rect] (global) relativ zum Communicator und ihren

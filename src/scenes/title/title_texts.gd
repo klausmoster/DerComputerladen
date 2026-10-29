@@ -3,12 +3,14 @@ extends RefCounted
 
 ## Alle Texte der Blätter im Titel und des Spielbildschirms an einer Stelle (Feature 004,
 ## contracts/titelbildschirm.md, „Texte“): Kopfzeilen, Einträge, Hinweise und die Meldung zum
-## Löschen. Die Klasse hat keine Instanzen, nur Konstanten und statische Funktionen.
+## Löschen, seit Feature 008 auch Untertitel und Versionszeile des Titelbilds. Die Klasse hat keine
+## Instanzen, nur Konstanten und statische Funktionen.
 ##
 ## Texte mit Platzhaltern stehen als Vorlage da, etwa „Weiter mit {name}, {grad}, am {datum}.“;
 ## die Funktionen unten füllen sie mit String.format(). Die Platzhalter heißen {name} („Spiel 2“),
 ## {grad} („Schwer“), {datum} („14.03.1986“), {spieldatum} („13.07.1985“), {uhrzeit} („21:40“) und
-## {angaben} („Schwer, 14.03.1986“ oder „beschädigt“). {datum} ist meist das Spieldatum; nur im
+## {angaben} („Schwer, 14.03.1986“ oder „beschädigt“), in der Versionszeile {version} („0.1“) und
+## {kennzeichen} (STAGE). {datum} ist meist das Spieldatum; nur im
 ## Hinweis einer Zeile der Liste ist es der Tag von „zuletzt gespielt“, und das Spieldatum heißt
 ## dort {spieldatum}. Datum und Uhrzeit kommen schon fertig geschrieben herein.
 ##
@@ -16,6 +18,16 @@ extends RefCounted
 ## zum Speichern (GameSession.MESSAGE_*) und die Gründe, warum ein Spielstand nicht fortsetzbar ist
 ## (SaveGame.REASON_*, SaveSlot.REASON_*). test_title_texts.gd misst alle zusammen: Jeder Hinweis und
 ## jede Meldung passt in höchstens zwei Zeilen des Hinweises.
+
+# --- Titelbild ---------------------------------------------------------------------------------
+
+## Der Untertitel unter dem Logo.
+const SUBTITLE := "WIRTSCHAFTSSIMULATION · 1985–1999"
+## Kennzeichen in der Versionszeile, solange das Spiel ein Prototyp ist; ohne Version steht es
+## allein.
+const STAGE := "PROTOTYP"
+## Die Versionszeile oben rechts: „V0.1 · PROTOTYP“.
+const VERSION_LINE := "V{version} · {kennzeichen}"
 
 # --- Kopfzeilen --------------------------------------------------------------------------------
 
@@ -119,6 +131,11 @@ const INVADERS_LOST := "GAME OVER"
 const INVADERS_POINTS := "%d PUNKTE"
 ## Ergebnisanzeige, Zeile 3; Bedienung, ohne Witz.
 const INVADERS_CONTINUE := "Weiter mit Taste oder Klick."
+
+
+## „V0.1 · PROTOTYP“: die Versionszeile zu [param version], einer Nummer wie „0.1“.
+static func version_line(version: String) -> String:
+	return VERSION_LINE.format({"version": version, "kennzeichen": STAGE})
 
 
 ## „Weiter mit Spiel 2, Schwer, am 14.03.1986.“

@@ -43,9 +43,9 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Wird beim Beenden aufgerufen; ungültig heißt get_tree().quit(). Tests setzen eine eigene
 ## Funktion, denn quit() beendete ihren ganzen Lauf (wie Werkstatt.quit_callback).
 var quit_callback: Callable
-## Das laufende Spiel; null, solange keins läuft.
+## Das laufende Spiel; null, solange keins läuft. Nur lesen.
 var current: SaveGame = null
-## Satz zum letzten Fehler, für die Meldung.
+## Satz zum letzten Fehler, für die Meldung. Nur lesen.
 var last_error: String = ""
 
 ## Das Speichern beim Schließen ist einmal gescheitert; das nächste Schließen beendet ohne (R8).

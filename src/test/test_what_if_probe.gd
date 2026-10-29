@@ -55,6 +55,22 @@ func test_from_run_nimmt_seed_tag_und_eine_kopie_des_protokolls() -> void:
 	assert_eq(WhatIfProbe.from_run("!!!", run).id, "probe", "Ohne Buchstaben und Ziffern.")
 
 
+func test_end_day_ist_der_spaetere_tag_aus_lauf_und_letztem_eingriff() -> void:
+	# Arrange (Feature 008, T036a, W3): ein Eingriff am 01.01.1992 und einer ohne lesbaren Tag.
+	var run := TimelineRun.new(_katalog(), 4711)
+	run.advance_to(_tag(1992, 1, 1))
+	assert_eq(run.add_modifier(_windiger_haendler()), OK)
+	var probe := WhatIfProbe.new()
+	probe.interventions = run.interventions.duplicate(true)
+	probe.interventions.append({"kind": TimelineRun.INTERVENTION_CANCEL})
+
+	# Act und Assert
+	assert_eq(probe.end_day(-1), _tag(1992, 1, 1), "Vor Spielbeginn: bis zum letzten Eingriff.")
+	assert_eq(probe.end_day(_tag(1993, 7, 1)), _tag(1993, 7, 1), "Danach: bis zum Stand des Laufs.")
+	assert_eq(probe.end_day(LETZTER_TAG + 1), LETZTER_TAG, "Höchstens der 31.12.1999.")
+	assert_eq(WhatIfProbe.new().end_day(-1), -1, "Ohne Eingriffe der Stand des Laufs.")
+
+
 func test_szenario_7_gespeicherte_probe_ergibt_denselben_fahrplan() -> void:
 	# Arrange (US6, Szenario 7): Seed 4711, der Modifikator aus Szenario 1, die Absage von
 	# „Konkurrent eröffnet“ am 01.01.1992 und die Absage eines gewürfelten Termins, den es erst

@@ -206,6 +206,34 @@ func test_abbrechen_zeigt_die_fertigen_spiele_samt_ihrer_zahl() -> void:
 	assert_eq(panel.statistics.games_done, fertig)
 
 
+func test_nach_dem_abbrechen_rechnet_ein_neuer_start_fertig() -> void:
+	# Arrange (Feature 008, T036a, W4): nie gerechnet, rechnet, abgebrochen, dann wieder rechnet und
+	# fertig.
+	var werkstatt := await _werkstatt()
+	var panel := _statistik(werkstatt)
+	var ergebnis: Label = panel.get_node("%ResultLabel")
+	var vorher := ergebnis.text
+	_anzahl(panel, "200")
+	_druecken(panel, "%StartButton")
+	var rechnet := ergebnis.text
+	_druecken(panel, "%CancelButton")
+	var abgebrochen := ergebnis.text
+	_anzahl(panel, "5")
+
+	# Act
+	_druecken(panel, "%StartButton")
+	await _bis_fertig(panel)
+
+	# Assert
+	assert_string_starts_with(vorher, "Noch keine Statistik.")
+	assert_string_starts_with(rechnet, "Rechnet 200 Spiele")
+	assert_string_starts_with(abgebrochen, "Abgebrochen")
+	assert_string_starts_with(ergebnis.text, "Ergebnis über 5 Spiele, Seeds 1 bis 5, Mittel",
+		"Der neue Start zählt nicht mehr als abgebrochen.")
+	assert_false(panel.get_node("%StartButton").disabled)
+	assert_true(panel.get_node("%CancelButton").disabled)
+
+
 # --- Verteilung auf die Jahre (US7, Szenario 2) -----------------------------------------------
 
 func test_verteilung_der_gewaehlten_zeile_als_balken_ohne_text_auf_der_farbe() -> void:

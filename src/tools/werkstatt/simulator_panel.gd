@@ -113,6 +113,9 @@ var run: TimelineRun
 var probe := WhatIfProbe.new()
 ## Hier liegen die Proben; Tests setzen einen eigenen Ordner unter user://.
 var probe_folder: String = WhatIfProbe.FOLDER
+## Würfelt den Seed für „Würfeln“ statt Godots globalem Würfel (AR-08), wie Timeline.rng und
+## GameSession.rng; Tests setzen einen mit festem Seed.
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Ob der Fahrplan mit Mittel ohne Eingriffe vergleicht statt mit demselben Grad ohne Eingriffe
 ## (FR-018, R13). Das Häkchen %CompareMittel setzt es; wer es aus dem Code setzt, setzt das Häkchen
 ## mit, und der Vergleich rechnet neu. Bei Mittel ändert es nichts (Edge Case „Vergleich bei
@@ -310,10 +313,10 @@ func refresh() -> void:
 	_apply_refresh.call_deferred()
 
 
-## „Würfeln“: ein zufälliger Seed von 0 bis 2.147.483.647 ins Feld. Erzeugt wird erst mit
-## „Fahrplan erzeugen“.
+## „Würfeln“: ein zufälliger Seed von 0 bis 2.147.483.647 aus [member rng] ins Feld. Erzeugt wird
+## erst mit „Fahrplan erzeugen“.
 func roll_seed() -> void:
-	_seed_edit.text = str(randi_range(0, MAX_SEED))
+	_seed_edit.text = str(rng.randi_range(0, MAX_SEED))
 	_update_controls()
 
 
@@ -363,8 +366,8 @@ func play_until(day: int) -> void:
 ## „Neu starten mit Eingriffen“ bzw. „ohne Eingriffe“ (FR-043): ein frischer Lauf mit dem Seed des
 ## aktuellen Laufs auf dem Katalog, wie er jetzt dasteht. Ohne Eingriffe spielt er bis zu dem Tag,
 ## auf dem der alte Lauf stand. Mit Eingriffen spielt WhatIfProbe.build_run() die gesammelten an
-## ihren Tagen nach (R22), bis zum Endtag aus _end_day(); was nicht passt, nennt ein Hinweis. Die
-## gesammelten Eingriffe bleiben so oder so.
+## ihren Tagen nach (R22), bis zum Endtag aus WhatIfProbe.end_day(); was nicht passt, nennt ein
+## Hinweis. Die gesammelten Eingriffe bleiben so oder so.
 ##
 ## Beide behalten den Grad des Laufs (Feature 003). Die Probe des Panels bekommt ihn deshalb wie
 ## den Seed vor build_run(); sonst bliebe dort der Grad einer früher geladenen Probe, und nach
@@ -375,7 +378,7 @@ func restart(with_interventions: bool) -> void:
 	if with_interventions:
 		probe.seed = run.seed
 		probe.difficulty = run.difficulty
-		probe.until_day = _end_day()
+		probe.until_day = probe.end_day(run.today)
 		run = probe.build_run(_effective_catalog())
 		_start_run(probe.not_applicable)
 		return
@@ -399,10 +402,10 @@ func load_probe(loaded: WhatIfProbe) -> void:
 
 
 ## Schreibt die gesammelten Eingriffe mit Seed und Grad des aktuellen Laufs und dem Endtag aus
-## _end_day() als Probe [param probe_name] nach probe_folder (FR-051). Die Kennung, zugleich der
-## Dateiname, entsteht aus dem Namen; eine Probe mit derselben Kennung wird überschrieben, gefragt
-## wird vorher im Dialog. Danach gehören Name und Kennung zur Probe des Panels, „Probe löschen“
-## meint diese.
+## WhatIfProbe.end_day() als Probe [param probe_name] nach probe_folder (FR-051). Die Kennung,
+## zugleich der Dateiname, entsteht aus dem Namen; eine Probe mit derselben Kennung wird
+## überschrieben, gefragt wird vorher im Dialog. Danach gehören Name und Kennung zur Probe des
+## Panels, „Probe löschen“ meint diese.
 func save_probe(probe_name: String) -> Error:
 	if run == null:
 		return ERR_UNCONFIGURED
@@ -411,8 +414,8 @@ func save_probe(probe_name: String) -> Error:
 	saved.id = CatalogEditor.id_from(saved.name, "probe")
 	saved.seed = run.seed
 	saved.difficulty = run.difficulty
-	saved.until_day = _end_day()
 	saved.interventions = probe.interventions.duplicate(true)
+	saved.until_day = saved.end_day(run.today)
 	var error := saved.write_file(probe_folder)
 	if error == OK:
 		probe.id = saved.id
@@ -501,20 +504,6 @@ func _after_change() -> void:
 	_update_controls()
 
 
-## Bis wohin „Neu starten mit Eingriffen“ spielt und welchen Stand „Probe speichern“ festhält: der
-## spätere Tag aus dem Stand des Laufs und dem letzten at_day der gesammelten Eingriffe, höchstens
-## der 31.12.1999. Früher geht es nicht, denn um einen Eingriff nachzuspielen, muss der Lauf bis zu
-## dessen Tag kommen, und zurück spielt er nie. Beispiel: Gesammelt ist ein Modifikator vom
-## 01.01.1992, dann kam „Fahrplan erzeugen“; der Lauf steht vor dem 01.01.1985, der Endtag ist der
-## 01.01.1992. Nur für einen Lauf, also run != null.
-func _end_day() -> int:
-	var day := run.today
-	for record in probe.interventions:
-		# Ohne lesbaren Tag gibt es −1; das hebt den Endtag nie.
-		day = maxi(day, TimelineRun.intervention_day(record))
-	return mini(day, TimelineRun.LAST_DAY)
-
-
 func _effective_catalog() -> EventCatalog:
 	return editor.catalog.without_faulty(editor.issues())
 
@@ -551,7 +540,7 @@ func _on_seed_changed(text: String) -> void:
 func _on_until_pressed() -> void:
 	if run == null:
 		return
-	var parsed := EventForm.parse_date(_until_edit.text)
+	var parsed := FieldHelpers.parse_date(_until_edit.text)
 	var day: int = parsed[1] if parsed[0] else -1
 	var problem := ""
 	if _until_edit.text.strip_edges().is_empty():
@@ -561,10 +550,10 @@ func _on_until_pressed() -> void:
 	elif day < TimelineRun.FIRST_DAY or day > TimelineRun.LAST_DAY:
 		problem = "Der Simulator spielt vom 01.01.1985 bis zum 31.12.1999."
 	elif day <= run.today:
-		problem = "Der %s ist schon abgespielt." % EventForm.format_date(day)
+		problem = "Der %s ist schon abgespielt." % FieldHelpers.format_date(day)
 	_show_input_problem(problem)
 	if problem.is_empty():
-		_until_edit.text = EventForm.format_date(day)
+		_until_edit.text = FieldHelpers.format_date(day)
 		play_until(day)
 
 
@@ -669,9 +658,9 @@ func _date_text() -> String:
 		return "Kein Katalog geladen" if not _has_catalog() else "Noch kein Fahrplan"
 	var when := "vor dem 01.01.1985"
 	if run.is_finished():
-		when = "%s, Spielende" % EventForm.format_date(run.today)
+		when = "%s, Spielende" % FieldHelpers.format_date(run.today)
 	elif run.today >= TimelineRun.FIRST_DAY:
-		when = EventForm.format_date(run.today)
+		when = FieldHelpers.format_date(run.today)
 	return "Stand: %s · Seed %d" % [when, run.seed]
 
 
@@ -890,8 +879,8 @@ func _add_modifier_row(root: TreeItem, modifier: ChanceModifier, reason: String)
 	var item := _modifier_list.create_item(root)
 	item.set_text(ModifierColumn.EVENT, _event_title(modifier.event_id))
 	item.set_text(ModifierColumn.VALUE, _points(modifier.value))
-	item.set_text(ModifierColumn.FROM, EventForm.format_date(modifier.from_day))
-	item.set_text(ModifierColumn.TO, EventForm.format_date(modifier.to_day))
+	item.set_text(ModifierColumn.FROM, FieldHelpers.format_date(modifier.from_day))
+	item.set_text(ModifierColumn.TO, FieldHelpers.format_date(modifier.to_day))
 	item.set_text(ModifierColumn.REASON, reason)
 	item.set_metadata(ModifierColumn.EVENT, modifier.id)
 	return item
@@ -914,10 +903,10 @@ func _chance_text() -> String:
 	if run == null or (run.modifiers.is_empty() and run.start_modifiers.is_empty()):
 		return ""
 	var day := _first_of_next_month(run.today)
-	var heading := "Nächste Würfelrunde am %s:" % EventForm.format_date(day)
+	var heading := "Nächste Würfelrunde am %s:" % FieldHelpers.format_date(day)
 	if day > TimelineRun.LAST_DAY:
 		day = TimelineRun.LAST_DAY
-		heading = "Keine Würfelrunde mehr; am %s:" % EventForm.format_date(day)
+		heading = "Keine Würfelrunde mehr; am %s:" % FieldHelpers.format_date(day)
 	var lines := PackedStringArray([heading])
 	var seen := {}
 	var all: Array[ChanceModifier] = []
@@ -1145,7 +1134,7 @@ func _plan_rows() -> Array[Dictionary]:
 ## weggefallenen Termin −1 − seine Stelle in ScheduleDiff.removed.
 func _add_plan_row(root: TreeItem, entry: ScheduleEntry, removed: int) -> TreeItem:
 	var item := _plan_table.create_item(root)
-	item.set_text(PlanColumn.DATE, EventForm.format_date(entry.day))
+	item.set_text(PlanColumn.DATE, FieldHelpers.format_date(entry.day))
 	item.set_text(PlanColumn.EVENT, _title_of(entry.event))
 	item.set_text(PlanColumn.ORIGIN, entry.origin_label())
 	item.set_text(PlanColumn.STATE, entry.state_label())
@@ -1172,7 +1161,7 @@ static func _diff_text(mark: ScheduleDiff.Mark) -> String:
 static func _diff_tip(mark: ScheduleDiff.Mark, entry: ScheduleEntry, tips: Dictionary) -> String:
 	var tip: String = tips.get(mark, "")
 	if mark == ScheduleDiff.Mark.MOVED:
-		tip = tip % EventForm.format_date(entry.moved_from_day)
+		tip = tip % FieldHelpers.format_date(entry.moved_from_day)
 	return tip
 
 
@@ -1256,7 +1245,7 @@ static func _explanation(entry: ScheduleEntry) -> String:
 		for item in due:
 			var effect: EventEffect = item["effect"]
 			var day: int = item["day"]
-			var line := "%s  %s" % [EventForm.format_date(day), effect.describe()]
+			var line := "%s  %s" % [FieldHelpers.format_date(day), effect.describe()]
 			if day > TimelineRun.LAST_DAY:
 				line += " (nach Spielende, wird nicht gemeldet)"
 			lines.append(line)
@@ -1275,10 +1264,10 @@ static func _has_delayed_effects(event: TimelineEvent) -> bool:
 ## „22.03.1993“, mit Dauer „01.11.1993 bis 31.12.1993“: Der letzte Tag ist der vor end_day, denn
 ## das Ende wird am Tag danach gemeldet.
 static func _period(entry: ScheduleEntry) -> String:
-	var start := EventForm.format_date(entry.day)
+	var start := FieldHelpers.format_date(entry.day)
 	if entry.end_day <= entry.day:
 		return start
-	return "%s bis %s" % [start, EventForm.format_date(entry.end_day - 1)]
+	return "%s bis %s" % [start, FieldHelpers.format_date(entry.end_day - 1)]
 
 
 # --- Protokoll --------------------------------------------------------------------------------
@@ -1376,7 +1365,7 @@ func _open_load_dialog() -> void:
 		item.set_text(ProbeColumn.NAME, listed.name)
 		item.set_text(ProbeColumn.SEED, str(listed.seed))
 		item.set_text(ProbeColumn.DIFFICULTY, Difficulty.label(listed.difficulty))
-		item.set_text(ProbeColumn.UNTIL, EventForm.format_date(listed.until_day)
+		item.set_text(ProbeColumn.UNTIL, FieldHelpers.format_date(listed.until_day)
 			if listed.until_day >= TimelineRun.FIRST_DAY else "vor Spielbeginn")
 		item.set_text(ProbeColumn.COUNT, _grouped(listed.interventions.size()))
 		item.set_metadata(ProbeColumn.NAME, i)
@@ -1462,12 +1451,12 @@ static func _grouped(count: int) -> String:
 
 ## Ein Anteil als Prozent mit Komma und echtem Minuszeichen: −0,03 als „−3 %“.
 static func _percent(share: float) -> String:
-	return "%s %%" % EventForm.format_number(share * 100.0).replace("-", "−")
+	return "%s %%" % FieldHelpers.format_number(share * 100.0).replace("-", "−")
 
 
 ## Ein Modifikator in Prozentpunkten mit Vorzeichen (Style-Guide): +0,05 als „+5“, −0,06 als „−6“.
 static func _points(share: float) -> String:
-	var number := EventForm.format_number(absf(share) * 100.0)
+	var number := FieldHelpers.format_number(absf(share) * 100.0)
 	if number == "0":
 		return "0"
 	return ("+" if share > 0.0 else "−") + number

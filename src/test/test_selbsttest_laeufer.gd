@@ -17,6 +17,9 @@ const SITZUNG := preload("res://core/game_session.gd")
 ## 28.10.2026, 14:03:12, Ortszeit
 const START := {"year": 2026, "month": 10, "day": 28, "hour": 14, "minute": 3, "second": 12}
 const LAUF_ID := "2026-10-28_14-03-12"
+## Wo die Kette steht, wenn das Fenster zugeht: beim Warten auf den Zustand, in den Eingaben, beim
+## Foto. An jeder dieser Stellen wartet sie mit await und muss danach aufhören (Feature 008, T036b).
+const STILLSTAND: Array[String] = ["warten", "eingaben", "foto"]
 
 var _laeufer: SelbsttestLaeufer
 var _lauf: SelbsttestLauf
@@ -316,6 +319,79 @@ func test_nach_dem_schreiben_hoert_der_laeufer_nicht_mehr_auf_das_schliessen() -
 	assert_eq(_lauf.abbruch, "keiner")
 	assert_eq(_beendet, 0)
 	assert_eq(_zusammengefasst, 1)
+
+
+func test_nach_dem_schliessen_steht_die_kette_still(
+		wo: String = use_parameters(STILLSTAND)) -> void:
+	# Arrange: Schritt titel.02_zwei hält bei [wo] an, bis das Fenster zu ist; danach ginge er
+	# sofort weiter. Läuft die angehaltene Kette nach dem Abbruch weiter, zählen die Zähler mit, und
+	# fertig und die Zusammenfassung kämen ein zweites Mal (Feature 008, T036b).
+	var angekommen := [false]
+	var geschlossen := [false]
+	var zaehler := {"eingaben": 0, "pruefungen": 0, "fotos": 0}
+	var halte_an := func() -> void:
+		angekommen[0] = true
+		while not geschlossen[0]:
+			await get_tree().process_frame
+	var eingaben := func() -> void:
+		zaehler["eingaben"] += 1
+		if wo == "eingaben":
+			await halte_an.call()
+	var erwartet := func() -> String:
+		zaehler["pruefungen"] += 1
+		if wo == "warten" and not geschlossen[0]:
+			angekommen[0] = true
+			return "Communicator nicht in Endlage"
+		return ""
+	_laeufer.fotograf = func() -> Image:
+		zaehler["fotos"] += 1
+		if wo == "foto" and _laeufer.schritt_kennung() == "titel.02_zwei":
+			await halte_an.call()
+		return await _foto()
+	var titel := _ablauf("titel", [_schritt("01_start"), _schritt("02_zwei", eingaben, erwartet),
+		_schritt("03_drei", eingaben, erwartet)])
+	var danach := _ablauf("easter_egg", [_schritt("01_folge", eingaben, erwartet)])
+	var fertig := []
+	_laeufer.fertig.connect(func(lauf: SelbsttestLauf) -> void: fertig.append(lauf))
+	_laeufer.starte(_lauf, [titel, danach] as Array[SelbsttestAblauf])
+	var steht: bool = await wait_until(func() -> bool: return angekommen[0], 5.0)
+	assert_true(steht, "%s: Schritt titel.02_zwei hält an." % wo)
+
+	# Act (FR-010): schließen, dann darf die Kette weiter, so lange sie will.
+	_laeufer.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	var vorher := zaehler.duplicate()
+	var vorbereitet := _vorbereitet
+	var gesehen := _gesehen.size()
+	geschlossen[0] = true
+	await wait_process_frames(10)
+
+	# Assert: kein Schritt, keine Eingabe, keine Prüfung, kein Foto nach dem Abbruch.
+	assert_eq(zaehler, vorher, "%s: Nach dem Schließen geschieht nichts mehr." % wo)
+	assert_eq(_gesehen.size(), gesehen, "%s: Kein weiterer Schritt beginnt." % wo)
+	assert_eq(_vorbereitet, vorbereitet, "%s: Kein weiterer Ablauf beginnt." % wo)
+	assert_false(FileAccess.file_exists(BASIS + LAUF_ID + "/fotos/titel.02_zwei.png"),
+		"%s: Das Foto des abgebrochenen Schritts bleibt ungeschrieben." % wo)
+	assert_eq([fertig.size(), _beendet, _zusammengefasst], [1, 1, 0],
+		"%s: Einmal fertig, einmal beendet, keine Zusammenfassung." % wo)
+	assert_eq(_lauf.abbruch, "titel.02_zwei")
+	assert_eq(get_window().title, SelbsttestTexte.FENSTERTITEL_DANACH,
+		"%s: Der Fenstertitel nennt keinen Schritt mehr." % wo)
+	assert_eq(Engine.time_scale, 1.0, "%s: Kein Zeitraffer mehr." % wo)
+
+
+func test_vor_dem_start_hoert_der_laeufer_nicht_auf_das_schliessen() -> void:
+	# Arrange (Feature 008, T036a, B3): Der Läufer ist bereit, starte() kam noch nicht.
+	var fertig := []
+	_laeufer.fertig.connect(func(lauf: SelbsttestLauf) -> void: fertig.append(lauf))
+
+	# Act
+	_laeufer.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	_laeufer.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+
+	# Assert: Nichts geschrieben, nichts beendet, kein Fokusverlust vermerkt.
+	assert_eq([fertig.size(), _beendet, _zusammengefasst], [0, 0, 0])
+	assert_eq(_lauf.fokusverluste.size(), 0)
+	assert_false(FileAccess.file_exists(BASIS + LAUF_ID + "/protokoll.txt"))
 
 
 func test_ein_ordner_ausserhalb_des_selbsttests_wird_nie_geleert() -> void:

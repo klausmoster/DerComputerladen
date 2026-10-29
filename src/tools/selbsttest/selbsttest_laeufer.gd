@@ -16,7 +16,12 @@ extends Node
 ## Der Ablauf ist eine Kette von await: Der Läufer wartet auf Bilder (process_frame), auf das fertig
 ## gemalte Bild für das Foto (frame_post_draw) und auf die Eingaben. Dazwischen läuft das Spiel
 ## ganz normal weiter. Wird das Fenster geschlossen, schreibt _brich_ab() sofort alles und beendet;
-## die angehaltene Kette merkt beim nächsten Weiterlaufen an _abgebrochen, dass sie aufhören soll.
+## die angehaltene Kette merkt beim nächsten Weiterlaufen an _hoert_auf(), dass sie aufhören soll.
+##
+## Zustand (AR-11): BEREIT bis starte(), dann LAEUFT. Schließt Klaus das Fenster, ist er kurz
+## ABGEBROCHEN, bis Protokoll, Ausgabe und Zip geschrieben sind; nach dem Schreiben, beim normalen
+## Ende wie beim Abbruch, ist er GESCHRIEBEN, und nach einem Abbruch beendet er die App: BEENDET.
+## Jeder Zustand kommt nur einmal und nur in dieser Reihenfolge.
 ##
 ## Für Tests ohne Fenster lassen sich frischer Titel, Foto, Zusammenfassung und Beenden über
 ## Callables ersetzen (vorbereitung, fotograf, zusammenfassung, beenden), wie quit_callback in
@@ -24,10 +29,9 @@ extends Node
 
 ## Steht im Protokoll als selbsttest.version; steigt, wenn sich Abläufe ändern (R21).
 const VERSION := 2
-## Der Titel, den jeder Ablauf ohne baut_auf frisch lädt.
-const TITEL := "res://scenes/title/title_screen.tscn"
-## Nur unter diesem Ordner leert der Läufer Spielstände; echte liegen nie dort (FR-008).
-const EIGENER_ORDNER := "user://selbsttest/"
+## Nur unter diesem Ordner leert der Läufer Spielstände; echte liegen nie dort (FR-008). Es ist
+## der Ordner der App, in dem auch die Ablage liegt.
+const EIGENER_ORDNER := SelbsttestAblage.BASIS
 ## Die Abläufe in der Reihenfolge des Vertrags; wer auf einem anderen aufbaut, kommt gleich nach
 ## ihm. titel_echtzeit läuft als letzter (contracts/ablaeufe.md).
 ## Szenarien kommen später als Skripte aus szenarien/ vor titel_echtzeit dazu (R27).
@@ -48,6 +52,9 @@ const SESSION_SCRIPT := preload("res://core/game_session.gd")
 
 ## Nach dem Schreiben, beim normalen Ende wie beim Abbruch.
 signal fertig(lauf: SelbsttestLauf)
+
+## Wo der Läufer steht; siehe Kopf.
+enum Zustand { BEREIT, LAEUFT, ABGEBROCHEN, GESCHRIEBEN, BEENDET }
 
 var fahrer: SelbsttestFahrer = null
 var eingabe: SelbsttestEingabe = null
@@ -77,10 +84,7 @@ var _schritte: Dictionary = {}
 ## Die Kennung des Schritts, der gerade dran ist.
 var _kennung := ""
 var _start_ms := 0
-var _laeuft := false
-var _abgebrochen := false
-var _geschrieben := false
-var _beendet := false
+var _zustand: Zustand = Zustand.BEREIT
 var _quit_callback_vorher: Callable
 
 
@@ -106,7 +110,7 @@ func starte(p_lauf: SelbsttestLauf, p_ablaeufe: Array[SelbsttestAblauf]) -> void
 	var sitzung := _session()
 	_quit_callback_vorher = sitzung.quit_callback
 	sitzung.quit_callback = _brich_ab
-	_laeuft = true
+	_zustand = Zustand.LAEUFT
 	_start_ms = Time.get_ticks_msec()
 	_laufe()
 
@@ -119,11 +123,11 @@ func schritt_kennung() -> String:
 func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_APPLICATION_FOCUS_OUT:
-			if _laeuft and lauf != null:
+			if _zustand == Zustand.LAEUFT and lauf != null:
 				lauf.vermerke_fokusverlust(_kennung, Time.get_ticks_msec() - _start_ms)
 		NOTIFICATION_WM_CLOSE_REQUEST:
 			# Nach dem Schreiben hört der Läufer nicht mehr auf das Schließen (CHK028).
-			if _laeuft:
+			if _zustand == Zustand.LAEUFT:
 				_brich_ab()
 
 
@@ -132,7 +136,7 @@ func _notification(what: int) -> void:
 func _laufe() -> void:
 	var treiber_geholt := false
 	for ablauf in _ablaeufe:
-		if _abgebrochen:
+		if _hoert_auf():
 			return
 		var liste: Array[Dictionary] = _schritte[ablauf.kennung]
 		if liste.is_empty() or not lauf.ablauf_offen(ablauf.kennung):
@@ -147,14 +151,14 @@ func _laufe() -> void:
 				await vorbereitung.call()
 			else:
 				await _frischer_titel()
-			if _abgebrochen:
+			if _hoert_auf():
 				return
 		for daten in liste:
-			if _abgebrochen:
+			if _hoert_auf():
 				return
 			if lauf.ist_offen(daten["kennung"]):
 				await _fuehre_aus(ablauf, daten, frisch and daten["kennung"] == erster)
-		if _abgebrochen:
+		if _hoert_auf():
 			return
 		if fahrer != null:
 			ablauf.aufraeumen(fahrer)
@@ -164,7 +168,7 @@ func _laufe() -> void:
 		if not treiber_geholt and system != null:
 			system.hole_treiber()
 			treiber_geholt = true
-	if _abgebrochen:
+	if _hoert_auf():
 		return
 	_schreibe()
 	fertig.emit(lauf)
@@ -186,12 +190,12 @@ func _fuehre_aus(ablauf: SelbsttestAblauf, daten: Dictionary, nach_frischem_tite
 			and daten.get("eingaben_text", SelbsttestTexte.EINGABEN_KEINE) \
 				!= SelbsttestTexte.EINGABEN_KEINE:
 		await _warte_bis(fahrer.communicator_steht, beginn + hoechstzeit)
-		if _abgebrochen:
+		if _hoert_auf():
 			return
 	if eingabe != null:
 		eingabe.merke_beginn()
 	var antwort: Variant = await (daten["eingaben"] as Callable).call()
-	if _abgebrochen:
+	if _hoert_auf():
 		return
 	# dauer_ms zählt ab der ersten Eingabe, ohne Eingabe ab Beginn des Schritts (Analyse, I1).
 	var erste := eingabe.erste_eingabe_ms() if eingabe != null else -1
@@ -210,11 +214,11 @@ func _fuehre_aus(ablauf: SelbsttestAblauf, daten: Dictionary, nach_frischem_tite
 				gefunden = SelbsttestTexte.zeit_abgelaufen(zustand)
 				break
 			await get_tree().process_frame
-			if _abgebrochen:
+			if _hoert_auf():
 				return
 	var dauer := Time.get_ticks_msec() - start
 	await _fotografiere(kennung)
-	if _abgebrochen:
+	if _hoert_auf():
 		return
 	var meldungen := logger.meldungen(kennung) if logger != null else PackedStringArray()
 	if gefunden.is_empty():
@@ -234,7 +238,7 @@ func _frischer_titel() -> void:
 	# zwei Wechsel in einem Bild vertragen sich nicht.
 	await _warte_bis(func() -> bool: return baum.current_scene is TitleScreen \
 		or baum.current_scene is GameScreen, frist)
-	if _abgebrochen:
+	if _hoert_auf():
 		return
 	var sitzung := _session()
 	if sitzung.is_running():
@@ -243,11 +247,11 @@ func _frischer_titel() -> void:
 			logger.eigener_fehler(SelbsttestTexte.SPIEL_NICHT_BEENDET % error_string(fehler))
 	_leere_spielstaende(sitzung.folder)
 	var alt := baum.current_scene.get_instance_id() if baum.current_scene != null else 0
-	baum.change_scene_to_file(TITEL)
+	baum.change_scene_to_file(SelbsttestFahrer.TITEL)
 	var neu := await _warte_bis(func() -> bool: return baum.current_scene is TitleScreen \
 		and baum.current_scene.get_instance_id() != alt,
 		Time.get_ticks_msec() + SelbsttestAblauf.HOECHSTZEIT_MS)
-	if not neu and not _abgebrochen and logger != null:
+	if not neu and not _hoert_auf() and logger != null:
 		logger.eigener_fehler(SelbsttestTexte.TITEL_KAM_NICHT)
 
 
@@ -266,7 +270,7 @@ func _leere_spielstaende(ordner: String) -> void:
 ## vorbei; true, wenn die Bedingung kam.
 func _warte_bis(bedingung: Callable, frist: int) -> bool:
 	while not bedingung.call():
-		if _abgebrochen or Time.get_ticks_msec() >= frist:
+		if _hoert_auf() or Time.get_ticks_msec() >= frist:
 			return false
 		await get_tree().process_frame
 	return true
@@ -280,7 +284,7 @@ func _fotografiere(kennung: String) -> void:
 		bild = await fotograf.call()
 	else:
 		bild = await _foto()
-	if _abgebrochen or ablage == null:
+	if _hoert_auf() or ablage == null:
 		return
 	var fehler := ablage.speichere_foto(kennung, bild)
 	if fehler != OK and logger != null:
@@ -310,8 +314,8 @@ func _beginne(kennung: String, ablauf: SelbsttestAblauf) -> void:
 ## NOTIFICATION_WM_CLOSE_REQUEST und, solange ein Spiel läuft, über GameSession.quit_callback,
 ## nachdem die Session gespeichert hat; was zuerst kommt, gilt.
 func _brich_ab() -> void:
-	if not _geschrieben:
-		_abgebrochen = true
+	if not _ist_geschrieben():
+		_zustand = Zustand.ABGEBROCHEN
 		lauf.brich_ab(_kennung)
 		_schreibe()
 		fertig.emit(lauf)
@@ -320,10 +324,9 @@ func _brich_ab() -> void:
 
 ## Schreibt Protokoll, Ausgabe und Zip, einmal. Danach ist der Filter aus und der Logger ab.
 func _schreibe() -> void:
-	if _geschrieben:
+	if _ist_geschrieben():
 		return
-	_geschrieben = true
-	_laeuft = false
+	_zustand = Zustand.GESCHRIEBEN
 	Engine.time_scale = 1.0
 	lauf.dauer_ms = Time.get_ticks_msec() - _start_ms
 	_session().quit_callback = _quit_callback_vorher
@@ -363,9 +366,9 @@ func _zeige_zusammenfassung() -> void:
 
 
 func _beende() -> void:
-	if _beendet:
+	if _zustand == Zustand.BEENDET:
 		return
-	_beendet = true
+	_zustand = Zustand.BEENDET
 	if beenden.is_valid():
 		beenden.call()
 	else:
@@ -373,6 +376,21 @@ func _beende() -> void:
 
 
 # --- Hilfen ---------------------------------------------------------------------------------------
+
+## Ob die Kette der Abläufe aufhören soll: Der Lauf läuft nicht mehr, weil Klaus das Fenster
+## geschlossen hat. Die Kette selbst schreibt erst, wenn sie fertig ist, und fragt danach nicht
+## mehr.
+func _hoert_auf() -> bool:
+	return _zustand != Zustand.LAEUFT
+
+
+## Ob Protokoll, Ausgabe und Zip schon geschrieben sind; BEENDET kommt nur nach dem Schreiben.
+func _ist_geschrieben() -> bool:
+	match _zustand:
+		Zustand.GESCHRIEBEN, Zustand.BEENDET:
+			return true
+	return false
+
 
 func _session() -> SESSION_SCRIPT:
 	return (session if session != null else GameSession) as SESSION_SCRIPT

@@ -39,20 +39,23 @@ class Schritt:
 	extends RefCounted
 
 	## „<ablauf>.<nn>_<kurz>“, etwa „neues_spiel.04_grad_mittel“; zugleich Name des Fotos.
+	## Nur lesen.
 	var kennung: String = ""
 	## Kennung des Ablaufs.
 	var ablauf: String = ""
+	## Was der Schritt prüft, aus dem Ablauf. Nur lesen.
 	var beschreibung: String = ""
 	## Die Eingaben in Worten, etwa „Maus über „Neues Spiel“, Enter“; aus eingaben_text des Ablaufs.
 	var eingaben: String = ""
-	## Der erwartete Zustand in Worten, aus erwartet_text des Ablaufs.
+	## Der erwartete Zustand in Worten, aus erwartet_text des Ablaufs. Nur lesen.
 	var erwartet: String = ""
 	var hoechstzeit_ms: int = SelbsttestAblauf.HOECHSTZEIT_MS
 	var foto_vergleichbar: bool = true
 	## Faktor des Zeitraffers, mit dem der Schritt lief; aus dem Ablauf.
 	var zeitraffer: int = SelbsttestAblauf.ZEITRAFFER
+	## Das Ergebnis; es setzt nur der Lauf. Nur lesen.
 	var status: SelbsttestLauf.Status = SelbsttestLauf.Status.OFFEN
-	## Bei FEHLER der gefundene Zustand, bei NICHT_GELAUFEN der Grund; sonst leer.
+	## Bei FEHLER der gefundene Zustand, bei NICHT_GELAUFEN der Grund; sonst leer. Nur lesen.
 	var gefunden: String = ""
 	## Dauer in Millisekunden echter Zeit; -1, solange es keine gibt.
 	var dauer_ms: int = -1
@@ -68,11 +71,12 @@ class Schritt:
 		return status == SelbsttestLauf.Status.OK or status == SelbsttestLauf.Status.FEHLER
 
 
-## Datum und Uhrzeit des Starts, lokal, wie aus Time.get_datetime_dict_from_system().
+## Datum und Uhrzeit des Starts, lokal, wie aus Time.get_datetime_dict_from_system(). Nur lesen.
 var start: Dictionary
 ## „2026-10-28_14-03-12“: Name des Ordners und Anfang des Zips (data-model.md).
 var id: String
-## Die Systemdaten aus SelbsttestSystem.werte; ein fehlender Wert ist null.
+## Die Systemdaten aus SelbsttestSystem.werte; ein fehlender Wert ist null. Startszene und Läufer
+## tragen sie ein. Nur lesen.
 var system: Dictionary = {}
 ## selbsttest.version, die Nummer der Abläufe aus dem Läufer (R21); -1 heißt unbekannt.
 var version: int = -1

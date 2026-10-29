@@ -39,6 +39,9 @@ var catalog_path: String = CATALOG_PATH
 ## Die Uhr, an deren day_passed die Zeitleiste hängt; null heißt das Autoload GameClock. Tests
 ## setzen eine eigene Uhr, bevor der Knoten in den Baum kommt.
 var clock: Node = null
+## Würfelt den Seed, wenn start_game() keinen bekommt, statt Godots globalem Würfel (AR-08); Tests
+## setzen einen mit festem Seed, wie GameSession.rng.
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Der geprüfte Katalog ohne die Ereignisse mit Fehlern; leer, wenn die Datei fehlt oder nicht
 ## lesbar ist.
 var catalog: EventCatalog
@@ -61,9 +64,9 @@ func _ready() -> void:
 # Der Parameter heißt laut Vertrag seed, wie die globale Funktion seed(); die Warnung darüber
 # ist abgeschaltet, sonst wäre der Start mit -d nicht still.
 
-## Legt einen neuen Lauf mit dem Grad [param difficulty] an; [param seed] < 0 heißt würfeln, aus 0
-## bis 2.147.483.647 (FR-014). Spielt den ersten Tag ab, den 01.01.1985, sendet dessen Meldungen
-## und gibt OK zurück. Ein laufendes Spiel wird dabei ersetzt.
+## Legt einen neuen Lauf mit dem Grad [param difficulty] an; [param seed] < 0 heißt würfeln mit
+## rng, aus 0 bis 2.147.483.647 (FR-014). Spielt den ersten Tag ab, den 01.01.1985, sendet dessen
+## Meldungen und gibt OK zurück. Ein laufendes Spiel wird dabei ersetzt.
 ##
 ## Ein Seed über MAX_SEED oder ein unbekannter Grad gehört nicht zum Wertebereich: Es gibt
 ## ERR_INVALID_PARAMETER und eine Meldung, und ein laufendes Spiel bleibt, wie es ist (FR-011).
@@ -82,7 +85,7 @@ func start_game(seed: int = -1, difficulty: Difficulty.Level = Difficulty.DEFAUL
 		push_error(("Zeitleiste: Den Schwierigkeitsgrad %d gibt es nicht, bekannt sind Leicht, "
 			+ "Mittel und Schwer. Es beginnt kein neues Spiel.") % difficulty)
 		return ERR_INVALID_PARAMETER
-	var game_seed := seed if seed >= 0 else randi_range(0, MAX_SEED)
+	var game_seed := seed if seed >= 0 else rng.randi_range(0, MAX_SEED)
 	run = TimelineRun.new(catalog, game_seed, difficulty)
 	# Meist leer: Der Katalog ist schon ohne fehlerhafte Start-Modifikatoren (_load_catalog()).
 	for refusal in run.start_refusals:

@@ -4,8 +4,8 @@
 - **Laden, wenn:** etwas mit Datum, Tagen, Monaten, der Uhr oder dem Tempo zu tun hat.
 - **Code:** `src/core/game_date.gd`, `src/core/game_clock.gd` (Autoload `GameClock`)
 - **Herkunft:** `docs/features/archiv/01-01-spieluhr.md`, Feature 002 (negative Tage,
-  Kalender-Ereignisse), Feature 004 (`set_date()`)
-- **Stand:** Feature 004, 2026-10-27
+  Kalender-Ereignisse), Feature 004 (`set_date()`), Feature 008 (Zustand, Tage je Bild; T036a)
+- **Stand:** Feature 008, 2026-10-29
 
 ## Spielzeitraum
 
@@ -48,15 +48,36 @@ selbst, sie hängen sich an die Signale der Uhr.
 | `year_passed(date)` | am 1. Januar, nach `month_passed` |
 | `reached_end()` | wenn das Datum 1999 verlässt; die Uhr hält dann an |
 
-- **Start:** 01.01.1985, pausiert (`paused = true`).
-- **Laufen:** Ohne Pause zählt `_process()` mit `days_per_second` (Vorgabe 2,0) über einen
-  Akkumulator hoch und ruft je vollem Tag `advance_day()` auf.
+**Zustand** (AR-11): `GameClock.State { RUNNING, PAUSED, ENDED }` in `_state`. Die Uhr läuft, ist
+angehalten oder hat das Spielende überschritten.
+
+```mermaid
+stateDiagram-v2
+    [*] --> PAUSED
+    PAUSED --> RUNNING: paused = false
+    RUNNING --> PAUSED: paused = true
+    RUNNING --> ENDED: Datum nach 1999
+    PAUSED --> ENDED: Datum nach 1999
+    ENDED --> PAUSED: set_date() im Spielzeitraum
+```
+
+- **Start:** 01.01.1985, angehalten (`PAUSED`).
+- **`paused`** ist nur aus dem Zustand abgeleitet, ohne eigenen Speicher: Lesen gibt true, wenn
+  die Uhr nicht läuft, auch am Ende. Setzen hält an oder lässt laufen; am Ende ändert Setzen
+  nichts.
+- **Laufen:** In `RUNNING` sammelt `_process()` die Zeit mit `days_per_second` (Vorgabe 2,0) in
+  einem Akkumulator und ruft je vollem Tag `advance_day()` auf, höchstens
+  `MAX_DAYS_PER_FRAME = 4` Tage je Bild (AR-10). Bis dahin bleibt ein angefangener Tag für das
+  nächste Bild; was darüber hinausgeht, verfällt. Nach einem Hänger springt die Uhr also nicht
+  viele Tage auf einmal.
 - **Schritte:** `advance_day()`, `advance_one_month()` (bis zum nächsten Monatsersten),
   `advance_one_year()` (bis zum nächsten 1. Januar). Jeder übersprungene Tag sendet seine Signale.
-- **Pause:** `set_paused()`, `toggle_paused()`. `is_finished()` sagt, ob das Ende erreicht ist.
+- **Pause:** `set_paused()`, `toggle_paused()`. `is_finished()` sagt, ob die Uhr in `ENDED` steht.
 - **Stellen:** `set_date(date)` setzt die Uhr ohne Signale auf ein Datum; die Pause bleibt, wie sie
-  ist. `GameSession` stellt damit die Uhr beim Anlegen auf den 01.01.1985, beim Fortsetzen auf das
-  Spieldatum und beim Verlassen zurück (siehe [spielablauf.md](spielablauf.md)).
+  ist. Ein Datum nach 1999 setzt `ENDED`; ein Datum im Spielzeitraum holt die Uhr aus dem Ende,
+  sie steht dann angehalten. `GameSession` stellt damit die Uhr beim Anlegen auf den 01.01.1985,
+  beim Fortsetzen auf das Spieldatum und beim Verlassen zurück (siehe
+  [spielablauf.md](spielablauf.md)).
 
 Die Zeitleiste hängt an `day_passed` (siehe [zeitleiste.md](zeitleiste.md)). Wer die Uhr im
 Spiel startet und anhält, ist noch nicht gebaut; bisher pausiert die Uhr dauerhaft, auch auf dem

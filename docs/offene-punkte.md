@@ -300,7 +300,8 @@ Auslegungen des Agents beim Baustein Communicator, von Claude übernommen. Klaus
   Version 37): Der Rand bis 616 gilt für Anzeige und Seiten, das Gehäuse darf bis an den Bildrand;
   der Hinweis fährt mit hinaus. Die Auslegungen oben hat Klaus mit der Abnahme bestätigt.
 - **Für Phase 5 merken:** Ruft der Titel während der Sperre `select()` an Menü oder Liste, druckt
-  Godot „can't grab focus“, und die Startprobe würde laut. Das Flag `_leaving` muss deshalb auch vor
+  Godot „can't grab focus“, und die Startprobe würde laut. Das Flag `_leaving` (seit Feature 008 die
+  Phase `LEAVING` in `TitleScreen.Phase`) muss deshalb auch vor
   jedem `select()` greifen (T029).
 
 ### Feature 005, Plan (2026-10-27)
@@ -316,7 +317,8 @@ Eigene Festlegungen von Claude in `specs/005-communicator/research.md`. Klaus be
   dauert auch bei 30 Bildern je Sekunde gut 233 ms. Bis zur Analyse (C2) stand hier 1/30 s für
   jeden Schritt, was im ersten Bild 42 % ergab.
 - **Erst anlegen, dann hinausfahren** (R8): Scheitert das Anlegen, fährt nichts, und die Meldung
-  kommt sofort. Dazu sperren Communicator und ein Flag `_leaving` im Titel jede Eingabe während der
+  kommt sofort. Dazu sperren Communicator und ein Flag `_leaving` im Titel (seit Feature 008 die Phase
+  `LEAVING`) jede Eingabe während der
   Fahrt hinaus (Analyse, B2, C20).
 - **Helle Schrift der gewählten Zeile aus dem Code** (R15), weil ein Button unter der Maus die
   Hover-Farbe nimmt und das Theme allein eine Zeile unsichtbar machte (Analyse, B1).
@@ -603,6 +605,24 @@ wenn Klaus es will.
 - **Nächstes Feature nach 002:** Empfehlung 02-01 und 02-02, Bible-Importer und Warengruppen.
 - **Mac-App unter `build/macos`:** Sie stammt vom Probe-Export vor dem Fensterstart. Neu
   exportieren hat Claude angeboten.
+
+### Feature 008, Recherche (2026-10-28)
+
+- **Fließkomma auf drei Systemen:** Ob GDScript auf Windows, macOS und Linux mit Fließkomma
+  bitgleich rechnet, ist ungeprüft. Wichtig, sobald die Wirtschaft mit Seed rechnet und Spielstände
+  aus Eingriffen nachspielt (`docs/recherche/architektur-quellen.md`, 6.3).
+
+### Feature 008, nach dem Abschluss (2026-10-29)
+
+- **Beschreibungstexte der Godot-Referenz (T039d) und Handbuch `godot-docs` (T039b):** offen, nur
+  mit Klaus' Erlaubnis zum Download; Quelle und Größe nennt Claude vorher. Bis dahin hat
+  `godot_referenz/klassen/` nur Signaturen.
+- **SC-005, SC-006, SC-007 von Feature 008:** werden im ersten Feature nach 008 mit Code belegt:
+  Bestandsberichte bleiben bei null neuen Abweichungen, `plan.md` und `tasks.md` nennen den
+  Architektur-Prüfer von selbst, und nach den Code-Phasen entscheidet Klaus anhand der Zählung in
+  `ki_pruefung.md`, ob der Prüfer bleibt.
+- **Folge-Features 11-09 und 11-10** in `docs/features/Feature_Ideas.md`: Gemeinsames in `core/`
+  und `ui/`, Werkstatt entkoppeln; Klaus entscheidet, wann.
 
 ## Eigene Entscheidungen von Claude
 
@@ -974,8 +994,45 @@ und mit dem Style-Guide (T002) bestätigt (unter „Erledigt“).
   Abstand ist erlaubt (`raster-2`), jetzt sind es 3 px; Preise stehen als „499,00 DM“; „googeln“
   gab es bis 1999 nicht, auch nicht ab 1998.
 
+### Feature 008, Plan (2026-10-28)
+
+Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder Abnahme ändern:
+- **R1** Leitfaden als eine Datei `docs/architektur-leitfaden.md`, Regeln mit festen Nummern `AR-NN`.
+- **R2** Klaus entscheidet die Regeln in einer Durchsicht des Entwurfs; einzeln gefragt wird nur bei
+  echten Alternativen.
+- **R3** Begründete Ausnahme = Kommentar `# Ausnahme AR-NN: …` an der Stelle und Zeile im Leitfaden.
+- **R4** Prüfer als Subagent mit `Read, Grep, Glob`, `model: inherit`, Aufträge Phase, Plan, Bestand.
+- **R5** Bestandsprüfung in drei Läufen: Kern, Spiel und Oberfläche, Werkstatt.
+- **R6/R7** `test_architektur.gd` mit drei Prüfungen, gebaut nach der Bestandsprüfung.
+- **R8** Fehlerprobe des Prüfers unter `specs/008-architektur/fehlerprobe/`.
+- **R9** Behebung gemessen an Testzahl, Startprobe, Fahrplänen der Seeds 1, 4711, 99999 und einem
+  Spielstand.
+- **R11** Keine Planprüfung durch den Architektur-Prüfer für 008 selbst.
+- **Bestandsprüfung (Phase 3):** Klaus hat am 2026-10-28 alle 17 Abweichungen und 19 Lücken wie
+  empfohlen entschieden (`specs/008-architektur/bestandsbericht.md`): 13 Behebungen in Phase 5
+  (T036a, T036b), eine Ausnahme (`werkstatt.gd`, AR-02), zwei Features (11-09, 11-10), zwei verworfen.
+- **R12** Muster im Leitfaden: Beobachter, Komponente, Typ-Objekt, Befehl, Zustand, Spielschleife;
+  Singleton nur als Warnung. Entschieden in Phase 1 (Klaus, 2026-10-28): Der Ereigniskatalog bleibt
+  JSON als begründete Ausnahme zu AR-04; dazu kommen die Tests „kein globaler Zufall in Kernen“ und
+  „Spiel kennt Werkzeuge nicht“, die Probe „speichern, laden, vergleichen“ entfällt. Alle 20 Regeln
+  des Leitfadens hat Klaus wie vorgeschlagen übernommen.
+
+### Feature 008, Behebung Phase 5 (2026-10-29)
+
+- **Zwei Formen für Prozentpunkte bleiben:** `TimelineRun.format_points()` schreibt „+5“ und
+  „-2,5“ mit einfachem Minus, damit das Panel „Je Grad“ den Wert mit `FieldHelpers.parse_percent()`
+  wieder liest; `SimulatorPanel._points()` zeigt ihn nur an, mit echtem Minus „−“ und „0“ ohne
+  Vorzeichen nach Style-Guide. Keine Doppelung im Sinn von AR-04, weil die Formen verschiedenen
+  Zwecken dienen (T036d).
+- **Kein eigener Test für `format_points()`:** Die Fehlerprobe zeigt, dass 8 bis 26 vorhandene
+  Tests rot werden, wenn Vorzeichen, Plus oder Komma falsch sind (T036d).
+
 ## Erledigt
 
+- **Lücken aus Feature 008, alle von Klaus entschieden und eingearbeitet** (2026-10-28):
+  die fünf Lücken im Style-Guide (Abschnitt „Texte für Entwickler“) und die acht Lücken im
+  Leitfaden aus Fehler- und Planprobe; Wortlaut der Entscheidungen in der Git-Geschichte dieser
+  Datei und im Leitfaden unter „Geschichte“.
 - **Nachzug der Arbeitsweise auf `main`** (Klaus, 2026-10-27): Prüfung ergab elf veraltete Stellen.
   Behoben: Phasenprüfung fest statt „in Einführung“, Tagebuch im Einstieg, Spec Kit 1.2.3 mit
   eigener Vorlage, Regel „Aufwand“ nach `ki_dev.md`, Godot-Agent liest die Spielbeschreibung.

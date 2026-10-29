@@ -271,7 +271,8 @@ func _show_issues() -> void:
 		var is_error := issue.severity == CatalogIssue.Severity.ERROR
 		if not lines.has(field):
 			lines[field] = PackedStringArray()
-		lines[field].append(EventForm._reason(issue) if is_error else "? " + EventForm._reason(issue))
+		var text := FieldHelpers.reason(issue)
+		lines[field].append(text if is_error else "? " + text)
 		has_error[field] = has_error.get(field, false) or is_error
 	for field: String in lines:
 		var hint: Label = _hints[field]
@@ -279,7 +280,7 @@ func _show_issues() -> void:
 		hint.theme_type_variation = &"ErrorLabel" if has_error[field] else &"WarningLabel"
 		hint.visible = true
 		if has_error[field]:
-			EventForm._mark_error(_inputs[field])
+			FieldHelpers.mark_error(_inputs[field])
 
 
 ## Zeigt unter [param field], warum die Eingabe nicht ging, mit der Kontur des Fehlers. Meldungen
@@ -292,7 +293,7 @@ func _set_problem(field: String, text: String) -> void:
 	hint.text = "\n".join(lines)
 	hint.theme_type_variation = &"ErrorLabel"
 	hint.visible = true
-	EventForm._mark_error(_inputs[field])
+	FieldHelpers.mark_error(_inputs[field])
 
 
 ## In %Fields steht links die Beschriftung, rechts eine Zelle aus Feld und Hinweis darunter. Ein
@@ -364,9 +365,9 @@ func _add_row(root: TreeItem, modifier: ChanceModifier, severity: int) -> void:
 	var target := editor.catalog.get_event(modifier.event_id)
 	item.set_text(Column.EVENT, _target_label(modifier.event_id, target, false))
 	item.set_tooltip_text(Column.EVENT, "%s · %s" % [item.get_text(Column.EVENT), modifier.event_id])
-	item.set_text(Column.VALUE, TimelineRun._points(modifier.value))
-	item.set_text(Column.FROM, EventForm.format_date(modifier.from_day))
-	item.set_text(Column.TO, EventForm.format_date(modifier.to_day))
+	item.set_text(Column.VALUE, TimelineRun.format_points(modifier.value))
+	item.set_text(Column.FROM, FieldHelpers.format_date(modifier.from_day))
+	item.set_text(Column.TO, FieldHelpers.format_date(modifier.to_day))
 	item.set_text(Column.REASON, modifier.reason)
 	item.set_tooltip_text(Column.REASON, modifier.reason)
 	item.set_text(Column.ID, modifier.id)
@@ -598,24 +599,24 @@ static func _count_text(count: int) -> String:
 
 
 ## Ein Wert so, wie ihn Tabelle und Feld zeigen: Prozentpunkte mit Vorzeichen und dem einfachen
-## Minus wie TimelineRun._points(), etwa „+5“ und „-2,5“; damit liest EventForm.parse_percent()
-## die angezeigte Zahl wieder. Tage als TT.MM.JJJJ, Texte, wie sie sind.
+## Minus wie TimelineRun.format_points(), etwa „+5“ und „-2,5“; damit liest
+## FieldHelpers.parse_percent() die angezeigte Zahl wieder. Tage als TT.MM.JJJJ, Texte, wie sie sind.
 static func _format(field: String, value: Variant) -> String:
 	match field:
 		"value":
-			return TimelineRun._points(value)
+			return TimelineRun.format_points(value)
 		"from_day", "to_day":
-			return EventForm.format_date(value)
+			return FieldHelpers.format_date(value)
 	return str(value)
 
 
-## Liest die Eingabe eines Felds mit den Lesefunktionen des Formulars: Zahlen mit Komma oder Punkt
-## und Vorzeichen, Daten auch ohne führende Nullen. Grund und Kennung nehmen jeden Text an; was
-## nicht passt, zeigt die Prüfung (V29, V30).
+## Liest die Eingabe eines Felds mit den Lesefunktionen aus FieldHelpers: Zahlen mit Komma oder
+## Punkt und Vorzeichen, Daten auch ohne führende Nullen. Grund und Kennung nehmen jeden Text an;
+## was nicht passt, zeigt die Prüfung (V29, V30).
 static func _parse(field: String, text: String) -> Array:
 	match field:
 		"value":
-			return EventForm.parse_percent(text)
+			return FieldHelpers.parse_percent(text)
 		"from_day", "to_day":
-			return EventForm.parse_date(text)
-	return EventForm.parse_text(text)
+			return FieldHelpers.parse_date(text)
+	return FieldHelpers.parse_text(text)

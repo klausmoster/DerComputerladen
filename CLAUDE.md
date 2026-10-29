@@ -97,11 +97,13 @@ deren `README.md`.
 | `tools/raster/` | Python-Werkzeuge der Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol |
 | `tools/selbsttest/` | `vergleich.py` vergleicht einen Lauf mit den Referenzbildern unter `referenz/macos/` |
 | `tools/build/` | `baue_alles.sh` baut Spiel und Selbsttest für macOS, Windows und Linux und packt je System ein Zip unter `build/abnahme/` |
+| `tools/godot_referenz/` | `erzeuge.sh` schreibt die Klassenreferenz der installierten Godot nach `godot_referenz/klassen/` (nur Signaturen, nicht im Repo); bei API-Fragen dort nachsehen statt aus dem Gedächtnis |
 | `tools/ton/` | `make_sounds.py` erzeugt die Töne; die Kanäle stehen in `src/default_bus_layout.tres` |
 | `tools/tagebuch/` | `token_bilanz.py`: Token und geschätzte Kosten je Branch aus den Protokollen von Claude Code |
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
 | `docs/game_bible/` | Obsidian-Vault mit den Spieldaten (Komponenten, Preise, Prospekte) |
 | `docs/game_design.md` | Game Design Document |
+| `docs/architektur-leitfaden.md` | Architektur-Leitfaden: Godot-Prinzipien, Muster und Schichten mit Regeln `AR-NN`; Maßstab des Architektur-Prüfers |
 | `docs/spielbeschreibung/` | Stand im Code, nach Systemen; Index `README.md` |
 | `docs/ki_workflow/` | Arbeitsweise mit KI: Abläufe, Prüfungen, Erfahrungen |
 | `docs/offene-punkte.md` | offene Fragen, Lücken und Claudes eigene Entscheidungen |

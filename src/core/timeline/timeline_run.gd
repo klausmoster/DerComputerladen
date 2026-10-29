@@ -1083,13 +1083,14 @@ static func _serial_before(a: ScheduleEntry, b: ScheduleEntry) -> bool:
 static func _modifier_notes(active: Array[ChanceModifier], prefix: String = "") -> PackedStringArray:
 	var notes := PackedStringArray()
 	for modifier in active:
-		notes.append("%s%s %s" % [prefix, modifier.reason, _points(modifier.value)])
+		notes.append("%s%s %s" % [prefix, modifier.reason, format_points(modifier.value)])
 	return notes
 
 
 ## Anteil als Prozentpunkte mit Vorzeichen und deutschem Komma, etwa +0.05 als „+5“ und −0.025
-## als „-2,5“.
-static func _points(share: float) -> String:
+## als „-2,5“, mit dem einfachen Minus. So steht der Wert eines Modifikators in der Begründung
+## eines Termins; die Werkstatt zeigt ihn genauso und liest ihn wieder.
+static func format_points(share: float) -> String:
 	var text := ("%+.2f" % (share * 100.0)).rstrip("0").rstrip(".")
 	return text.replace(".", ",")
 
@@ -1296,4 +1297,4 @@ static func _date(day: int) -> String:
 ## Wert eines Modifikators in Prozentpunkten, etwa „+5 Prozentpunkte“ oder „-1 Prozentpunkt“.
 static func _points_text(share: float) -> String:
 	var unit := "Prozentpunkt" if is_equal_approx(absf(share * 100.0), 1.0) else "Prozentpunkte"
-	return "%s %s" % [_points(share), unit]
+	return "%s %s" % [format_points(share), unit]

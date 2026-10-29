@@ -31,8 +31,8 @@ flowchart TD
     beschreiben --> F{"Klaus gibt eine<br/>Phase frei"}
     subgraph phase["Je Phase"]
         B["Godot-Agent baut"] --> CP["Claude prüft:<br/>Tests zweimal, Startprobe, Code"]
-        CP -->|"ohne Sichtbares und Texte"| AB["Klaus nimmt ab"]
-        CP -->|"Sichtbares oder Texte"| P["Phasenprüfung mit<br/>Stil- und Text-Prüfer"]
+        CP -->|"ohne Sichtbares, Texte und Code"| AB["Klaus nimmt ab"]
+        CP -->|"Sichtbares, Texte oder Code"| P["Phasenprüfung mit Stil-,<br/>Text- und Architektur-Prüfer"]
         P --> AB
         AB --> CO["Claude committet"]
     end
@@ -79,10 +79,12 @@ Wann die Phasenprüfung läuft, sagt Punkt 8.
    dem Plan, besprochen und spezifiziert wurde dort, wo die Idee aufkam (Klaus, 2026-10-21).
 8. **Phasenprüfung vor der Abnahme** (Klaus, 2026-10-22, fest seit dem Pilot in Feature 004,
    Klaus, 2026-10-26): Ändert eine Phase Sichtbares oder Texte, auch in Werkzeugen, prüfen
-   Stil- und Text-Prüfer sie gegen den Style-Guide, bevor Klaus abnimmt. Wie, steht in
+   Stil- und Text-Prüfer sie gegen den Style-Guide, bevor Klaus abnimmt. Ändert sie Skripte, Szenen
+   oder Resources unter `src/` außer Tests, prüft der Architektur-Prüfer sie gegen den
+   [Architektur-Leitfaden](../architektur-leitfaden.md) (Klaus, 2026-10-28, Feature 008). Wie, steht in
    [ki_pruefung.md](ki_pruefung.md). Schon bei `/speckit-checklist` lesen die Prüfer die Wortlaute
    und Zustände aus Spec und Vertrag, damit ein Fehler im Vertrag gar nicht erst gebaut wird
-   (Klaus, 2026-10-27). Bis zum Pilot prüfte Claude allein.
+   (Klaus, 2026-10-27); der Architektur-Prüfer liest dort Plan und Vertrag (Klaus, 2026-10-28). Bis zum Pilot prüfte Claude allein.
 9. **Als letzte Aufgabe die Spielbeschreibung prüfen** (Klaus, 2026-10-27): Nach der
    Gesamtabnahme und vor dem Merge gleicht Claude `docs/spielbeschreibung/` mit dem Code ab. Claude
    legt Klaus vor, welche Dateien veralten und welche neu angelegt werden sollten, je mit Grund,
@@ -236,6 +238,12 @@ die Gesamtabnahme von Feature 006 ohne Startbefehl). Die Bitte enthält, in dies
 
 - Godot liegt unter `/Applications/Godot.app/Contents/MacOS/Godot`, Version 4.7.2 stable, nicht
   .NET; den Pfad direkt nutzen statt zu suchen. Kommt eine zweite Version dazu, hier nachtragen.
+- **Godot-Referenz** (Klaus, 2026-10-29): `godot_referenz/klassen/<Klasse>.xml` im Repo-Root ist
+  die Klassenreferenz der installierten Godot, nur Signaturen, erzeugt mit
+  `tools/godot_referenz/erzeuge.sh` und nicht im Repo. Bei API-Fragen sehen Claude, der Godot-Agent
+  und der Architektur-Prüfer dort nach statt aus dem Gedächtnis; fehlt der Ordner, läuft zuerst das
+  Skript, in jedem Worktree einmal. Für das Verhalten bleibt die Doku unter
+  `https://docs.godotengine.org/en/4.7/`.
 - Claude darf Prozesse selbst mit `kill` beenden, etwa ein hängendes Godot oder eine offene
   Werkstatt nach einem Test (Klaus, 2026-10-27, im Spike zum Communicator). Die Erlaubnis steht als
   `Bash(kill *)` in Klaus' `~/.claude/settings.json`.

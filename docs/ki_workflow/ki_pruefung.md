@@ -6,7 +6,10 @@ stehen mit Grund da, Erfahrungen mit ihrem Anlass, Entscheidungen mit Datum und 
 und Abgrenzung stehen im [Einstieg](README.md).
 
 **Stand:** eingeführt. Begonnen am 2026-10-22, Pilot in Feature 004 am 2026-10-26; beide Prüfer
-bleiben (Klaus). Offen ist nur die Regel in der Verfassung, siehe „Stand der Einführung“ unten.
+bleiben (Klaus). Feature 008 bringt den dritten Prüfer, den Architektur-Prüfer, mit dem
+Architektur-Leitfaden als Maßstab (2026-10-28); die Regel dazu steht seit Verfassung 2.3.0 in
+Grundsatz VI. Offen ist, ob der Architektur-Prüfer bleibt: Das entscheidet Klaus nach den
+Code-Phasen des nächsten Features (siehe „Offen“ unten).
 Die Datei ist aus zwei Konzepten vom 2026-10-22 entstanden, die in ihr aufgegangen sind; die
 Git-Geschichte behält sie (`docs/konzept-pruef-agents.md`, `docs/konzept-ki-workflow.md`).
 
@@ -26,8 +29,8 @@ Git-Geschichte behält sie (`docs/konzept-pruef-agents.md`, `docs/konzept-ki-wor
 4. **Messbares prüft ein Test.** Ob ein Bild nur Farben der Palette nutzt, ob irgendwo „Sie“ steht
    oder ein Text zu lang ist, erkennt ein Skript zuverlässiger und billiger, bei jedem Lauf.
    KI-Prüfer urteilen nur, wo es ein Urteil braucht: Ton, Humor, Stimmigkeit, Treue zur Epoche.
-5. **Feste Zeitpunkte statt Dauerprüfung:** am Ende jeder Phase, die Sichtbares oder Texte ändert,
-   alle Prüfer gleichzeitig, ein gemeinsamer Bericht. Warum: So kostet die Prüfung wenig und liegt
+5. **Feste Zeitpunkte statt Dauerprüfung:** am Ende jeder Phase, die Sichtbares, Texte oder Code
+   ändert, alle Prüfer gleichzeitig, ein gemeinsamer Bericht. Warum: So kostet die Prüfung wenig und liegt
    genau vor Klaus' Abnahme.
 6. **Nachmessen.** Findet ein Prüfer über mehrere Phasen nichts, was die anderen übersehen, fliegt
    er raus. Findet eine Prüfung zweimal etwas, wird sie fest eingebaut (Pflege im
@@ -70,13 +73,14 @@ Was Claude Code dafür bietet, laut seiner Doku (Stand 2026-10-22:
 | Tests | bei jedem Lauf | alles Messbare, etwa Farben aus der Palette, Abstände aus dem Raster, kein „Sie“ | Werte aus dem Style-Guide, im Code |
 | Claude | nach jeder Phase | Code, Tests zweimal, Startprobe, Bilder, feste Größen | Spec, Vertrag, `ki_dev.md` |
 | Prüfer | am Ende einer Phase mit Sichtbarem oder Texten | was ein Urteil braucht, etwa ob der Ton zu „Das Amt“ passt | Style-Guide mit dem Abschnitt „Sprache“, später die game_bible |
+| Architektur-Prüfer | bei der Checkliste über Plan und Vertrag; am Ende jeder Phase mit Code | Aufbau: wer wen kennt, wo Logik, Zustand und Daten liegen | Architektur-Leitfaden |
 | Klaus | bei der Abnahme | alles; er entscheidet, wo ein Maßstab eine Lücke hat | Spec und sein Urteil |
 
 Ob eine Regel ein Test prüft oder ein Prüfer, entscheidet sich so:
 
 ```mermaid
 flowchart TD
-    R["Eine Regel aus dem Style-Guide"] --> M{"Lässt sie sich<br/>messen?"}
+    R["Eine Regel aus einem Maßstab"] --> M{"Lässt sie sich<br/>messen?"}
     M -->|"ja"| T["Test<br/>läuft bei jedem Lauf"]
     M -->|"nein"| Q{"Steht der Maßstab<br/>schriftlich fest?"}
     Q -->|"ja"| P["Prüfer<br/>bei der Phasenprüfung"]
@@ -92,6 +96,7 @@ eine Meldung so klingt wie in „Das Amt“.
 |---|---|---|---|---|
 | Stil | Style-Guide | weicher Schatten, der den VGA-Look bricht; Symbol in falscher Pixelgröße; Knopf ohne Hover-Zustand | nur Farben der Palette, ganzzahlige Skalierung, Schrift 10 oder 12 px | Schritt 3 |
 | Text | Style-Guide, Abschnitt „Sprache“ | „Geben Sie …“; Preise in Euro im Jahr 1994; „googeln“, das es bis 1999 noch nicht gab; ein Ton, der nicht zu „Das Amt“ passt | kein „Sie“ oder „Ihnen“ in Bedienung, Hinweisen und Meldungen; jeder Text passt in sein Feld | Schritt 5 |
+| Architektur | Architektur-Leitfaden | Baustein ruft den, der ihn einsetzt; neues Autoload ohne Grund; Logik in einer Szene, die in einen Kern gehört | Kerne ohne Node und ohne globalen Zufall, genau diese Autoloads, kein Weg nach oben, Spiel kennt Werkzeuge nicht | Feature 008 |
 | Fakten | game_bible und Quellen | Pentium im Katalog schon 1991, obwohl er 1993 kam; Ereignis zu Windows 95 im Jahr 1994 | Daten im Ereigniskatalog stimmen mit der game_bible überein | später, wenn Katalog und game_bible wachsen |
 
 Jeder Prüfer ist ein Subagent in `.claude/agents/`, etwa `stil-pruefer.md`:
@@ -105,7 +110,10 @@ Jeder Prüfer ist ein Subagent in `.claude/agents/`, etwa `stil-pruefer.md`:
   Prüfers liest (`ki_dev.md`, „Aufträge an den Agent“).
 
 Nicht vorgesehen:
-- ein eigener Code-Prüfer, denn Code prüft Claude, und `/code-review` gibt es schon;
+- bis 2026-10-28: ein eigener Code-Prüfer, denn Code prüft Claude, und `/code-review` gibt es
+  schon. Seit Feature 008 gibt es den Architektur-Prüfer, weil er einen eigenen schriftlichen
+  Maßstab hat, den Leitfaden (Grundsatz 2). Fehler im Code suchen weiter Claude und `/code-review`;
+  der Architektur-Prüfer beurteilt nur den Aufbau (Klaus, 2026-10-28);
 - Prüfer, die selbst reparieren;
 - zwei Prüfer für dieselbe Frage, etwa einer für UX und einer für Stil, die beide das Layout
   beurteilen.
@@ -119,6 +127,9 @@ Nicht vorgesehen:
   Geld, Wortschatz von 1985 bis 1999 mit Jahreszahlen, Beispiele. Klaus hat den Ort und den Ton
   entschieden (2026-10-22). Claude gibt den Abschnitt dem Text-Prüfer mit, wie dem Stil-Prüfer
   die seinen.
+- **Architektur-Leitfaden:** `docs/architektur-leitfaden.md` liegt im Repo, der Architektur-Prüfer
+  liest ihn selbst. Er hat Regeln mit festen Nummern `AR-NN`; nur Regeln mit dem Stand „gilt …“
+  zählen. Klaus hat ihn in Feature 008 entschieden (2026-10-28).
 - **game_bible:** liegt im Repo, der Fakten-Prüfer liest sie selbst.
 - **Lücken:** Regelt ein Maßstab etwas nicht, entscheidet Klaus. Erst kommt die Regel in den
   Maßstab, dann wird gebaut, wie es Grundsatz IV der Verfassung für den Style-Guide verlangt.
@@ -133,6 +144,7 @@ sequenceDiagram
     participant A as Godot-Agent
     participant S as Stil-Prüfer
     participant X as Text-Prüfer
+    participant R as Architektur-Prüfer
     A->>C: Phase gebaut, mit Lernnotiz und Testergebnis
     C->>C: Tests zweimal, Startprobe, Bildschirmfotos
     par Stil
@@ -141,6 +153,9 @@ sequenceDiagram
     and Text
         C->>X: Abschnitt Sprache, Diff, Texte
         X-->>C: Befunde mit Ort, Regel, Beleg
+    and Architektur
+        C->>R: geänderte Skripte, Szenen, Resources, Vertrag
+        R-->>C: Befunde mit Ort, Regel, Beleg
     end
     C->>C: jeden Befund nachprüfen, bestätigt oder verworfen
     C->>A: bestätigte Befunde
@@ -152,6 +167,8 @@ sequenceDiagram
 
 1. Der Godot-Agent baut die Phase. Danach laufen Tests und Startprobe, zweimal.
 2. Claude schlägt in `plan.md` unter „Prüfer je Phase“ nach, welche Prüfer für die Phase gelten.
+   Ändert die Phase Skripte, Szenen oder Resources unter `src/` außer Tests, gehört der
+   Architektur-Prüfer dazu.
 3. Claude startet die Prüfer gleichzeitig, jeden mit seinem Maßstab, dem Diff und den
    Bildschirmfotos aus dem echten Fenster.
 4. Claude prüft jeden Befund nach: bestätigt oder verworfen, mit Grund.
@@ -186,9 +203,9 @@ Spec Kit bleibt, wie es ist. Die Prüfer kommen an fünf Stellen dazu:
 | Schritt | Was dazukommt |
 |---|---|
 | `/speckit-plan` | `plan.md` legt unter „Prüfer je Phase“ fest, welche Prüfer für welche Phase gelten. |
-| `/speckit-checklist` | Text- und Stil-Prüfer lesen die Wortlaute und Zustände aus Spec und Vertrag gegen den Style-Guide, bevor gebaut wird (Klaus, 2026-10-27). Checklisten für Stil und Texte prüfen, ob die Spec Sichtbares und Texte genau genug beschreibt. |
-| `/speckit-tasks` | Jede Phase mit Sichtbarem oder Texten endet mit der [C]-Aufgabe „Phasenprüfung“ vor Klaus' Abnahme. |
-| `/speckit-analyze` | Eine fehlende Phasenprüfung ist kritisch, denn sie verstößt gegen Grundsatz VI der Verfassung. |
+| `/speckit-checklist` | Text- und Stil-Prüfer lesen die Wortlaute und Zustände aus Spec und Vertrag gegen den Style-Guide, bevor gebaut wird (Klaus, 2026-10-27). Der Architektur-Prüfer liest Plan, research.md, Datenmodell und Vertrag gegen den Leitfaden (Klaus, 2026-10-28). Checklisten für Stil und Texte prüfen, ob die Spec Sichtbares und Texte genau genug beschreibt. |
+| `/speckit-tasks` | Jede Phase mit Sichtbarem, Texten oder Code endet mit der [C]-Aufgabe „Phasenprüfung“ vor Klaus' Abnahme. |
+| `/speckit-analyze` | Eine fehlende Phasenprüfung ist kritisch, denn sie verstößt gegen Grundsatz VI der Verfassung; das gilt auch für eine Phase mit Code ohne Architektur-Prüfer. |
 | `/speckit-converge` | Die Prüfer laufen bei der Lückensuche einmal über das ganze Feature. Dazu prüft Claude, ob jede neue Seite, jeder neue Weg, Text und jede neue Eingabe einen Schritt im Selbsttest hat (Klaus, 2026-10-28, Feature 007). |
 
 - Eine neue Rolle in `tasks.md` gibt es nicht. Die Prüfer arbeiten Claude zu, und die
@@ -197,7 +214,7 @@ Spec Kit bleibt, wie es ist. Die Prüfer kommen an fünf Stellen dazu:
   bleiben unverändert. Eigene Vorlagen liegen unter `.specify/templates/overrides/`: Die
   Aufgaben-Vorlage dort bringt die Aufgabe „Spielbeschreibung prüfen“ mit (`ki_dev.md`, Punkt 9)
   und ans Ende jeder Phase die Aufgabe „Phasenprüfung“ (Klaus, 2026-10-27); `/speckit-tasks` lässt
-  sie weg, wo eine Phase nichts Sichtbares und keine Texte ändert. Den Abschnitt „Prüfer je Phase“
+  sie weg, wo eine Phase nichts Sichtbares, keine Texte und keinen Code ändert. Den Abschnitt „Prüfer je Phase“
   schreibt Claude nach dieser Datei in den Plan. Die Regel steht in der Verfassung, Grundsatz VI,
   die alle fünf Schritte lesen (seit 2026-10-27). Ein Update von Spec Kit lässt `overrides/` stehen; geprüft wird das
   trotzdem (`ki_dev.md`, „Werkzeuge und Pfade“). Bis 2026-10-27 stand hier, die Vorlagen von Spec Kit 1.2.0 blieben
@@ -207,14 +224,14 @@ Beispiel, ein gedachtes Feature „Ladenansicht“ als erster echter Spielbildsc
 
 | Phase | Ändert | Prüfer |
 |---|---|---|
-| 3: Kern der Ladenansicht | Daten, keine Oberfläche | keine |
-| 4: Oberfläche der Ladenansicht | Szene, Knöpfe, Texte | Stil, Text |
+| 3: Kern der Ladenansicht | Daten, keine Oberfläche | Architektur |
+| 4: Oberfläche der Ladenansicht | Szene, Knöpfe, Texte | Stil, Text, Architektur |
 
 In `tasks.md`:
 
 ```
 - [ ] T037 [A] [US2] Texte der Ladenansicht in src/scenes/laden/laden_texte.gd
-- [ ] T038 [C] Phasenprüfung Phase 4 mit /dcl-phasenpruefung: Stil- und Text-Prüfer, Befunde nachprüfen
+- [ ] T038 [C] Phasenprüfung Phase 4 mit /dcl-phasenpruefung: Stil-, Text- und Architektur-Prüfer, Befunde nachprüfen
 - [ ] T039 [K] Abnahme Phase 4
 ```
 
@@ -317,6 +334,16 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 007, Phase 8, neue Schritte titel.04 und liste (2026-10-28) | Text | 4 | 4 | 0 | 2, eine als Regel in den Vertrag | 4 |
 | Feature 006, Phase 7, Nachprüfung des Geänderten (2026-10-28) | Stil | 1 | 1 | 0 | 3 | 1 |
 | Feature 006, Phase 7, 24 Testmeldungen und 6 Stellen Doku (2026-10-28) | Text | 0 | 0 | 0 | 1 | 0 |
+| Feature 008, Fehlerprobe, 8 Dateien mit 5 eingebauten Verstößen (2026-10-28) | Architektur | 7 | 7: alle 5 eingebauten mit richtiger Regel, dazu 2 zutreffende (Preisänderung ohne Befehl, Miete im Code); keine erlaubte Stelle gemeldet | 0 | 4 | 2 |
+| Feature 008, Bestandsprüfung Kern, 29 Dateien (2026-10-28) | Architektur | 5 | 4 | 1 (ein einzelner Schalter ist kein Zustand) | 9 | 4 |
+| Feature 008, Bestandsprüfung Spiel und Oberfläche, 25 Dateien (2026-10-28) | Architektur | 5 | 5 | 0 | 5 | 3 |
+| Feature 008, Bestandsprüfung Werkzeuge, 22 Dateien (2026-10-28) | Architektur | 7 | 5, dazu 1 zum Teil | 1 (Texte der Werkstatt, nach Klaus' Entscheidung zu Werkzeugen) | 7 | 5 |
+| Feature 008, Phase 4, 49 Testnamen und Meldungen in `test_architektur.gd` (2026-10-28) | Text | 6 | 4 (Einzahl bei 1, AR-Nummer doppelt, ungenaue Meldung, Aufzählung ohne „und“) | 1 („Leichen“ ist Fachwort), 1 kein Befund | 5 | 4 |
+| Feature 008, Nachprüfung 007, Selbsttest, 14 Dateien und `project.godot` (2026-10-28) | Architektur | 9 | 8 | 1 (eigene Textklasse, als Lücke nach Klaus' Entscheidung zu Werkzeugen) | 8 | 7 |
+| Feature 008, Nachprüfung 007, Abläufe und Änderungen, 18 Dateien (2026-10-28) | Architektur | 0 | – | – | 6, davon 2 auch im anderen Lauf | – |
+| Feature 008, Planprobe am Plan von 006 (2026-10-28) | Architektur | 3 | 2 (Zustände der Seite und des Titels als Schalter, AR-11) | 1 (Stellschrauben als Konstanten, nach Klaus' Entscheidung zur Lücke L1 kein Verstoß gegen AR-04) | 6 | 2 |
+| Feature 008, Phase 5 Behebung, 32 Dateien (2026-10-29) | Architektur | 1 | 1 (`TimelineView._reason` als Kopie von `FieldHelpers.reason`, AR-02) | 0 | 5 | 1 |
+| Feature 008, Phase 5 Nachlauf über T036e, 4 Dateien (2026-10-29) | Architektur | 0 | – | – | 0 | – |
 
 „Nur er fand“ heißt: Claudes eigene Prüfung hatte es nicht gefunden. Bei den Probeläufen an
 Feature 001 war das Feature schon abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.
@@ -332,8 +359,24 @@ Jeder bestätigte Befund war einer, den Claudes eigene Prüfung nicht gefunden h
 falsch. Drei standen so im Vertrag, den Claude geschrieben hatte. Die Lücken wiederholen sich:
 „schon bekannt“ kam in fünf Läufen vor.
 
-Jede Phasenprüfung kostet zwei bis drei Prüfer-Läufe und läuft nur in Phasen, die Sichtbares oder
-Texte ändern. Sitzt der Ablauf, lässt er sich als gespeicherter Workflow fest einrichten.
+**Auswertung des Architektur-Prüfers in Feature 008** (2026-10-28 und 2026-10-29), aus den Zeilen
+oben, Fehlerprobe und Planprobe eingeschlossen:
+
+| Prüfer | Läufe | Befunde | bestätigt | verworfen | nur er fand | Lücken gemeldet |
+|---|---|---|---|---|---|---|
+| Architektur | 9 | 37 | 32, dazu 1 zum Teil | 4 | 24 | 50 |
+| Text (Testmeldungen, Phase 4) | 1 | 6 | 4 | 2 | 4 | 5 |
+
+Der Prüfer fand in der Fehlerprobe alle fünf eingebauten Verstöße mit der richtigen Regel und
+meldete keine erlaubte Stelle. Verworfen wurden nur Befunde, die eine Lücke im Leitfaden berührten;
+nach Klaus' Entscheidung stehen die Lücken jetzt im Leitfaden, und die späteren Läufe meldeten
+weniger: 5 bis 9 Lücken je Lauf der Bestandsprüfung, 5 in der Phasenprüfung, 0 im Nachlauf. Zwei Grenzen zeigten sich:
+Ohne Suchwerkzeuge prüft er nur, was er liest (Erfahrung oben), und große Dateien liest er in der
+Bestandsprüfung nur gezielt. Ob er bleibt, entscheidet Klaus nach den Code-Phasen des nächsten
+Features (Spec 008, SC-007; „Offen“ unten).
+
+Jede Phasenprüfung kostet zwei bis drei Prüfer-Läufe und läuft nur in Phasen, die Sichtbares, Texte
+oder Code ändern. Sitzt der Ablauf, lässt er sich als gespeicherter Workflow fest einrichten.
 
 ## Stand der Einführung
 
@@ -365,7 +408,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 | 7 | Tests `test_bilder.gd` und `test_texte.gd` | [A] | erledigt, 2026-10-22 |
 | 8 | Hook, wenn gewollt: Tests laufen von selbst, sobald der Godot-Agent fertig ist | [C] | entfällt vorerst (Klaus, 2026-10-22); kommt, wenn der Agent zweimal rote Tests abliefert, ohne es zu melden |
 | 9 | Pilot in einer echten Phase mit Sichtbarem oder Texten, mit Zählung | [C] | erledigt in Feature 004, Phasen 2 bis 5, 2026-10-26; die Prüfer bleiben (Klaus) |
-| 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | erledigt: Grundsatz VI, Verfassung 2.2.0, Klaus, 2026-10-27 |
+| 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | erledigt: Grundsatz VI, Verfassung 2.2.0, Klaus, 2026-10-27; um den Architektur-Prüfer erweitert in 2.3.0, Klaus, 2026-10-28 (Feature 008) |
 
 ## Erfahrungen
 
@@ -404,9 +447,19 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 - **Lücken gleich vorlegen.** 31 Lücken kamen im Pilot, fünfmal „schon bekannt“. Eine Lücke geht
   mit Empfehlung gleich an Klaus, statt bis zur Lückensuche liegen zu bleiben. Anlass: Pilot
   Feature 004 (2026-10-26).
+- **Fehlen dem Prüfer die Suchwerkzeuge, liefert Claude die Treffer mit.** In einer Sitzung ohne
+  Grep und Glob konnte der Architektur-Prüfer nur lesen und nicht in ganz `src/` suchen, wer was
+  ruft. Claude legt dann die Suchergebnisse in den Auftrag, etwa alle Aufrufer einer Klasse, und
+  sucht nach dem Lauf selbst, was der Prüfer unter „Unsicher“ nennt. Anlass: Feature 008,
+  Phasenprüfung Phase 5 (Klaus, 2026-10-29).
 
 ## Offen
 
 Der Pilot ist ausgewertet: Beide Prüfer bleiben, für jede Phase mit Sichtbarem oder Texten, auch
 in Werkzeugen (Klaus, 2026-10-26). Seit 2026-10-27 steht die Regel in der Verfassung, Grundsatz
-VI. Zur Einführung ist nichts mehr offen.
+VI. Zur Einführung von Stil- und Text-Prüfer ist nichts mehr offen.
+
+Für den Architektur-Prüfer aus Feature 008 steht die Entscheidung noch aus (Spec 008, SC-007):
+Nach den Code-Phasen des nächsten Features mit Code wertet Claude die Zählung unter „Nachmessen“
+aus, und Klaus entscheidet, ob der Prüfer bleibt, nachgeschärft oder gestrichen wird. Claude trägt
+die Entscheidung hier ein.

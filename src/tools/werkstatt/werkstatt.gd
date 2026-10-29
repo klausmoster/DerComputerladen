@@ -49,6 +49,10 @@ var selected_id: String = ""
 ## get_tree().quit(). Tests setzen hier eine eigene Funktion, bevor sie schließen lassen, denn
 ## get_tree().quit() beendete ihren ganzen Lauf.
 var quit_callback := Callable()
+## GameWindow, das die Werkstatt beim Einrichten des Fensters anhält (AR-12); null heißt das
+## Autoload, geholt über den Pfad /root/GameWindow (_set_up_window()). Tests setzen einen eigenen
+## Knoten, bevor die Szene in den Baum kommt.
+var game_window: Node = null
 
 ## Was nach erfolgreichem Speichern geschehen soll, etwa das Beenden beim Schließen.
 var _after_save := Callable()
@@ -912,12 +916,16 @@ func _set_up_window() -> void:
 	if DisplayServer.get_name() == "headless":
 		return
 	# Zuerst GameWindow anhalten: Es gäbe dem Fenster sonst beim Start und beim Wechsel aus dem
-	# Vollbild die ganzzahlige Spielgröße. Das Autoload kommt über seinen Pfad; seinen Namen
-	# kennt GDScript beim Kompilieren nicht immer, etwa wenn ein Skript mit -s die Werkstatt lädt.
-	var game_window := get_node_or_null(^"/root/GameWindow")
-	if game_window != null:
-		game_window.set_process(false)
-		game_window.set_process_input(false)
+	# Vollbild die ganzzahlige Spielgröße. Ohne Naht kommt das Autoload über seinen Pfad.
+	# Ausnahme AR-02: Die Werkstatt hält GameWindow über den Pfad /root/GameWindow an. Mit -s
+	# geladen, etwa von der Textausgabe, kennt GDScript den Namen des Autoloads beim
+	# Kompilieren nicht; der Pfad ist der einzige Weg. Die Naht nach AR-12 bleibt davon
+	# unberührt (Klaus, 2026-10-28)
+	var window_node := game_window if game_window != null \
+		else get_node_or_null(^"/root/GameWindow")
+	if window_node != null:
+		window_node.set_process(false)
+		window_node.set_process_input(false)
 	var window := get_window()
 	window.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 	window.content_scale_factor = DisplayServer.screen_get_scale()

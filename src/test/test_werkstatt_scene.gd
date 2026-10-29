@@ -75,6 +75,34 @@ func test_szene_baut_headless_auf_und_laesst_das_fenster_in_ruhe() -> void:
 		assert_false(dialog.visible, "%s ist beim Start ohne Anlass offen." % dialog.name)
 
 
+func test_headless_haelt_die_werkstatt_game_window_nicht_an() -> void:
+	# Arrange (Feature 008, T036a, W2): eine Vertretung für GameWindow über die Naht game_window.
+	# Ohne Fenster richtet die Werkstatt keins ein und hält deshalb auch nichts an; mit Fenster
+	# hielte sie die Vertretung an statt des Autoloads. Das zeigt nur ein echtes Fenster (Prüfung
+	# von Hand).
+	var vertretung := Node.new()
+	vertretung.set_process(true)
+	vertretung.set_process_input(true)
+	add_child_autofree(vertretung)
+	var autoload := get_node(^"/root/GameWindow")
+	var vorher := [autoload.is_processing(), autoload.is_processing_input()]
+	var werkstatt: Werkstatt = SZENE.instantiate()
+	werkstatt.catalog_path = _kopieren(MINIMAL, ORDNER + "katalog.json")
+	werkstatt.editor.backup_folder = ORDNER
+	werkstatt.settings_path = ORDNER + "einstellungen.cfg"
+	werkstatt.game_window = vertretung
+
+	# Act
+	add_child_autofree(werkstatt)
+	await wait_process_frames(2)
+
+	# Assert
+	assert_eq([vertretung.is_processing(), vertretung.is_processing_input()], [true, true],
+		"Headless bleibt die Vertretung, wie sie ist.")
+	assert_eq([autoload.is_processing(), autoload.is_processing_input()], vorher,
+		"Das Autoload auch.")
+
+
 func test_schliessen_bleibt_der_werkstatt_ueberlassen() -> void:
 	# Arrange und Act
 	var werkstatt := await _werkstatt()
@@ -1688,6 +1716,31 @@ func test_seed_feld_nimmt_nur_ziffern_bis_zum_groessten_seed() -> void:
 	assert_true(feld.text.is_valid_int() and feld.text.lstrip("0123456789").is_empty(),
 		"Nur Ziffern: %s" % feld.text)
 	assert_between(feld.text.to_int(), 0, SimulatorPanel.MAX_SEED)
+
+
+func test_wuerfeln_wuerfelt_aus_rng() -> void:
+	# Arrange (Feature 008, T036e; AR-08): Ein Würfel mit demselben Seed sagt voraus, was rng
+	# würfelt, wie bei Timeline.rng und GameSession.rng.
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	var feld: LineEdit = simulator.get_node("%SeedEdit")
+	simulator.rng = RandomNumberGenerator.new()
+	simulator.rng.seed = 20261029
+	var vergleich := RandomNumberGenerator.new()
+	vergleich.seed = 20261029
+	var erwartet := [str(vergleich.randi_range(0, SimulatorPanel.MAX_SEED)),
+		str(vergleich.randi_range(0, SimulatorPanel.MAX_SEED))]
+
+	# Act: zweimal „Würfeln“
+	var gewuerfelt := []
+	for _i in 2:
+		_druecken(simulator, "%RollButton")
+		gewuerfelt.append(feld.text)
+
+	# Assert
+	assert_eq(gewuerfelt, erwartet, "Beide Seeds kommen der Reihe nach aus rng.")
+	assert_eq(vergleich.state, simulator.rng.state, "Je Druck genau eine Zahl.")
+	assert_false(simulator.get_node("%GenerateButton").disabled, "Mit Seed lässt sich erzeugen.")
 
 
 func test_schritte_springen_wie_die_spieluhr() -> void:

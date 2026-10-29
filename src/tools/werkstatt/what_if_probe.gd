@@ -53,7 +53,7 @@ var seed: int = 0
 var difficulty: Difficulty.Level = Difficulty.DEFAULT
 ## Bis zu diesem Tag spielt build_run() den Lauf ab; −1 heißt: noch vor dem 01.01.1985. Beim
 ## Speichern ist das der Tag, auf dem der Lauf stand, mindestens aber der Tag des letzten Eingriffs,
-## denn bis dorthin muss build_run() ohnehin spielen.
+## denn bis dorthin muss build_run() ohnehin spielen; so rechnet ihn end_day().
 var until_day: int = -1
 ## Das Eingriffsprotokoll wie TimelineRun.interventions, mit Tagesindizes, in der Reihenfolge der
 ## Aktionen im Simulator. So steht es auch in der Datei; nach at_day geordnet wird erst beim
@@ -202,6 +202,21 @@ static func from_run(name: String, run: TimelineRun) -> WhatIfProbe:
 	# die Probe, wie sie war.
 	probe.interventions = run.interventions.duplicate(true)
 	return probe
+
+
+## Bis wohin build_run() spielen muss, wenn der Lauf auf [param run_day] steht: der spätere Tag aus
+## [param run_day] und dem letzten at_day der [member interventions], höchstens der 31.12.1999.
+## Früher geht es nicht, denn um einen Eingriff nachzuspielen, muss der Lauf bis zu dessen Tag
+## kommen, und zurück spielt er nie. Beispiel: Gesammelt ist ein Modifikator vom 01.01.1992, dann
+## kam im Simulator „Fahrplan erzeugen“; der Lauf steht vor dem 01.01.1985, der Endtag ist der
+## 01.01.1992. Der Simulator setzt damit [member until_day] für „Neu starten mit Eingriffen“ und
+## „Probe speichern“.
+func end_day(run_day: int) -> int:
+	var day := run_day
+	for record in interventions:
+		# Ohne lesbaren Tag gibt es −1; das hebt den Endtag nie.
+		day = maxi(day, TimelineRun.intervention_day(record))
+	return mini(day, TimelineRun.LAST_DAY)
 
 
 ## Neuer Lauf mit [member seed] und [member difficulty] auf [param catalog]; spielt das

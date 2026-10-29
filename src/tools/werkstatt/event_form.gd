@@ -40,10 +40,6 @@ const END_MODES: Array[String] = ["an einem Tag", "am Monatsende", "ohne Dauer"]
 ## Jahr ohne 29. Februar, in dem „an einem Tag“ den letzten Tag eines Monats sucht.
 const REFERENCE_YEAR := 1985
 
-static var _whole_pattern := RegEx.create_from_string("^[+-]?\\d{1,9}$")
-static var _number_pattern := RegEx.create_from_string("^[+-]?(\\d{1,9}([.]\\d*)?|[.]\\d+)$")
-static var _date_pattern := RegEx.create_from_string("^(\\d{1,2})\\.(\\d{1,2})\\.(\\d{4})$")
-static var _day_pattern := RegEx.create_from_string("^(\\d{1,2})\\.(\\d{1,2})\\.?$")
 ## Farbfelder für die Wahl der Kategorienfarbe, je Token einmal gebaut.
 static var _swatches := {}
 
@@ -148,108 +144,10 @@ func get_hint(field: String) -> Label:
 
 # --- Lesen und Zeigen -------------------------------------------------------------------------
 #
-# Jede Lesefunktion gibt [true, Wert] oder [false, Grund] zurück. Der Grund steht dann als
-# Hinweis am Feld.
+# Die Lese- und Zeigefunktionen der Felder stehen in FieldHelpers; die Panels der Werkstatt teilen
+# sie sich (Feature 008, L16). Hier bleibt, was nur das Formular braucht.
 
-## Text, ohne Leerzeichen am Rand.
-static func parse_text(text: String) -> Array:
-	return [true, text.strip_edges()]
-
-
-## Ganze Zahl, auch mit Vorzeichen: „14“, „-3“.
-static func parse_whole(text: String) -> Array:
-	var clean := text.strip_edges()
-	if _whole_pattern.search(clean) == null:
-		return [false, "„%s“ ist keine ganze Zahl." % clean]
-	return [true, clean.to_int()]
-
-
-## Zahl mit Komma oder Punkt, wahlweise mit „%“ dahinter: „3,5“, „3.5“, „-30 %“.
-static func parse_number(text: String) -> Array:
-	var clean := text.strip_edges().trim_suffix("%").strip_edges().replace(",", ".")
-	if _number_pattern.search(clean) == null:
-		return [false, "„%s“ ist keine Zahl; erlaubt sind etwa 3,5 und 3.5." % text.strip_edges()]
-	return [true, clean.to_float()]
-
-
-## Prozent wie bei parse_number(), als Anteil: „3,5“ ergibt 0,035. Gespeichert werden Anteile auf
-## vier Nachkommastellen (Schreibregel 3), deshalb rundet die Eingabe schon hier, genau wie der
-## Katalog beim Schreiben: So ist der Wert im Speicher derselbe wie später in der Datei.
-static func parse_percent(text: String) -> Array:
-	var parsed := parse_number(text)
-	if not parsed[0]:
-		return parsed
-	var percent: float = parsed[1]
-	return [true, roundf(percent / 100.0 * 10000.0) / 10000.0]
-
-
-## Gewicht je Anzahl in Prozent, auf zwei Nachkommastellen wie in der Datei.
-static func parse_weight(text: String) -> Array:
-	var parsed := parse_number(text)
-	if not parsed[0]:
-		return parsed
-	var weight: float = parsed[1]
-	return [true, roundf(weight * 100.0) / 100.0]
-
-
-## Datum als Tagesindex aus „TT.MM.JJJJ“, auch ohne führende Nullen: „1.3.1993“. Ob es im
-## Spielzeitraum liegt, prüft danach die Prüfung (V06) und meldet es am Feld.
-static func parse_date(text: String) -> Array:
-	var clean := text.strip_edges()
-	var found := _date_pattern.search(clean)
-	if found != null:
-		var day := found.get_string(1).to_int()
-		var month := found.get_string(2).to_int()
-		var year := found.get_string(3).to_int()
-		if GameDate.is_valid(year, month, day):
-			return [true, GameDate.new(year, month, day).to_day_index()]
-	return [false, "„%s“ ist kein Datum. Erwartet wird TT.MM.JJJJ, etwa 1.3.1993." % clean]
-
-
-## Tag im Jahr als (Monat, Tag) aus „TT.MM.“: „1.11.“. Ob es den Tag in jedem Jahr gibt, prüft die
-## Prüfung (V09).
-static func parse_day_of_year(text: String) -> Array:
-	var clean := text.strip_edges()
-	var found := _day_pattern.search(clean)
-	if found != null:
-		var day := found.get_string(1).to_int()
-		var month := found.get_string(2).to_int()
-		if day >= 1 and day <= 31 and month >= 1 and month <= 12:
-			return [true, Vector2i(month, day)]
-	return [false, "„%s“ ist kein Tag im Jahr. Erwartet wird TT.MM., etwa 1.11." % clean]
-
-
-## Zahl mit Komma und höchstens [param decimals] Nachkommastellen, ohne Nullen am Ende: „3,5“,
-## „-30“, „33,33“.
-static func format_number(value: float, decimals: int = 2) -> String:
-	var text := ("%." + str(decimals) + "f") % value
-	if text.contains("."):
-		text = text.rstrip("0").rstrip(".")
-	if text == "-0":
-		text = "0"
-	return text.replace(".", ",")
-
-
-## Anteil als Prozentzahl: 0,035 ergibt „3,5“.
-static func format_percent(share: float) -> String:
-	return format_number(share * 100.0)
-
-
-static func format_date(day: int) -> String:
-	return str(GameDate.from_day_index(day))
-
-
-## (Monat, Tag) als „TT.MM.“; (0, 0) als leerer Text.
-static func format_day_of_year(value: Vector2i) -> String:
-	if value == Vector2i.ZERO:
-		return ""
-	return "%02d.%02d." % [value.y, value.x]
-
-
-static func format_whole(value: int) -> String:
-	return str(value)
-
-
+## Zeigt einen Text, wie er ist; das Gegenstück zu FieldHelpers.parse_text() für _line().
 static func _same_text(value: Variant) -> String:
 	return str(value)
 
@@ -358,9 +256,9 @@ func _event() -> TimelineEvent:
 
 
 func _build_event(event: TimelineEvent) -> void:
-	_add_line_row(_fields, "Titel", "title", event.title, parse_text, _same_text,
+	_add_line_row(_fields, "Titel", "title", event.title, FieldHelpers.parse_text, _same_text,
 		_set_field(&"title"))
-	_add_line_row(_fields, "Kennung", "id", event.id, parse_text, _same_text, _rename)
+	_add_line_row(_fields, "Kennung", "id", event.id, FieldHelpers.parse_text, _same_text, _rename)
 	_add_description_row(event)
 	_add_category_row(event)
 	_row(_fields, "Art", [_choice("kind", TimelineEvent.KIND_LABELS, event.kind,
@@ -372,8 +270,9 @@ func _build_event(event: TimelineEvent) -> void:
 			_add_days_row("Dauer", "duration_days", event.duration_days, "Tage, 0 heißt Augenblick")
 		TimelineEvent.Kind.YEARLY:
 			_add_years_row(event)
-			_row(_fields, "Beginn", [_line("yearly.start", format_day_of_year(event.yearly_start),
-				parse_day_of_year, format_day_of_year, _set_field(&"yearly_start"), NUMBER_WIDTH),
+			_row(_fields, "Beginn", [_line("yearly.start",
+				FieldHelpers.format_day_of_year(event.yearly_start), FieldHelpers.parse_day_of_year,
+				FieldHelpers.format_day_of_year, _set_field(&"yearly_start"), NUMBER_WIDTH),
 				_muted("TT.MM.")], ["yearly.start"])
 			_add_yearly_end_row(event)
 		TimelineEvent.Kind.PRESET:
@@ -387,8 +286,9 @@ func _build_event(event: TimelineEvent) -> void:
 				_set_field(&"monthly_chance")), _muted("% pro Monat")], ["monthly_chance"])
 			_add_difficulty_row(event)
 			_row(_fields, "Höchstzahl", [_line("max_occurrences",
-				format_whole(event.max_occurrences), parse_whole, format_whole,
-				_set_field(&"max_occurrences"), NUMBER_WIDTH), _muted("0 heißt unbegrenzt")],
+				FieldHelpers.format_whole(event.max_occurrences), FieldHelpers.parse_whole,
+				FieldHelpers.format_whole, _set_field(&"max_occurrences"), NUMBER_WIDTH),
+				_muted("0 heißt unbegrenzt")],
 				["max_occurrences"])
 			_add_days_row("Mindestabstand", "min_gap_days", event.min_gap_days, "Tage")
 			_add_days_row("Dauer", "duration_days", event.duration_days, "Tage, 0 heißt Augenblick")
@@ -468,7 +368,7 @@ func _add_category_row(event: TimelineEvent) -> void:
 	var labels: Array[String] = []
 	var ids: Array[String] = []
 	for category in editor.catalog.categories:
-		labels.append(EventList._category_label(category))
+		labels.append(FieldHelpers.category_label(category))
 		ids.append(category.id)
 	var selected := ids.find(event.category)
 	if selected < 0:
@@ -482,11 +382,11 @@ func _add_category_row(event: TimelineEvent) -> void:
 
 func _add_years_row(event: TimelineEvent) -> void:
 	_row(_fields, "Jahre", [
-		_line("yearly.from", format_whole(event.yearly_from), parse_whole, format_whole,
-			_set_field(&"yearly_from"), NUMBER_WIDTH),
+		_line("yearly.from", FieldHelpers.format_whole(event.yearly_from), FieldHelpers.parse_whole,
+			FieldHelpers.format_whole, _set_field(&"yearly_from"), NUMBER_WIDTH),
 		_muted("bis"),
-		_line("yearly.to", format_whole(event.yearly_to), parse_whole, format_whole,
-			_set_field(&"yearly_to"), NUMBER_WIDTH),
+		_line("yearly.to", FieldHelpers.format_whole(event.yearly_to), FieldHelpers.parse_whole,
+			FieldHelpers.format_whole, _set_field(&"yearly_to"), NUMBER_WIDTH),
 	], ["yearly.from", "yearly.to"])
 
 
@@ -501,8 +401,9 @@ func _add_yearly_end_row(event: TimelineEvent) -> void:
 		mode = 1
 	var inputs: Array[Control] = [_choice("yearly.end", END_MODES, mode, _set_end_mode)]
 	if mode == 0:
-		inputs.append(_line("yearly.end.day", format_day_of_year(end), parse_day_of_year,
-			format_day_of_year, _set_field(&"yearly_end"), NUMBER_WIDTH))
+		inputs.append(_line("yearly.end.day", FieldHelpers.format_day_of_year(end),
+			FieldHelpers.parse_day_of_year, FieldHelpers.format_day_of_year,
+			_set_field(&"yearly_end"), NUMBER_WIDTH))
 	elif mode == 1:
 		var months: Array[String] = []
 		for month in range(1, 13):
@@ -546,11 +447,13 @@ func _add_count_rows(event: TimelineEvent) -> void:
 	var low := event.count_min
 	var high := event.count_min + event.count_weights.size() - 1
 	_row(_fields, "Anzahl", [
-		_line("count_min", format_whole(low), parse_whole, format_whole,
+		_line("count_min", FieldHelpers.format_whole(low), FieldHelpers.parse_whole,
+			FieldHelpers.format_whole,
 			func(value: Variant) -> String: return _set_counts(value, _current_high()),
 			NUMBER_WIDTH),
 		_muted("bis"),
-		_line("count_max", format_whole(high), parse_whole, format_whole,
+		_line("count_max", FieldHelpers.format_whole(high), FieldHelpers.parse_whole,
+			FieldHelpers.format_whole,
 			func(value: Variant) -> String: return _set_counts(_event().count_min, value),
 			NUMBER_WIDTH),
 	], ["count_min", "count_max"])
@@ -564,7 +467,8 @@ func _add_count_rows(event: TimelineEvent) -> void:
 		var key := "count_weights[%d]" % i
 		var piece := HBoxContainer.new()
 		piece.add_child(_muted("%d×" % (low + i)))
-		var edit := _line(key, format_number(event.count_weights[i]), parse_weight, format_number,
+		var edit := _line(key, FieldHelpers.format_number(event.count_weights[i]),
+			FieldHelpers.parse_weight, FieldHelpers.format_number,
 			func(value: Variant) -> String: return _set_weight(i, value), NUMBER_WIDTH)
 		piece.add_child(edit)
 		piece.add_child(_muted("%"))
@@ -572,7 +476,7 @@ func _add_count_rows(event: TimelineEvent) -> void:
 		keys.append(key)
 		if i == 0:
 			_inputs["count_weights"] = edit
-	flow.add_child(_muted("Summe %s %%" % format_number(total)))
+	flow.add_child(_muted("Summe %s %%" % FieldHelpers.format_number(total)))
 	_row(_fields, "je Anzahl", [flow], keys)
 	if event.count_weights.size() > MAX_COUNTS:
 		var notice := Label.new()
@@ -612,8 +516,8 @@ func _set_weight(index: int, value: float) -> String:
 
 
 func _add_days_row(caption: String, key: String, value: int, unit: String) -> void:
-	_row(_fields, caption, [_line(key, format_whole(value), parse_whole, format_whole,
-		_set_field(StringName(key)), NUMBER_WIDTH), _muted(unit)], [key])
+	_row(_fields, caption, [_line(key, FieldHelpers.format_whole(value), FieldHelpers.parse_whole,
+		FieldHelpers.format_whole, _set_field(StringName(key)), NUMBER_WIDTH), _muted(unit)], [key])
 
 
 # --- Listen -----------------------------------------------------------------------------------
@@ -627,7 +531,7 @@ func _build_effects(event: TimelineEvent) -> void:
 			func() -> void: editor.remove_item(_event_id, &"effects", i))
 		_row(block, "Art", [_choice(prefix + "kind", EventEffect.KIND_LABELS, effect.kind,
 			_set_item(&"effects", i, &"kind"))], [prefix + "kind"])
-		var target := _line(prefix + "target", effect.target, parse_text, _same_text,
+		var target := _line(prefix + "target", effect.target, FieldHelpers.parse_text, _same_text,
 			_apply_item(&"effects", i, &"target"))
 		var menu := MenuButton.new()
 		menu.text = "…"
@@ -641,16 +545,17 @@ func _build_effects(event: TimelineEvent) -> void:
 		_row(block, "Ziel", [target, menu], [prefix + "target"])
 		_row(block, "Stärke", [_percent_input(prefix + "magnitude", effect.magnitude,
 			_apply_item(&"effects", i, &"magnitude")), _muted("%")], [prefix + "magnitude"])
-		_row(block, "Verzögerung", [_line(prefix + "delay_days", format_whole(effect.delay_days),
-			parse_whole, format_whole, _apply_item(&"effects", i, &"delay_days"), NUMBER_WIDTH),
+		_row(block, "Verzögerung", [_line(prefix + "delay_days",
+			FieldHelpers.format_whole(effect.delay_days), FieldHelpers.parse_whole,
+			FieldHelpers.format_whole, _apply_item(&"effects", i, &"delay_days"), NUMBER_WIDTH),
 			_muted("Tage")], [prefix + "delay_days"])
 		# Ohne Dauer wirkt „gilt nur während“ wie ein einmaliger Anstoß (FR-021); die Wahl gibt es
 		# deshalb nur bei Ereignissen mit Dauer.
 		if event.has_duration():
 			_row(block, "Geltung", [_choice(prefix + "scope", SCOPE_LABELS, effect.scope,
 				_set_item(&"effects", i, &"scope"))], [prefix + "scope"])
-		_add_line_row(block, "Notiz", prefix + "note", effect.note, parse_text, _same_text,
-			_apply_item(&"effects", i, &"note"))
+		_add_line_row(block, "Notiz", prefix + "note", effect.note, FieldHelpers.parse_text,
+			_same_text, _apply_item(&"effects", i, &"note"))
 
 
 func _build_follow_ups(event: TimelineEvent) -> void:
@@ -667,11 +572,13 @@ func _build_follow_ups(event: TimelineEvent) -> void:
 		_row(block, "Chance", [_percent_input(prefix + "chance", follow_up.chance,
 			_apply_item(&"follow_ups", i, &"chance")), _muted("%")], [prefix + "chance"])
 		_row(block, "Verzögerung", [
-			_line(prefix + "delay_min", format_whole(follow_up.delay_min), parse_whole,
-				format_whole, _apply_item(&"follow_ups", i, &"delay_min"), NUMBER_WIDTH),
+			_line(prefix + "delay_min", FieldHelpers.format_whole(follow_up.delay_min),
+				FieldHelpers.parse_whole, FieldHelpers.format_whole,
+				_apply_item(&"follow_ups", i, &"delay_min"), NUMBER_WIDTH),
 			_muted("bis"),
-			_line(prefix + "delay_max", format_whole(follow_up.delay_max), parse_whole,
-				format_whole, _apply_item(&"follow_ups", i, &"delay_max"), NUMBER_WIDTH),
+			_line(prefix + "delay_max", FieldHelpers.format_whole(follow_up.delay_max),
+				FieldHelpers.parse_whole, FieldHelpers.format_whole,
+				_apply_item(&"follow_ups", i, &"delay_max"), NUMBER_WIDTH),
 			_muted("Tage"),
 		], [prefix + "delay_min", prefix + "delay_max"])
 
@@ -776,7 +683,7 @@ func _build_categories() -> void:
 		var id := category.id
 		var color := _color_choice(prefix + "color", category.color,
 			func(token: StringName) -> void: editor.set_category_field(id, &"color", token))
-		var name_edit := _line(prefix + "name", category.name, parse_text, _same_text,
+		var name_edit := _line(prefix + "name", category.name, FieldHelpers.parse_text, _same_text,
 			func(value: Variant) -> String:
 				editor.set_category_field(id, &"name", value)
 				return "")
@@ -895,13 +802,15 @@ func _line(key: String, text: String, parse: Callable, format: Callable, apply: 
 
 
 func _date_input(key: String, day: int, field: StringName) -> LineEdit:
-	var edit := _line(key, format_date(day), parse_date, format_date, _set_field(field), DATE_WIDTH)
+	var edit := _line(key, FieldHelpers.format_date(day), FieldHelpers.parse_date,
+		FieldHelpers.format_date, _set_field(field), DATE_WIDTH)
 	edit.placeholder_text = "TT.MM.JJJJ"
 	return edit
 
 
 func _percent_input(key: String, share: float, apply: Callable) -> LineEdit:
-	return _line(key, format_percent(share), parse_percent, format_percent, apply, NUMBER_WIDTH)
+	return _line(key, FieldHelpers.format_percent(share), FieldHelpers.parse_percent,
+		FieldHelpers.format_percent, apply, NUMBER_WIDTH)
 
 
 ## Auswahl aus [param labels]; [param pick] bekommt die Stelle der Wahl.
@@ -1037,7 +946,7 @@ func _set_hint(key: String, text: String) -> void:
 	hint.text = text
 	hint.visible = not text.is_empty()
 	if hint.visible:
-		_mark_error(_inputs.get(key))
+		FieldHelpers.mark_error(_inputs.get(key))
 
 
 ## Die Stelle der Eingabe, die gerade den Fokus hat; leer, wenn es keine des Formulars ist.
@@ -1056,8 +965,8 @@ func _focused_key() -> String:
 # --- Meldungen --------------------------------------------------------------------------------
 
 ## Schreibt die Meldungen der Prüfung unter ihre Felder. Ein Feld mit Fehler bekommt die rote
-## Kontur (_mark_error()). Meldungen ohne passendes Feld, etwa zu einem unbekannten Schlüssel,
-## stehen oben unter dem Titel.
+## Kontur (FieldHelpers.mark_error()). Meldungen ohne passendes Feld, etwa zu einem unbekannten
+## Schlüssel, stehen oben unter dem Titel.
 func _show_issues() -> void:
 	if editor == null or editor.catalog == null:
 		return
@@ -1071,7 +980,7 @@ func _show_issues() -> void:
 		if not for_event and not for_category:
 			continue
 		var is_error := issue.severity == CatalogIssue.Severity.ERROR
-		var text := _reason(issue) if is_error else "? " + _reason(issue)
+		var text := FieldHelpers.reason(issue) if is_error else "? " + FieldHelpers.reason(issue)
 		var hint: Label = _hints.get(issue.field)
 		if hint == null:
 			general.append(text)
@@ -1081,34 +990,10 @@ func _show_issues() -> void:
 		lines[hint].append(text)
 		has_error[hint] = has_error.get(hint, false) or is_error
 		if is_error:
-			_mark_error(_inputs.get(issue.field))
+			FieldHelpers.mark_error(_inputs.get(issue.field))
 	for hint: Label in lines:
 		hint.text = "\n".join(lines[hint])
 		hint.theme_type_variation = &"ErrorLabel" if has_error[hint] else &"WarningLabel"
 		hint.visible = true
 	_general_hint.text = "\n".join(general)
 	_general_hint.visible = not general.is_empty()
-
-
-## Gibt einem Feld mit Fehler die Kontur von 2 Pixeln in kassenrot (Style-Guide, „Bedienelemente“:
-## „Ein Feld mit Fehler, ob Eingabe- oder Auswahlfeld …“), über eine Variante im Theme je Art:
-## ErrorLineEdit, ErrorOptionButton für Auswahlfelder wie „Kategorie“ (V05) und ErrorTextEdit für
-## die Beschreibung, etwa wenn dort in der Datei eine Zahl steht (V22). Die Fokuslinie in tusche
-## liegt außen um das Feld und bleibt sichtbar. Andere Eingaben sind keine Felder, etwa der Knopf
-## „+“ der Bedingungen; sie bleiben, wie sie sind, und der Hinweis steht trotzdem darunter.
-static func _mark_error(input: Control) -> void:
-	if input is LineEdit:
-		input.theme_type_variation = &"ErrorLineEdit"
-	elif input is OptionButton:
-		input.theme_type_variation = &"ErrorOptionButton"
-	elif input is TextEdit:
-		input.theme_type_variation = &"ErrorTextEdit"
-
-
-## Der Grund einer Meldung ohne den Ort davor: aus „Ereignis „x“, Feld „date“: Das Datum …“ wird
-## „Das Datum …“, denn das Feld steht ja direkt darüber.
-static func _reason(issue: CatalogIssue) -> String:
-	var cut := issue.message.find("“: ")
-	if cut < 0:
-		return issue.message
-	return issue.message.substr(cut + 3)

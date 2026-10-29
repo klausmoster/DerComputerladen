@@ -114,6 +114,24 @@ func test_schriften_und_farben_aus_dem_theme() -> void:
 	var grund := (_ergebnis.get_node(^"Grund") as Panel).get_theme_stylebox(&"panel")
 	assert_eq((grund as StyleBoxFlat).bg_color, UiPalette.PAPIER, "Grund papier (CHK022)")
 	assert_eq(_ergebnis.theme.default_font, ThemeDB.fallback_font, "Eingebaute Schrift (CHK017)")
+	# Feature 008, B5: Die Schrift steht in einer eigenen Kopie, nicht im geteilten Theme der Datei.
+	var datei: Theme = load(SELBSTTEST_THEMA)
+	assert_false(datei.has_default_font(), "Die Schrift kommt in eine Kopie, nicht in die Datei.")
+	assert_ne(_ergebnis.theme, datei)
+
+
+func test_game_window_kommt_ueber_die_naht() -> void:
+	# Arrange (Feature 008, T036a, B1): zwei Seiten, nicht im Baum; eine mit einer Vertretung.
+	var vertretung: Node = autofree(Node.new())
+	var ohne: SelbsttestErgebnis = autofree(SelbsttestErgebnis.erstelle(_lauf_in_ordnung(),
+		_ordner_absolut, _zip))
+	var mit: SelbsttestErgebnis = autofree(SelbsttestErgebnis.erstelle(_lauf_in_ordnung(),
+		_ordner_absolut, _zip))
+	mit.game_window = vertretung
+
+	# Act und Assert: Leer heißt das Autoload, sonst die Vertretung.
+	assert_same(ohne._game_window(), get_node(^"/root/GameWindow"))
+	assert_same(mit._game_window(), vertretung)
 
 
 func test_abstaende_aus_dem_raster() -> void:

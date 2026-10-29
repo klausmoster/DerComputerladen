@@ -65,7 +65,7 @@ func open_modifier(events: Array[TimelineEvent], event_id: String, start_day: in
 		apply: Callable) -> void:
 	_open(Kind.MODIFIER, apply)
 	_fill_events(events, event_id)
-	_from_edit.text = EventForm.format_date(start_day)
+	_from_edit.text = FieldHelpers.format_date(start_day)
 	_focus_first()
 
 
@@ -159,7 +159,7 @@ func _focus_first() -> void:
 static func _entry_text(entry: ScheduleEntry) -> String:
 	# Nicht „title“: So heißt schon der Titel des Fensters, und -d warnte vor dem Überdecken.
 	var shown := entry.event.title if not entry.event.title.is_empty() else entry.event.id
-	return "%s am %s" % [shown, EventForm.format_date(entry.day)]
+	return "%s am %s" % [shown, FieldHelpers.format_date(entry.day)]
 
 
 # --- Übernehmen -------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ func _read(values: Dictionary, faulty: Array[Control]) -> String:
 		if points.is_empty():
 			faulty.append(_value_edit)
 			return "Gib einen Wert in Prozentpunkten ein, etwa +5 oder -6."
-		var parsed := EventForm.parse_percent(points)
+		var parsed := FieldHelpers.parse_percent(points)
 		if not parsed[0]:
 			faulty.append(_value_edit)
 			return parsed[1]
@@ -261,4 +261,4 @@ static func _entry_unchangeable(entry: ScheduleEntry) -> bool:
 static func _date(text: String, caption: String) -> Array:
 	if text.strip_edges().is_empty():
 		return [false, "Gib ein Datum bei „%s“ ein, etwa 31.12.1993." % caption]
-	return EventForm.parse_date(text)
+	return FieldHelpers.parse_date(text)

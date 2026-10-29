@@ -210,6 +210,10 @@ func test_funktionen_fuellen_die_vorlagen_wie_im_vertrag() -> void:
 	assert_eq(TitleTexts.confirm_delete_hint_unresumable("Spiel 9", TitleTexts.STATE_TOO_NEW),
 		"Spiel 9 ist danach weg: neuere Version. Für immer.")
 	assert_eq(TitleTexts.leave_hint("Spiel 2"), "Speichert Spiel 2 und führt ins Hauptmenü.")
+	# Feature 008 (S3): Titelbild
+	assert_eq(TitleTexts.version_line("0.1"), "V0.1 · PROTOTYP")
+	assert_eq(TitleTexts.SUBTITLE, "WIRTSCHAFTSSIMULATION · 1985–1999")
+	assert_eq(TitleTexts.STAGE, "PROTOTYP")
 
 
 func test_saetze_zu_den_graden() -> void:

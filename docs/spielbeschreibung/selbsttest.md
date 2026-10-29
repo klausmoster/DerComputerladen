@@ -18,8 +18,9 @@
   `src/test/fixtures/selbsttest_ergebnis_probe.tscn`
 - **Herkunft:** `specs/007-build-export-selbsttest/` (`contracts/selbsttest-app.md`,
   `ablaeufe.md`, `protokoll.md`, `vergleich.md`, `export.md`; `research.md` R1 bis R27;
-  `quickstart.md`); Regel in `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, Punkt 11
-- **Stand:** Feature 007, 2026-10-28
+  `quickstart.md`); Regel in `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, Punkt 11;
+  umgebaut nach dem Architektur-Leitfaden in `specs/008-architektur/` (T036a, T036e)
+- **Stand:** Feature 008, 2026-10-29
 - **Nachbarn:** Presets und Bau in [build-und-tests.md](build-und-tests.md), Fenster und Vollbild in
   [darstellung.md](darstellung.md), was die Abläufe durchspielen in
   [titel-und-hauptmenue.md](titel-und-hauptmenue.md) und [easter-egg.md](easter-egg.md)
@@ -32,6 +33,10 @@ Windows und Linux gleich. Er ist ein eigener Läufer, kein GUT (R1).
 
 - Er ändert am Spiel nichts. Er stellt nur Felder des Spiels: `GameSession.folder`, `now`, `rng`,
   `quit_callback` und `SaveGame.time_zone_bias`; nur die letzte kam für ihn dazu.
+- **Nähte** (AR-12): Die Startszene hat eine Variable `session`, leer heißt das Autoload
+  `GameSession`; sie richtet darüber die Sitzung ein und reicht die Naht an Fahrer und Läufer
+  weiter. Die Zusammenfassung hält `GameWindow` über die Naht `game_window` an, leer heißt das
+  Autoload. Tests setzen eigene Knoten.
 - Er gehört nicht ins Spiel: Die Presets des Spiels schließen `tools/*` aus. `baue_alles.sh` prüft
   das an jedem Paket.
 - Er läuft nur als gebaute App. Im Editor und mit `--path src` startet immer das Spiel.
@@ -61,6 +66,12 @@ Die Startszene (`selbsttest_start.gd`) richtet ein und tritt ab:
 4. Filter der Eingabe einschalten.
 5. `SelbsttestLaeufer` an die Wurzel des Baums hängen, damit er jeden Szenenwechsel überlebt, und
    zum Titel wechseln.
+
+Feste Werte stehen je einmal als Konstante (AR-04): der Seed als `SelbsttestFahrer.SEED`, der Pfad
+des Titels als `SelbsttestFahrer.TITEL`, den Startszene und Läufer lesen, der Ordner
+`user://selbsttest/` als `SelbsttestAblage.BASIS` (daraus `SelbsttestLaeufer.EIGENER_ORDNER` und
+der Ordner der Spielstände). Zum Spielbildschirm wechselt der Fahrer mit `TitleScreen.GAME_SCENE`,
+wie der Titel selbst; das Raster nimmt `SelbsttestSystem` aus `GameWindow.BASE_SIZE`.
 
 ## Die Abläufe
 
@@ -102,7 +113,12 @@ flowchart LR
 - **Läufer** (`SelbsttestLaeufer`, Node): je Ablauf Zeitraffer setzen, frischer Titel, dann je
   Schritt Fenstertitel „Selbsttest · Schritt n von 45: Ablauf“, Eingaben über den Fahrer, jedes
   Bild die Erwartung prüfen, bis sie stimmt oder die Höchstzeit vorbei ist, Foto, Ergebnis. Alles
-  ist eine Kette von `await`; das Spiel läuft dazwischen ganz normal.
+  ist eine Kette von `await`; das Spiel läuft dazwischen ganz normal. Sein Zustand (AR-11) ist
+  `SelbsttestLaeufer.Zustand { BEREIT, LAEUFT, ABGEBROCHEN, GESCHRIEBEN, BEENDET }`, jeder nur
+  einmal und in dieser Reihenfolge: `BEREIT` bis `starte()`, dann `LAEUFT`; nach dem Schließen
+  kurz `ABGEBROCHEN`, bis alles geschrieben ist; nach dem Schreiben `GESCHRIEBEN`, beim normalen
+  Ende wie beim Abbruch; nach einem Abbruch beendet er die App, `BEENDET`. Die angehaltene Kette
+  fragt bei jedem Weiterlaufen `_hoert_auf()`, also „nicht mehr `LAEUFT`“.
 - **Ablauf** (`SelbsttestAblauf`, RefCounted): kein Node, beschreibt nur. Ein Schritt ist ein
   Dictionary aus `neuer_schritt()` mit Kennung, Beschreibung, Eingaben als Callable, Erwartung als
   Callable (gibt `""`, wenn der Zustand stimmt, sonst den gefundenen Zustand), Höchstzeit und
@@ -112,7 +128,10 @@ flowchart LR
   Communicator steht (über `slide_finished`, weil `is_in()` schon während der Fahrt wahr ist).
   Rechtecke im Raster 640 × 360. Ändert sich die Oberfläche, ändert sich diese eine Datei. Fehlt
   ein Ziel, scheitert der Schritt sofort mit „Ziel nicht gefunden: …“. Jeder Titel bekommt einen
-  eigenen `quit_callback`, damit „Beenden“ die App nicht mitten im Lauf schließt.
+  eigenen `quit_callback`, damit „Beenden“ die App nicht mitten im Lauf schließt. Er ist die eine
+  Stelle, die das Spiel über die Namen innerer Knoten bedient (Leitfaden, „Werkzeuge“); auch das
+  Fenster fassen die Abläufe nur über ihn an: `fenster_rechteck()` liest Lage und Größe,
+  `stelle_fenster(groesse, lage)` setzt sie.
 - **Eingabe** (`SelbsttestEingabe`): jede Eingabe ist ein `InputEvent` mit `device = 4711` und geht
   durch `Input.parse_input_event()`, den Weg echter Eingaben; so entstehen Hover, Fokus und Klicks
   wie mit der Hand. Der **Filter** sitzt am Fenster
@@ -120,6 +139,8 @@ flowchart LR
   weiter; echte Maus und Tastatur ändern am Lauf nichts. Beim Weiterreichen bekommen sie das Gerät
   echter Ereignisse, sonst gälten `ui_accept` und Co. nicht. Drücken und Loslassen gehen in zwei
   Bildern hinaus, vor jedem Klick eine Bewegung aufs Ziel. Nach dem Lauf ist der Filter aus.
+- Fahrer und Eingabe sind `RefCounted`, aber keine Kerne, sondern **Helfer der Hülle** (AR-01):
+  Sie greifen auf den Baum und das Fenster zu und sagen das im Doku-Kommentar am Kopf.
 - **Zeitraffer:** `Engine.time_scale = 8` je Ablauf, 1 für `fenster` und `titel_echtzeit` (R24).
   Der Communicator begrenzt seinen Schritt je Bild, das versteckte Spiel auf vier Schritte je Bild;
   im Zeitraffer laufen sie daher langsamer als achtfach.
@@ -160,7 +181,9 @@ selbsttest/
 
 `SelbsttestErgebnis`, nach dem Schreiben im selben Fenster wie der Lauf, mit Größe und Lage aus
 dem Lauf. Look der Werkzeuge wie die Werkstatt: `GameWindow` angehalten, Skalierung des Spiels aus,
-Godots eingebaute Schrift, Theme `selbsttest_theme.tres`. Von oben: Überschrift mit Datum und Zeit,
+Godots eingebaute Schrift, Theme `selbsttest_theme.tres`. Die Schrift setzt sie in eine eigene
+Kopie des Themes (`theme.duplicate()`), weil Godot eine geladene Resource mit allen teilt (AR-04).
+Von oben: Überschrift mit Datum und Zeit,
 Systemzeile, Summe, „Was nicht stimmt“ mit Fehlern und nicht gelaufenen Schritten, Pfad, dann drei
 Knöpfe:
 

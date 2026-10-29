@@ -70,6 +70,10 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
 
+- [ ] TXXX [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares,
+  Texte oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
+  (`docs/ki_workflow/ki_pruefung.md`)
+
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
@@ -96,8 +100,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T016 [US1] Add validation and error handling
 - [ ] T017 [US1] Add logging for user story 1 operations
 
-- [ ] TXXX [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares oder
-  Texte ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
+- [ ] TXXX [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares,
+  Texte oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
   (`docs/ki_workflow/ki_pruefung.md`)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
@@ -122,8 +126,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
 - [ ] T023 [US2] Integrate with User Story 1 components (if needed)
 
-- [ ] TXXX [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares oder
-  Texte ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
+- [ ] TXXX [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares,
+  Texte oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
   (`docs/ki_workflow/ki_pruefung.md`)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
@@ -147,8 +151,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T027 [US3] Implement [Service] in src/services/[service].py
 - [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
 
-- [ ] TXXX [C] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares oder
-  Texte ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
+- [ ] TXXX [C] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares,
+  Texte oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
   (`docs/ki_workflow/ki_pruefung.md`)
 
 **Checkpoint**: All user stories should now be independently functional
@@ -169,6 +173,9 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
+- [ ] TXXX [C] Phasenprüfung dieser Phase mit `/dcl-phasenpruefung`, nur wenn sie Sichtbares, Texte
+  oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor der Gesamtabnahme
+  (`docs/ki_workflow/ki_pruefung.md`)
 - [ ] TXXX [A] Selbsttest-Abläufe anpassen (vor der Gesamtabnahme; `docs/ki_workflow/ki_dev.md`,
   Punkt 11): neue oder geänderte Seiten, Wege, Texte und Eingaben bekommen Schritte in
   `src/tools/selbsttest/ablaeufe/`; entfällt, wenn das Feature nichts davon ändert.

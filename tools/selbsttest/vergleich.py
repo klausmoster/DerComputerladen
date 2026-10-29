@@ -25,8 +25,10 @@ import pngio  # noqa: E402
 REFERENZ = os.path.join(HIER, "referenz", "macos")
 EINGANG = os.path.join(REPO, "build", "selbsttest")
 BELEGE = os.path.join(REPO, "specs", "007-build-export-selbsttest", "belege")
+# Raster des Spiels; in Godot GameWindow.BASE_SIZE (src/core/game_window.gd).
 BREITE, HOEHE = 640, 360
-# kassenrot aus dem Style-Guide: markiert abweichende Pixel.
+# kassenrot aus dem Style-Guide, in Godot UiPalette.KASSENROT (src/ui/ui_palette.gd): markiert
+# abweichende Pixel.
 KASSENROT = (0xC0, 0x39, 0x2B, 255)
 
 GLEICH = "gleich"
@@ -81,7 +83,13 @@ def entpacke(zip_pfad, ziel):
 
 
 def lies_protokoll(ordner):
-    """Liest protokoll.txt: die einfachen Schlüssel und die Schritte als Liste von Dictionaries."""
+    """Liest protokoll.txt: die einfachen Schlüssel und die Schritte als Liste von Dictionaries.
+
+    Das Format kennt dieses Skript ein zweites Mal; in Godot steht es in
+    src/tools/selbsttest/selbsttest_protokoll.gd (Zeilen „schlüssel: wert“, Schlüssel wie
+    lauf.start und schritt, Zeitformat von lauf.start), die Werte „ja“ und „nein“ von
+    foto_vergleichbar in selbsttest_texte.gd, die Namen protokoll.txt und fotos/ in
+    selbsttest_ablage.gd."""
     try:
         zeilen = open(os.path.join(ordner, "protokoll.txt"), encoding="utf-8").read().splitlines()
     except (OSError, UnicodeDecodeError) as fehler:
