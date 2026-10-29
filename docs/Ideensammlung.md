@@ -135,3 +135,15 @@ Nächstes kommt, etwa „C4 von Phase 3, als Nächstes deine Abnahme“.
 
 - Bezug: [ki_workflow/feature_fahrplan.md](ki_workflow/feature_fahrplan.md), Frage 4.
 - Offen: erst, wenn sich der Fahrplan in einem Feature bewährt hat (Klaus, 2026-10-29).
+
+## 2026-10-29 · Mit dem Laden umziehen
+
+Wer auf „Schwer“ beginnt, kann die Fußgängerzone anfangs nicht mieten, weil der Vermieter Kaution
+und sechs Monatsmieten als Kapital sehen will. Später, mit mehr Geld, zieht er dorthin um: alten
+Vertrag kündigen, neuen unterschreiben, Ware und Einrichtung mitnehmen (Klaus, 2026-10-29, in
+clarify zu Feature 010).
+
+- Bezug: [Feature 010](../specs/010-ladeneroeffnung/spec.md), FR-013 und FR-020; 05-02 Ladenausbau
+  in `features/Feature_Ideas.md`; 03-06 Finanzen.
+- Offen: Kündigungsfrist und Kosten des Umzugs; ob die Kaution zurückkommt; ob Stammkunden
+  mitziehen; ob die anderen Läden inzwischen vermietet sein können.

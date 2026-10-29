@@ -21,6 +21,38 @@ ab; der Spielbildschirm zeigt den leeren Laden als Bild mit Name, Datum und Kont
 Laufkundschaft und Sichtbarkeit werden nur gespeichert und wirken erst mit 03-04; die Ereignisse
 der Zeitleiste bekommen keinen Ortsbezug (das ist 05-03), Hinweise im Exposé sind fester Text.
 
+## Clarifications
+
+### Specify 2026-10-29
+
+Fragen zu den Markern aus `/speckit-specify`, einzeln an Klaus:
+
+- Q: Läuft die Spieluhr auf dem Spielbildschirm? → A: Ja, mit Pause und einigen Tempostufen
+  (Klaus, nach Empfehlung). So sieht der Spieler Datum und Kontostand wandern und die Miete am
+  Monatsersten abgehen. Verworfen: Uhr steht wie bisher (Miete nur in Tests sichtbar), Knopf
+  „Nächster Tag“ (legt früh ein Rundenspiel fest).
+- Q: Wie viele Läden bietet der Makler an, mit welchem Charakter? → A: Vier (Klaus, nach
+  Empfehlung): Fußgängerzone, Stadtteilzentrum im Wohngebiet, Gewerbegebiet und Nähe Bahnhof.
+  Verworfen: drei, je einer pro Viertel wie im Game Design (auf „Schwer“ blieben nur zwei); vier
+  mit Uni-Viertel statt Bahnhof.
+- Q: Welche Beträge gelten, und wann ist ein Laden grau? → A: Beträge nach der Recherche
+  (Mieten 4.800, 2.240, 1.440 und 1.350 DM; Startkapital 100.000, 60.000 und 30.000 DM), grau ist
+  ein Laden, wenn das Startkapital den Kapitalnachweis des Vermieters nicht deckt: Kaution plus
+  sechs Monatsmieten. Abgebucht wird weiter nur die Kaution (Klaus, nach Empfehlung). Damit
+  ändert sich Klaus' Regel vom selben Tag, „grau, wenn die Kaution das Kapital übersteigt“: Die
+  Kaution ist höchstens 14.400 DM, auf „Schwer“ wäre also kein Laden grau gewesen. Verworfen: nur
+  die Kaution mit Schwer bei 12.000 DM (unrealistisch knapp); nur die Kaution, nie grau. Klaus'
+  Folgeidee, später mit dem Laden umzuziehen, steht in `docs/Ideensammlung.md`.
+
+### Session 2026-10-29
+
+Fragen aus `/speckit-clarify`, einzeln an Klaus:
+
+- Q: Dürfen zwei Spiele denselben Ladennamen tragen? → A: Ja (Klaus, nach Empfehlung); Grad,
+  Spieldatum und „zuletzt gespielt“ unterscheiden sie, die Rückfrage beim Löschen nennt Grad und
+  Spieldatum mit. Verworfen: ablehnen wie ein Gewerbeamt (spielweltlich schief), automatischer
+  Zusatz „(2)“ (ändert sich beim Löschen).
+
 ## Überblick
 
 Bisher führt die Gradwahl direkt in einen leeren Spielbildschirm mit dem Knopf „Zum Hauptmenü“.
@@ -29,12 +61,12 @@ Laden, unterschreibt den Mietvertrag, meldet sein Gewerbe unter einem eigenen Na
 dann in seinem leeren Laden, mit Geld auf dem Konto und der ersten Miete vor Augen.
 
 Beispiel: Klaus wählt „Schwer“. Auf dem Stadtplan von Wesselbach (Name vorläufig) sind vier
-Läden markiert. Der Laden in der Fußgängerzone ist grau; sein Exposé sagt: „Die Kaution von
-7.200 DM übersteigt Ihr Kapital.“ Er nimmt den Laden im Wohngebiet, unterschreibt den
-Mietvertrag, meldet „Computer Klaus“ an und steht am 01.01.1985 im leeren Laden. Oben steht
-„Computer Klaus · 01.01.1985 · Konto 13.200 DM“. Im Hauptmenü heißt sein Spielstand jetzt
-„Computer Klaus“, die Datei bleibt `spiel_7.json`. (Alle Beträge im Beispiel sind Platzhalter;
-die echten Zahlen klärt FR-020.)
+Läden markiert. Der Laden in der Fußgängerzone ist grau; sein Exposé sagt: „Der Vermieter
+verlangt einen Kapitalnachweis über 43.200 DM. Sie haben 30.000 DM.“ Er nimmt den Laden im
+Stadtteilzentrum, unterschreibt den Mietvertrag, meldet „Computer Klaus“ an und steht am
+01.01.1985 im leeren Laden. Oben steht „Computer Klaus · 01.01.1985 · Konto 25.680 DM“ (30.000 DM
+Startkapital minus 4.320 DM Kaution). Im Hauptmenü heißt sein Spielstand jetzt „Computer Klaus“,
+die Datei bleibt `spiel_7.json`. (Name der Stadt und Wortlaute sind vorläufig.)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -43,7 +75,7 @@ die echten Zahlen klärt FR-020.)
 Nach der Gradwahl sieht der Spieler den Stadtplan mit den Läden, die gerade frei sind. Wählt er
 einen, liegt dessen Exposé vor ihm: ein Blatt Papier des Maklers mit Foto, Miete, Fläche, Lage und
 Kleingedrucktem. Er blättert zwischen den Läden, vergleicht und entscheidet sich für einen. Ein
-Laden, dessen Kaution sein Startkapital übersteigt, ist auf dem Plan grau; sein Exposé lässt sich
+Laden, für den der Vermieter mehr Kapital sehen will, als der Spieler hat, ist auf dem Plan grau; sein Exposé lässt sich
 trotzdem lesen und sagt, warum er nicht in Frage kommt.
 
 **Why this priority**: Die Wahl des Standorts ist die erste echte Entscheidung im Spiel. Ohne sie
@@ -63,9 +95,10 @@ Läden. Jeden Laden wählen: Sein Exposé zeigt Foto, Miete, Fläche, Lage und K
 3. **Given** ein Exposé liegt vor ihm, **When** er zum nächsten oder vorigen Laden blättert oder
    zum Stadtplan zurückgeht, **Then** sieht er das andere Exposé oder wieder den Plan, ohne dass
    etwas festgelegt ist.
-4. **Given** die Kaution eines Ladens übersteigt das Startkapital des Grads, **When** der Spieler
-   den Stadtplan sieht, **Then** ist dieser Laden grau; **When** er sein Exposé öffnet, **Then**
-   sagt es, dass die Kaution sein Kapital übersteigt, und bietet keinen Mietvertrag an.
+4. **Given** der Kapitalnachweis eines Ladens (Kaution plus sechs Monatsmieten) übersteigt das
+   Startkapital des Grads, **When** der Spieler den Stadtplan sieht, **Then** ist dieser Laden
+   grau; **When** er sein Exposé öffnet, **Then** nennt es den verlangten Nachweis und das
+   Kapital des Spielers in DM und bietet keinen Mietvertrag an.
 5. **Given** der Stadtplan ist zu sehen, **When** der Spieler zurückgeht, **Then** ist er wieder
    in der Gradwahl, und es ist kein Spielstand angelegt.
 
@@ -142,8 +175,8 @@ gesunken, wie Monatserste vergangen sind, und bleibt nach Speichern und Fortsetz
 
 **Acceptance Scenarios**:
 
-1. **Given** ein Spiel mit 1.200 DM Monatsmiete am 31.01.1985, **When** der 01.02.1985 beginnt,
-   **Then** sinkt der Kontostand um 1.200 DM, und der Spielbildschirm zeigt den neuen Stand.
+1. **Given** ein Spiel im Stadtteilzentrum (1.440 DM Monatsmiete) am 31.01.1985, **When** der
+   01.02.1985 beginnt, **Then** sinkt der Kontostand um 1.440 DM, und der Spielbildschirm zeigt den neuen Stand.
 2. **Given** ein Spiel wird am 15.03.1985 gespeichert und fortgesetzt, **When** der 01.04.1985
    beginnt, **Then** wird die Miete genau einmal abgebucht, nicht doppelt und nicht gar nicht.
 3. **Given** ein Spiel läuft über mehrere Monatserste, **When** man die Abbuchungen zählt,
@@ -175,15 +208,17 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 
 - **Alle Läden zu teuer:** Darf nicht vorkommen. In jedem Grad muss mindestens ein Laden
   bezahlbar sein (FR-021); die Tests prüfen das für alle Grade.
-- **Kaution genau gleich dem Startkapital:** Der Laden ist bezahlbar, das Konto steht danach
-  auf 0 DM; die erste Miete bringt es ins Minus (siehe FR-025).
+- **Kapitalnachweis genau gleich dem Startkapital:** Der Laden ist bezahlbar. Nach der Kaution
+  bleiben genau sechs Monatsmieten auf dem Konto; ohne Einnahmen ist es nach der sechsten Miete
+  am 01.07.1985 leer.
 - **Konto im Minus:** Ohne Einnahmen sinkt das Konto Monat für Monat und fällt irgendwann unter
   null. Was dann geschieht, regelt FR-025.
 - **Langer Name:** Der Ladenname ist auf eine Länge begrenzt, die im Spielbildschirm, in der
   Liste der Spielstände und im Hauptmenü ganz zu sehen ist (FR-016).
 - **Zeichen im Namen:** Umlaute und ß sind erlaubt; Zeichen, die die Schrift des Spiels nicht
   zeigen kann, lassen sich nicht eintippen.
-- **Gleicher Name zweimal:** Zwei Spiele dürfen gleich heißen oder nicht, siehe FR-018.
+- **Gleicher Name zweimal:** Erlaubt; Grad, Spieldatum und „zuletzt gespielt“ unterscheiden
+  die Spielstände (FR-018).
 - **Zurück aus jedem Schritt:** Esc und „Zurück“ führen je einen Schritt zurück: Anmeldung →
   Mietvertrag → Exposé → Stadtplan → Gradwahl. Nach der Unterschrift bleibt die Unterschrift
   beim Zurückgehen nicht stehen; erst die abgegebene Anmeldung legt etwas fest.
@@ -218,8 +253,16 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 - **FR-005**: Die Stadt MUST eine fiktive westdeutsche Mittelstadt mit rund 150.000 Einwohnern
   sein, mit den Vierteln Innenstadt, Wohngebiet und Gewerbegebiet. Ihr Name und die
   Straßennamen sind erfunden.
-- **FR-006**: Die Stadt MUST [NEEDS CLARIFICATION: drei oder vier Läden, und mit welchem Charakter
-  je Laden?] zur Wahl stellen. Jeder Laden hat: Anschrift, Viertel, Fläche in m², Monatsmiete in
+- **FR-006**: Die Stadt MUST vier Läden zur Wahl stellen, jeder mit eigenem Charakter:
+
+  | Laden | Viertel | Miete | Fläche | Laufkundschaft | Sichtbarkeit | Eigenart |
+  |---|---|---|---|---|---|---|
+  | Fußgängerzone | Innenstadt | am höchsten | klein | hoch | hoch | Parken schwierig |
+  | Stadtteilzentrum | Wohngebiet | mittel | mittel | mittel | mittel | Stammkunden aus der Nachbarschaft |
+  | Gewerbegebiet | Gewerbegebiet | am niedrigsten | groß | niedrig | niedrig | Parkplätze vor der Tür, viel Platz für Lager |
+  | Nähe Bahnhof | Innenstadt, Rand | niedrig | klein bis mittel | hoch | mittel | viel Durchgang, Ruf der Gegend zweifelhaft |
+
+  Jeder Laden hat: Anschrift, Viertel, Fläche in m², Monatsmiete in
   DM, Kaution, Laufkundschaft und Sichtbarkeit als Stufe, eine kurze Beschreibung,
   Kleingedrucktes, ein Foto von außen und ein Bild von innen, leer.
 - **FR-007**: Laufkundschaft und Sichtbarkeit MUST gespeichert und im Exposé in Worten
@@ -242,9 +285,9 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 - **FR-012**: Das Kleingedruckte MUST fester Text je Laden sein, der Hinweise auf Vor- und
   Nachteile des Standorts gibt, etwa „Parkplätze nur in der Tiefgarage am Markt“. Es verweist auf
   keine Ereignisse der Zeitleiste (Ortsbezug ist 05-03).
-- **FR-013**: Ist die Kaution höher als das Startkapital, MUST das Exposé das sichtbar sagen,
-  etwa als Stempel oder Vermerk des Maklers, mit Kaution und Kapital in DM, und keinen Weg zum
-  Mietvertrag anbieten.
+- **FR-013**: Übersteigt der Kapitalnachweis (FR-021) das Startkapital, MUST das Exposé das
+  sichtbar sagen, etwa als Stempel oder Vermerk des Maklers, mit verlangtem Nachweis und Kapital
+  des Spielers in DM, und keinen Weg zum Mietvertrag anbieten.
 - **FR-014**: Von einem Exposé aus MUST der Spieler zum nächsten und vorigen Laden blättern
   können, ohne über den Stadtplan zu gehen.
 
@@ -262,18 +305,34 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 - **FR-017**: Der Ladenname MUST der angezeigte Name des Spielstands werden: in „Spiel laden“, im
   Hinweis zu „Weiterspielen“, in der Rückfrage beim Löschen und auf dem Knopf „Zum Hauptmenü“.
   Die Datei behält ihre Nummer (`spiel_N.json`).
-- **FR-018**: Haben zwei Spiele denselben Ladennamen, MUST der Spieler sie trotzdem
-  auseinanderhalten können; ob gleiche Namen erlaubt sind, klärt `/speckit-clarify`.
+- **FR-018**: Zwei Spiele MUST denselben Ladennamen tragen dürfen; jedes Spiel ist eine eigene
+  Welt. Auseinander hält man sie wie bisher an Grad, Spieldatum und „zuletzt gespielt“ in der
+  Liste; die Rückfrage beim Löschen nennt neben dem Namen auch Grad und Spieldatum.
 - **FR-019**: Die Anmeldung MUST sich erst abgeben lassen, wenn der Name gültig ist; ein Hinweis
   sagt, was fehlt.
 
 **Geld**
 
 - **FR-020**: Das Startkapital MUST vom Grad abhängen, und die Mieten der Läden MUST zu
-  Westdeutschland 1985 passen: [NEEDS CLARIFICATION: Beträge in DM für Startkapital je Grad und
-  Monatsmiete je Laden, mit Quellen].
-- **FR-021**: In jedem Grad MUST mindestens ein Laden bezahlbar sein, und auf „Schwer“ MUST
-  mindestens einer zu teuer sein.
+  Westdeutschland 1985 passen. Es gelten diese Beträge (Klaus, 2026-10-29, nach der Recherche in
+  [recherche-geld.md](recherche-geld.md)):
+
+  | Laden | Fläche | Miete/Monat | Kaution | Kapitalnachweis |
+  |---|---|---|---|---|
+  | Fußgängerzone | 60 m² | 4.800 DM | 14.400 DM | 43.200 DM |
+  | Nähe Bahnhof | 80 m² | 2.240 DM | 6.720 DM | 20.160 DM |
+  | Stadtteilzentrum | 90 m² | 1.440 DM | 4.320 DM | 12.960 DM |
+  | Gewerbegebiet | 150 m² | 1.350 DM | 4.050 DM | 12.150 DM |
+
+  Startkapital: Leicht 100.000 DM, Mittel 60.000 DM, Schwer 30.000 DM. Die Mieten sind aus Werten
+  des RDM-Preisspiegels 2001 auf 1985 zurückgeschätzt, das Startkapital lehnt sich an belegte
+  Gründungen an (1979 im Schnitt rund 26.500 DM Eigenmittel und 32.500 DM Eigenkapitalhilfe).
+  Alle Beträge stehen bei den Daten der Läden (FR-008) und lassen sich dort ändern.
+- **FR-021**: Ein Laden MUST bezahlbar sein, wenn das Startkapital mindestens den
+  Kapitalnachweis deckt, den der Vermieter verlangt: Kaution plus sechs Monatsmieten. Mit den
+  Beträgen aus FR-020 ist auf „Schwer“ die Fußgängerzone grau, alle anderen Läden und alle Läden
+  auf „Mittel“ und „Leicht“ sind bezahlbar. In jedem Grad MUST mindestens ein Laden bezahlbar
+  sein.
 - **FR-022**: Die Kaution MUST drei Monatsmieten betragen und bei der Anmeldung vom Startkapital
   abgehen. Sie bleibt beim Vermieter und erscheint nicht als Guthaben.
 - **FR-023**: Die Monatsmiete MUST am Ersten jedes Monats vom Konto abgehen, das erste Mal am
@@ -281,7 +340,7 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
   Claude, siehe Annahmen). Jede Abbuchung geschieht genau einmal, auch über Speichern und
   Fortsetzen hinweg.
 - **FR-024**: Der Kontostand MUST in ganzen DM geführt und mit Tausenderpunkt und „DM“ angezeigt
-  werden, etwa „13.200 DM“.
+  werden, etwa „25.680 DM“.
 - **FR-025**: Fällt der Kontostand unter null, MUST er weiter geführt und auffällig angezeigt
   werden; weitere Folgen hat das in diesem Feature nicht. Pleite, Kredit und Spielende gehören
   zu 03-06 Finanzen (Festlegung von Claude, siehe Annahmen).
@@ -290,9 +349,14 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 
 - **FR-026**: Der Spielbildschirm MUST das Innere des gewählten Ladens als Bild zeigen, leer,
   dazu Ladenname, Spieldatum und Kontostand, und weiterhin den Knopf „Zum Hauptmenü“.
-- **FR-027**: Die Spieluhr MUST auf dem Spielbildschirm [NEEDS CLARIFICATION: laufen, mit Pause
-  und Tempo, oder wie bisher stehen?]. Ändert sich das Datum, aktualisieren sich Datum und
-  Kontostand sofort.
+- **FR-027**: Die Spieluhr MUST auf dem Spielbildschirm laufen, mit Pause und zwei bis drei
+  Tempostufen (etwa 1, 2 und 7 Tage je Sekunde, im Plan festgelegt), bedienbar mit Maus und
+  Tastatur, Pause auch mit der Leertaste. Der Spielbildschirm erscheint pausiert, auch nach dem
+  Fortsetzen, damit niemand Tage verliert, während er sich umsieht (Festlegung von Claude). Ändert
+  sich das Datum, aktualisieren sich Datum und Kontostand sofort. Am 31.12.1999 hält die Uhr an.
+- **FR-027a**: Pause und Tempo MUST sichtbar sein. Verlassen, Fenster schließen und Cmd+Q
+  speichern wie bisher das aktuelle Spieldatum; ein Speichern während des Laufs ist darüber
+  hinaus nicht nötig.
 
 **Spielstand**
 
@@ -325,6 +389,8 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 - **Konto**: der Kontostand in DM und die Buchungen, die ihn ändern (Startkapital, Kaution, Miete);
   in diesem Feature nur Abgänge.
 - **Startkapital**: der Betrag, mit dem ein Spiel beginnt; hängt vom Grad ab.
+- **Kapitalnachweis**: was der Vermieter an Kapital sehen will, bevor er vermietet: Kaution plus
+  sechs Monatsmieten. Er wird nur geprüft, nicht abgebucht.
 
 ## Success Criteria *(mandatory)*
 
@@ -352,15 +418,16 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 
 - **Erster Monat mietfrei** (Festlegung von Claude): Das Spiel beginnt am 01.01.1985, einem
   Monatsersten. Damit nicht schon am ersten Tag Kaution und Miete fällig sind, ist der Januar laut
-  Kleingedrucktem für den Ausbau mietfrei, wie es bei Gewerbemieten üblich ist. So stimmt Klaus'
-  Regel „grau, wenn die Kaution das Kapital übersteigt“ auch für den ersten Tag.
+  Kleingedrucktem für den Ausbau mietfrei, wie es bei Gewerbemieten üblich ist. Am ersten Tag geht
+  also nur die Kaution ab.
 - **Konto im Minus ohne Folgen** (Festlegung von Claude): Pleite, Dispo, Kredit und Zinsen kommen
   mit 03-06 Finanzen. Bis dahin darf das Konto ins Minus und wird nur auffällig angezeigt.
 - **Kein Ortsbezug:** Die Ereignisse der Zeitleiste gelten weiter für alle Läden gleich (05-03).
 - **Keine Einnahmen:** In diesem Feature gibt es nur Abgänge. Verkäufe, Nebenkosten, Strom und
   Steuern kommen mit der Wirtschaft.
-- **Keine Gebühr für die Gewerbeanmeldung** im Konto, solange die Recherche keinen Betrag liefert,
-  der spürbar ist; ein Betrag von wenigen Mark lohnt keine eigene Buchung.
+- **Keine Gebühr für die Gewerbeanmeldung** im Konto: Die Recherche fand für 1985 keinen Betrag,
+  die Gemeinden setzten ihn selbst fest, wohl im niedrigen zweistelligen DM-Bereich; das lohnt
+  keine eigene Buchung.
 - **Schauplatz:** Stadtplan, Exposé, Mietvertrag und Gewerbeanmeldung sind eigene Bilder bzw.
   Papiere außerhalb des Communicators; der Titelbildschirm mit Communicator bleibt bis zur
   Gradwahl unverändert. Wie die Papiere aussehen, regelt der Style-Guide, der dafür ergänzt
