@@ -353,7 +353,7 @@ T040 fest.
   Grundsätze verweisen auf den Leitfaden, neuer Stand nach der Behebung), `build-und-tests.md`
   (`test_architektur.gd`) und den Index. Abweichungen zwischen Spec und Code gehören dazu. Geändert
   wird erst nach Klaus' OK.
-- [ ] T044 [C] Tagebuch vor dem Merge (`ki_dev.md`, Punkt 10): eigene Datei für Feature 008 unter
+- [x] T044 [C] Tagebuch vor dem Merge (`ki_dev.md`, Punkt 10): eigene Datei für Feature 008 unter
   `docs/tagebuch/` nach dem README dort, auf Englisch, je echter Entscheidung ein Eintrag, oben die
   Zeile „Tokens and cost“ aus `python3 -I tools/tagebuch/token_bilanz.py feature/008-architektur`.
   Klaus nimmt die Einträge ab.
