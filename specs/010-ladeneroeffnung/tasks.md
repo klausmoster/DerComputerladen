@@ -45,7 +45,10 @@ D2, C1, K1, von Klaus nach Empfehlung freigegeben).
 - game_bible: `docs/game_bible/Templates/`, `Stadt/`, `Läden/`, `Figuren/`
 - Werkzeuge: `tools/bible/importiere.py`, `tools/raster/platzhalter.py`, `tools/build/baue_alles.sh`
 - Tests: `/Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://addons/gut/gut_cmdln.gd`
-- Style-Guide: Artifact https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, Dateien unter `project/`
+- Style-Guide: `docs/style-guide/` im Repo (seit 2026-10-29, Verfassung 3.0.1): `README.md`,
+  `tokens.md` und `tokens.json` (immer beide zusammen), `sprache.md`, `ton.md`, `werkzeuge.md`,
+  `leonardo-workflow.md`, Bausteine je Datei unter `bausteine/`, Vorschau optional unter `vorschau/`
+- Bildkatalog: `docs/art/bildkatalog.md`, gepflegt von `dcl-grafik` zusammen mit dem Prompt-Log
 
 ---
 
@@ -91,11 +94,11 @@ läuft ohne Fehler; `Figuren.md` und `Läden.md` listen alle Einträge.
 - [ ] T007 [C] Notizen nach T006 anlegen: `docs/game_bible/Stadt/<Name>.md`, vier unter
   `docs/game_bible/Läden/` mit Beträgen aus spec.md, FR-020 (`preise_miete` mit `datum: "1985-01"`,
   `von` = `bis`; `quelle_miete` auf recherche-geld.md), `docs/game_bible/Figuren/Makler.md`.
-- [ ] T008 [C] `docs/game_bible/Figuren/Ladenbesitzer.md` aus dem Style-Guide („Szenen und Figuren“,
-  F-01) anlegen. Das Figurenblatt F-01 im Prompt-Log und unter `docs/art/` suchen; fehlt die Datei,
-  `bild_referenz` leer mit Vermerk und Klaus fragen, ob F-01 nachgeholt wird (CHK020).
-- [ ] T009 [C] Übersichten: `docs/game_bible/Figuren.md` (Name, Rolle, Alter, Vorkommen,
-  Referenzbild, FR-001c) und `docs/game_bible/Läden.md`; dann
+- [ ] T008 [C] `docs/game_bible/Figuren/Ladenbesitzer.md` aus dem Style-Guide
+  (`docs/style-guide/README.md`, „Szenen und Figuren“) anlegen; `bild_katalog` verweist auf F-01 im
+  Bildkatalog (CHK020, R16).
+- [ ] T009 [C] Übersichten: `docs/game_bible/Figuren.md` (Name, Rolle, Alter, Optik in einem Satz,
+  Vorkommen, Verweis auf den Bildkatalog; FR-001c) und `docs/game_bible/Läden.md`; dann
   `python3 -I docs/game_bible/regenerate_tables.py docs/game_bible` für die Tabellen.
 - [ ] T010 [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, Prüfer Text, über die neuen Notizen;
   vor Klaus' Abnahme (`docs/ki_workflow/ki_pruefung.md`).
@@ -212,7 +215,9 @@ Werte mehr, die nur dort stehen dürften.
   Blatt (mit Stempel, Unterschrift, Kleingedrucktem), Eingabefeld, Markierung (mit „nicht
   mietbar“, CHK030); geändert Bedienleiste (Uhr statt Weiter-Pfeil, Ortsbild ohne Klick, Lage von
   „Zum Hauptmenü“), Anzeige (Größe, Blinken, `zeile-klein`), README (Szene Büro, Ladenname im Bild),
-  Sprache (Papiere der Spielwelt, Minus). Vorher die Dateien lesen, ein Publish je Durchgang.
+  Sprache (Papiere der Spielwelt, Minus). In den Dateien unter `docs/style-guide/`: ein neuer
+  Baustein bekommt `bausteine/<name>.md`, Tokens immer in `tokens.md` und `tokens.json` zugleich.
+  Vorher `main` in den Branch holen, falls dort am Style-Guide gearbeitet wurde.
 - [ ] T034 [K] Die Ergänzungen im Style-Guide freigeben.
 - [ ] T035 [C] Verträge an den Style-Guide angleichen: Werte aus `contracts/ladenwahl.md` und
   `contracts/spielbildschirm.md`, die jetzt im Style-Guide stehen, durch Verweise ersetzen; Tasten
@@ -327,17 +332,19 @@ grün.
 ## Phase 8: Bilder — US1, US3
 
 **Goal**: Die Platzhalter durch die echten Bilder ersetzt, nach dem Leonardo-Workflow, und der Makler
-mit Referenzbild in der game_bible (Verfassung IV, R11, R16).
+mit Figurenblatt im Bildkatalog (Verfassung IV, R11, R16).
 
 **Independent Test**: Keine Datei unter `src/assets/images/buero/` und `laeden/` ist noch ein
-Platzhalter; jedes Bild steht im Prompt-Log.
+Platzhalter; jedes Bild steht im Prompt-Log und im Bildkatalog.
 
 - [ ] T057 [C] Figurenblatt des Maklers mit `dcl-grafik` nach seinem Steckbrief; Klaus wählt aus;
-  `bild_referenz` und `bild_prompt_log` in `docs/game_bible/Figuren/Makler.md` eintragen.
+  `dcl-grafik` trägt ihn ins Prompt-Log und in den Bildkatalog unter „Figuren“ ein, mit Aussehen und
+  festem Prompt-Baustein wie den Ladenbesitzer; `bild_katalog` in
+  `docs/game_bible/Figuren/Makler.md` verweist darauf.
 - [ ] T058 [K] Figurenblatt des Maklers auswählen.
 - [ ] T059 [C] Büro (mit dem Makler aus T057 als Referenz), Stadtplan, vier Läden von außen, vier
-  leere Läden von innen mit `dcl-grafik`, gerastert; die vier Ausschnitte `<id>_ort.png` ohne
-  Skalierung aus den Fotos (CHK028).
+  leere Läden von innen mit `dcl-grafik`, gerastert, je mit Eintrag im Prompt-Log und im Bildkatalog
+  (Orte und Szenen); die vier Ausschnitte `<id>_ort.png` ohne Skalierung aus den Fotos (CHK028).
 - [ ] T060 [K] Die Bilder aus T059 auswählen.
 - [ ] T061 [A] [US1] Markierungen und Hotspots in `city_map.tscn` und `broker_office.tscn` an die
   echten Bilder setzen; Test, dass kein Platzhalter mehr da ist (CHK036).

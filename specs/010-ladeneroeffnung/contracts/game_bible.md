@@ -55,15 +55,10 @@ grunddaten_name: ""             # „Herr Brandt“
 grunddaten_rolle: ""            # „Makler“
 grunddaten_alter: 0
 grunddaten_vorkommen: []        # Features und Orte, etwa „010 Büro des Maklers“
-optik_gesicht: ""
-optik_haar: ""
-optik_kleidung: ""
-optik_haltung: ""
-optik_farben: ""                # Farben aus der Hauptpalette
+optik_kurz: ""                  # ein Satz für die Übersicht; das ganze Aussehen steht im Bildkatalog
 art_sprechweise: ""             # siezt, trocken, Lieblingswörter
 art_charakter: ""
-bild_referenz: ""               # Pfad zum freigegebenen Figurenblatt, etwa docs/art/figuren/makler.png
-bild_prompt_log: ""             # Eintrag in docs/art/leonardo/prompt-log.md
+bild_katalog: ""                # Kennung und Abschnitt im Bildkatalog, etwa „F-02, #makler“
 bild_szene: ""                  # Bild im Spiel, res://assets/images/buero/makler.png
 saetze:
 - anlass: ""
@@ -71,8 +66,15 @@ saetze:
 ```
 
 Darunter `## +Hintergrund` für alles, was eine Figur lebendig macht und die KI beim Schreiben
-neuer Sätze braucht. `Figuren.md` listet alle Figuren mit Name, Rolle, Alter, Vorkommen und
-Referenzbild; `dcl-grafik` nimmt `bild_referenz` als Bildreferenz für jedes neue Bild der Figur.
+neuer Sätze braucht. `Figuren.md` listet alle Figuren mit Name, Rolle, Alter, Optik in einem
+Satz, Vorkommen und Verweis auf den Bildkatalog.
+
+**Aussehen nur an einer Stelle:** Wie eine Figur aussieht, ihr fester Prompt-Baustein, das
+Figurenblatt als Referenzbild und die Bilder mit ihr stehen im Bildkatalog
+(`docs/art/bildkatalog.md`, Abschnitt „Figuren“), den `dcl-grafik` pflegt; maßgeblich bleibt der
+Style-Guide (`docs/style-guide/README.md`, „Szenen und Figuren“). Die game_bible sagt, wer die Figur
+ist, wie sie redet und was sie sagt, und verweist für das Aussehen auf den Katalog. So gibt es für
+das Aussehen eine Quelle statt zwei.
 
 ## TEMPLATE_Stadt.md (Frontmatter)
 

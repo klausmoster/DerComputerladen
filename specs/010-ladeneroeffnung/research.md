@@ -297,12 +297,18 @@ Ortsbezug ist 05-03.
 ## R16 Übersicht der Figuren in der game_bible
 
 **Entscheidung:** Jede Figur des Spiels bekommt eine Notiz unter `docs/game_bible/Figuren/` nach
-`TEMPLATE_Figur.md`. Darin stehen Name, Rolle, Alter, Optik (Gesicht, Haar, Kleidung, Haltung,
-Farben), Art zu reden mit Beispielsätzen, wo sie vorkommt, und das Referenzbild: Pfad zum
-freigegebenen Figurenblatt und Eintrag im Prompt-Log. Die Notiz `docs/game_bible/Figuren.md` ist
-die Übersicht aller Figuren als Tabelle, wie `CPUs.md` für die Prozessoren. Den Anfang machen der
-Ladenbesitzer (Figurenblatt F-01 aus dem Style-Guide) und der Makler. Der Skill `dcl-grafik` nimmt
-das Referenzbild einer Figur als Bildreferenz für jedes neue Bild mit ihr.
+`TEMPLATE_Figur.md`: Name, Rolle, Alter, Optik in einem Satz, Art zu reden, Charakter, wo sie
+vorkommt, ihre Sätze und der Verweis auf ihren Eintrag im Bildkatalog. Die Notiz
+`docs/game_bible/Figuren.md` ist die Übersicht aller Figuren als Tabelle, wie `CPUs.md` für die
+Prozessoren. Das ganze Aussehen, der feste Prompt-Baustein und das Figurenblatt als Referenzbild
+stehen im Bildkatalog `docs/art/bildkatalog.md`, Abschnitt „Figuren“, den `dcl-grafik` pflegt; der
+Ladenbesitzer steht dort schon mit F-01 (`docs/art/leonardo/f-01-figurenblatt.jpg`). Den Anfang in
+der game_bible machen der Ladenbesitzer und der Makler; der Makler bekommt in Phase 8 seinen
+Eintrag im Bildkatalog wie der Ladenbesitzer.
+
+Geändert am 2026-10-29, als der Style-Guide und der Bildkatalog ins Repo kamen (Sitzung
+„Style-Guide, Bildkatalog, Obsidian-Vault“): Bis dahin sollte die game_bible auch Optik im Einzelnen
+und das Referenzbild führen; das stünde jetzt doppelt (Festlegung von Claude).
 
 **Grund:** Klaus, 2026-10-29: eine Übersicht der Charaktere „inkl. der ganzen Beschreibung. Name,
 Alter, Optik (die dann auch wieder als Referenzbild genommen wird) … Stuff für die KI und für die
@@ -310,7 +316,7 @@ Doku.“ Die game_bible ist der Spielinhalt und darf von Claude selbstständig b
 Sätze einer Figur liest der Importer aus derselben Notiz (R9), so gibt es eine Quelle.
 
 **Verworfen:** Figuren im Style-Guide: Der regelt das Aussehen aller Figuren, nicht wer sie sind.
-Eine eigene Datei unter `docs/`: zweite Stelle neben der game_bible.
+Aussehen und Referenzbild auch in der game_bible: zweite Stelle neben dem Bildkatalog.
 
 ## R17 Stadt, Straßen und Makler: Vorschläge, Klaus wählt
 
@@ -320,9 +326,9 @@ Exposés mit Kleingedrucktem und den Steckbrief des Maklers mit seinen Sätzen. 
 frei (`[K]`), dann trägt Claude sie in die game_bible ein. Der Text-Prüfer liest sie vorher gegen
 den Abschnitt „Sprache“ im Style-Guide.
 
-Für das Referenzbild des Ladenbesitzers sucht Claude das Figurenblatt F-01 im Prompt-Log und unter
-`docs/art/`; fehlt die Datei, bleibt `bild_referenz` leer mit Vermerk, und Klaus entscheidet, ob
-F-01 nachgeholt wird (Checkliste, CHK020).
+Das Referenzbild des Ladenbesitzers ist geklärt (Checkliste, CHK020): F-01 liegt unter
+`docs/art/leonardo/f-01-figurenblatt.jpg` und steht im Bildkatalog; seine offene Nacharbeit steht
+dort und gehört nicht zu diesem Feature.
 
 **Grund:** Name und Ton prägen das Spiel; das ist Klaus' Entscheidung. Die game_bible darf Claude
 selbstständig befüllen (CLAUDE.md), aber nicht ohne seine Wahl der Namen.

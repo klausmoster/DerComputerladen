@@ -675,6 +675,9 @@ Aus `specs/010-ladeneroeffnung/`; Klaus kann jede bei der Checkliste oder einer 
   bleibt 1 (R5, nach Klaus' Satz zu Sonderlocken); Name bis 24 Zeichen mit fester Zeichenliste
   (R7); Bausteine Hotspot, Sprechblase, Papierblatt (R8); Tempi 1, 2, 7 Tage je Sekunde (R10);
   Platzhalter als PNG-Dateien (R11); Fabrik für Spielstände, behebt B4 aus 11-09 (R12).
+- Nach dem Umzug des Style-Guides ins Repo (2026-10-29): Aussehen, Prompt-Baustein und
+  Referenzbild einer Figur stehen nur im Bildkatalog, die Notiz in der game_bible verweist darauf
+  (R16, `contracts/game_bible.md`); bis dahin sollte die game_bible beides führen.
 
 ### Arbeitsweise (2026-10-21)
 

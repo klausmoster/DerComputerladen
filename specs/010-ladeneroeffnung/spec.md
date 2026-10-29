@@ -324,8 +324,9 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   Spieler ihn anklickt. Antworten gibt es nicht; ein Dialog gehört zu 09-02. Die Sätze stehen als
   Daten, nicht im Code.
 - **FR-001c**: Jede Figur des Spiels MUST eine Beschreibung in der game_bible haben: Name, Rolle,
-  Alter, Optik, Art zu reden, wo sie vorkommt und ihr Referenzbild, das für jedes neue Bild der
-  Figur als Vorlage dient. Eine Übersicht listet alle Figuren. In diesem Feature: der
+  Alter, Optik, Art zu reden und wo sie vorkommt; dazu ihr Referenzbild, das für jedes neue Bild
+  der Figur als Vorlage dient. Aussehen und Referenzbild stehen im Bildkatalog
+  (`docs/art/bildkatalog.md`), die game_bible verweist darauf. Eine Übersicht listet alle Figuren. In diesem Feature: der
   Ladenbesitzer und der Makler.
 - **FR-002**: Jeder Schritt vor der Abgabe der Gewerbeanmeldung MUST sich zurücknehmen lassen,
   mit Esc und mit einem sichtbaren „Zurück“, je einen Schritt; vom Stadtplan zurück in die

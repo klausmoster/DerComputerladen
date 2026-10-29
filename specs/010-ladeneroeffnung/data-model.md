@@ -74,8 +74,8 @@ Spielbildschirm nutzen beide diese eine Funktion (CHK044). `ShopOffer.Level` (`L
 | `lines` | Dictionary[StringName, PackedStringArray] | Anlass → Sätze | `saetze` (Liste aus `anlass`, `text`) |
 | `portrait` | Texture2D | Bild der Figur in der Szene | `bild_szene` |
 
-Steckbrief, Optik und Referenzbild bleiben in der game_bible (Doku und Vorlage für Bilder, FR-001c);
-ins Spiel kommt nur, was das Spiel braucht.
+Steckbrief und Sätze bleiben in der game_bible, Aussehen und Referenzbild im Bildkatalog
+(`docs/art/bildkatalog.md`; FR-001c, R16); ins Spiel kommt nur, was das Spiel braucht.
 
 **Anlässe des Maklers** (`FigureData.OCCASIONS`, eine Stelle, CHK041): `betreten`, `stadtplan`, `expose_<id>` je Laden, `expose_zu_teuer`,
 `mietvertrag`, `unterschrieben`, `anmeldung`, `abschied`, `klick`. Fehlt ein Anlass, sagt er
