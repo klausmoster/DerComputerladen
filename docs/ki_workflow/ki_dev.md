@@ -238,6 +238,12 @@ die Gesamtabnahme von Feature 006 ohne Startbefehl). Die Bitte enthält, in dies
 
 - Godot liegt unter `/Applications/Godot.app/Contents/MacOS/Godot`, Version 4.7.2 stable, nicht
   .NET; den Pfad direkt nutzen statt zu suchen. Kommt eine zweite Version dazu, hier nachtragen.
+- **Godot-Referenz** (Klaus, 2026-10-29): `godot_referenz/klassen/<Klasse>.xml` im Repo-Root ist
+  die Klassenreferenz der installierten Godot, nur Signaturen, erzeugt mit
+  `tools/godot_referenz/erzeuge.sh` und nicht im Repo. Bei API-Fragen sehen Claude, der Godot-Agent
+  und der Architektur-Prüfer dort nach statt aus dem Gedächtnis; fehlt der Ordner, läuft zuerst das
+  Skript, in jedem Worktree einmal. Für das Verhalten bleibt die Doku unter
+  `https://docs.godotengine.org/en/4.7/`.
 - Claude darf Prozesse selbst mit `kill` beenden, etwa ein hängendes Godot oder eine offene
   Werkstatt nach einem Test (Klaus, 2026-10-27, im Spike zum Communicator). Die Erlaubnis steht als
   `Bash(kill *)` in Klaus' `~/.claude/settings.json`.

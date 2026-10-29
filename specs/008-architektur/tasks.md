@@ -324,7 +324,7 @@ T040 fest.
   `https://github.com/godotengine/godot`, Tag `4.7.2-stable`. Als Teil-Klon nur dieser Ordner;
   `--doctool` mischt die Texte dann in die Signaturen. Vor dem Laden Quelle und genaue Größe nennen
   (Klaus, 2026-10-29: erst Signaturen, Texte später).
-- [ ] T039c [C] Verweise auf die Referenz: je ein Satz in `.claude/agents/godot-entwickler.md`,
+- [x] T039c [C] Verweise auf die Referenz: je ein Satz in `.claude/agents/godot-entwickler.md`,
   `.claude/agents/architektur-pruefer.md` und `docs/ki_workflow/ki_dev.md`: wo sie liegt, dass bei
   API-Fragen dort nachgesehen wird statt aus dem Gedächtnis, und dass bei fehlendem Ordner zuerst
   `tools/godot_referenz/erzeuge.sh` läuft. Den Eintrag für `tools/godot_referenz/` in der Tabelle

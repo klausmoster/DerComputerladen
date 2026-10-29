@@ -97,6 +97,7 @@ deren `README.md`.
 | `tools/raster/` | Python-Werkzeuge der Rasterfassung: Palette, Rastern, Aufräumen, App-Symbol |
 | `tools/selbsttest/` | `vergleich.py` vergleicht einen Lauf mit den Referenzbildern unter `referenz/macos/` |
 | `tools/build/` | `baue_alles.sh` baut Spiel und Selbsttest für macOS, Windows und Linux und packt je System ein Zip unter `build/abnahme/` |
+| `tools/godot_referenz/` | `erzeuge.sh` schreibt die Klassenreferenz der installierten Godot nach `godot_referenz/klassen/` (nur Signaturen, nicht im Repo); bei API-Fragen dort nachsehen statt aus dem Gedächtnis |
 | `tools/ton/` | `make_sounds.py` erzeugt die Töne; die Kanäle stehen in `src/default_bus_layout.tres` |
 | `tools/tagebuch/` | `token_bilanz.py`: Token und geschätzte Kosten je Branch aus den Protokollen von Claude Code |
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |
