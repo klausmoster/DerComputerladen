@@ -262,3 +262,55 @@ abgebrochen, B1 Naht übergangen, B5 ohne Kopie, B3 zweimal, M1, `/root/` zurüc
 `selbsttest_ergebnis.gd`). Die Naht der Werkstatt (W2) und der Startszene (B2) prüft kein Test:
 Die Werkstatt hält GameWindow nur mit echtem Fenster an, und die Startszene startet den ganzen
 Selbsttest.
+
+### T036b Titel, Hilfen der Werkstatt und der Stillstand des Läufers
+
+Geschrieben vom Godot-Agent.
+
+- **Zwei `enum` statt einem (S1; AR-11).** Der Titel hat zwei Fragen, die nichts miteinander zu tun
+  haben: *Darf eine Eingabe etwas tun?* (`Phase`: vor den Einträgen, bedienbar, fährt hinaus) und
+  *Welches Blatt liegt oben?* (`Layer`: Hauptmenü, Gradwahl, Liste, Löschmodus, Rückfrage, Space
+  Invaders). Jede Ebene gibt es in jeder Phase; beim Hinausfahren liegt etwa die Gradwahl oben. Ein
+  einziger `enum` müsste jede Kombination aufzählen, achtzehn Werte, die keiner lesen will. Zwei
+  Achsen, je ein `enum`, und `_accepts_input()` fragt nur noch `_phase == Phase.ACCEPTING`. Esc
+  und die Gehäusetasten entscheiden mit `match _current_layer():`, je Ebene ein Zweig; früher
+  war es eine Kette aus `if _invaders.visible`, `if _main_menu.visible` und so weiter.
+- **Die Sichtbarkeit folgt aus der Ebene.** Sichtbar ist, was man sieht; die Ebene ist, was der
+  Titel weiß. Beides darf nie auseinanderlaufen. Deshalb setzt nur `_show_layer()` die Ebene, und
+  im selben Zug zeigt es die Seite über `_page_of()`. Wer eine Seite zeigen will, sagt die Ebene,
+  nicht die Seite. Der Selbsttest liest weiter `current_page()` und `is_visible_in_tree()`: Die
+  Sichtbarkeit ist die Schnittstelle nach außen, die Ebene der Zustand innen.
+- **Den Löschmodus führt die Liste.** `SaveList` schaltet ihn selbst ein, ohne Signal. Ein
+  eigener Wert `DELETE_MODE` in `_layer` müsste ihn nachführen und könnte ihr widersprechen. Darum
+  speichert der Titel nur `LIST`, und `_current_layer()` fragt die Liste mit `is_delete_mode()`:
+  ein Wert, eine Quelle. Space Invaders merkt sich deshalb `_return_layer = _layer`, nicht den
+  Löschmodus; der bleibt in der Liste stehen, bis jemand ihn ausschaltet.
+- **Hilfen in eine eigene Klasse (L16; AR-02).** `DifficultyPanel` rief `EventForm._reason()` und
+  `EventForm._mark_error()`, `EventForm` rief `EventList._category_label()`. Der Unterstrich sagt
+  in GDScript nur „privat gemeint“, verhindern kann er nichts. Wer eine private Funktion einer
+  anderen Klasse ruft, hängt an deren Innerem: Benennt `EventForm` sie um, bricht das Panel
+  daneben. `FieldHelpers` (`src/tools/werkstatt/field_helpers.gd`) sammelt, was die Panels teilen:
+  Lesen und Zeigen (`parse_*`, `format_*`), `mark_error()`, `reason()`, `category_label()`. Nur
+  `static func` und keine Objekte; `extends RefCounted` steht da, weil `class_name` eine Basis
+  braucht. Was nur das Formular braucht (`_same_text()`, `spread_weights()`), bleibt dort.
+- **Eine statische Funktion als Callable.** `_line(key, …, FieldHelpers.parse_whole,
+  FieldHelpers.format_whole, …)` reicht die Funktion selbst weiter, ohne Klammern. Godot macht
+  daraus ein `Callable`, das das Feld später mit `parse.call(text)` ruft. Mit dem Umzug ändert sich
+  nur der Name davor. Der Test der Lesefunktionen nimmt `Callable(FieldHelpers, "parse_date")`.
+- **Ein Test muss selbst rot werden (Läufer).** `_hoert_auf()` war in Teil 1 nur indirekt geprüft:
+  Lief die Kette nach dem Abbruch weiter, fiel das erst im nächsten Test auf, weil dort Reste
+  weiterliefen. Der neue Test hält Schritt `titel.02_zwei` an einer von drei `await`-Stellen an
+  (Warten auf den Zustand, Eingaben, Foto), schließt das Fenster und lässt die Kette dann frei.
+  Danach zählt er Eingaben, Prüfungen und Fotos und vergleicht sie mit dem Stand beim Schließen. Ein
+  Lambda hält eine lokale Variable als Kopie; deshalb liegen die Schalter in einem Array
+  (`geschlossen := [false]`), dessen Inhalt Lambda und Test teilen. `use_parameters()` lässt
+  denselben Test für alle drei Stellen laufen.
+
+Fehlerprobe in einer Kopie außerhalb des Repos, je ein Fehler, je mindestens ein Test rot: Esc in
+der Gradwahl ohne Rückweg, Esc in der Rückfrage ins Hauptmenü, Löschmodus nie erkannt, Esc im
+Hauptmenü baut neu, Gehäusetasten während Space Invaders, Eingabe beim Hinausfahren, Eingabe vor den
+Einträgen, falsche Rückkehr-Ebene, Ebene ohne Seite; in der Werkstatt `parse_date` und
+`parse_percent` vertauscht, Datum mit `parse_day_of_year`, Meldung ohne `reason()`, `mark_error()`
+am Hinweis, Kategorie ohne `category_label()`; im Läufer `_hoert_auf()` nur in ABGEBROCHEN und je
+eine fehlende Abbruchprüfung beim Warten, nach den Eingaben und beim Foto. Esc im Hauptmenü und
+Eingaben vor den Einträgen fing zuerst kein Test; die zwei neuen Titeltests prüfen sie jetzt.

@@ -467,7 +467,7 @@ func test_weggefallene_stehen_durchgestrichen_und_verschoben_nur_bei_verschiebun
 			"Ein weggefallener Termin gehört nicht zum Lauf.")
 	var tage := []
 	for zeile in tabelle.get_root().get_children():
-		tage.append(EventForm.parse_date(zeile.get_text(SimulatorPanel.PlanColumn.DATE))[1])
+		tage.append(FieldHelpers.parse_date(zeile.get_text(SimulatorPanel.PlanColumn.DATE))[1])
 	var sortiert := tage.duplicate()
 	sortiert.sort()
 	assert_eq(tage, sortiert, "Alle Zeilen stehen nach Tag, auch die weggefallenen.")
@@ -872,7 +872,7 @@ func test_wechsel_nennt_eine_absage_die_es_im_neuen_grad_nicht_gibt() -> void:
 	var hinweis: Label = simulator.get_node("%ProbeNotice")
 	assert_true(hinweis.visible)
 	assert_string_contains(hinweis.text, "Absage: Reklamationswelle hat am %s keinen"
-		% EventForm.format_date(gesucht.day))
+		% FieldHelpers.format_date(gesucht.day))
 	assert_eq([simulator.run.difficulty, simulator.run.interventions.size()],
 		[Difficulty.Level.MITTEL, 0])
 	assert_eq(simulator.probe.interventions.size(), 1)
@@ -1186,7 +1186,7 @@ func test_texte_der_markierungen_beim_vergleich_mit_demselben_grad_wie_bisher() 
 		ScheduleEntry.Origin.PRESET))
 	_druecken(simulator, "%MoveButton")
 	var dialog := _intervention_dialog(simulator)
-	var tag := EventForm.format_date(_termin(simulator, "konkurrent_eroeffnet",
+	var tag := FieldHelpers.format_date(_termin(simulator, "konkurrent_eroeffnet",
 		ScheduleEntry.Origin.PRESET).day)
 	_ausfuellen(dialog, {"%DayEdit": "1.1.1999", "%ReasonEdit": "Bauamt hat Verspätung"})
 	dialog.get_ok_button().pressed.emit()

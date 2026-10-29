@@ -176,3 +176,10 @@ die Zustände, die Phase 5 umstellt (`_ready_for_input`, `_leaving`, `paused`, `
 |---|---|---|---|---|---|
 | Selbsttest | 9 | 8 | 1 (B9, als Lücke) | 8 | 7 (B1 hatte der Test schon gemeldet) |
 | Abläufe und Änderungen | 0 | – | – | 6; M1 und M5 auch im anderen Lauf, M2 dort als B9 | – |
+
+## Fund bei der Behebung (T036b)
+
+Beim Umbau von L16 fand der Godot-Agent eine Abweichung derselben Art, die weder in L16 noch in
+diesem Bericht stand: `src/tools/werkstatt/difficulty_panel.gd` ruft zweimal `TimelineRun._points()`,
+eine private Funktion des Kerns (AR-02). **Klaus hat am 2026-10-29 entschieden:** jetzt mit beheben,
+als T036d; die Funktion wird öffentlich, das Verhalten bleibt gleich.

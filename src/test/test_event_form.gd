@@ -75,7 +75,7 @@ func after_each() -> void:
 
 func test_eingaben_werden_gelesen(fall: Array = use_parameters(EINGABEN)) -> void:
 	# Act: Die Lesefunktionen sind statisch; Callable ruft sie über ihren Namen an der Klasse.
-	var gelesen: Array = Callable(EventForm, fall[1]).call(fall[0])
+	var gelesen: Array = Callable(FieldHelpers, fall[1]).call(fall[0])
 
 	# Assert: FR-031
 	if fall[2] == null:
@@ -87,14 +87,14 @@ func test_eingaben_werden_gelesen(fall: Array = use_parameters(EINGABEN)) -> voi
 
 
 func test_zahlen_erscheinen_mit_komma() -> void:
-	assert_eq(EventForm.format_percent(0.035), "3,5")
-	assert_eq(EventForm.format_percent(-0.3), "-30")
-	assert_eq(EventForm.format_percent(0.0), "0")
-	assert_eq(EventForm.format_number(33.33), "33,33")
-	assert_eq(EventForm.format_number(-0.001), "0", "Kein „-0“.")
-	assert_eq(EventForm.format_date(ERSTER_MAERZ_1993), "01.03.1993")
-	assert_eq(EventForm.format_day_of_year(Vector2i(11, 1)), "01.11.")
-	assert_eq(EventForm.format_day_of_year(Vector2i.ZERO), "")
+	assert_eq(FieldHelpers.format_percent(0.035), "3,5")
+	assert_eq(FieldHelpers.format_percent(-0.3), "-30")
+	assert_eq(FieldHelpers.format_percent(0.0), "0")
+	assert_eq(FieldHelpers.format_number(33.33), "33,33")
+	assert_eq(FieldHelpers.format_number(-0.001), "0", "Kein „-0“.")
+	assert_eq(FieldHelpers.format_date(ERSTER_MAERZ_1993), "01.03.1993")
+	assert_eq(FieldHelpers.format_day_of_year(Vector2i(11, 1)), "01.11.")
+	assert_eq(FieldHelpers.format_day_of_year(Vector2i.ZERO), "")
 
 
 func test_gewichte_werden_gleich_verteilt_und_ergeben_100() -> void:

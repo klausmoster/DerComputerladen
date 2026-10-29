@@ -361,16 +361,12 @@ func _fill_category_choices() -> bool:
 	if editor == null or editor.catalog == null:
 		return not chosen.is_empty()
 	for category in editor.catalog.categories:
-		_category_filter.add_item(_category_label(category))
+		_category_filter.add_item(FieldHelpers.category_label(category))
 		var index := _category_filter.item_count - 1
 		_category_filter.set_item_metadata(index, category.id)
 		if category.id == chosen:
 			_category_filter.select(index)
 	return _chosen_category() != chosen
-
-
-static func _category_label(category: EventCategory) -> String:
-	return category.name if not category.name.strip_edges().is_empty() else category.id
 
 
 # --- Dialog „Neu …“ ---------------------------------------------------------------------------
@@ -383,7 +379,7 @@ func _fill_new_categories(wanted: String) -> void:
 	if preferred.is_empty() and _category_filter.selected > 0:
 		preferred = _category_filter.get_item_metadata(_category_filter.selected)
 	for category in editor.catalog.categories:
-		_new_category.add_item(_category_label(category))
+		_new_category.add_item(FieldHelpers.category_label(category))
 		var index := _new_category.item_count - 1
 		_new_category.set_item_metadata(index, category.id)
 		if category.id == preferred:

@@ -253,7 +253,7 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
       `fahrer.fenster()` (Leitfaden, „Werkzeuge“).
     - M10 `selbsttest_fahrer.gd`, `selbsttest_eingabe.gd`: im Kopf sagen, dass sie Helfer der Hülle
       sind, kein Kern (AR-01).
-- [ ] T036b [A] [US5] Teil 2, nach Claudes Prüfung von Teil 1, je mit Lernnotiz:
+- [x] T036b [A] [US5] Teil 2, nach Claudes Prüfung von Teil 1, je mit Lernnotiz:
   - S1 `src/scenes/title/title_screen.gd`: `enum` für die Eingabephase (vor den Einträgen,
     bedienbar, fährt hinaus) und für die Ebene (Hauptmenü, Gradwahl, Liste, Löschmodus, Rückfrage,
     Space Invaders) statt `_ready_for_input`, `_leaving` und der Sichtbarkeit der Seiten; Esc und
@@ -264,6 +264,11 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
   - Aus der Prüfung von Teil 1 (Klaus, 2026-10-29): `test_selbsttest_laeufer.gd` prüft, dass
     die Kette der Abläufe nach dem Schließen des Fensters stillsteht; bisher fiel das in der
     Fehlerprobe nur im folgenden Test auf.
+- [ ] T036d [A] [US5] Fund aus T036b (Klaus, 2026-10-29; `bestandsbericht.md`, „Fund bei der
+  Behebung“): `TimelineRun._points()` wird öffentlich, etwa `points()`, und
+  `src/tools/werkstatt/difficulty_panel.gd` ruft sie unter diesem Namen; kein Aufruf privater
+  Funktionen fremder Klassen mehr in `src/` außer in Tests (AR-02). Fahrpläne bytegleich; mit
+  Lernnotiz.
 - [x] T036c [C] [US5] M11: In `tools/selbsttest/vergleich.py` nennt je ein Kommentar die Stelle in
   Godot, deren Wert oder Format das Skript ein zweites Mal kennt: Protokoll (`selbsttest_protokoll.gd`,
   `selbsttest_texte.gd`), Raster (`GameWindow.BASE_SIZE`), Kassenrot (`UiPalette.KASSENROT`).

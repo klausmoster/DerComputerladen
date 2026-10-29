@@ -567,7 +567,7 @@ func _add_mark(row: Row, event: TimelineEvent, shape: Shape, first: int, last: i
 	mark.color = row.color
 	mark.label = _title_of(event)
 	if shape == Shape.BAND:
-		mark.short_label = "%s %%" % EventForm.format_percent(event.monthly_chance)
+		mark.short_label = "%s %%" % FieldHelpers.format_percent(event.monthly_chance)
 		mark.label = "%s · %s" % [mark.short_label, mark.label]
 		mark.short_width = _text_width(mark.short_label, _small_size)
 	mark.label_width = _text_width(mark.label, _small_size)
@@ -1653,7 +1653,8 @@ func _tooltip_for(mark: Mark) -> String:
 			lines.append("Anzahl %s, Mindestabstand %s" % [count, _days_text(event.min_gap_days)])
 		TimelineEvent.Kind.CHANCE:
 			lines.append("%s · Zeitfenster %s" % [kind, _span_text(mark.first, mark.last)])
-			var chance := "Chance %s %% pro Monat" % EventForm.format_percent(event.monthly_chance)
+			var chance := "Chance %s %% pro Monat" \
+				% FieldHelpers.format_percent(event.monthly_chance)
 			if event.max_occurrences > 0:
 				chance += ", höchstens %d-mal" % event.max_occurrences
 			lines.append(chance)
@@ -1662,13 +1663,13 @@ func _tooltip_for(mark: Mark) -> String:
 
 ## „jedes Jahr vom 01.11. bis Ende Dezember“, „jedes Jahr am 22.05.“ oder mit festem Ende.
 static func _yearly_text(event: TimelineEvent) -> String:
-	var start := EventForm.format_day_of_year(event.yearly_start)
+	var start := FieldHelpers.format_day_of_year(event.yearly_start)
 	var end := event.yearly_end
 	if end == Vector2i.ZERO:
 		return "jedes Jahr am %s" % start
 	if end.y == 0 and end.x >= 1 and end.x <= 12:
 		return "jedes Jahr vom %s bis Ende %s" % [start, GameDate.MONTH_NAMES_DE[end.x]]
-	return "jedes Jahr vom %s bis %s" % [start, EventForm.format_day_of_year(end)]
+	return "jedes Jahr vom %s bis %s" % [start, FieldHelpers.format_day_of_year(end)]
 
 
 ## Breite eines Texts in Pixeln. Um einen Text zu messen, setzt Godot ihn erst (shaping); das

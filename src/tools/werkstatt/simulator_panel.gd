@@ -537,7 +537,7 @@ func _on_seed_changed(text: String) -> void:
 func _on_until_pressed() -> void:
 	if run == null:
 		return
-	var parsed := EventForm.parse_date(_until_edit.text)
+	var parsed := FieldHelpers.parse_date(_until_edit.text)
 	var day: int = parsed[1] if parsed[0] else -1
 	var problem := ""
 	if _until_edit.text.strip_edges().is_empty():
@@ -547,10 +547,10 @@ func _on_until_pressed() -> void:
 	elif day < TimelineRun.FIRST_DAY or day > TimelineRun.LAST_DAY:
 		problem = "Der Simulator spielt vom 01.01.1985 bis zum 31.12.1999."
 	elif day <= run.today:
-		problem = "Der %s ist schon abgespielt." % EventForm.format_date(day)
+		problem = "Der %s ist schon abgespielt." % FieldHelpers.format_date(day)
 	_show_input_problem(problem)
 	if problem.is_empty():
-		_until_edit.text = EventForm.format_date(day)
+		_until_edit.text = FieldHelpers.format_date(day)
 		play_until(day)
 
 
@@ -655,9 +655,9 @@ func _date_text() -> String:
 		return "Kein Katalog geladen" if not _has_catalog() else "Noch kein Fahrplan"
 	var when := "vor dem 01.01.1985"
 	if run.is_finished():
-		when = "%s, Spielende" % EventForm.format_date(run.today)
+		when = "%s, Spielende" % FieldHelpers.format_date(run.today)
 	elif run.today >= TimelineRun.FIRST_DAY:
-		when = EventForm.format_date(run.today)
+		when = FieldHelpers.format_date(run.today)
 	return "Stand: %s · Seed %d" % [when, run.seed]
 
 
@@ -876,8 +876,8 @@ func _add_modifier_row(root: TreeItem, modifier: ChanceModifier, reason: String)
 	var item := _modifier_list.create_item(root)
 	item.set_text(ModifierColumn.EVENT, _event_title(modifier.event_id))
 	item.set_text(ModifierColumn.VALUE, _points(modifier.value))
-	item.set_text(ModifierColumn.FROM, EventForm.format_date(modifier.from_day))
-	item.set_text(ModifierColumn.TO, EventForm.format_date(modifier.to_day))
+	item.set_text(ModifierColumn.FROM, FieldHelpers.format_date(modifier.from_day))
+	item.set_text(ModifierColumn.TO, FieldHelpers.format_date(modifier.to_day))
 	item.set_text(ModifierColumn.REASON, reason)
 	item.set_metadata(ModifierColumn.EVENT, modifier.id)
 	return item
@@ -900,10 +900,10 @@ func _chance_text() -> String:
 	if run == null or (run.modifiers.is_empty() and run.start_modifiers.is_empty()):
 		return ""
 	var day := _first_of_next_month(run.today)
-	var heading := "Nächste Würfelrunde am %s:" % EventForm.format_date(day)
+	var heading := "Nächste Würfelrunde am %s:" % FieldHelpers.format_date(day)
 	if day > TimelineRun.LAST_DAY:
 		day = TimelineRun.LAST_DAY
-		heading = "Keine Würfelrunde mehr; am %s:" % EventForm.format_date(day)
+		heading = "Keine Würfelrunde mehr; am %s:" % FieldHelpers.format_date(day)
 	var lines := PackedStringArray([heading])
 	var seen := {}
 	var all: Array[ChanceModifier] = []
@@ -1131,7 +1131,7 @@ func _plan_rows() -> Array[Dictionary]:
 ## weggefallenen Termin −1 − seine Stelle in ScheduleDiff.removed.
 func _add_plan_row(root: TreeItem, entry: ScheduleEntry, removed: int) -> TreeItem:
 	var item := _plan_table.create_item(root)
-	item.set_text(PlanColumn.DATE, EventForm.format_date(entry.day))
+	item.set_text(PlanColumn.DATE, FieldHelpers.format_date(entry.day))
 	item.set_text(PlanColumn.EVENT, _title_of(entry.event))
 	item.set_text(PlanColumn.ORIGIN, entry.origin_label())
 	item.set_text(PlanColumn.STATE, entry.state_label())
@@ -1158,7 +1158,7 @@ static func _diff_text(mark: ScheduleDiff.Mark) -> String:
 static func _diff_tip(mark: ScheduleDiff.Mark, entry: ScheduleEntry, tips: Dictionary) -> String:
 	var tip: String = tips.get(mark, "")
 	if mark == ScheduleDiff.Mark.MOVED:
-		tip = tip % EventForm.format_date(entry.moved_from_day)
+		tip = tip % FieldHelpers.format_date(entry.moved_from_day)
 	return tip
 
 
@@ -1242,7 +1242,7 @@ static func _explanation(entry: ScheduleEntry) -> String:
 		for item in due:
 			var effect: EventEffect = item["effect"]
 			var day: int = item["day"]
-			var line := "%s  %s" % [EventForm.format_date(day), effect.describe()]
+			var line := "%s  %s" % [FieldHelpers.format_date(day), effect.describe()]
 			if day > TimelineRun.LAST_DAY:
 				line += " (nach Spielende, wird nicht gemeldet)"
 			lines.append(line)
@@ -1261,10 +1261,10 @@ static func _has_delayed_effects(event: TimelineEvent) -> bool:
 ## „22.03.1993“, mit Dauer „01.11.1993 bis 31.12.1993“: Der letzte Tag ist der vor end_day, denn
 ## das Ende wird am Tag danach gemeldet.
 static func _period(entry: ScheduleEntry) -> String:
-	var start := EventForm.format_date(entry.day)
+	var start := FieldHelpers.format_date(entry.day)
 	if entry.end_day <= entry.day:
 		return start
-	return "%s bis %s" % [start, EventForm.format_date(entry.end_day - 1)]
+	return "%s bis %s" % [start, FieldHelpers.format_date(entry.end_day - 1)]
 
 
 # --- Protokoll --------------------------------------------------------------------------------
@@ -1362,7 +1362,7 @@ func _open_load_dialog() -> void:
 		item.set_text(ProbeColumn.NAME, listed.name)
 		item.set_text(ProbeColumn.SEED, str(listed.seed))
 		item.set_text(ProbeColumn.DIFFICULTY, Difficulty.label(listed.difficulty))
-		item.set_text(ProbeColumn.UNTIL, EventForm.format_date(listed.until_day)
+		item.set_text(ProbeColumn.UNTIL, FieldHelpers.format_date(listed.until_day)
 			if listed.until_day >= TimelineRun.FIRST_DAY else "vor Spielbeginn")
 		item.set_text(ProbeColumn.COUNT, _grouped(listed.interventions.size()))
 		item.set_metadata(ProbeColumn.NAME, i)
@@ -1448,12 +1448,12 @@ static func _grouped(count: int) -> String:
 
 ## Ein Anteil als Prozent mit Komma und echtem Minuszeichen: −0,03 als „−3 %“.
 static func _percent(share: float) -> String:
-	return "%s %%" % EventForm.format_number(share * 100.0).replace("-", "−")
+	return "%s %%" % FieldHelpers.format_number(share * 100.0).replace("-", "−")
 
 
 ## Ein Modifikator in Prozentpunkten mit Vorzeichen (Style-Guide): +0,05 als „+5“, −0,06 als „−6“.
 static func _points(share: float) -> String:
-	var number := EventForm.format_number(absf(share) * 100.0)
+	var number := FieldHelpers.format_number(absf(share) * 100.0)
 	if number == "0":
 		return "0"
 	return ("+" if share > 0.0 else "−") + number

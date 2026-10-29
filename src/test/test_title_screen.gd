@@ -2196,6 +2196,87 @@ func test_waehrend_des_spiels_druecken_sich_die_tasten_ein_und_klicken_ohne_zwei
 	assert_eq(_wechsel, [])
 
 
+# --- Phase und Ebene (Feature 008, T036b; AR-11) --------------------------------------------------
+
+func test_die_phasen_kommen_in_ihrer_reihenfolge() -> void:
+	# Arrange
+	_sitzung = await _neue_sitzung()
+
+	# Act und Assert: eingehängt, noch ohne Einträge. Auch die Gehäusetasten zählen dann nicht, wie
+	# Esc und Enter (test_esc_und_enter_vor_den_eintraegen_tun_nichts); der Communicator meldet sie
+	# hier direkt, denn draußen trifft sie keine Maus.
+	_baue_titel_ohne_warten(true)
+	assert_eq(_titel._phase, TitleScreen.Phase.BEFORE_ENTRIES, "Vor den Einträgen.")
+	for index in FOLGE:
+		_communicator().case_key_pressed.emit(index)
+	assert_null(_invaders().game(), "Vor den Einträgen startet die Folge nichts.")
+	await wait_process_frames(1)
+	assert_eq(_titel._phase, TitleScreen.Phase.ACCEPTING, "Mit den Einträgen bedienbar.")
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+
+	# Act: Neues Spiel, Mittel
+	await _taste(KEY_ENTER)
+	await _taste(KEY_ENTER)
+
+	# Assert: Er fährt hinaus und bleibt dabei.
+	assert_eq(_titel._phase, TitleScreen.Phase.LEAVING, "Das Spiel läuft, er fährt hinaus.")
+	await _taste(KEY_ESCAPE)
+	_fahre(1.0 / 60.0, 1.0 / 60.0)
+	assert_eq(_titel._phase, TitleScreen.Phase.LEAVING, "Esc holt ihn nicht zurück.")
+	assert_eq(_wechsel, [SPIELBILDSCHIRM])
+
+
+func test_ebene_und_sichtbare_seite_laufen_nie_auseinander() -> void:
+	# Arrange
+	_drei_spiele()
+	await _zeige_titel()
+	_assert_ebene(TitleScreen.Layer.MAIN_MENU, "Beim Erscheinen")
+
+	# Act und Assert: jeder Weg zu jeder Ebene und zurück
+	_hauptmenue().select(1)
+	await _taste(KEY_ENTER)
+	_assert_ebene(TitleScreen.Layer.DIFFICULTY, "Neues Spiel")
+	await _taste(KEY_ESCAPE)
+	_assert_ebene(TitleScreen.Layer.MAIN_MENU, "Esc in der Gradwahl")
+	await _oeffne_liste()
+	_assert_ebene(TitleScreen.Layer.LIST, "Spiel laden")
+	_liste().select(-2)
+	await _taste(KEY_ENTER)
+	_assert_ebene(TitleScreen.Layer.DELETE_MODE, "Löschen …")
+	await _folge(FOLGE)
+	_assert_ebene(TitleScreen.Layer.INVADERS, "Easter Egg im Löschmodus")
+	await _taste(KEY_ESCAPE)
+	_assert_ebene(TitleScreen.Layer.DELETE_MODE, "Zurück aus dem Easter Egg")
+	_liste().select(0)
+	await _taste(KEY_ENTER)
+	_assert_ebene(TitleScreen.Layer.CONFIRM, "Rückfrage")
+	await _taste(KEY_ESCAPE)
+	_assert_ebene(TitleScreen.Layer.LIST, "Esc in der Rückfrage")
+	await _taste(KEY_ESCAPE)
+	_assert_ebene(TitleScreen.Layer.MAIN_MENU, "Esc in der Liste")
+	var auswahl := _hauptmenue().selected_index()
+	await _taste(KEY_ESCAPE)
+	_assert_ebene(TitleScreen.Layer.MAIN_MENU, "Esc im Hauptmenü")
+	assert_eq(_hauptmenue().selected_index(), auswahl, "Esc im Hauptmenü tut nichts (FR-023).")
+
+
+## Der Titel steht auf Ebene [param ebene], und zu sehen ist genau ihre Seite.
+func _assert_ebene(ebene: TitleScreen.Layer, wann: String) -> void:
+	assert_eq(_titel._current_layer(), ebene,
+		"%s: Ebene %s." % [wann, TitleScreen.Layer.keys()[ebene]])
+	var seiten := {
+		TitleScreen.Layer.MAIN_MENU: _hauptmenue(),
+		TitleScreen.Layer.DIFFICULTY: _gradwahl(),
+		TitleScreen.Layer.LIST: _liste(),
+		TitleScreen.Layer.DELETE_MODE: _liste(),
+		TitleScreen.Layer.CONFIRM: _rueckfrage(),
+		TitleScreen.Layer.INVADERS: _invaders(),
+	}
+	assert_eq(_communicator().current_page(), seiten[ebene], "%s: ihre Seite." % wann)
+	for seite: Control in [_hauptmenue(), _gradwahl(), _liste(), _rueckfrage(), _invaders()]:
+		assert_eq(seite.visible, seite == seiten[ebene], "%s: %s sichtbar." % [wann, seite.name])
+
+
 # --- Helfer ---------------------------------------------------------------------------------------
 
 ## Baut eine Session mit eigener Uhr, eigener Zeitleiste und dem Ordner [param ordner], dann den
