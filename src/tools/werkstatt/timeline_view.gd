@@ -1165,7 +1165,9 @@ func _draw_cursor_texts() -> void:
 	var text := preview_text()
 	if text.is_empty():
 		return
-	var reason := _reason(_preview_issue) if _preview_issue != null else ""
+	# Der Grund ohne den Ort davor, wie im Formular: Am Mauszeiger ist ja klar, welches Ereignis
+	# gemeint ist.
+	var reason := FieldHelpers.reason(_preview_issue) if _preview_issue != null else ""
 	var first := _box_size(text, -1.0)
 	var second := _box_size(reason, ERROR_WIDTH) if not reason.is_empty() else Vector2.ZERO
 	var total := Vector2(maxf(first.x, second.x), first.y + second.y)
@@ -1703,16 +1705,6 @@ static func _span_text(first: int, last: int) -> String:
 
 static func _days_text(days: int) -> String:
 	return "1 Tag" if days == 1 else "%d Tage" % days
-
-
-## Der Grund einer Meldung ohne den Ort davor, wie im Formular: Aus „Ereignis „x“, Feld
-## „window.to“: Das Zeitfenster …“ wird „Das Zeitfenster …“. Am Mauszeiger ist ja klar, welches
-## Ereignis gemeint ist.
-static func _reason(issue: CatalogIssue) -> String:
-	var cut := issue.message.find("“: ")
-	if cut < 0:
-		return issue.message
-	return issue.message.substr(cut + 3)
 
 
 ## Der Erste jedes [param step]-ten Monats von Januar 1985 bis Januar 2000 als Tagesindex.

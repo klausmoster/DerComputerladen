@@ -183,3 +183,21 @@ Beim Umbau von L16 fand der Godot-Agent eine Abweichung derselben Art, die weder
 diesem Bericht stand: `src/tools/werkstatt/difficulty_panel.gd` ruft zweimal `TimelineRun._points()`,
 eine private Funktion des Kerns (AR-02). **Klaus hat am 2026-10-29 entschieden:** jetzt mit beheben,
 als T036d; die Funktion wird öffentlich, das Verhalten bleibt gleich.
+
+## Phasenprüfung Phase 5 (T038)
+
+Der Architektur-Prüfer las die 32 geänderten Dateien gegen Leitfaden und Bestandsbericht. Alle 26
+Behebungen aus T036a, T036b und T036d sind erledigt; neue Abweichungen durch den Umbau fand er
+nicht. Er hatte in dieser Sitzung nur Read, keine Suche; Claude hat die Suche nach Aufrufen privater
+Funktionen fremder Klassen selbst nachgeholt: keine mehr.
+
+| # | Schwere | Ort | Regel | Befund | Entscheidung (Klaus, 2026-10-29) |
+|---|---|---|---|---|---|
+| A | niedrig | `timeline_view.gd:1708-1715` | AR-02 | `_reason()` ist eine Kopie von `FieldHelpers.reason()`, Rest von L16 | beheben in T036e |
+| B | Lücke | `timeline.gd:42-44` | AR-08 | `Timeline.rng` ist eine zweite Stelle neben `GameSession.rng` | Leitfaden: nur Naht für `start_game()` ohne Seed |
+| C | Lücke | `save_game.gd:58-74` | AR-15 | Wen bindet „Nur lesen.“? | Leitfaden: Oberfläche und andere Leser; Besitzer und wer anlegt, schreiben |
+| D | Lücke | `timeline_run.gd:1090-1093` | AR-14 | Doku-Kommentar eines Kerns nennt `FieldHelpers` | Kommentar umformulieren in T036e; weil 14 ältere Kommentare in Kernen Werkzeuge nennen, bekam AR-14 einen Satz: ein Name im Kommentar ist kein Verweis |
+| E | Lücke | Werkstatt | AR-02, AR-04 | Zählen private Kopien gleicher Hilfen? | Leitfaden: ja, unter AR-04; übrige Kopien in Feature 11-10 |
+| F | Lücke | `title_screen.gd:558-561` | AR-11 | Darf ein Zustand aus einem Baustein abgeleitet werden? | Leitfaden: ja, aus dem Baustein, der ihn besitzt |
+| G | alter Code | `selbsttest_fahrer.gd:56`, `simulator_panel.gd:316`, `intervention_dialog.gd:254-257` | AR-04, AR-08 | `SPIELBILDSCHIRM` doppelt; `roll_seed()` mit globalem Würfel; Regel „änderbar“ doppelt | die ersten beiden in T036e, die Regel in Feature 11-10 |
+| H | Ablauf | – | – | Prüfer ohne Suchwerkzeuge | Erfahrung in `ki_pruefung.md` |

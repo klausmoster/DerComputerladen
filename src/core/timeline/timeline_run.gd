@@ -1089,8 +1089,7 @@ static func _modifier_notes(active: Array[ChanceModifier], prefix: String = "") 
 
 ## Anteil als Prozentpunkte mit Vorzeichen und deutschem Komma, etwa +0.05 als „+5“ und −0.025
 ## als „-2,5“, mit dem einfachen Minus. So steht der Wert eines Modifikators in der Begründung
-## eines Termins; die Werkstatt zeigt ihn genauso und liest ihn mit FieldHelpers.parse_percent()
-## wieder.
+## eines Termins; die Werkstatt zeigt ihn genauso und liest ihn wieder.
 static func format_points(share: float) -> String:
 	var text := ("%+.2f" % (share * 100.0)).rstrip("0").rstrip(".")
 	return text.replace(".", ",")

@@ -113,6 +113,9 @@ var run: TimelineRun
 var probe := WhatIfProbe.new()
 ## Hier liegen die Proben; Tests setzen einen eigenen Ordner unter user://.
 var probe_folder: String = WhatIfProbe.FOLDER
+## Würfelt den Seed für „Würfeln“ statt Godots globalem Würfel (AR-08), wie Timeline.rng und
+## GameSession.rng; Tests setzen einen mit festem Seed.
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Ob der Fahrplan mit Mittel ohne Eingriffe vergleicht statt mit demselben Grad ohne Eingriffe
 ## (FR-018, R13). Das Häkchen %CompareMittel setzt es; wer es aus dem Code setzt, setzt das Häkchen
 ## mit, und der Vergleich rechnet neu. Bei Mittel ändert es nichts (Edge Case „Vergleich bei
@@ -310,10 +313,10 @@ func refresh() -> void:
 	_apply_refresh.call_deferred()
 
 
-## „Würfeln“: ein zufälliger Seed von 0 bis 2.147.483.647 ins Feld. Erzeugt wird erst mit
-## „Fahrplan erzeugen“.
+## „Würfeln“: ein zufälliger Seed von 0 bis 2.147.483.647 aus [member rng] ins Feld. Erzeugt wird
+## erst mit „Fahrplan erzeugen“.
 func roll_seed() -> void:
-	_seed_edit.text = str(randi_range(0, MAX_SEED))
+	_seed_edit.text = str(rng.randi_range(0, MAX_SEED))
 	_update_controls()
 
 

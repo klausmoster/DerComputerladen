@@ -1718,6 +1718,31 @@ func test_seed_feld_nimmt_nur_ziffern_bis_zum_groessten_seed() -> void:
 	assert_between(feld.text.to_int(), 0, SimulatorPanel.MAX_SEED)
 
 
+func test_wuerfeln_wuerfelt_aus_rng() -> void:
+	# Arrange (Feature 008, T036e; AR-08): Ein Würfel mit demselben Seed sagt voraus, was rng
+	# würfelt, wie bei Timeline.rng und GameSession.rng.
+	var werkstatt := await _werkstatt()
+	var simulator := _simulator(werkstatt)
+	var feld: LineEdit = simulator.get_node("%SeedEdit")
+	simulator.rng = RandomNumberGenerator.new()
+	simulator.rng.seed = 20261029
+	var vergleich := RandomNumberGenerator.new()
+	vergleich.seed = 20261029
+	var erwartet := [str(vergleich.randi_range(0, SimulatorPanel.MAX_SEED)),
+		str(vergleich.randi_range(0, SimulatorPanel.MAX_SEED))]
+
+	# Act: zweimal „Würfeln“
+	var gewuerfelt := []
+	for _i in 2:
+		_druecken(simulator, "%RollButton")
+		gewuerfelt.append(feld.text)
+
+	# Assert
+	assert_eq(gewuerfelt, erwartet, "Beide Seeds kommen der Reihe nach aus rng.")
+	assert_eq(vergleich.state, simulator.rng.state, "Je Druck genau eine Zahl.")
+	assert_false(simulator.get_node("%GenerateButton").disabled, "Mit Seed lässt sich erzeugen.")
+
+
 func test_schritte_springen_wie_die_spieluhr() -> void:
 	# Arrange
 	var werkstatt := await _werkstatt()

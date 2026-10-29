@@ -336,3 +336,39 @@ Geschrieben vom Godot-Agent.
   auch bei einer falschen Form gleich. Die Fehlerprobe zeigt, dass die Tests es fangen:
   `test_timeline_run.gd` vergleicht die Begründung „Abzug -2,5“, `test_difficulty_panel.gd` die
   Zelle der Tabelle.
+
+### T036e Letzte Kopien, ein Kommentar und eine Naht für „Würfeln“
+
+Geschrieben vom Godot-Agent.
+
+- **Eine Hilfe, ein Ort (AR-02).** Der Zeitstrahl hatte mit `_reason()` eine wörtliche Kopie von
+  `FieldHelpers.reason()`. Zwei Kopien laufen irgendwann auseinander, etwa wenn sich die Form der
+  Meldungen im `CatalogValidator` ändert und nur eine angepasst wird. Jetzt ruft
+  `_draw_cursor_texts()` in `timeline_view.gd` die geteilte Hilfe; der Zeitstrahl ist ein Werkzeug
+  wie das Formular, er darf `FieldHelpers` kennen.
+- **Auch ein Kommentar ist ein Verweis (AR-14).** `TimelineRun.format_points()` nannte im
+  Doku-Kommentar `FieldHelpers.parse_percent()`. Der Code des Kerns hängt davon nicht ab, aber wer
+  den Kern liest, lernt daraus, dass er die Werkstatt kennt, und wer die Werkstatt umbaut, müsste
+  den Kern mitpflegen. Der Kommentar sagt jetzt nur, *dass* die Werkstatt den Wert genauso zeigt
+  und wieder liest, nicht mit welcher Klasse. Der Kern verspricht die Form; wer sie liest, ist
+  dessen Sache.
+- **Eine Konstante gehört dem, der sie meint (AR-04).** Der Fahrer kannte den Pfad des
+  Spielbildschirms als eigene `SPIELBILDSCHIRM`. Gemeint war immer „wohin der Titel ein Spiel
+  führt“, und das steht schon in `TitleScreen.GAME_SCENE`. Zieht die Szene um, ändert sich der
+  Pfad nur dort; der Selbsttest wechselt dann von selbst zum richtigen Bildschirm. Über den
+  `class_name` ist die Konstante überall lesbar, ohne den Titel zu laden.
+- **Auch Werkzeuge würfeln aus einem eigenen Würfel (AR-08).** `roll_seed()` im Simulator zog mit
+  `randi_range()` aus Godots globalem Würfel. Den teilen sich alle Skripte: Ruft irgendwo jemand
+  `seed()`, würfelt „Würfeln“ plötzlich immer dasselbe, und ein Test kann nicht vorhersagen, was
+  im Feld steht. Jetzt hat `SimulatorPanel` eine öffentliche Variable `rng`, wie `Timeline.rng` und
+  `GameSession.rng`. Ein neuer `RandomNumberGenerator` startet ohne festen Wert, also bleibt
+  „Würfeln“ für Klaus zufällig. Der Test `test_wuerfeln_wuerfelt_aus_rng` in
+  `test_werkstatt_scene.gd` setzt einen Würfel mit festem Seed und sagt mit einem zweiten Würfel
+  desselben Seeds voraus, was im Feld stehen muss. Das ist die Naht: Der Test ersetzt den Würfel
+  von außen, ohne das Panel umzubauen.
+
+Fehlerprobe in einer Kopie außerhalb des Repos: `roll_seed()` wieder mit `randi_range()` macht
+`test_wuerfeln_wuerfelt_aus_rng` rot, sonst keinen; `test_architektur.gd` sucht globalen Zufall nur
+in Kernen. Die Zeitleiste ohne Abschneiden des Orts fängt kein Test, weder vorher noch jetzt:
+`test_timeline_view.gd` prüft `preview_issue()`, aber nicht den gekürzten Text, den
+`_draw_cursor_texts()` nur zeichnet.

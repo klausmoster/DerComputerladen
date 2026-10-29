@@ -170,6 +170,9 @@ gibt sie mit dem Plan frei.
   Pfade von Szenen, die ein Werkzeug startet, stehen einmal als Konstante. Eine Kopie des Themes für
   ein Werkzeug ist eine weitere erlaubte Stelle für Farben, wenn ein Test sie gleich hält, wie bei
   `selbsttest_theme.tres`.
+  Dasselbe gilt für Hilfen: Eine gleiche Funktion als private Kopie in zwei Klassen ist eine Regel
+  an zwei Stellen; sie gehört in die gemeinsame Klasse der Geschwister (AR-02), wie `FieldHelpers`
+  in der Werkstatt.
 - **Grund:** Der Spielinhalt soll sich ohne Code ändern lassen, im Inspector oder in einem
   Werkzeug, wie die Ereignisse in der Werkstatt. Ein Produkt wie „486DX-33“ ist eine Datenzeile,
   keine eigene Klasse.
@@ -256,6 +259,9 @@ gibt sie mit dem Plan frei.
   gezogen, an einer Stelle: `GameSession.rng`, in Werkzeugen das Seed-Feld. Globaler Zufall sind alle
   Aufrufe ohne eigenen Würfel davor: `randi()`, `randf()`, `randi_range()`, `randf_range()`,
   `randfn()`, `randomize()`, `Array.shuffle()` und `pick_random()`.
+  `Timeline.rng` ist nur die Naht für `start_game()` ohne Seed, also für Tests und Werkzeuge; ein
+  Spiel bekommt seinen Seed immer von `GameSession`. Auch das Seed-Feld eines Werkzeugs würfelt
+  aus einem eigenen Würfel.
 - **Grund:** Spielstände bauen darauf, statt den ganzen Zustand zu speichern; ein Fehler lässt sich
   mit demselben Seed nachstellen. Factorio zeigt, wie schon ein anders berechneter Zwischenwert zwei
   Läufe auseinanderlaufen lässt.
@@ -313,6 +319,8 @@ gibt sie mit dem Plan frei.
   Als Sammlung zählen ab zwei eigene Schalter, die zusammen Zustände bilden. Nicht dazu zählen
   Eigenschaften der Engine wie `visible`, Prüfungen auf `null`, unabhängige Achsen wie der Fokus des
   Fensters und ein einzelner Schalter.
+  Ein Zustand darf aus dem Baustein abgeleitet werden, der ihn besitzt, etwa der Löschmodus aus
+  der Liste der Spielstände (`TitleScreen._current_layer()`); doppelt gespeichert wird er nicht.
 - **Grund:** Verstreute Schalter wie `is_waiting` und `is_leaving` können sich widersprechen; ein
   Zustand kann das nicht.
 - **Beispiel:** *(ausgedacht)* Ein Kunde ist `BETRITT`, `SCHAUT`, `WARTET`, `VERHANDELT` oder
@@ -362,6 +370,8 @@ gibt sie mit dem Plan frei.
   Eine Projekteinstellung mit Feature-Tag, die nur in einem Export gilt, der `src/tools/` enthält,
   ist kein Verweis in diesem Sinn, etwa `run/main_scene.selbsttest`. Werkzeuge dürfen einander
   kennen, solange beide zusammen aus dem Export des Spiels fallen.
+  Ein Name aus den Werkzeugen in einem Kommentar ist kein Verweis, etwa „bisher stand das in
+  `WhatIfProbe`“: Er bricht im Export nichts, und auch der Test zählt Kommentare nicht.
 - **Grund:** Werkzeuge fehlen im exportierten Spiel; ein Verweis darauf bricht erst im Export.
 - **Beispiel:** Die Regel für Einträge im Eingriffsprotokoll zog aus `WhatIfProbe` (Werkzeug) nach
   `InterventionFile` (`src/core/timeline/intervention_file.gd`), weil der Spielstand sie braucht.
@@ -425,6 +435,9 @@ rechnet, und dem, was zeigt (Quellen 3.2, 4.2). Regeln: AR-02, AR-05, AR-09, AR-
   Das gilt auch für Felder eines Autoloads, die die Oberfläche liest. Ein reines
   Datenobjekt, das nur Werte für eine Datei sammelt, ist kein Kern; seine Felder setzt, wer es
   füllt.
+  „Nur lesen.“ bindet die Oberfläche und andere Leser. Schreiben darf, wer das Objekt besitzt oder
+  anlegt, etwa `GameSession` die Felder von `SaveGame` oder der Fahrer des Selbsttests beim
+  Anlegen von Spielständen.
 - **Grund:** Sonst gibt es zwei Stellen, an denen sich der Zustand ändert, und der Kern kann seine
   Regeln nicht durchsetzen.
 - **Beispiel:** Der Titel ruft `GameSession.start_new()` und baut den Lauf nicht selbst
@@ -621,3 +634,18 @@ Dateipfad wie `"../Resources"` nicht nach oben greift.
 | AR-04 | Szenenpfade, Kopie des Themes (M8, M9) | Gepflegte Spieldaten, etwa Produkte, Kundentypen oder Objekte eines Raums, sind Datenobjekte und keine Klassen (Muster „Typ-Objekt“). Sie stehen als `Resource`-Klasse mit `.tres`-Dateien oder in einer Datendatei, die ein Werkzeug pflegt, nicht als Werte im Code. Eine geladene Resource ist nur zum Lesen da, weil Godot sie zwischen allen Nutzern teilt; was sich im Spiel ändert, gehört in einen Kern oder in eine Kopie. Spielstände sind ausgenommen (AR-13). Spielinhalt heißt hier, was in die game_bible gehört: Produkte, Preise, Kunden, Mieten. Die game_bible bleibt dafür die Quelle; Resources entstehen daraus über einen Importer, nie von Hand, damit es keine zweite Quelle gibt. Keine Spieldaten in diesem Sinn sind Stellschrauben einer Mechanik, etwa Tempi oder Chancen, und Werte, die der Style-Guide festlegt: Sie stehen als benannte Konstanten an einer Stelle, wie `UiPalette`. Ebenso stehen die Texte eines Bildschirms an einer Stelle als Konstanten, wie `TitleTexts`; Dialoge regelt AR-20. Grundgrenzen wie der Spielzeitraum oder der größte Seed stehen einmal in `src/core/` und werden von dort gelesen. Texte, die ein Kern liefert, stehen als Konstanten am Kopf des Kerns, wie `SaveGame.REASON_*`. Das Theme ist neben `UiPalette` eine erlaubte zweite Stelle für Farben, weil Tests beide gleich halten. Vorgaben eines Werkzeugs für eine leere Datendatei dürfen im Code stehen. |
 | AR-14 | Projekteinstellung mit Feature-Tag, Werkzeuge untereinander (M5, M7) | Kein Skript und keine Szene außerhalb von `src/tools/` verweist auf etwas unter `src/tools/`. Was Spiel und Werkzeug beide brauchen, liegt im Spiel, etwa in `src/core/`. |
 | Werkzeuge, Texte | eigene Textklasse erlaubt (M2) | Texte stehen je Panel als Konstanten am Kopf, nicht in einer eigenen Textklasse; ein Werkzeugfenster ist kein Bildschirm im Sinne von AR-04 (Klaus, 2026-10-28). |
+
+Ergänzt nach der Phasenprüfung von Phase 5 in Feature 008 (T038; Klaus, 2026-10-29), weil der
+Architektur-Prüfer fünf Lücken gemeldet hatte (`specs/008-architektur/bestandsbericht.md`,
+„Phasenprüfung Phase 5“). Der bisherige Wortlaut gilt weiter; ergänzt wurde je ein Absatz am Ende
+der Aussage. Zur Lücke bei AR-14 (ein Kern nennt eine Werkzeugklasse im Kommentar) nennt der
+Kommentar von `format_points()` sie nicht mehr; weil 14 ältere Kommentare in Kernen Werkzeuge nennen,
+bekam AR-14 dazu einen Satz (Klaus, 2026-10-29).
+
+| Regel | Ergänzt um | Wortlaut der Aussage vor dieser Ergänzung |
+|---|---|---|
+| AR-04 | private Kopien gleicher Hilfen | Gepflegte Spieldaten, etwa Produkte, Kundentypen oder Objekte eines Raums, sind Datenobjekte und keine Klassen (Muster „Typ-Objekt“). Sie stehen als `Resource`-Klasse mit `.tres`-Dateien oder in einer Datendatei, die ein Werkzeug pflegt, nicht als Werte im Code. Eine geladene Resource ist nur zum Lesen da, weil Godot sie zwischen allen Nutzern teilt; was sich im Spiel ändert, gehört in einen Kern oder in eine Kopie. Spielstände sind ausgenommen (AR-13). Spielinhalt heißt hier, was in die game_bible gehört: Produkte, Preise, Kunden, Mieten. Die game_bible bleibt dafür die Quelle; Resources entstehen daraus über einen Importer, nie von Hand, damit es keine zweite Quelle gibt. Keine Spieldaten in diesem Sinn sind Stellschrauben einer Mechanik, etwa Tempi oder Chancen, und Werte, die der Style-Guide festlegt: Sie stehen als benannte Konstanten an einer Stelle, wie `UiPalette`. Ebenso stehen die Texte eines Bildschirms an einer Stelle als Konstanten, wie `TitleTexts`; Dialoge regelt AR-20. Grundgrenzen wie der Spielzeitraum oder der größte Seed stehen einmal in `src/core/` und werden von dort gelesen. Texte, die ein Kern liefert, stehen als Konstanten am Kopf des Kerns, wie `SaveGame.REASON_*`. Das Theme ist neben `UiPalette` eine erlaubte zweite Stelle für Farben, weil Tests beide gleich halten. Vorgaben eines Werkzeugs für eine leere Datendatei dürfen im Code stehen. Pfade von Szenen, die ein Werkzeug startet, stehen einmal als Konstante. Eine Kopie des Themes für ein Werkzeug ist eine weitere erlaubte Stelle für Farben, wenn ein Test sie gleich hält, wie bei `selbsttest_theme.tres`. |
+| AR-08 | `Timeline.rng` als Naht, Seed-Feld mit eigenem Würfel | Katalog, Seed, Grad und Eingriffe legen ein Spiel vollständig fest. Jeder Zufall kommt aus einem eigenen `RandomNumberGenerator`, dessen Startwert nur vom Seed, vom Zweck und von einem Schlüssel abhängt; nie aus `randi()`, `randf()` oder `randomize()`. Abgeleitete Werte werden entweder gespeichert oder beim Laden genauso neu berechnet wie im Spiel. Das gilt für den Spielverlauf, der in den Spielstand geht. Ein Spiel ohne Spielstand, etwa das Easter Egg, darf seinen Startwert in der Hülle zufällig wählen; der Kern bekommt ihn trotzdem von außen. Ebenso gilt AR-09 nur für Eingriffe in den Spielverlauf. Der Seed eines neuen Spiels wird einmal aus einem eigenen Würfel ohne festen Startwert gezogen, an einer Stelle: `GameSession.rng`, in Werkzeugen das Seed-Feld. Globaler Zufall sind alle Aufrufe ohne eigenen Würfel davor: `randi()`, `randf()`, `randi_range()`, `randf_range()`, `randfn()`, `randomize()`, `Array.shuffle()` und `pick_random()`. |
+| AR-11 | abgeleiteter Zustand aus dem besitzenden Baustein | Hat etwas mehr als zwei Zustände mit eigenem Verhalten, bekommt es einen ausdrücklichen Zustand: einen `enum` mit `match` oder, wenn jeder Zustand viel eigenes Verhalten hat, eine Klasse je Zustand (Muster „Zustand“). Keine Sammlung von Wahrheitswerten, die zusammen einen Zustand bedeuten. Als Sammlung zählen ab zwei eigene Schalter, die zusammen Zustände bilden. Nicht dazu zählen Eigenschaften der Engine wie `visible`, Prüfungen auf `null`, unabhängige Achsen wie der Fokus des Fensters und ein einzelner Schalter. |
+| AR-14 | Namen aus Werkzeugen in Kommentaren | Kein Skript und keine Szene außerhalb von `src/tools/` verweist auf etwas unter `src/tools/`. Was Spiel und Werkzeug beide brauchen, liegt im Spiel, etwa in `src/core/`. Eine Projekteinstellung mit Feature-Tag, die nur in einem Export gilt, der `src/tools/` enthält, ist kein Verweis in diesem Sinn, etwa `run/main_scene.selbsttest`. Werkzeuge dürfen einander kennen, solange beide zusammen aus dem Export des Spiels fallen. |
+| AR-15 | wen „Nur lesen.“ bindet | Die Oberfläche zeigt den Zustand eines Kerns und meldet, was der Spieler will. Sie ändert Daten eines Kerns nie an dessen Feldern, sondern über seine Methoden oder als Befehl (AR-09). Felder eines Kerns, die die Oberfläche nur lesen darf, tragen den Doku-Kommentar „Nur lesen.“. Das gilt auch für Felder eines Autoloads, die die Oberfläche liest. Ein reines Datenobjekt, das nur Werte für eine Datei sammelt, ist kein Kern; seine Felder setzt, wer es füllt. |

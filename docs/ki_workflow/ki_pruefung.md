@@ -341,6 +341,8 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 008, Nachprüfung 007, Selbsttest, 14 Dateien und `project.godot` (2026-10-28) | Architektur | 9 | 8 | 1 (eigene Textklasse, als Lücke nach Klaus' Entscheidung zu Werkzeugen) | 8 | 7 |
 | Feature 008, Nachprüfung 007, Abläufe und Änderungen, 18 Dateien (2026-10-28) | Architektur | 0 | – | – | 6, davon 2 auch im anderen Lauf | – |
 | Feature 008, Planprobe am Plan von 006 (2026-10-28) | Architektur | 3 | 2 (Zustände der Seite und des Titels als Schalter, AR-11) | 1 (Stellschrauben als Konstanten, nach Klaus' Entscheidung zur Lücke L1 kein Verstoß gegen AR-04) | 6 | 2 |
+| Feature 008, Phase 5 Behebung, 32 Dateien (2026-10-29) | Architektur | 1 | 1 (`TimelineView._reason` als Kopie von `FieldHelpers.reason`, AR-02) | 0 | 5 | 1 |
+| Feature 008, Phase 5 Nachlauf über T036e, 4 Dateien (2026-10-29) | Architektur | 0 | – | – | 0 | – |
 
 „Nur er fand“ heißt: Claudes eigene Prüfung hatte es nicht gefunden. Bei den Probeläufen an
 Feature 001 war das Feature schon abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.
@@ -428,6 +430,11 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 - **Lücken gleich vorlegen.** 31 Lücken kamen im Pilot, fünfmal „schon bekannt“. Eine Lücke geht
   mit Empfehlung gleich an Klaus, statt bis zur Lückensuche liegen zu bleiben. Anlass: Pilot
   Feature 004 (2026-10-26).
+- **Fehlen dem Prüfer die Suchwerkzeuge, liefert Claude die Treffer mit.** In einer Sitzung ohne
+  Grep und Glob konnte der Architektur-Prüfer nur lesen und nicht in ganz `src/` suchen, wer was
+  ruft. Claude legt dann die Suchergebnisse in den Auftrag, etwa alle Aufrufer einer Klasse, und
+  sucht nach dem Lauf selbst, was der Prüfer unter „Unsicher“ nennt. Anlass: Feature 008,
+  Phasenprüfung Phase 5 (Klaus, 2026-10-29).
 
 ## Offen
 

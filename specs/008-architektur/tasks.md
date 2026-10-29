@@ -269,15 +269,25 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
   `src/tools/werkstatt/difficulty_panel.gd` ruft sie unter diesem Namen; kein Aufruf privater
   Funktionen fremder Klassen mehr in `src/` außer in Tests (AR-02). Fahrpläne bytegleich; mit
   Lernnotiz.
+- [x] T036e [A] [US5] Aus der Phasenprüfung T038 (Klaus, 2026-10-29; `bestandsbericht.md`,
+  „Phasenprüfung Phase 5“), je mit Lernnotiz:
+  - A `src/tools/werkstatt/timeline_view.gd`: `_reason()` entfällt, die Zeitleiste ruft
+    `FieldHelpers.reason()` (AR-02, Rest von L16).
+  - D `src/core/timeline/timeline_run.gd`: Der Doku-Kommentar von `format_points()` nennt keine
+    Klasse der Werkzeuge mehr (AR-14).
+  - G `src/tools/selbsttest/selbsttest_fahrer.gd`: `SPIELBILDSCHIRM` entfällt, der Fahrer nimmt
+    `TitleScreen.GAME_SCENE` (AR-04).
+  - G `src/tools/werkstatt/simulator_panel.gd`: `roll_seed()` würfelt aus einem eigenen
+    `RandomNumberGenerator` als Naht statt aus `randi_range()` (AR-08).
 - [x] T036c [C] [US5] M11: In `tools/selbsttest/vergleich.py` nennt je ein Kommentar die Stelle in
   Godot, deren Wert oder Format das Skript ein zweites Mal kennt: Protokoll (`selbsttest_protokoll.gd`,
   `selbsttest_texte.gd`), Raster (`GameWindow.BASE_SIZE`), Kassenrot (`UiPalette.KASSENROT`).
-- [ ] T037 [C] [US5] Nach jedem Teil Vergleich nach R9: Fahrpläne `vorher/` gegen `nachher/` mit `cmp`, Startprobe,
+- [x] T037 [C] [US5] Nach jedem Teil Vergleich nach R9: Fahrpläne `vorher/` gegen `nachher/` mit `cmp`, Startprobe,
   Tests zweimal, beide Spielstände aus `user://test_008_behebung/` mit einem kurzen Skript laden;
   Code lesen. Nach Teil 2 dazu ein Lauf des Selbsttests auf dem Mac (`tools/build/baue_alles.sh`,
   `tools/selbsttest/vergleich.py`), weil S1 den Zustand des Titels umbaut, den der Fahrer liest
   (Klaus, 2026-10-28).
-- [ ] T038 [C] [US5] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Architektur-Prüfer über das
+- [x] T038 [C] [US5] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Architektur-Prüfer über das
   Geänderte, Maßstab Leitfaden und Bestandsbericht; Stil nur, wenn sich wider Erwarten Sichtbares
   ändert; danach Nachprüfung des Betroffenen.
 - [ ] T039 [K] [US5] Abnahme Phase 5 von Hand: den eigenen Spielstand von vor der Phase fortsetzen, ein neues

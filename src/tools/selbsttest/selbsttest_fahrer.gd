@@ -50,10 +50,10 @@ const KNOPF_HAUPTMENUE := &"leave"
 ## Der Knoten des versteckten Spiels unter dem Communicator heißt SEITE_INVADERS; seine Partie
 ## kennt so viele Außerirdische (InvadersGame).
 const AUSSERIRDISCHE := InvadersGame.COLUMNS * InvadersGame.ROWS
-## Szenen, zu denen lade_titel_neu() und starte_spiel() wechseln. Den Titel laden auch die
-## Startszene und der Läufer mit diesem Pfad (AR-04).
+## Die Szene, zu der lade_titel_neu() wechselt. Den Titel laden auch die Startszene und der
+## Läufer mit diesem Pfad (AR-04). Zum Spielbildschirm wechselt starte_spiel() mit
+## TitleScreen.GAME_SCENE, wie der Titel selbst.
 const TITEL := "res://scenes/title/title_screen.tscn"
-const SPIELBILDSCHIRM := "res://scenes/game/game_screen.tscn"
 ## Der feste Seed des ganzen Selbsttests (R7): für die Spielstände, die lege_spielstaende_an()
 ## anlegt, und in der Startszene für den Würfel neuer Spiele und Godots globalen Würfel.
 const SEED := 4711
@@ -613,7 +613,7 @@ func starte_spiel(grad: Difficulty.Level, p_seed: int) -> String:
 	var sitzung := _session()
 	if sitzung.start_new(grad, p_seed) != OK:
 		return SelbsttestTexte.meldung_des_spiels(sitzung.last_error)
-	_wechsle(SPIELBILDSCHIRM)
+	_wechsle(TitleScreen.GAME_SCENE)
 	var frist := Time.get_ticks_msec() + SelbsttestAblauf.HOECHSTZEIT_MS
 	while spielbildschirm() == null:
 		if Time.get_ticks_msec() >= frist:
