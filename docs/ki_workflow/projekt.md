@@ -9,11 +9,16 @@ dort steht, wird hier nur verwiesen, nicht abgeschrieben.
 | Feld | Wert |
 |---|---|
 | Projekt | „Der Computerladen“: Wirtschaftssimulation und Point-and-Click-Adventure, Deutschland 1985–1999 |
-| Entscheider | Klaus, Kürzel `[K]` |
-| Bau-Agent | `godot-entwickler` (`.claude/agents/godot-entwickler.md`), Modell Opus |
-| Sprache | Deutsch für Doku, Specs und Gespräch; Tagebuch auf Englisch, übersetzt wird später |
+| Entscheider | Klaus |
+| `<Kürzel>` | `[K]` |
+| Gespräch | Deutsch, „du“; Fachbegriffe mit einem Beispiel aus dem Spiel |
+| Bau-Agent | `godot-entwickler` (`.claude/agents/godot-entwickler.md`) |
+| Modelle | Claude: das Modell der Sitzung; `godot-entwickler`: Opus; Prüfer: das Modell der Sitzung (`inherit`) |
+| Projektsprache | Deutsch für Doku und Specs |
+| Tagebuchsprache | Englisch, übersetzt wird später |
 | Eingedeutschte Fachwörter | bleiben, wie sie sind: „scrollen“, nicht „rollen“ |
-| Anrede, Ton | Spiel und Werkzeuge duzen; trocken-ironisch, Vorbild „Das Amt“; Regeln im Style-Guide, Abschnitt „Sprache“ |
+| Anrede im Produkt | Spiel und Werkzeuge duzen; trocken-ironisch, Vorbild „Das Amt“; Regeln im Style-Guide, Abschnitt „Sprache“ |
+| Grundsätze des Projekts | Verfassung I (nur Desktop), IV (ein Look: der Style-Guide), V (Daten sauber halten) |
 | Rahmenbedingungen | nur Desktop (Windows, macOS, Linux), Renderer Compatibility; Einzelheiten in `CLAUDE.md` und Verfassung I |
 
 ## Stack und Befehle
@@ -23,13 +28,14 @@ dort steht, wird hier nur verwiesen, nicht abgeschrieben.
 | Engine | Godot 4.7.2 stable, nicht .NET, unter `/Applications/Godot.app/Contents/MacOS/Godot` |
 | Sprache | GDScript |
 | Tests | GUT 9.7.1, headless |
-| Spec Kit | 1.2.3 |
+| Spec Kit | 1.2.3; `branch_prefix: "feature"` |
 | Projekt-Root | `src/`, deshalb immer `--path src` |
 | Spiel | `/Applications/Godot.app/Contents/MacOS/Godot --path src` |
-| Tests | `/Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://addons/gut/gut_cmdln.gd` |
+| Tests | `/Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://addons/gut/gut_cmdln.gd`, Zeitlimit im Auftrag an den Agent |
 | Startprobe | headless mit `-d`: Exit 0 und keine Ausgabe |
 | Build | `tools/build/baue_alles.sh` |
-| Fenstergröße | 1920 × 925 logisch, Klaus' Bildschirm |
+| Prüfgröße | 1920 × 925 logisch, Klaus' Bildschirm, im echten Fenster |
+| Oberfläche ansehen | Bildschirmfotos aus Godot mit `.claude/skills/dcl-phasenpruefung/scripts/fotos.gd`; Fensterverhalten im echten Fenster |
 | Gefährliche Dateien | `export_presets.cfg` vor jedem Commit ansehen |
 | Prozesse | Claude darf mit `kill` beenden, etwa ein hängendes Godot (`Bash(kill *)` in Klaus' Einstellungen) |
 
@@ -40,6 +46,7 @@ dort steht, wird hier nur verwiesen, nicht abgeschrieben.
 | `<Vision>` | `docs/game_design.md` |
 | `<Stand-im-Code>` | `docs/spielbeschreibung/`, Index `README.md` |
 | `<Maßstäbe>` | `docs/style-guide/` (mit „Sprache“ und „Werkzeuge“), `docs/architektur-leitfaden.md` (Regeln `AR-NN`) |
+| `<Ideen>` | `docs/Ideensammlung.md` |
 | `<Backlog>` | `docs/features/Feature_Ideas.md` (IDs `SS-NN` reserviert); Systemliste in `docs/features/Features.md` |
 | Inhaltsdaten | `docs/game_bible/` |
 | Code | `src/` |
@@ -72,11 +79,26 @@ dort steht, wird hier nur verwiesen, nicht abgeschrieben.
 | Grafik-Pipeline | ja | Skill `dcl-grafik`: Claude erzeugt in Leonardo.ai über Claude in Chrome, Klaus wählt aus; Stilanker C2, Prompt-Log `docs/art/leonardo/prompt-log.md`, Bildkatalog `docs/art/bildkatalog.md`; Chrome startet nur mit eigenem Profilordner (`ki_dev.md`, „Grafik“) |
 | Inhaltsdaten | ja | `docs/game_bible/` mit Konventionen aus `CLAUDE.md`; Skill `dcl-komponente` |
 
+## Eigene Vorlagen
+
+Bis auf die Ergänzungen stimmen die eigenen Vorlagen mit denen von Spec Kit 1.2.3 überein
+(geprüft 2026-10-29 mit `diff`: keine Zeile fehlt oder ist geändert). Ausgangsfassungen:
+
+| Datei | SHA-256 der Vorlage von Spec Kit 1.2.3 |
+|---|---|
+| `plan-template.md` | `7e637502d41eccf0ca672496636365691fdca62ef37b27ec07fcb412dbfa90d4` |
+| `tasks-template.md` | `fc29a233f6f5a27ca31f1aa46b596af6500c627441c6e62b2bc4a1d721525842` |
+
+Die Aufgaben-Vorlage enthält noch die Stellen, die Tests optional nennen, „Commit after each task“
+und „Deploy/demo“; siehe `docs/offene-punkte.md`.
+
 ## Abweichungen von der Blaupause
+
+Nach der Blaupause gilt eine Abweichung erst, wenn sie in `CLAUDE.md` oder der Verfassung steht.
+Die ersten beiden stehen dort; die dritte ist noch offen.
 
 | Was | Abweichung | Grund |
 |---|---|---|
 | Ereigniskatalog | Ereignisse liegen in `src/data/event_catalog.json` und werden in der Zeitleisten-Werkstatt gepflegt, nicht in den Inhaltsdaten | Die Werkstatt muss den Katalog lesen und schreiben; Ereignisse brauchen Tagesdaten (Verfassung V) |
 | Selbstständig befüllt | `docs/game_bible/` und die Skills darf Claude ohne Freigabe befüllen | `CLAUDE.md` |
-| Hooks | vorerst keiner | Klaus: Tests startet Claude selbst, ein Hook kommt erst bei Bedarf (`ki_pruefung.md`, „Bausteine“) |
-| Sitzungen | Werkzeuge außerhalb von Features (Arbeitsweise, Style-Guide) laufen in eigenen Sitzungen auf eigenen Branches `claude/…` | kein Feature, keine Nummer; bisher so gehandhabt, noch nicht beschlossen |
+| Branches ohne Feature | heißen `claude/…` | so gehandhabt, noch nicht beschlossen; die Blaupause verlangt nur einen eigenen Branch ohne Nummer |
