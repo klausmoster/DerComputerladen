@@ -124,6 +124,7 @@ Text-Prüfer: 2 Befunde, 2 bestätigt
   hoch       „Bitte wählen Sie eine Ware“ → „Wähl eine Ware“ (Sprache, Anrede)
 Architektur-Prüfer: 1 Befund, 1 bestätigt
   hoch       Regal ruft get_parent().kasse_aktualisieren() (AR-02)
+  Ausnahmen  keine neuen; werkstatt.gd, _set_up_window() (AR-02): Kommentar und Zeile in der Tabelle da
 Für dich: Der Style-Guide regelt Preisschilder noch nicht. Wie sollen sie aussehen?
 ```
 

@@ -70,6 +70,10 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
 
+- [ ] TXXX [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares,
+  Texte oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
+  (`docs/ki_workflow/ki_pruefung.md`)
+
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
@@ -169,6 +173,9 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
+- [ ] TXXX [C] Phasenprüfung dieser Phase mit `/dcl-phasenpruefung`, nur wenn sie Sichtbares, Texte
+  oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor der Gesamtabnahme
+  (`docs/ki_workflow/ki_pruefung.md`)
 - [ ] TXXX [A] Selbsttest-Abläufe anpassen (vor der Gesamtabnahme; `docs/ki_workflow/ki_dev.md`,
   Punkt 11): neue oder geänderte Seiten, Wege, Texte und Eingaben bekommen Schritte in
   `src/tools/selbsttest/ablaeufe/`; entfällt, wenn das Feature nichts davon ändert.

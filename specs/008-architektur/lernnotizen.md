@@ -346,12 +346,12 @@ Geschrieben vom Godot-Agent.
   Meldungen im `CatalogValidator` ändert und nur eine angepasst wird. Jetzt ruft
   `_draw_cursor_texts()` in `timeline_view.gd` die geteilte Hilfe; der Zeitstrahl ist ein Werkzeug
   wie das Formular, er darf `FieldHelpers` kennen.
-- **Auch ein Kommentar ist ein Verweis (AR-14).** `TimelineRun.format_points()` nannte im
-  Doku-Kommentar `FieldHelpers.parse_percent()`. Der Code des Kerns hängt davon nicht ab, aber wer
-  den Kern liest, lernt daraus, dass er die Werkstatt kennt, und wer die Werkstatt umbaut, müsste
-  den Kern mitpflegen. Der Kommentar sagt jetzt nur, *dass* die Werkstatt den Wert genauso zeigt
-  und wieder liest, nicht mit welcher Klasse. Der Kern verspricht die Form; wer sie liest, ist
-  dessen Sache.
+- **Der Kern verspricht die Form, nicht den Leser (AR-14).** `TimelineRun.format_points()` nannte
+  im Doku-Kommentar `FieldHelpers.parse_percent()`. Der Code des Kerns hängt davon nicht ab; wer
+  die Werkstatt umbaut, müsste aber den Kommentar im Kern mitpflegen. Der Kommentar sagt jetzt nur,
+  *dass* die Werkstatt den Wert genauso zeigt und wieder liest, nicht mit welcher Klasse. Verboten
+  wäre der Name nicht: Ein Name im Kommentar ist kein Verweis im Sinn von AR-14 (Klaus,
+  2026-10-29). Absatz von Claude angeglichen, nachdem diese Regel dazukam.
 - **Eine Konstante gehört dem, der sie meint (AR-04).** Der Fahrer kannte den Pfad des
   Spielbildschirms als eigene `SPIELBILDSCHIRM`. Gemeint war immer „wohin der Titel ein Spiel
   führt“, und das steht schon in `TitleScreen.GAME_SCENE`. Zieht die Szene um, ändert sich der
@@ -372,3 +372,42 @@ Fehlerprobe in einer Kopie außerhalb des Repos: `roll_seed()` wieder mit `randi
 in Kernen. Die Zeitleiste ohne Abschneiden des Orts fängt kein Test, weder vorher noch jetzt:
 `test_timeline_view.gd` prüft `preview_issue()`, aber nicht den gekürzten Text, den
 `_draw_cursor_texts()` nur zeichnet.
+
+### T036c Kommentare über die Grenze zu Python
+
+Geschrieben von Claude.
+
+- **Ein Wert, zwei Sprachen.** `tools/selbsttest/vergleich.py` kennt das Raster 640 × 360, die
+  Farbe Kassenrot und das Format von `protokoll.txt` ein zweites Mal. Python kann
+  `GameWindow.BASE_SIZE` nicht lesen, eine zweite Stelle lässt sich also nicht vermeiden. Der
+  Leitfaden gilt nur für `src/` (Abschnitt „Werkzeuge“); über die Grenze hilft ein Kommentar, der
+  die Quelle in Godot nennt. Wer das Raster ändert, findet so per Suche nach `BASE_SIZE` auch die
+  Stelle im Skript.
+
+## Phase 6
+
+### T039a Die Klassenreferenz der installierten Godot
+
+Geschrieben von Claude.
+
+- **Was `--doctool` liefert.** `Godot --doctool <ordner>` schreibt für jede Klasse, die die
+  laufende Engine kennt, eine XML-Datei: Erbfolge, Methoden mit Parametern und Standardwerten,
+  Eigenschaften, Signale, Konstanten und Enums. Das kommt aus der `ClassDB` der Engine selbst und
+  passt deshalb genau zur installierten Version 4.7.2. Für die Frage „gibt es `get_node_or_null()`
+  und welche Parameter hat es?“ ist das die verlässlichste Quelle, die es gibt.
+- **Was es nicht liefert.** Die Beschreibungstexte stehen nicht in der Engine, sondern im Quellcode
+  von Godot unter `doc/classes/`. `--doctool` mischt sie nur hinein, wenn sie im Zielordner schon
+  liegen; aus einem leeren Ordner kommen leere `<description>`. Deshalb die eigene Aufgabe T039d.
+- **Warum das Skript das Ergebnis prüft.** `--doctool` endet auch mit Exit 0, wenn der Ordner fehlt
+  und nichts geschrieben wurde. Das Skript sieht deshalb nach, ob `Node.xml`, `RegEx.xml` und
+  `@GDScript.xml` da sind. Ein Exit-Code allein beweist nichts.
+- **Warum die Version geprüft wird.** Die Referenz soll genau zu der Godot passen, mit der das
+  Projekt gebaut wird. `config/features` in `src/project.godot` nennt „4.7“; meldet die
+  installierte Godot etwas anderes, bricht das Skript ab, statt eine Referenz zu einer falschen
+  Version zu schreiben.
+- **Warum nicht im Repo.** Die 1076 Dateien (6,7 MB) lassen sich in unter einer Sekunde neu
+  erzeugen, und jedes Update von Godot brächte einen riesigen Diff. Der Ordner steht deshalb in
+  `.gitignore` (Klaus, 2026-10-29); in jedem Worktree läuft das Skript einmal.
+- **Flach statt verschachtelt.** Godot verteilt die Dateien auf `doc/classes/` und rund 30 Ordner
+  unter `modules/` und `platform/`. Wer `RegEx` sucht, müsste wissen, dass es ein Modul ist. Die
+  Namen sind eindeutig, also legt das Skript alle in `klassen/` zusammen.

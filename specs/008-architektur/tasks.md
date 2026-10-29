@@ -330,7 +330,7 @@ T040 fest.
   `tools/godot_referenz/erzeuge.sh` läuft. Den Eintrag für `tools/godot_referenz/` in der Tabelle
   „Aufbau“ von `CLAUDE.md` legt Claude Klaus als Vorschlag vor, geändert wird sie nur auf seine
   Entscheidung.
-- [ ] T040 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
+- [x] T040 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
   Feature“), dazu der Architektur-Prüfer einmal über alles, was 008 an Code geändert hat. Lücken
   werden eine eigene Phase mit Klaus' Freigabe.
 - [ ] T040a [A] Selbsttest-Abläufe anpassen (vor der Gesamtabnahme; `docs/ki_workflow/ki_dev.md`,
@@ -418,3 +418,22 @@ Prüfer. Mit Phase 2 prüft der Prüfer jedes neue Feature; das ist der eigentli
 - `[P]` = andere Dateien, keine offene Abhängigkeit.
 - Die Aufgaben von Phase 5 sind Platzhalter, bis T028 sie aus dem Bestandsbericht ergänzt.
 - Nur eigene Dateien committen; Claude committet, Klaus pusht.
+
+---
+
+## Phase 7: Convergence
+
+Aus der Lückensuche T040 (2026-10-29), von Claude nachgeprüft. Alle Aufgaben ändern nur Doku,
+Vorlagen und Skill, keinen Code; sie kommen vor die Gesamtabnahme T041, mit Klaus' Freigabe.
+
+- [x] T045 [C] CRITICAL: Lernnotiz zu T039a (was `--doctool` liefert und was nicht, warum die Version geprüft wird, warum nicht im Repo) und kurz zu T036c in `specs/008-architektur/lernnotizen.md` nachtragen per Constitution II (missing)
+- [x] T046 [C] Beispiel „Ladenansicht“ in `docs/ki_workflow/ki_pruefung.md`, „Anbindung an Spec Kit“, um den Architektur-Prüfer ergänzen: Phase 3 „Architektur“, Phase 4 „Stil, Text, Architektur“, T038 nennt ihn per FR-021 (contradicts)
+- [x] T047 [C] In `docs/ki_workflow/ki_pruefung.md` den Satz „`/speckit-tasks` lässt sie weg, wo eine Phase nichts Sichtbares und keine Texte ändert“ um „und keinen Code“ ergänzen per FR-021 (contradicts)
+- [x] T048 [C] In `.specify/templates/overrides/tasks-template.md` die Aufgabe „Phasenprüfung … nur wenn die Phase Sichtbares, Texte oder Code ändert“ auch an Phase 2 (Foundational) und an die Phase „Polish“ setzen per FR-021 (partial)
+- [x] T049 [C] In `specs/008-architektur/bestandsbericht.md` je Lauf die geprüften Dateien namentlich auflisten, dazu die 33 Dateien der Nachprüfung von 007 per FR-025 (partial)
+- [x] T050 [C] Kopfzeile „Stand“ in `docs/architektur-leitfaden.md` auf Phase 5 und die Ergänzungen vom 2026-10-29 fortschreiben per contracts/leitfaden.md (partial)
+- [x] T051 [C] In `docs/ki_workflow/ki_pruefung.md` „Stand“, „Stand der Einführung“ Schritt 10 (Verfassung 2.3.0) und „Offen“ (Entscheidung über den Architektur-Prüfer nach SC-007 steht aus) nachziehen per SC-007 (contradicts)
+- [x] T052 [C] In `docs/architektur-leitfaden.md` für AR-11 ein Beispiel aus dem Code mit Pfad nehmen (etwa `GameClock.State`) und bei AR-07 den Pfad des Katalogs nennen per FR-005 (partial)
+- [x] T053 [C] Prüfweise von AR-01 in `docs/architektur-leitfaden.md` an den Umfang von `kern_verstoesse` angleichen oder auf AR-08 verweisen per FR-008 (partial)
+- [x] T054 [C] Zählbefehl in `specs/008-architektur/quickstart.md`, Phase 1, auf `^#+ AR-` ändern, damit er 20 Regeln zählt, auch AR-15 bis AR-20 unter den Schichten per SC-001 (contradicts)
+- [x] T055 [C] Im Berichtsbeispiel von `.claude/skills/dcl-phasenpruefung/SKILL.md` beim Architektur-Prüfer eine Zeile „Ausnahmen: …“ ergänzen per contracts/arbeitsweise.md (partial)

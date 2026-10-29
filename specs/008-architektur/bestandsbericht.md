@@ -24,6 +24,50 @@ Vertrag der Tests, Aufgaben T036a und T036b, Einträge 11-09 und 11-10 in `Featu
 | Spiel und Oberfläche | `src/scenes/`, `src/ui/` (24) und `src/default_bus_layout.tres` | alle ganz |
 | Werkzeuge | `src/tools/werkstatt/` (22) | kleine ganz; große Dateien gezielt (Kopf, Aufbau, Stellen mit Autoloads, Pfaden, Signalen, Zufall), Umriss des Rests |
 
+Die Dateien je Lauf, Pfade unter `src/` (nachgetragen nach der Lückensuche T040, FR-025):
+
+**Kern** (29):
+`core/game_clock.gd`, `core/game_date.gd`, `core/game_session.gd`, `core/game_window.gd`,
+`core/save/save_game.gd`, `core/save/save_slot.gd`, `core/save/save_store.gd`, `core/timeline.gd`,
+`core/timeline/catalog_issue.gd`, `core/timeline/catalog_validator.gd`,
+`core/timeline/chance_modifier.gd`, `core/timeline/difficulty.gd`,
+`core/timeline/difficulty_profile.gd`, `core/timeline/event_catalog.gd`,
+`core/timeline/event_category.gd`, `core/timeline/event_condition.gd`,
+`core/timeline/event_dice.gd`, `core/timeline/event_effect.gd`, `core/timeline/event_statistic.gd`,
+`core/timeline/follow_up.gd`, `core/timeline/intervention_file.gd`,
+`core/timeline/schedule_diff.gd`, `core/timeline/schedule_entry.gd`,
+`core/timeline/schedule_text.gd`, `core/timeline/timeline_event.gd`,
+`core/timeline/timeline_message.gd`, `core/timeline/timeline_run.gd`,
+`core/timeline/timeline_statistics.gd`, `project.godot`.
+
+**Spiel und Oberfläche** (25):
+`default_bus_layout.tres`, `scenes/game/game_screen.gd`, `scenes/game/game_screen.tscn`,
+`scenes/title/invaders/invaders_game.gd`, `scenes/title/invaders/invaders_page.gd`,
+`scenes/title/invaders/invaders_page.tscn`, `scenes/title/invaders/invaders_sprites.gd`,
+`scenes/title/key_sequence.gd`, `scenes/title/main_menu.gd`, `scenes/title/main_menu.tscn`,
+`scenes/title/menu_entry.gd`, `scenes/title/menu_hint.gd`, `scenes/title/menu_hint.tscn`,
+`scenes/title/menu_paper.gd`, `scenes/title/save_list.gd`, `scenes/title/save_list.tscn`,
+`scenes/title/title_screen.gd`, `scenes/title/title_screen.tscn`, `scenes/title/title_texts.gd`,
+`ui/communicator/case_key.gd`, `ui/communicator/communicator.gd`,
+`ui/communicator/communicator.tscn`, `ui/computerladen_theme.tres`, `ui/knopf.gd`,
+`ui/ui_palette.gd`.
+
+**Werkzeuge** (22):
+`tools/werkstatt/catalog_editor.gd`, `tools/werkstatt/difficulty_panel.gd`,
+`tools/werkstatt/difficulty_panel.tscn`, `tools/werkstatt/event_form.gd`,
+`tools/werkstatt/event_form.tscn`, `tools/werkstatt/event_list.gd`,
+`tools/werkstatt/event_list.tscn`, `tools/werkstatt/fahrplan_ausgabe.gd`,
+`tools/werkstatt/intervention_dialog.gd`, `tools/werkstatt/intervention_dialog.tscn`,
+`tools/werkstatt/issues_panel.gd`, `tools/werkstatt/relief_style_box.gd`,
+`tools/werkstatt/simulator_panel.gd`, `tools/werkstatt/simulator_panel.tscn`,
+`tools/werkstatt/statistics_panel.gd`, `tools/werkstatt/statistics_panel.tscn`,
+`tools/werkstatt/timeline_view.gd`, `tools/werkstatt/werkstatt.gd`,
+`tools/werkstatt/werkstatt.tscn`, `tools/werkstatt/werkstatt_theme.tres`,
+`tools/werkstatt/what_if_probe.gd`, `tools/werkstatt/zebra.gd`.
+
+Von den großen Dateien der Werkstatt hat der Architektur-Prüfer in der Phasenprüfung von
+Phase 5 (T038) alle ganz gelesen, die Phase 5 geändert hat.
+
 ## Abweichungen
 
 Urteil von Claude: **bestätigt** (die Stelle verletzt die Regel) oder **verworfen** (mit Grund).
@@ -125,10 +169,36 @@ nicht gefunden.
 zwei Läufen gleichzeitig, wie oben: Kern des Selbsttests (`src/tools/selbsttest/selbsttest_*`, 14
 Dateien, und `project.godot`) sowie Abläufe (`ablaeufe/`, 11 Dateien), die von 007 geänderten Stellen
 in fünf Spieldateien (nur der Diff) und `tools/build/baue_alles.sh`, `tools/selbsttest/vergleich.py`.
-33 von 33 Dateien unter „Geprüft“. Claude hat jeden Befund am Code nachgesehen. **Klaus hat am
+33 von 33 Dateien unter „Geprüft“, aufgelistet unten. Claude hat jeden Befund am Code nachgesehen. **Klaus hat am
 2026-10-28 alles wie empfohlen entschieden:** B1 bis B3 und B5 bis B8 mit M1, M8 und M10 in T036a,
 M11 in T036c, B4 in Feature 11-09; die Lücken stehen im Leitfaden („Geschichte“); Test geschärft
 und `KERNE` ergänzt in T035; Selbsttest in T037 und Phase 6.
+
+Die 33 Dateien, Pfade unter `src/`:
+
+**Kern des Selbsttests und Projekt** (15):
+`tools/selbsttest/selbsttest_ablage.gd`, `tools/selbsttest/selbsttest_eingabe.gd`,
+`tools/selbsttest/selbsttest_ergebnis.gd`, `tools/selbsttest/selbsttest_ergebnis.tscn`,
+`tools/selbsttest/selbsttest_fahrer.gd`, `tools/selbsttest/selbsttest_laeufer.gd`,
+`tools/selbsttest/selbsttest_lauf.gd`, `tools/selbsttest/selbsttest_logger.gd`,
+`tools/selbsttest/selbsttest_protokoll.gd`, `tools/selbsttest/selbsttest_start.gd`,
+`tools/selbsttest/selbsttest_start.tscn`, `tools/selbsttest/selbsttest_system.gd`,
+`tools/selbsttest/selbsttest_texte.gd`, `tools/selbsttest/selbsttest_theme.tres`, `project.godot`.
+
+**Abläufe** (11):
+`tools/selbsttest/ablaeufe/ablauf_bedienung.gd`, `tools/selbsttest/ablaeufe/ablauf_easter_egg.gd`,
+`tools/selbsttest/ablaeufe/ablauf_fenster.gd`, `tools/selbsttest/ablaeufe/ablauf_laden.gd`,
+`tools/selbsttest/ablaeufe/ablauf_liste.gd`, `tools/selbsttest/ablaeufe/ablauf_loeschen.gd`,
+`tools/selbsttest/ablaeufe/ablauf_neues_spiel.gd`, `tools/selbsttest/ablaeufe/ablauf_titel.gd`,
+`tools/selbsttest/ablaeufe/ablauf_titel_echtzeit.gd`,
+`tools/selbsttest/ablaeufe/selbsttest_ablauf.gd`,
+`tools/selbsttest/ablaeufe/selbsttest_szenario.gd`.
+
+**Von 007 geänderte Spieldateien, nur der Diff** (5):
+`core/game_window.gd`, `core/save/save_game.gd`, `scenes/title/invaders/invaders_page.gd`,
+`scenes/title/save_list.gd`, `tools/werkstatt/werkstatt.gd`.
+
+**Außerhalb von `src/`** (2): `tools/build/baue_alles.sh`, `tools/selbsttest/vergleich.py`.
 
 **Test nach dem Merge:** zweimal 1364 Tests, 1363 grün, 188485 von 188486 Prüfungen; Startprobe
 still. Rot ist `test_kein_weg_nach_oben` mit zwei Stellen: `selbsttest_ergebnis.gd:152` (B1 unten)

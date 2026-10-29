@@ -15,9 +15,10 @@ Spec, Plan und Godot-Agent halten sich an ihn.
   stehen in `docs/spielbeschreibung/architektur.md`, „Code-Stil“. Beides prüft der
   Architektur-Prüfer nicht.
 - **Quellen:** `docs/recherche/architektur-quellen.md`, im Folgenden „Quellen“ mit Abschnitt.
-- **Stand:** Feature 008, Phase 3. Alle 20 Regeln hat Klaus am 2026-10-28 wie vorgeschlagen
-  entschieden; ergänzt nach den Proben (Phase 2) und der Bestandsprüfung (Phase 3), siehe
-  „Geschichte“.
+- **Stand:** Feature 008, Phase 7. Alle 20 Regeln hat Klaus am 2026-10-28 wie vorgeschlagen
+  entschieden; ergänzt nach den Proben (Phase 2), der Bestandsprüfung (Phase 3), der Nachprüfung
+  des Codes aus Feature 007 (2026-10-28) und der Phasenprüfung der Behebung (Phase 5,
+  2026-10-29), siehe „Geschichte“.
 
 ## So liest man eine Regel
 
@@ -89,8 +90,9 @@ gibt sie mit dem Plan frei.
   `docs/spielbeschreibung/architektur.md`, „Grundsätze“.
 - **Schicht:** Kern, Wirtschaft, Adventure
 - **Prüfweise:** Test: `test_architektur.gd`, `kern_verstoesse` (erbt von `RefCounted` oder
-  `Resource`, nennt kein Autoload, kein `get_tree()`, kein `randi()`, `randf()` oder `randomize()`);
-  dazu Prüfer: ob Logik in einer Hülle steckt, die in einen Kern gehört.
+  `Resource`, nennt kein Autoload, kein `get_tree()` und kein `Engine.get_main_loop()`, keinen
+  globalen Zufall nach der Liste in AR-08); dazu Prüfer: ob Logik in einer Hülle steckt, die in
+  einen Kern gehört.
 - **Stand:** gilt seit 2026-10-28, Klaus
 
 ### AR-02 Signal nach oben, Aufruf nach unten
@@ -239,7 +241,8 @@ gibt sie mit dem Plan frei.
   Egg, ist kein Ereignis in diesem Sinn.
 - **Grund:** So lässt sich der Spielverlauf an einer Stelle prüfen und in der Werkstatt simulieren
   (Klaus, 2026-08-13).
-- **Beispiel:** Feste und variable Ereignisse stehen im Katalog, auch „Konkurrent eröffnet“.
+- **Beispiel:** Feste und variable Ereignisse stehen im Katalog `src/data/event_catalog.json`,
+  auch „Konkurrent eröffnet“.
 - **Gegenbeispiel:** *(ausgedacht)* Die Wirtschaft würfelt selbst, ob 1993 eine Rezession kommt.
 - **Quelle:** Verfassung, „Technische Rahmenbedingungen“.
 - **Schicht:** alle
@@ -323,8 +326,10 @@ gibt sie mit dem Plan frei.
   der Liste der Spielstände (`TitleScreen._current_layer()`); doppelt gespeichert wird er nicht.
 - **Grund:** Verstreute Schalter wie `is_waiting` und `is_leaving` können sich widersprechen; ein
   Zustand kann das nicht.
-- **Beispiel:** *(ausgedacht)* Ein Kunde ist `BETRITT`, `SCHAUT`, `WARTET`, `VERHANDELT` oder
-  `GEHT`, und jeder Zustand entscheidet selbst, was beim nächsten Schritt passiert.
+- **Beispiel:** Die Spieluhr läuft, ist angehalten oder steht am Ende (`GameClock.State` in
+  `src/core/game_clock.gd`); `paused` ist nur noch aus diesem Zustand abgeleitet. Der Titel führt
+  zwei Achsen, Phase der Eingabe und Ebene, als zwei `enum` (`TitleScreen.Phase` und
+  `TitleScreen.Layer` in `src/scenes/title/title_screen.gd`).
 - **Gegenbeispiel:** `if is_waiting and not is_leaving and has_asked:` an mehreren Stellen.
 - **Quelle:** Nystrom „State“ (Quellen 2).
 - **Schicht:** alle
@@ -649,3 +654,8 @@ bekam AR-14 dazu einen Satz (Klaus, 2026-10-29).
 | AR-11 | abgeleiteter Zustand aus dem besitzenden Baustein | Hat etwas mehr als zwei Zustände mit eigenem Verhalten, bekommt es einen ausdrücklichen Zustand: einen `enum` mit `match` oder, wenn jeder Zustand viel eigenes Verhalten hat, eine Klasse je Zustand (Muster „Zustand“). Keine Sammlung von Wahrheitswerten, die zusammen einen Zustand bedeuten. Als Sammlung zählen ab zwei eigene Schalter, die zusammen Zustände bilden. Nicht dazu zählen Eigenschaften der Engine wie `visible`, Prüfungen auf `null`, unabhängige Achsen wie der Fokus des Fensters und ein einzelner Schalter. |
 | AR-14 | Namen aus Werkzeugen in Kommentaren | Kein Skript und keine Szene außerhalb von `src/tools/` verweist auf etwas unter `src/tools/`. Was Spiel und Werkzeug beide brauchen, liegt im Spiel, etwa in `src/core/`. Eine Projekteinstellung mit Feature-Tag, die nur in einem Export gilt, der `src/tools/` enthält, ist kein Verweis in diesem Sinn, etwa `run/main_scene.selbsttest`. Werkzeuge dürfen einander kennen, solange beide zusammen aus dem Export des Spiels fallen. |
 | AR-15 | wen „Nur lesen.“ bindet | Die Oberfläche zeigt den Zustand eines Kerns und meldet, was der Spieler will. Sie ändert Daten eines Kerns nie an dessen Feldern, sondern über seine Methoden oder als Befehl (AR-09). Felder eines Kerns, die die Oberfläche nur lesen darf, tragen den Doku-Kommentar „Nur lesen.“. Das gilt auch für Felder eines Autoloads, die die Oberfläche liest. Ein reines Datenobjekt, das nur Werte für eine Datei sammelt, ist kein Kern; seine Felder setzt, wer es füllt. |
+
+Nachgezogen nach der Lückensuche von Feature 008 (T040; Klaus, 2026-10-29), ohne eine Aussage zu
+ändern: die Kopfzeile „Stand“; das Beispiel von AR-07 nennt den Pfad des Katalogs; AR-11 hat statt
+des ausgedachten Kunden ein Beispiel aus dem Code (`GameClock.State`, `TitleScreen.Phase` und
+`TitleScreen.Layer`); die Prüfweise von AR-01 nennt den ganzen Umfang von `kern_verstoesse`.

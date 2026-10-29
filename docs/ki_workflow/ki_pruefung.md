@@ -7,8 +7,9 @@ und Abgrenzung stehen im [Einstieg](README.md).
 
 **Stand:** eingeführt. Begonnen am 2026-10-22, Pilot in Feature 004 am 2026-10-26; beide Prüfer
 bleiben (Klaus). Feature 008 bringt den dritten Prüfer, den Architektur-Prüfer, mit dem
-Architektur-Leitfaden als Maßstab (2026-10-28). Offen ist nur die Regel in der Verfassung, siehe
-„Stand der Einführung“ unten.
+Architektur-Leitfaden als Maßstab (2026-10-28); die Regel dazu steht seit Verfassung 2.3.0 in
+Grundsatz VI. Offen ist, ob der Architektur-Prüfer bleibt: Das entscheidet Klaus nach den
+Code-Phasen des nächsten Features (siehe „Offen“ unten).
 Die Datei ist aus zwei Konzepten vom 2026-10-22 entstanden, die in ihr aufgegangen sind; die
 Git-Geschichte behält sie (`docs/konzept-pruef-agents.md`, `docs/konzept-ki-workflow.md`).
 
@@ -213,7 +214,7 @@ Spec Kit bleibt, wie es ist. Die Prüfer kommen an fünf Stellen dazu:
   bleiben unverändert. Eigene Vorlagen liegen unter `.specify/templates/overrides/`: Die
   Aufgaben-Vorlage dort bringt die Aufgabe „Spielbeschreibung prüfen“ mit (`ki_dev.md`, Punkt 9)
   und ans Ende jeder Phase die Aufgabe „Phasenprüfung“ (Klaus, 2026-10-27); `/speckit-tasks` lässt
-  sie weg, wo eine Phase nichts Sichtbares und keine Texte ändert. Den Abschnitt „Prüfer je Phase“
+  sie weg, wo eine Phase nichts Sichtbares, keine Texte und keinen Code ändert. Den Abschnitt „Prüfer je Phase“
   schreibt Claude nach dieser Datei in den Plan. Die Regel steht in der Verfassung, Grundsatz VI,
   die alle fünf Schritte lesen (seit 2026-10-27). Ein Update von Spec Kit lässt `overrides/` stehen; geprüft wird das
   trotzdem (`ki_dev.md`, „Werkzeuge und Pfade“). Bis 2026-10-27 stand hier, die Vorlagen von Spec Kit 1.2.0 blieben
@@ -223,14 +224,14 @@ Beispiel, ein gedachtes Feature „Ladenansicht“ als erster echter Spielbildsc
 
 | Phase | Ändert | Prüfer |
 |---|---|---|
-| 3: Kern der Ladenansicht | Daten, keine Oberfläche | keine |
-| 4: Oberfläche der Ladenansicht | Szene, Knöpfe, Texte | Stil, Text |
+| 3: Kern der Ladenansicht | Daten, keine Oberfläche | Architektur |
+| 4: Oberfläche der Ladenansicht | Szene, Knöpfe, Texte | Stil, Text, Architektur |
 
 In `tasks.md`:
 
 ```
 - [ ] T037 [A] [US2] Texte der Ladenansicht in src/scenes/laden/laden_texte.gd
-- [ ] T038 [C] Phasenprüfung Phase 4 mit /dcl-phasenpruefung: Stil- und Text-Prüfer, Befunde nachprüfen
+- [ ] T038 [C] Phasenprüfung Phase 4 mit /dcl-phasenpruefung: Stil-, Text- und Architektur-Prüfer, Befunde nachprüfen
 - [ ] T039 [K] Abnahme Phase 4
 ```
 
@@ -391,7 +392,7 @@ Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
 | 7 | Tests `test_bilder.gd` und `test_texte.gd` | [A] | erledigt, 2026-10-22 |
 | 8 | Hook, wenn gewollt: Tests laufen von selbst, sobald der Godot-Agent fertig ist | [C] | entfällt vorerst (Klaus, 2026-10-22); kommt, wenn der Agent zweimal rote Tests abliefert, ohne es zu melden |
 | 9 | Pilot in einer echten Phase mit Sichtbarem oder Texten, mit Zählung | [C] | erledigt in Feature 004, Phasen 2 bis 5, 2026-10-26; die Prüfer bleiben (Klaus) |
-| 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | erledigt: Grundsatz VI, Verfassung 2.2.0, Klaus, 2026-10-27 |
+| 10 | Regel in die Verfassung über `/speckit-constitution` | [K] beschließt | erledigt: Grundsatz VI, Verfassung 2.2.0, Klaus, 2026-10-27; um den Architektur-Prüfer erweitert in 2.3.0, Klaus, 2026-10-28 (Feature 008) |
 
 ## Erfahrungen
 
@@ -440,4 +441,9 @@ Jeder Punkt kommt mit seinem Anlass dazu, etwa aus einem Probelauf oder dem Pilo
 
 Der Pilot ist ausgewertet: Beide Prüfer bleiben, für jede Phase mit Sichtbarem oder Texten, auch
 in Werkzeugen (Klaus, 2026-10-26). Seit 2026-10-27 steht die Regel in der Verfassung, Grundsatz
-VI. Zur Einführung ist nichts mehr offen.
+VI. Zur Einführung von Stil- und Text-Prüfer ist nichts mehr offen.
+
+Für den Architektur-Prüfer aus Feature 008 steht die Entscheidung noch aus (Spec 008, SC-007):
+Nach den Code-Phasen des nächsten Features mit Code wertet Claude die Zählung unter „Nachmessen“
+aus, und Klaus entscheidet, ob der Prüfer bleibt, nachgeschärft oder gestrichen wird. Claude trägt
+die Entscheidung hier ein.

@@ -10,15 +10,16 @@ Einzelheiten stehen in den Verträgen; hier nur die Prüfungen.
    mehr auf „Vorschlag“ (SC-001). Claude zählt nach:
 
    ```bash
-   grep -c "^### AR-" docs/architektur-leitfaden.md
+   grep -cE "^#{3,4} AR-" docs/architektur-leitfaden.md
    ```
 
    ```bash
    grep -c "Stand:\*\* Vorschlag" docs/architektur-leitfaden.md
    ```
 
-   Die zweite Zahl muss 0 sein. Dazu zählt ein kurzes Skript je `### AR-` die acht fett gesetzten
-   Teile; die Zahl steht in der Bitte um Abnahme (CHK017).
+   Die erste Zahl muss 20 sein, die zweite 0: AR-15 bis AR-20 stehen eine Ebene tiefer unter den
+   Schichten, deshalb `#{3,4}` (Lückensuche T040). Dazu zählt ein kurzes Skript je Regel die acht
+   fett gesetzten Teile; die Zahl steht in der Bitte um Abnahme (CHK017).
 3. Stichprobe: eine Stelle aus `src/` aussuchen und nur mit dem Leitfaden sagen, ob sie eine Regel
    verletzt (Spec, US1).
 
