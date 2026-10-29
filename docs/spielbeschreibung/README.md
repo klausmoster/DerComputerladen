@@ -9,7 +9,7 @@ Arbeit an einem System lädt sie die passende Datei, statt Specs und Code zu dur
 Backlog und das Archiv. `docs/game_bible/` ist der Spielinhalt. Dieser Ordner beschreibt den
 **Stand im Code**. Wo Spec und Code auseinandergehen, gilt hier der Code.
 
-**Stand:** Features 001 bis 008, 2026-10-29.
+**Stand:** Features 001 bis 009, 2026-10-29.
 
 ## Dateien
 
@@ -42,7 +42,7 @@ Die Systeme 01–11 aus `docs/features/Features.md`:
 | 01 Zeitleiste | gebaut: Spieluhr, Fahrplan-Modell, Werkstatt, Schwierigkeitsgrade |
 | 02–09 | noch nichts: Produktdatenbank, Wirtschaft, Information, Standort, Marketing, Handel, Qualität, Adventure |
 | 10 Präsentation & UI | Titelbildschirm auf dem Communicator, leerer Spielbildschirm, Fenster, Theme, Bausteine Knopf und Communicator mit Gehäusetasten, das versteckte Spiel auf der Anzeige |
-| 11 Infrastruktur | Spielstände, Export für macOS, Windows und Linux, Selbsttest, Tests, Ton: Kanäle `Master` und `Effekte`, Töne aus `make_sounds.py`; Architektur-Leitfaden mit Architektur-Prüfer und `test_architektur.gd` |
+| 11 Infrastruktur | Spielstände, Export für macOS, Windows und Linux, Selbsttest, Tests, Ton: Kanäle `Master` und `Effekte`, Töne aus `make_sounds.py`; Architektur-Leitfaden mit Architektur-Prüfer und `test_architektur.gd`; Renderer Compatibility auf allen drei Systemen |
 
 ## Pflege
 

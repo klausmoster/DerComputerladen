@@ -1,0 +1,537 @@
+# Der Computerladen Selbsttest
+ergebnis: Alles in Ordnung: 45 von 45 Schritten.
+
+# Lauf
+lauf.start: 2026-10-29 12:24:26
+lauf.dauer_ms: 6572
+lauf.feste_zeit: 2026-10-26 21:40 UTC+01:00
+lauf.zeitraffer: 8
+lauf.abbruch: keiner
+selbsttest.version: 2
+selbsttest.gebaut: 2026-10-29 12:23
+computerladen.version: 0.1
+godot.version: 4.7.2.stable.official
+
+# System
+system.os: Windows
+system.os_version: 10.0.26200
+system.cpu: Apple Silicon
+system.gpu: ANGLE (0x05404C42, Parallels Display Adapter (WDDM) (0x00000000) Direct3D11 vs_5_0 ps_5_0, D3D11-20.18.2703.58680)
+system.gpu_vendor: Google Inc. (0x05404C42)
+system.gpu_driver: unbekannt
+system.renderer: gl_compatibility
+system.grafik_api: ANGLE
+system.grafik_api_version: OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40)
+system.bildschirm: 1595x1084
+system.bildschirm_skalierung: 1.0
+system.bildschirm_dpi: 96
+system.bildwiederholrate: 60
+system.fenster: 1280x720
+system.fenster_faktor: 2
+system.sprache: de_DE
+system.tastatur: Deutsch
+
+# Fokus
+fokus.verluste: 0
+
+# Schritte
+schritt: titel.01_start
+ablauf: titel
+beschreibung: Start, der Communicator fährt herein
+eingaben: keine
+erwartet: Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine
+status: OK
+dauer_ms: 102
+zeitraffer: 8
+foto: titel.01_start.png
+foto_vergleichbar: ja
+
+schritt: titel.02_nicht_verfuegbar
+ablauf: titel
+beschreibung: Maus über „Weiterspielen“ wählt, ohne Spielstand nicht verfügbar
+eingaben: Maus über „Weiterspielen“
+erwartet: Menü steht: HAUPTMENÜ, „Weiterspielen“, nicht verfügbar, Hinweis „Noch kein Spiel angefangen.“; nichts ausgelöst
+status: OK
+dauer_ms: 6
+zeitraffer: 8
+foto: titel.02_nicht_verfuegbar.png
+foto_vergleichbar: ja
+
+schritt: titel.03_beenden_da
+ablauf: titel
+beschreibung: Maus über „Beenden“ wählt, ohne auszulösen
+eingaben: Maus über „Beenden“
+erwartet: Menü steht: HAUPTMENÜ, „Beenden“, verfügbar, Hinweis „Laden abschließen und zurück zum Desktop.“; nichts ausgelöst
+status: OK
+dauer_ms: 4
+zeitraffer: 8
+foto: titel.03_beenden_da.png
+foto_vergleichbar: ja
+
+schritt: titel.04_einstellungen
+ablauf: titel
+beschreibung: Maus über „Einstellungen“ wählt, noch nicht verfügbar
+eingaben: Maus über „Einstellungen“
+erwartet: Menü steht: HAUPTMENÜ, „Einstellungen“, nicht verfügbar, Hinweis „Noch nichts einzustellen. Kommt später.“; nichts ausgelöst
+status: OK
+dauer_ms: 4
+zeitraffer: 8
+foto: titel.04_einstellungen.png
+foto_vergleichbar: ja
+
+schritt: neues_spiel.01_gradwahl
+ablauf: neues_spiel
+beschreibung: Enter auf „Neues Spiel“ öffnet die Gradwahl
+eingaben: Maus über „Neues Spiel“, Enter
+erwartet: Menü steht: SCHWIERIGKEIT, Mittel
+status: OK
+dauer_ms: 51
+zeitraffer: 8
+foto: neues_spiel.01_gradwahl.png
+foto_vergleichbar: ja
+
+schritt: neues_spiel.02_zurueck_esc
+ablauf: neues_spiel
+beschreibung: Esc führt zurück ins Hauptmenü
+eingaben: Esc
+erwartet: Menü steht: HAUPTMENÜ, „Neues Spiel“
+status: OK
+dauer_ms: 9
+zeitraffer: 8
+foto: neues_spiel.02_zurueck_esc.png
+foto_vergleichbar: ja
+
+schritt: neues_spiel.03_gradwahl_klick
+ablauf: neues_spiel
+beschreibung: Linksklick auf „Neues Spiel“ öffnet die Gradwahl
+eingaben: Linksklick auf „Neues Spiel“
+erwartet: Menü steht: SCHWIERIGKEIT, Mittel
+status: OK
+dauer_ms: 16
+zeitraffer: 8
+foto: neues_spiel.03_gradwahl_klick.png
+foto_vergleichbar: ja
+
+schritt: neues_spiel.04_grad_mittel
+ablauf: neues_spiel
+beschreibung: Enter auf Mittel beginnt ein neues Spiel
+eingaben: Enter auf Mittel
+erwartet: Communicator hinausgefahren; Spielbildschirm steht, Hinweis „Speichert Spiel 1 und führt ins Hauptmenü.“; Spielstände: Spiel 1
+status: OK
+dauer_ms: 127
+zeitraffer: 8
+foto: neues_spiel.04_grad_mittel.png
+foto_vergleichbar: ja
+
+schritt: neues_spiel.05_zum_hauptmenue
+ablauf: neues_spiel
+beschreibung: Linksklick auf „Zum Hauptmenü“ speichert, der Titel kommt neu
+eingaben: Linksklick auf „Zum Hauptmenü“
+erwartet: Titel neu, Menü steht: HAUPTMENÜ, „Weiterspielen“, verfügbar, Hinweis „Weiter mit Spiel 1, Mittel, am 01.01.1985.“; Spielstände: Spiel 1
+status: OK
+dauer_ms: 173
+zeitraffer: 8
+foto: neues_spiel.05_zum_hauptmenue.png
+foto_vergleichbar: ja
+
+schritt: laden.01_weiterspielen
+ablauf: laden
+beschreibung: Enter auf „Weiterspielen“ setzt Spiel 1 fort
+eingaben: Enter auf „Weiterspielen“
+erwartet: Spielbildschirm steht, Hinweis „Speichert Spiel 1 und führt ins Hauptmenü.“
+status: OK
+dauer_ms: 114
+zeitraffer: 8
+foto: laden.01_weiterspielen.png
+foto_vergleichbar: ja
+
+schritt: laden.02_zurueck
+ablauf: laden
+beschreibung: Enter auf „Zum Hauptmenü“ führt zurück ins Hauptmenü
+eingaben: Enter auf „Zum Hauptmenü“
+erwartet: Menü steht: HAUPTMENÜ, „Weiterspielen“
+status: OK
+dauer_ms: 169
+zeitraffer: 8
+foto: laden.02_zurueck.png
+foto_vergleichbar: ja
+
+schritt: laden.03_liste
+ablauf: laden
+beschreibung: Enter auf „Spiel laden“ zeigt die Liste der Spielstände
+eingaben: Pfeil runter bis „Spiel laden“, Enter
+erwartet: Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985
+status: OK
+dauer_ms: 63
+zeitraffer: 8
+foto: laden.03_liste.png
+foto_vergleichbar: ja
+
+schritt: laden.04_zeile
+ablauf: laden
+beschreibung: Linksklick auf Spiel 1 setzt es fort
+eingaben: Linksklick auf Spiel 1
+erwartet: Spielbildschirm steht, Hinweis „Speichert Spiel 1 und führt ins Hauptmenü.“
+status: OK
+dauer_ms: 106
+zeitraffer: 8
+foto: laden.04_zeile.png
+foto_vergleichbar: ja
+
+schritt: laden.05_zurueck_2
+ablauf: laden
+beschreibung: Linksklick auf „Zum Hauptmenü“ führt zurück ins Hauptmenü
+eingaben: Linksklick auf „Zum Hauptmenü“
+erwartet: Menü steht: HAUPTMENÜ, „Weiterspielen“
+status: OK
+dauer_ms: 138
+zeitraffer: 8
+foto: laden.05_zurueck_2.png
+foto_vergleichbar: ja
+
+schritt: loeschen.01_liste
+ablauf: loeschen
+beschreibung: Linksklick auf „Spiel laden“ zeigt die Liste der Spielstände
+eingaben: Linksklick auf „Spiel laden“
+erwartet: Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985
+status: OK
+dauer_ms: 17
+zeitraffer: 8
+foto: loeschen.01_liste.png
+foto_vergleichbar: ja
+
+schritt: loeschen.02_loeschmodus
+ablauf: loeschen
+beschreibung: Linksklick auf „Löschen …“ schaltet den Löschmodus ein
+eingaben: Linksklick auf „Löschen …“
+erwartet: Menü steht: WELCHES LÖSCHEN?, „Löschen …“, nicht verfügbar
+status: OK
+dauer_ms: 25
+zeitraffer: 8
+foto: loeschen.02_loeschmodus.png
+foto_vergleichbar: ja
+
+schritt: loeschen.03_rueckfrage
+ablauf: loeschen
+beschreibung: Linksklick auf Spiel 1 im Löschmodus führt zur Rückfrage
+eingaben: Linksklick auf Spiel 1
+erwartet: Menü steht: LÖSCHEN?, „Abbrechen“
+status: OK
+dauer_ms: 20
+zeitraffer: 8
+foto: loeschen.03_rueckfrage.png
+foto_vergleichbar: ja
+
+schritt: loeschen.04_abbrechen
+ablauf: loeschen
+beschreibung: Enter auf „Abbrechen“ führt zurück zur Liste, Spiel 1 bleibt
+eingaben: Enter auf „Abbrechen“
+erwartet: Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985; Spielstände: Spiel 1
+status: OK
+dauer_ms: 12
+zeitraffer: 8
+foto: loeschen.04_abbrechen.png
+foto_vergleichbar: ja
+
+schritt: loeschen.05_rueckfrage_2
+ablauf: loeschen
+beschreibung: Linksklick auf Spiel 1 im Löschmodus führt noch einmal zur Rückfrage
+eingaben: Linksklick auf „Löschen …“, Linksklick auf Spiel 1
+erwartet: Menü steht: LÖSCHEN?, „Abbrechen“
+status: OK
+dauer_ms: 61
+zeitraffer: 8
+foto: loeschen.05_rueckfrage_2.png
+foto_vergleichbar: ja
+
+schritt: loeschen.06_loeschen
+ablauf: loeschen
+beschreibung: Enter auf „Spiel 1 löschen“ löscht den letzten Spielstand
+eingaben: Pfeil runter bis „Spiel 1 löschen“, Enter
+erwartet: Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine
+status: OK
+dauer_ms: 41
+zeitraffer: 8
+foto: loeschen.06_loeschen.png
+foto_vergleichbar: ja
+
+schritt: easter_egg.01_auswahl
+ablauf: easter_egg
+beschreibung: Pfeil runter bis „Spiel laden“ wählt, hierher kehrt die Auswahl nach Invaders zurück
+eingaben: Pfeil runter bis „Spiel laden“
+erwartet: Menü steht: HAUPTMENÜ, „Spiel laden“, nicht verfügbar
+status: OK
+dauer_ms: 32
+zeitraffer: 8
+foto: easter_egg.01_auswahl.png
+foto_vergleichbar: ja
+
+schritt: easter_egg.02_falsche_folge
+ablauf: easter_egg
+beschreibung: Gehäusetasten in falscher Folge starten Invaders nicht
+eingaben: Linksklick auf Gehäusetasten Mitte, links, rechts
+erwartet: Seite Invaders nicht sichtbar, Menü steht: HAUPTMENÜ, „Spiel laden“, nicht verfügbar
+status: OK
+dauer_ms: 109
+zeitraffer: 8
+foto: easter_egg.02_falsche_folge.png
+foto_vergleichbar: ja
+
+schritt: easter_egg.03_start
+ablauf: easter_egg
+beschreibung: Gehäusetasten links, Mitte, rechts starten Invaders
+eingaben: Linksklick auf Gehäusetasten links, Mitte, rechts
+erwartet: Seite Invaders sichtbar und aktiv, Hinweis aus
+status: OK
+dauer_ms: 110
+zeitraffer: 8
+foto: easter_egg.03_start.png
+foto_vergleichbar: nein
+
+schritt: easter_egg.04_spielen
+ablauf: easter_egg
+beschreibung: Pfeil rechts fährt die Kanone, Leertaste schießt
+eingaben: Pfeil rechts halten 0,5 s, Leertaste
+erwartet: Kanone weiter rechts als beim Start; ein Schuss unterwegs oder ein Treffer gezählt
+status: OK
+dauer_ms: 561
+zeitraffer: 8
+foto: easter_egg.04_spielen.png
+foto_vergleichbar: nein
+
+schritt: easter_egg.05_ende_esc
+ablauf: easter_egg
+beschreibung: Esc beendet Invaders, „Spiel laden“ steht wieder da
+eingaben: Esc
+erwartet: Menü steht: HAUPTMENÜ, „Spiel laden“, nicht verfügbar, Hinweis „Noch keine Spielstände.“; Spielstände: keine
+status: OK
+dauer_ms: 9
+zeitraffer: 8
+foto: easter_egg.05_ende_esc.png
+foto_vergleichbar: ja
+
+schritt: bedienung.01_pfeile
+ablauf: bedienung
+beschreibung: Pfeiltasten wählen, am Anfang geht es am Ende weiter
+eingaben: Pfeil runter, Pfeil hoch, Pfeil hoch, Pfeil hoch
+erwartet: Auswahl wandert: „Spiel laden“, „Neues Spiel“, „Weiterspielen“, „Beenden“; Menü steht: HAUPTMENÜ, „Beenden“
+status: OK
+dauer_ms: 133
+zeitraffer: 8
+foto: bedienung.01_pfeile.png
+foto_vergleichbar: ja
+
+schritt: bedienung.02_tab
+ablauf: bedienung
+beschreibung: Tab wählt die nächste Zeile, Umschalt+Tab die vorige
+eingaben: Tab, Umschalt+Tab
+erwartet: Auswahl wandert: „Weiterspielen“, „Beenden“; Menü steht: HAUPTMENÜ, „Beenden“
+status: OK
+dauer_ms: 35
+zeitraffer: 8
+foto: bedienung.02_tab.png
+foto_vergleichbar: ja
+
+schritt: bedienung.03_rechtsklick
+ablauf: bedienung
+beschreibung: Rechtsklick auf „Neues Spiel“ wählt, ohne auszulösen
+eingaben: Rechtsklick auf „Neues Spiel“
+erwartet: Menü steht: HAUPTMENÜ, „Neues Spiel“; nichts ausgelöst
+status: OK
+dauer_ms: 17
+zeitraffer: 8
+foto: bedienung.03_rechtsklick.png
+foto_vergleichbar: ja
+
+schritt: bedienung.04_leertaste
+ablauf: bedienung
+beschreibung: Leertaste auf „Neues Spiel“ öffnet die Gradwahl
+eingaben: Leertaste auf „Neues Spiel“
+erwartet: Menü steht: SCHWIERIGKEIT, Mittel
+status: OK
+dauer_ms: 132
+zeitraffer: 8
+foto: bedienung.04_leertaste.png
+foto_vergleichbar: ja
+
+schritt: bedienung.05_zurueck_klick
+ablauf: bedienung
+beschreibung: Linksklick auf „Zurück“ führt zurück ins Hauptmenü
+eingaben: Linksklick auf „Zurück“
+erwartet: Menü steht: HAUPTMENÜ, „Neues Spiel“
+status: OK
+dauer_ms: 15
+zeitraffer: 8
+foto: bedienung.05_zurueck_klick.png
+foto_vergleichbar: ja
+
+schritt: bedienung.06_mausrad
+ablauf: bedienung
+beschreibung: Mausrad runter rollt die Liste um 1 Zeile
+eingaben: Vorbereitung: 7 Spielstände; Linksklick auf „Spiel laden“, Mausrad runter über Spiel 1
+erwartet: Liste oben bei Spiel 2, Rollmarke oben sichtbar; Menü steht: SPIELSTÄNDE, Spiel 2 mit Mittel, 01.01.1985
+status: OK
+dauer_ms: 117
+zeitraffer: 8
+foto: bedienung.06_mausrad.png
+foto_vergleichbar: ja
+
+schritt: liste.01_oeffnen
+ablauf: liste
+beschreibung: Linksklick auf „Spiel laden“ zeigt die Liste der Spielstände
+eingaben: Vorbereitung: 2 Spielstände; Linksklick auf „Spiel laden“
+erwartet: Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985; Spielstände: Spiel 1, Spiel 2
+status: OK
+dauer_ms: 60
+zeitraffer: 8
+foto: liste.01_oeffnen.png
+foto_vergleichbar: ja
+
+schritt: liste.02_esc
+ablauf: liste
+beschreibung: Esc in der Liste führt zurück ins Hauptmenü
+eingaben: Esc
+erwartet: Menü steht: HAUPTMENÜ, „Spiel laden“
+status: OK
+dauer_ms: 15
+zeitraffer: 8
+foto: liste.02_esc.png
+foto_vergleichbar: ja
+
+schritt: liste.03_zurueck
+ablauf: liste
+beschreibung: Linksklick auf „Zurück“ führt zurück ins Hauptmenü
+eingaben: Linksklick auf „Spiel laden“, Linksklick auf „Zurück“
+erwartet: Menü steht: HAUPTMENÜ, „Spiel laden“
+status: OK
+dauer_ms: 62
+zeitraffer: 8
+foto: liste.03_zurueck.png
+foto_vergleichbar: ja
+
+schritt: liste.04_loeschmodus_esc
+ablauf: liste
+beschreibung: Esc schaltet den Löschmodus aus, die Liste bleibt
+eingaben: Linksklick auf „Spiel laden“, Linksklick auf „Löschen …“, Esc
+erwartet: Menü steht: SPIELSTÄNDE, „Löschen …“, verfügbar
+status: OK
+dauer_ms: 103
+zeitraffer: 8
+foto: liste.04_loeschmodus_esc.png
+foto_vergleichbar: ja
+
+schritt: liste.05_rueckfrage_esc
+ablauf: liste
+beschreibung: Esc in der Rückfrage führt zurück zur Liste, Spiel 1 bleibt
+eingaben: Linksklick auf „Löschen …“, Linksklick auf Spiel 1, Esc
+erwartet: Menü steht: SPIELSTÄNDE, Spiel 1 mit Mittel, 01.01.1985; Spielstände: Spiel 1, Spiel 2
+status: OK
+dauer_ms: 112
+zeitraffer: 8
+foto: liste.05_rueckfrage_esc.png
+foto_vergleichbar: ja
+
+schritt: liste.06_loeschen
+ablauf: liste
+beschreibung: Linksklick auf „Spiel 1 löschen“ löscht Spiel 1, die Auswahl springt auf Spiel 2
+eingaben: Linksklick auf „Löschen …“, Linksklick auf Spiel 1, Linksklick auf „Spiel 1 löschen“
+erwartet: Menü steht: SPIELSTÄNDE, Spiel 2 mit Mittel, 01.01.1985; Spielstände: Spiel 2
+status: OK
+dauer_ms: 123
+zeitraffer: 8
+foto: liste.06_loeschen.png
+foto_vergleichbar: ja
+
+schritt: fenster.01_start
+ablauf: fenster
+beschreibung: Start mit dem größten Faktor, der passt, Fenster mittig im nutzbaren Bereich
+eingaben: keine
+erwartet: Fenster 1280 × 720, Bild Faktor 2, ohne Rand; mittig im nutzbaren Bereich, auf 1 Pixel genau
+status: OK
+dauer_ms: 196
+zeitraffer: 1
+foto: fenster.01_start.png
+foto_vergleichbar: ja
+
+schritt: fenster.02_faktor_1
+ablauf: fenster
+beschreibung: Bild mit Faktor 1 ohne Rand
+eingaben: Fenster auf 640 × 360
+erwartet: Fenster 640 × 360, Bild Faktor 1, ohne Rand
+status: OK
+dauer_ms: 4
+zeitraffer: 1
+foto: fenster.02_faktor_1.png
+foto_vergleichbar: ja
+
+schritt: fenster.03_krumm
+ablauf: fenster
+beschreibung: Bild mit ganzem Faktor mittig im krummen Fenster, Rand ringsum
+eingaben: Fenster auf 1318 × 742
+erwartet: Fenster 1318 × 742, Bild Faktor 2, mittig, Rand ringsum, ganze Pixel
+status: OK
+dauer_ms: 2
+zeitraffer: 1
+foto: fenster.03_krumm.png
+foto_vergleichbar: ja
+
+schritt: fenster.04_zurueck
+ablauf: fenster
+beschreibung: Bild mit dem Startfaktor ohne Rand, Fenster wieder in Startgröße und -lage
+eingaben: Fenster auf die Startgröße
+erwartet: Fenster 1280 × 720, Bild Faktor 2, ohne Rand
+status: OK
+dauer_ms: 5
+zeitraffer: 1
+foto: fenster.04_zurueck.png
+foto_vergleichbar: ja
+
+schritt: titel_echtzeit.01_start
+ablauf: titel_echtzeit
+beschreibung: Start, der Communicator fährt herein
+eingaben: keine
+erwartet: Menü steht: HAUPTMENÜ, „Neues Spiel“; Spielstände: keine
+status: OK
+dauer_ms: 193
+zeitraffer: 1
+foto: titel_echtzeit.01_start.png
+foto_vergleichbar: ja
+
+schritt: titel_echtzeit.02_nicht_verfuegbar
+ablauf: titel_echtzeit
+beschreibung: Maus über „Weiterspielen“ wählt, ohne Spielstand nicht verfügbar
+eingaben: Maus über „Weiterspielen“
+erwartet: Menü steht: HAUPTMENÜ, „Weiterspielen“, nicht verfügbar, Hinweis „Noch kein Spiel angefangen.“; nichts ausgelöst
+status: OK
+dauer_ms: 7
+zeitraffer: 1
+foto: titel_echtzeit.02_nicht_verfuegbar.png
+foto_vergleichbar: ja
+
+schritt: titel_echtzeit.03_beenden_da
+ablauf: titel_echtzeit
+beschreibung: Maus über „Beenden“ wählt, ohne auszulösen
+eingaben: Maus über „Beenden“
+erwartet: Menü steht: HAUPTMENÜ, „Beenden“, verfügbar, Hinweis „Laden abschließen und zurück zum Desktop.“; nichts ausgelöst
+status: OK
+dauer_ms: 3
+zeitraffer: 1
+foto: titel_echtzeit.03_beenden_da.png
+foto_vergleichbar: ja
+
+schritt: titel_echtzeit.04_einstellungen
+ablauf: titel_echtzeit
+beschreibung: Maus über „Einstellungen“ wählt, noch nicht verfügbar
+eingaben: Maus über „Einstellungen“
+erwartet: Menü steht: HAUPTMENÜ, „Einstellungen“, nicht verfügbar, Hinweis „Noch nichts einzustellen. Kommt später.“; nichts ausgelöst
+status: OK
+dauer_ms: 5
+zeitraffer: 1
+foto: titel_echtzeit.04_einstellungen.png
+foto_vergleichbar: ja
+
+# Summe
+summe.ok: 45
+summe.fehler: 0
+summe.nicht_gelaufen: 0
+summe.gesamt: 45

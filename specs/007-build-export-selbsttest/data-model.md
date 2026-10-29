@@ -48,8 +48,8 @@ heißt `unbekannt`, der Schlüssel fehlt nie.
 | `system.gpu` | `Apple M3 Pro` |
 | `system.gpu_vendor` | `Apple` |
 | `system.gpu_driver` | Treiberversion, `unbekannt` wo nicht verfügbar |
-| `system.renderer` | `forward_plus` |
-| `system.grafik_api` | `Metal`, `Vulkan`, `D3D12` oder `OpenGL` |
+| `system.renderer` | `forward_plus` (bis 2026-10-29; seit Feature 009 `gl_compatibility`) |
+| `system.grafik_api` | `Metal`, `Vulkan`, `D3D12` oder `OpenGL` (seit Feature 009 auch `ANGLE` und `OpenGL ES`; Namen in `SelbsttestTexte.GRAFIK_API`) |
 | `system.grafik_api_version` | Version der Schnittstelle |
 | `system.bildschirm` | `3024x1964` |
 | `system.bildschirm_skalierung` | `2.0` |

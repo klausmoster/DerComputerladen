@@ -24,7 +24,7 @@ Fragen aus `/speckit-specify`, von Klaus einzeln als Auswahl beantwortet:
   nach Empfehlung). Verworfen: ein Ordner auf dem Schreibtisch, weil der unter Windows oft in
   OneDrive liegt und manchen Linux-Rechnern fehlt; ein Ordner neben der App, weil macOS
   heruntergeladene Apps an einem schreibgeschützten Ort startet.
-- Q: Was passiert ohne Forward+? → A: Godot weicht nicht auf einen einfacheren Renderer aus. Fehlt
+- Q: Was passiert ohne Forward+? (bis 2026-10-29; seit Feature 009 läuft das Spiel mit Compatibility, siehe `specs/009-renderer-compatibility/`) → A: Godot weicht nicht auf einen einfacheren Renderer aus. Fehlt
   Vulkan oder Direct3D 12, zeigt Godot seine eigene Fehlermeldung und beendet sich; Spiel und
   Selbsttest schreiben dann nichts (Klaus, gegen die Empfehlung). Verworfen: Ausweichen nur, um eine
   deutsche Meldung zu zeigen und dann zu beenden, mit Protokoll; Ausweichen und weiterlaufen, weil
@@ -145,7 +145,7 @@ Alle Befunde stehen in plan.md, „Änderungen nach der Analyse“.
   ist. Fotos von Windows und Linux werden damit Pixel für Pixel verglichen.
 - **Protokoll:** eine Textdatei je Lauf mit den Systemdaten des Rechners und dem Ergebnis jedes
   Schritts.
-- **Renderer:** der Teil von Godot, der das Bild malt. Das Spiel nutzt Forward+; das braucht auf
+- **Renderer:** der Teil von Godot, der das Bild malt. Das Spiel nutzt Forward+ (bis 2026-10-29; seit Feature 009 läuft das Spiel mit Compatibility, siehe `specs/009-renderer-compatibility/`); das braucht auf
   dem Rechner Vulkan, Direct3D 12 oder Metal. In virtuellen Linux-Maschinen fehlt Vulkan oft.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -445,7 +445,7 @@ dort, die Verfassung nur über `/speckit-constitution`. Die Regel gilt ab Featur
   das Klaus an Claude zurückgibt. Die Zusammenfassung MUSS den Pfad nennen und einen Knopf „Ordner
   zeigen“ haben, der das Zip des Laufs im Finder, Explorer oder Dateimanager zeigt, markiert, wo
   das System es kann; daneben liegt der Ordner des Laufs.
-- **FR-017**: Spiel und Selbsttest MÜSSEN mit Forward+ laufen; Godot DARF NICHT auf einen
+- **FR-017** (bis 2026-10-29; seit Feature 009 läuft das Spiel mit Compatibility, siehe `specs/009-renderer-compatibility/`): Spiel und Selbsttest MÜSSEN mit Forward+ laufen; Godot DARF NICHT auf einen
   einfacheren Renderer ausweichen. Fehlt Vulkan oder Direct3D 12, zeigt Godot seine eigene
   Fehlermeldung und beendet sich, ohne Protokoll. Das Protokoll MUSS Renderer und
   Grafikschnittstelle nennen, die tatsächlich laufen, etwa wenn Windows statt Direct3D 12 auf

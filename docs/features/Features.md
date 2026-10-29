@@ -45,6 +45,7 @@ unter „Offene Fragen", sind aber eigene Systeme.
 | 006 | [Easter Egg 01: Space Invaders](../../specs/006-easter-egg-space-invaders/spec.md), System 10 und 11, Spiel auf der Anzeige des Communicators, erster Ton | fertig | tasks |
 | 007 | [Build & Export mit Selbsttest](../../specs/007-build-export-selbsttest/spec.md), System 11, Selbsttest-App auf drei Systemen, Exporte für Windows und Linux, Vergleich mit Referenzbildern | fertig | tasks |
 | 008 | [Godot- und Spielarchitektur](../../specs/008-architektur/spec.md), System 11, Architektur-Leitfaden mit 20 Regeln, Architektur-Prüfer, `test_architektur.gd`, Bestand geprüft und behoben, lokale Godot-Referenz | fertig | tasks |
+| 009 | [Renderer Compatibility](../../specs/009-renderer-compatibility/spec.md), System 11, Wechsel von Forward+ auf Compatibility auf allen drei Systemen, Selbsttest auf vier Systemen, Verfassung 3.0.0 | fertig | tasks |
 
 Diese Tabelle wird derzeit von Hand gepflegt. Ab etwa zehn Features lohnt ein
 Generator, der sie aus dem Frontmatter baut — gleiches Prinzip wie

@@ -29,8 +29,8 @@ Spec FR-001, FR-002, FR-017, FR-021 bis FR-025, SC-005. Entscheidungen in
 |---|---|---|
 | `application/config/name.selbsttest` | `"Der Computerladen Selbsttest"` | 1 |
 | `application/run/main_scene.selbsttest` | `"res://tools/selbsttest/selbsttest_start.tscn"` | 1 |
-| `rendering/rendering_device/fallback_to_opengl3` | `false` | 2 |
-| `rendering/rendering_device/fallback_to_vulkan`, `fallback_to_d3d12` | `true` (Vorgabe, nicht eingetragen) | 2 |
+| `rendering/rendering_device/fallback_to_opengl3` (bis 2026-10-29; seit Feature 009 gestrichen, `specs/009-renderer-compatibility/contracts/renderer.md`) | `false` | 2 |
+| `rendering/rendering_device/fallback_to_vulkan`, `fallback_to_d3d12` (bis 2026-10-29) | `true` (Vorgabe, nicht eingetragen) | 2 |
 | `input/toggle_fullscreen` | Ctrl+Cmd+F wie bisher, dazu F11 und Alt+Enter | 2 |
 
 `test_projekt_einstellungen.gd` prüft diese Werte. Dazu fängt `src/core/game_window.gd` das Kürzel in

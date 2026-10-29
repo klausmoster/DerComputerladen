@@ -1,7 +1,8 @@
 extends GutTest
 
-## Prüft die Projekteinstellungen aus Feature 007 (contracts/export.md, „Projekteinstellungen in
-## src/project.godot“): den Renderer ohne Ausweichen auf OpenGL (R13), die drei Vollbild-Kürzel
+## Prüft die Projekteinstellungen. Aus Feature 009 (contracts/renderer.md; R4): den Renderer
+## Compatibility, Treiber und Rückfälle nach Vorgabe, nichts mehr für Forward+. Aus Feature 007
+## (contracts/export.md, „Projekteinstellungen in src/project.godot“): die drei Vollbild-Kürzel
 ## (R15), das Symbol des Fensters unter Windows (T059) und die Overrides der Selbsttest-App (R3).
 ##
 ## Gelesen wird über ProjectSettings und InputMap, also so, wie das Spiel die Werte beim Start
@@ -13,24 +14,50 @@ const PROJEKT_DATEI := "res://project.godot"
 
 # --- Renderer -------------------------------------------------------------
 
-func test_kein_ausweichen_auf_opengl() -> void:
-	assert_false(ProjectSettings.get_setting("rendering/rendering_device/fallback_to_opengl3"),
-		"Ohne Vulkan oder Direct3D 12 endet das Spiel mit Godots Meldung, statt mit OpenGL zu laufen.")
+func test_renderer_ist_compatibility() -> void:
+	assert_eq(ProjectSettings.get_setting("rendering/renderer/rendering_method"), "gl_compatibility")
 
 
-func test_wechsel_zwischen_vulkan_und_direct3d_12_bleibt_erlaubt() -> void:
-	assert_true(ProjectSettings.get_setting("rendering/rendering_device/fallback_to_vulkan"))
-	assert_true(ProjectSettings.get_setting("rendering/rendering_device/fallback_to_d3d12"))
+func test_features_nennen_compatibility_statt_forward_plus() -> void:
+	# Act
+	var features: PackedStringArray = ProjectSettings.get_setting("application/config/features")
+
+	# Assert: Der Editor merkt sich hier den Renderer, mit dem das Projekt läuft.
+	assert_true(features.has("GL Compatibility"), "Features nennen GL Compatibility.")
+	assert_false(features.has("Forward Plus"), "Features nennen Forward Plus nicht mehr.")
 
 
-func test_wechsel_zwischen_vulkan_und_direct3d_12_ist_die_vorgabe() -> void:
+func test_keine_einstellung_fuer_forward_plus_eingetragen() -> void:
+	# Act
+	var text := FileAccess.get_file_as_string(PROJEKT_DATEI)
+
+	# Assert: driver.windows und fallback_to_opengl3 wirkten nur auf Forward+ und sind gestrichen.
+	assert_false(text.is_empty(), "project.godot ist lesbar.")
+	assert_false(text.contains("rendering_device/"), "Nichts unter rendering_device/.")
+
+
+func test_rueckfaelle_von_compatibility_sind_an() -> void:
+	# Act und Assert: ANGLE unter Windows, OpenGL ES unter X11, natives OpenGL ohne ANGLE.
+	assert_true(ProjectSettings.get_setting("rendering/gl_compatibility/fallback_to_angle"))
+	assert_true(ProjectSettings.get_setting("rendering/gl_compatibility/fallback_to_gles"))
+	assert_true(ProjectSettings.get_setting("rendering/gl_compatibility/fallback_to_native"))
+
+
+func test_unter_macos_ist_der_treiber_opengl() -> void:
+	# Act und Assert (FR-002): Apples OpenGL, nicht ANGLE.
+	assert_eq(ProjectSettings.get_setting("rendering/gl_compatibility/driver.macos"), "opengl3")
+
+
+func test_treiber_und_rueckfaelle_sind_die_vorgabe() -> void:
 	# Act
 	var text := FileAccess.get_file_as_string(PROJEKT_DATEI)
 
 	# Assert
 	assert_false(text.is_empty(), "project.godot ist lesbar.")
-	assert_false(text.contains("fallback_to_vulkan"), "Vorgabe, nicht eingetragen.")
-	assert_false(text.contains("fallback_to_d3d12"), "Vorgabe, nicht eingetragen.")
+	assert_false(text.contains("fallback_to_angle"), "Vorgabe, nicht eingetragen.")
+	assert_false(text.contains("fallback_to_gles"), "Vorgabe, nicht eingetragen.")
+	assert_false(text.contains("fallback_to_native"), "Vorgabe, nicht eingetragen.")
+	assert_false(text.contains("gl_compatibility/driver"), "Vorgabe, nicht eingetragen.")
 
 
 # --- Vollbild-Kürzel ------------------------------------------------------

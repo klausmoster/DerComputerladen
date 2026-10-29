@@ -4,10 +4,10 @@
 - **Laden, wenn:** eine Arbeit mehrere Systeme berührt, neue Dateien, Autoloads oder Systeme
   dazukommen, oder ein System an ein anderes angebunden wird.
 - **Code:** `src/project.godot`, `src/core/`, `src/scenes/`, `src/ui/`, `src/tools/`
-- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/008-architektur/`,
+- **Herkunft:** Pläne von `specs/001-hauptmenue/` bis `specs/009-renderer-compatibility/`,
   Verfassung `.specify/memory/constitution.md`, Architektur-Leitfaden
   `docs/architektur-leitfaden.md`
-- **Stand:** Feature 008, 2026-10-29
+- **Stand:** Feature 009, 2026-10-29
 
 ## Das Spiel in einem Absatz
 
@@ -20,7 +20,8 @@ Steuerelement, auf dem heute das Menü des Titels läuft (005). Feature 006 brac
 und ein Easter Egg: Drei Gehäusetasten des Communicators starten im Titel ein verstecktes Spiel auf
 seiner Anzeige. Feature 007 brachte die Exporte für Windows und Linux und den Selbsttest, eine
 eigene App, die den Titel von selbst durchspielt. Feature 008 brachte keine Spielfunktion, sondern
-den Architektur-Leitfaden mit Prüfer und Tests und baute den Bestand danach um. Der Spielbildschirm
+den Architektur-Leitfaden mit Prüfer und Tests und baute den Bestand danach um. Feature 009 stellte
+den Renderer auf Compatibility um, damit das Spiel auch auf älteren Windows-Rechnern startet. Der Spielbildschirm
 ist noch leer: Die Uhr steht, Wirtschaft und Laden gibt es noch nicht.
 
 ## Ordner
@@ -148,7 +149,8 @@ der begründeten Ausnahmen. Hier die Kurzfassung mit den Nummern:
   fremden Quellen.
 - **Ein Look (Style-Guide).** Der Style-Guide ist die einzige Quelle für Farben, Raster, Schriften
   und Sprache. Texte duzen den Spieler.
-- **Nur Desktop (Verfassung, Grundsatz I).** Maus und Tastatur, Forward+.
+- **Nur Desktop (Verfassung, Grundsatz I).** Maus und Tastatur, Renderer Compatibility (bis
+  2026-10-29 Forward+).
 
 **Kern, Hülle und Helfer der Hülle.** Der Kern rechnet und hält den Zustand; er kennt weder
 Szenenbaum noch Autoloads noch den globalen Zufall. Die Hülle, eine Szene oder ein Autoload, reicht

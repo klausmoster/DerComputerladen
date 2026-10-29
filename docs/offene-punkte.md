@@ -12,6 +12,49 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 009, Plan und Checkliste (2026-10-29)
+
+- **Lücken im Maßstab** aus der Vorab-Prüfung (`specs/009-renderer-compatibility/checklists/review.md`),
+  nicht Teil von Feature 009:
+  - Leitfaden, „Werkzeuge“: Sind Produktnamen, die ein Werkzeug aus Engine-Schlüsseln übersetzt
+    („Metal“, „ANGLE“), Texte für die Textklasse oder eine Zuordnung von Daten? Feature 009 legt sie in
+    `SelbsttestTexte` (Architektur-Prüfer, L1). Empfehlung: im Leitfaden als Texte festhalten.
+  - Style-Guide, „Bewegung“: Womit flackernde Leuchtschrift und Monitorflimmern gemacht werden,
+    Phasenbilder in Palettenfarben oder Effekte; ob ein `modulate` über 1,0 erlaubt ist
+    (Stil-Prüfer). Empfehlung: Phasenbilder in Palettenfarben, kein `modulate` über 1,0.
+  - Style-Guide, „Bildaufbau“, „Startgrund“: Ob die Ränder auch während des Startgrunds schwarz sind
+    oder dort `anzeige-grund` gilt (Stil-Prüfer). Empfehlung: festhalten, was Godot tut. Ein Foto
+    davon gibt es nicht; Klaus hat den Startgrund ohne Foto abgenommen (2026-10-29, T046), nach der
+    Prüfliste auf Windows und Linux: dunkler Start ohne Logo von Godot.
+  - Style-Guide, „Werkzeuge“, „Texte“: Ob Anzeigenamen der Grafikschnittstellen der Kurzform der
+    Engine folgen („D3D12“) oder ausgeschrieben werden („Direct3D 12“); bisher gilt „D3D12 bleibt als
+    Messwert“ (Feature 007, Abschluss) (Text-Prüfer). Empfehlung: Kurzform, wie im Protokoll.
+- **Lücken aus der Lückensuche (T047)**:
+  - Leitfaden: Er regelt nicht, ob bildwirksame Engine-Einstellungen wie der Renderer Stellschrauben
+    nach AR-04 sind und wo ihre einzige Quelle liegt (Architektur-Prüfer, L2). Empfehlung: in
+    „Geltung“ oder AR-04 festhalten, dass `project.godot` die einzige Stelle für Engine-Einstellungen
+    ist und Vorgaben der Engine nicht eingetragen werden (wie Feature 009, R1).
+  - Style-Guide: Er verweist bisher nur nach innen („Abschnitt Farben“); wie er ein Dokument im Repo
+    nennt, etwa „(Verfassung, Grundsatz I)“, regelt er nicht (Text-Prüfer). Empfehlung: Name ohne
+    Pfad, wie jetzt.
+  - Style-Guide, „Texte für Entwickler“: ob ein System mit seinem Namen („Linux“) oder seiner Schicht
+    („X11“) heißt (Text-Prüfer). Empfehlung: der Name des Systems, die Schicht nur, wo sie die Sache
+    ist, etwa bei `fallback_to_gles`.
+- **Lücken aus der Phasenprüfung Phase 3** (Text-Prüfer), Sprache, „Texte für Entwickler“:
+  - Steht nach einem Pfad am Ende einer Testmeldung ein Punkt, etwa „Nichts unter
+    rendering_device/.“? Für Bildschirm und Protokoll der Werkzeuge entfällt er. Empfehlung: in
+    Testmeldungen ebenso entfallen lassen, bei der nächsten Ergänzung des Style-Guides.
+  - Gilt `pfad:zeile:` vorn und die Regelnummer in Klammern auch für Meldungen in GUT-Asserts? GUT
+    nennt den Ort selbst. Empfehlung: nein, nur für Befundmeldungen wie die Architekturprüfung.
+- **Eigene Entscheidung von Claude in Phase 3:** In den Beispieldaten der Tests steht als API-Version
+  „4.1 Metal - 91.7“ statt „4.0“, der Wert, den Apples OpenGL auf dem M1 meldet; das Beispiel über
+  `SelbsttestTexte.systemzeile()` endet auf „OpenGL“.
+- **Eigene Entscheidungen von Claude im Plan** (`specs/009-renderer-compatibility/research.md`):
+  Vorgaben für Compatibility nicht eintragen (R1); `export_angle = 0` bleibt, weil ANGLE in den
+  Vorlagen fest eingebaut ist (R2); Anzeigenamen „ANGLE“ und „OpenGL ES“ (R3); neue Tests der
+  Projekteinstellungen (R4); Verfassung 3.0.0 als MAJOR (R6); erst die Regel, dann die Einstellung
+  (R7).
+
 ### Feature 007, Abschluss (2026-10-28)
 
 - **Klaus:** Regel „Selbsttest zur Gesamtabnahme“ in `ki_dev.md` (Punkt 11), Aufgaben-Vorlage und
@@ -36,17 +79,13 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   - Linux-Symbol in kleinen Größen aus dem gerasterten Monitor, wie die ICO.
   - Rangfolge der Texte in `werkzeug-titel`: Seitenüberschrift und Summe gleich groß wie
     Bereichstitel.
-  - Windows-Lauf mit Vulkan oder Direct3D 12 (Windows bisher nur mit Compatibility belegt).
-  - Linux und Windows mit Version 2 des Selbsttests (45 Schritte) laufen lassen; belegt sind dort
-    bisher 37 Schritte.
   - `vergleich.py` legt Belege fest unter `specs/007-build-export-selbsttest/belege/` ab; für spätere
     Features einen Ordner je Feature wählbar machen.
 
 ### Feature 007, Phase 6 (2026-10-28)
 
 - **Klaus:** Export-Templates 4.7.2 im Editor installiert; Windows-Symbol in 16 aus jedem zweiten
-  Bildpixel (Style-Guide Version 62). Direct3D-12-Dateien (Agility SDK) bringen die Templates nicht
-  mit; ob Windows trotzdem Direct3D 12 nutzt, zeigt `system.grafik_api` im Protokoll.
+  Bildpixel (Style-Guide Version 62).
 - **Lücken aus der Phasenprüfung (Stil, ICO), von Klaus mit Empfehlung abgenommen (T049):**
   - 48 mit ×2 füllt 93 % des Quadrats statt 70 % wie die anderen Größen. Empfehlung: so lassen, ×1
     wäre mit 47 % zu klein; im Style-Guide als bewusste Ausnahme vermerken.
@@ -58,12 +97,6 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 - **Läufe auf anderen Rechnern (T047, T048):** Linux (AMD R7 200, RADV, Vulkan 1.3) 37 von 37,
   35 Fotos gleich den Mac-Referenzen. Windows auf MacBook Pro 2015 mit Boot Camp (AMD R9 M370X):
   Forward+ startet nicht, ohne Meldung; mit erzwungenem OpenGL 37 von 37 und 35 Fotos gleich.
-  Ein Windows-Lauf mit Vulkan oder Direct3D 12 steht aus (Beleg mit `hinweis.md`).
-- **Abweichung von FR-017, von Klaus mit Empfehlung abgenommen (T049):** Startet Direct3D 12 nur halb, zeigt Godot
-  keine Meldung. Empfehlung: so lassen und in quickstart.md erklären (erledigt); eine eigene Prüfung
-  beim Start wäre ein eigenes Feature.
-- **Renderer:** Ob das Spiel bei Forward+ bleibt oder auf Compatibility wechselt, klärt eine eigene
-  Sitzung („Renderer klären: Forward+ oder Compatibility“); bis dahin gilt CLAUDE.md.
 - **Agent:** `werkstatt.gd` und `selbsttest_ergebnis.gd` schalten `GameWindow` jetzt mit
   `set_process_input(false)` ab; `invaders_page.gd` fragt das Vollbild-Kürzel mit `exact_match` ab.
 
@@ -1026,6 +1059,12 @@ Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder 
 
 ## Erledigt
 
+- **Renderer** (Feature 009, Klaus, 2026-10-29): Compatibility auf allen drei Systemen statt
+  Forward+ (`docs/entscheidungen/renderer.md`, `specs/009-renderer-compatibility/`). Damit erledigt
+  aus Feature 007: der Punkt „Renderer“, die Abweichung von FR-017 (Direct3D 12 startete nur halb,
+  ohne Meldung), die Frage nach den Direct3D-12-Dateien (Agility SDK) und die Folgepunkte
+  „Windows-Lauf mit Vulkan oder Direct3D 12“ und „Linux und Windows mit 45 Schritten“: belegt sind
+  jetzt Mac, Boot Camp, Linux und Parallels mit 45 von 45 Schritten.
 - **Fahrplan eines Features** (Klaus, 2026-10-29): `docs/ki_workflow/feature_fahrplan.md` als
   Konzept abgenommen; die vier offenen Fragen nach Empfehlung entschieden: Bestandsprüfung bei
   neuer Schicht und jedes fünfte Feature, eigene Plan-Vorlage unter `overrides/`, Godot-Doku als

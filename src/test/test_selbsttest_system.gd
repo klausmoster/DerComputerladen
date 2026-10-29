@@ -121,6 +121,19 @@ func test_treiber_nur_unter_windows_und_linux() -> void:
 	assert_eq(SelbsttestSystem.new().mit_treiber, OS.get_name() in ["Windows", "Linux"])
 
 
+func test_rueckfaelle_von_compatibility_haben_lesbare_namen() -> void:
+	# Act und Assert (Feature 009, R3): So steht ein Rückfall in system.grafik_api.
+	assert_eq(SelbsttestTexte.grafik_api_name("opengl3_angle"), "ANGLE")
+	assert_eq(SelbsttestTexte.grafik_api_name("opengl3_es"), "OpenGL ES")
+	assert_eq(SelbsttestTexte.grafik_api_name("opengl3"), "OpenGL", "Wie bisher.")
+
+
+func test_unbekannter_treiber_bleibt_wie_godot_ihn_meldet() -> void:
+	# Act und Assert
+	assert_eq(SelbsttestTexte.grafik_api_name("neu_von_godot"), "neu_von_godot")
+	assert_eq(SelbsttestTexte.grafik_api_name(""), "", "Headless leer, im Protokoll dann „unbekannt“.")
+
+
 func test_faktor_des_fensters() -> void:
 	# Act und Assert: wie Stretch „integer“
 	assert_eq(SelbsttestSystem.faktor(Vector2i(1920, 1080)), 3)
