@@ -60,14 +60,14 @@ D2, C1, K1, von Klaus nach Empfehlung freigegeben).
   `godot_referenz/`, `tools/godot_referenz/erzeuge.sh --texte --handbuch` laufen lassen
   (`docs/ki_workflow/ki_dev.md`, „Werkzeuge und Pfade“). Erledigt beim Plan am 2026-10-29: Godot
   4.7.2 liegt in `godot_referenz/`.
-- [ ] T002 [C] In `docs/architektur-leitfaden.md` den Stand von AR-16 bis AR-20 von „gilt ab dem
+- [x] T002 [C] In `docs/architektur-leitfaden.md` den Stand von AR-16 bis AR-20 von „gilt ab dem
   ersten Feature der Schicht …“ auf „gilt seit 2026-10-29, Klaus (Feature 010)“ setzen; die Kopfzeile
   „Stand“ nachziehen (plan.md, „Ausnahmen vom Leitfaden“, Hinweis).
-- [ ] T002a [C] Frage 16 aus research.md, R14 vorziehen, nur den Teil zum Minuszeichen: „-“ oder
+- [x] T002a [C] Frage 16 aus research.md, R14 vorziehen, nur den Teil zum Minuszeichen: „-“ oder
   „−“ in Beträgen, nach den Zeichen, die Ark Pixel und Doto haben; als Auswahl mit Empfehlung
   (Analyse, D1). Antwort in R14 und im Style-Guide, Abschnitt „Sprache“.
-- [ ] T002b [K] Das Minuszeichen aus T002a entscheiden.
-- [ ] T003 [K] Phase 1 abnehmen: den Diff des Leitfadens lesen, dazu die Antwort aus T002b.
+- [x] T002b [K] Das Minuszeichen aus T002a entscheiden.
+- [x] T003 [K] Phase 1 abnehmen: den Diff des Leitfadens lesen, dazu die Antwort aus T002b.
 
 ---
 

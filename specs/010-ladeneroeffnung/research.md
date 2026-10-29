@@ -282,8 +282,11 @@ Ergänzt nach der Checkliste (CHK012, CHK030 bis CHK037, Klaus, 2026-10-29):
 14. **Anzeige**: Größe von `anzeige-ziffern`, fehlendes Token `zeile-klein`; Datum blinkt bei
     laufender Uhr nicht, der Kontostand bei jeder Buchung.
 15. **Leertaste** gehört auf dem Spielbildschirm der Uhr; Knöpfe lösen dort nicht mit ihr aus.
-16. **Ton der Papiere der Spielwelt** (Exposé, Mietvertrag, Formular) im Abschnitt „Sprache“; Minus
-    als „-“ oder „−“, je nachdem, welche Zeichen die Schriften haben.
+16. **Ton der Papiere der Spielwelt** (Exposé, Mietvertrag, Formular) im Abschnitt „Sprache“.
+    Der Teil zum Minus ist vorgezogen und entschieden (T002a, T002b; Klaus, 2026-10-29): der
+    Bindestrich „-“, in jeder Schrift gleich, etwa „-4.320,00 DM SOLL“. Geprüft in Godot 4.7.2: Ark
+    Pixel 10 und 12 haben kein „−“ (U+2212), nur Doto; „-“ und „–“ haben alle drei. Verworfen: „−“
+    nur in der Leuchtanzeige (zwei Regeln), „–“ (eigentlich der Gedankenstrich).
 
 ## R15 Fahrplan der Zeitleiste bleibt unberührt
 

@@ -18,7 +18,8 @@ Spec, Plan und Godot-Agent halten sich an ihn.
 - **Stand:** Feature 008, Phase 7. Alle 20 Regeln hat Klaus am 2026-10-28 wie vorgeschlagen
   entschieden; ergänzt nach den Proben (Phase 2), der Bestandsprüfung (Phase 3), der Nachprüfung
   des Codes aus Feature 007 (2026-10-28) und der Phasenprüfung der Behebung (Phase 5,
-  2026-10-29), siehe „Geschichte“.
+  2026-10-29), siehe „Geschichte“. Seit Feature 010 gelten auch AR-16 bis AR-20, weil dort die
+  Schichten Wirtschaft und Adventure beginnen (Klaus, 2026-10-29).
 
 ## So liest man eine Regel
 
@@ -473,7 +474,7 @@ Takt über mehrere Rechner. Regeln: AR-01, AR-08, AR-09, AR-10 und:
 - **Quelle:** Quellen 4.2, 4.3.
 - **Schicht:** Wirtschaft
 - **Prüfweise:** Prüfer
-- **Stand:** gilt ab dem ersten Feature der Schicht Wirtschaft (Klaus, 2026-10-28)
+- **Stand:** gilt seit 2026-10-29, Klaus (Feature 010, erstes Feature der Schicht Wirtschaft); vorher „gilt ab dem ersten Feature der Schicht Wirtschaft“ (Klaus, 2026-10-28)
 
 #### AR-17 Feste Reihenfolge
 
@@ -488,7 +489,7 @@ Takt über mehrere Rechner. Regeln: AR-01, AR-08, AR-09, AR-10 und:
 - **Quelle:** Quellen 4.2 (FFF #340), 4.3.
 - **Schicht:** Wirtschaft
 - **Prüfweise:** Prüfer
-- **Stand:** gilt ab dem ersten Feature der Schicht Wirtschaft (Klaus, 2026-10-28)
+- **Stand:** gilt seit 2026-10-29, Klaus (Feature 010, erstes Feature der Schicht Wirtschaft); vorher „gilt ab dem ersten Feature der Schicht Wirtschaft“ (Klaus, 2026-10-28)
 
 ### Adventure
 
@@ -511,7 +512,7 @@ AR-11 und:
 - **Quelle:** Quellen 3.2, 3.3.
 - **Schicht:** Adventure
 - **Prüfweise:** Prüfer
-- **Stand:** gilt ab dem ersten Feature der Schicht Adventure (Klaus, 2026-10-28)
+- **Stand:** gilt seit 2026-10-29, Klaus (Feature 010, erstes Feature der Schicht Adventure); vorher „gilt ab dem ersten Feature der Schicht Adventure“ (Klaus, 2026-10-28)
 
 #### AR-19 Abläufe linear, gespeichert an Ruhepunkten
 
@@ -525,7 +526,7 @@ AR-11 und:
 - **Quelle:** Quellen 3.2, 3.3.
 - **Schicht:** Adventure
 - **Prüfweise:** Prüfer
-- **Stand:** gilt ab dem ersten Feature der Schicht Adventure (Klaus, 2026-10-28)
+- **Stand:** gilt seit 2026-10-29, Klaus (Feature 010, erstes Feature der Schicht Adventure); vorher „gilt ab dem ersten Feature der Schicht Adventure“ (Klaus, 2026-10-28)
 
 #### AR-20 Dialoge als Daten
 
@@ -539,7 +540,7 @@ AR-11 und:
 - **Quelle:** Quellen 3.2 („Dialoge als reiner Text“), 3.3.
 - **Schicht:** Adventure
 - **Prüfweise:** Prüfer
-- **Stand:** gilt ab dem ersten Feature der Schicht Adventure (Klaus, 2026-10-28)
+- **Stand:** gilt seit 2026-10-29, Klaus (Feature 010, erstes Feature der Schicht Adventure); vorher „gilt ab dem ersten Feature der Schicht Adventure“ (Klaus, 2026-10-28)
 
 ### Werkzeuge
 
@@ -659,3 +660,8 @@ Nachgezogen nach der Lückensuche von Feature 008 (T040; Klaus, 2026-10-29), ohn
 ändern: die Kopfzeile „Stand“; das Beispiel von AR-07 nennt den Pfad des Katalogs; AR-11 hat statt
 des ausgedachten Kunden ein Beispiel aus dem Code (`GameClock.State`, `TitleScreen.Phase` und
 `TitleScreen.Layer`); die Prüfweise von AR-01 nennt den ganzen Umfang von `kern_verstoesse`.
+
+Mit Feature 010 beginnen die Schichten Wirtschaft und Adventure (Klaus, 2026-10-29,
+`specs/010-ladeneroeffnung/spec.md`, „Plan 2026-10-29“). Der Stand von AR-16 und AR-17 (Wirtschaft)
+sowie AR-18 bis AR-20 (Adventure) ist seitdem „gilt seit 2026-10-29“; vorher galten sie „ab dem
+ersten Feature der Schicht“. Keine Aussage hat sich geändert.

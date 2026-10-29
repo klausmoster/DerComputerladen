@@ -17,7 +17,7 @@ Der Computerladen spricht wie „Das Amt“: trocken, knapp, der Witz steckt im 
 
 ## Zahlen, Geld und Daten
 
-- Beträge in DM mit zwei Nachkommastellen: 1.299,00 DM. Negative Beträge mit Minus und SOLL (Abschnitt Farben).
+- Beträge in DM mit zwei Nachkommastellen: 1.299,00 DM. Negative Beträge mit Minus und SOLL (Abschnitt Farben): -4.320,00 DM SOLL. Das Minus ist der Bindestrich „-“, nicht das Minuszeichen „−“, denn Ark Pixel hat es nicht; so steht es in jeder Schrift gleich (Klaus, 2026-10-29, Feature 010).
 - Daten als 14.10.1991, Uhrzeiten als 09:30 Uhr.
 - Namen von Einträgen und Graden gelten im Satz als Namen: groß und ohne Anführungszeichen, „Weiter mit Spiel 2, Schwer, am 14.03.1986.“ Zustände wie „beschädigt“ sind keine Namen und stehen klein.
 - In Spalten einer Liste steht die Uhrzeit ohne „Uhr“, damit sie in die Spalte passt: „26.10.2026 21:40“. Ausgeschrieben steht sie im Hinweis der Zeile: „Steht am 13.07.1985. Gespielt am 26.10.2026, 21:40 Uhr.“ (Baustein Liste).

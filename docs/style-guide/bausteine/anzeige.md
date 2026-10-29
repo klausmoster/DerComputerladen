@@ -14,7 +14,7 @@ Die Leuchtanzeige zeigt Datum, Uhrzeit und Kontostand wie das Display einer Regi
 
 ## Zustände
 
-- Negativer Kontostand: `SOLL` und ein Minus vor dem Betrag, die Farbe bleibt `anzeige`. Rot wäre auf dem dunklen Grund zu schwach (3,4:1), und eine echte Anzeige kann nur eine Farbe.
+- Negativer Kontostand: `SOLL` und ein Minus vor dem Betrag, als Bindestrich wie überall (Abschnitt Sprache): `-4.320,00 DM SOLL`; die Farbe bleibt `anzeige`. Rot wäre auf dem dunklen Grund zu schwach (3,4:1), und eine echte Anzeige kann nur eine Farbe.
 - Ändert sich ein Wert, blinkt er einmal kurz (200 ms).
 
 ## Nicht
