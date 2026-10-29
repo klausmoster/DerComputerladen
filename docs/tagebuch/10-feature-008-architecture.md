@@ -111,13 +111,15 @@ recommendations, seven phases, the last one from a gap search after the build.
 - **Decision:** `tools/godot_referenz/erzeuge.sh` writes the class reference of the installed Godot
   4.7.2 into `godot_referenz/klassen/`, one XML file per class. It is generated, not committed. The
   Godot agent, the reviewer and Claude look up class names, methods and signals there instead of
-  answering from memory. For now it holds signatures only; the descriptions need a download from
-  the Godot source and wait for my permission.
+  answering from memory. Out of the engine come signatures only; with my permission the script
+  also fetches the descriptions from the Godot source at tag 4.7.2-stable and the manual from
+  `godot-docs` 4.7, about 15 MB, once per machine and version into a cache outside the repository.
 - **Alternatives:** A service like Context7; committing the files; downloading the descriptions
   right away.
 - **Why:** The reference matches the exact version in use and works offline. Wrong method names
   from older Godot versions are the most common mistake, and the signatures already prevent them.
-- **Evidence:** `5c9f142`, `1ea6c81`, `specs/008-architektur/lernnotizen.md` ("T039a").
+- **Evidence:** `5c9f142`, `1ea6c81`, `specs/008-architektur/lernnotizen.md` ("T039a", "T039b
+  and T039d").
 
 ### 2026-10-29 · A gap search that also checks the workflow documents `[Workflow]`
 
