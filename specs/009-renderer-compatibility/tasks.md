@@ -156,31 +156,43 @@ R5). Das ist zugleich der Selbsttest zur Gesamtabnahme aus der Aufgaben-Vorlage.
 in Ordnung, alle Fotos gleich oder jede Abweichung beurteilt; Bildschirmfotos aus dem echten Fenster
 auf dem Mac; Klaus' Prüfliste für Windows und Linux abgehakt.
 
-- [ ] T019 [C] [US2] Bauen mit `tools/build/baue_alles.sh`: Zips für macOS, Windows und Linux unter
+- [x] T019 [C] [US2] Bauen mit `tools/build/baue_alles.sh`: Zips für macOS, Windows und Linux unter
   `build/abnahme/`; prüfen, dass kein `libEGL.dll` oder `libGLESv2.dll` im Windows-Zip nötig ist
   (R2).
-- [ ] T020 [C] [US2] Selbsttest auf dem Mac: Lauf, `tools/selbsttest/vergleich.py … --beleg`; im
+- [x] T020 [C] [US2] Selbsttest auf dem Mac: Lauf, `tools/selbsttest/vergleich.py … --beleg`; im
   Protokoll `gl_compatibility` und OpenGL; Dauer gegen den Beleg aus 007, mehr als doppelt so lang
-  geht an Klaus (CHK006). Beleg unter `specs/009-renderer-compatibility/belege/`.
-- [ ] T021 [C] [P] [US2] Das echte Fenster auf dem Mac (SC-007, CHK017): Bildschirmfotos vom
+  geht an Klaus (CHK006). Beleg unter `specs/009-renderer-compatibility/belege/`. Erledigt
+  2026-10-29: 45 von 45, 43 Fotos gleich, 2 nicht vergleichbar (Space Invaders, wie in 007), 3709 ms
+  gegen 5260 ms im Beleg aus 007; `vergleich.py --beleg` legt nach 007 ab, deshalb von Hand kopiert.
+- [x] T021 [C] [P] [US2] Das echte Fenster auf dem Mac (SC-007, CHK017): Bildschirmfotos vom
   Startgrund, von einer krummen Fenstergröße und von der Werkstatt bei 1920 × 925 (CHK003), je mit
-  Aussage; Fotos in den Scratchpad, nicht ins Repo.
-- [ ] T022 [K] [US1] Boot-Camp-Rechner nach quickstart.md, „Windows auf dem Boot-Camp-Rechner“:
+  Aussage; Fotos in den Scratchpad, nicht ins Repo. Erledigt 2026-10-29, nachdem Klaus die
+  Bildschirmaufnahme freigab: Fenster 2900 × 1700 Pixel auf 4K, Bild ×4 mit schwarzen Rändern, harte
+  Pixel; beim Start mit Bildschirmgröße ×5 ohne Ränder. Werkstatt bei 1920 × 925 gegen Forward+:
+  43.188 Pixel um höchstens 1 von 255 verschieden (geglättete Schriftkanten). Den Startgrund vor dem
+  ersten Bild hat kein Foto erwischt; die Einstellung dazu ist unverändert.
+- [x] T022 [K] [US1] Boot-Camp-Rechner nach quickstart.md, „Windows auf dem Boot-Camp-Rechner“:
   Spiel per Doppelklick, Selbsttest per Doppelklick, einmal mit `--rendering-driver opengl3_angle`,
   Prüfliste fürs echte Fenster; Zips und kopierten Text an Claude.
-- [ ] T023 [K] [P] [US2] Linux-Rechner nach quickstart.md, „Linux“: Selbsttest per Doppelklick,
+- [x] T023 [K] [P] [US2] Linux-Rechner nach quickstart.md, „Linux“: Selbsttest per Doppelklick,
   Prüfliste fürs echte Fenster; Zip und kopierten Text an Claude.
-- [ ] T024 [K] [P] [US1] Kann: derselbe Lauf unter Windows in Parallels (Klärung vom 2026-10-29).
-- [ ] T025 [C] [US2] Die Zips aus T022 bis T024 vergleichen und als Belege ablegen; je Protokoll
+- [x] T024 [K] [P] [US1] Kann: derselbe Lauf unter Windows in Parallels (Klärung vom 2026-10-29).
+  Erledigt 2026-10-29 mit dem Build von 12:21: per Doppelklick natives OpenGL 3.3, mit
+  `opengl3_angle` ANGLE über Direct3D 11; beide 45 von 45, 43 Fotos gleich. Damit ist auch FR-006
+  belegt (ANGLE im Export).
+- [x] T025 [C] [US2] Die Zips aus T022 bis T024 vergleichen und als Belege ablegen; je Protokoll
   Renderer und Grafikschnittstelle nennen (SC-004); den Lauf mit `opengl3_angle` als Beleg für FR-006
-  festhalten.
-- [ ] T026 [K] [US2] Nur bei Abweichungen: je Abweichung entscheiden, ANGLE über Metal versuchen oder
+  festhalten. Erledigt 2026-10-29: Boot Camp (OpenGL 3.3 über den AMD-Treiber von 2017), Linux
+  (OpenGL 4.6 über Mesa), Parallels (OpenGL 3.3 und ANGLE); alle 45 von 45, je 43 Fotos gleich und 2
+  nicht vergleichbar wie auf dem Mac; Belege unter `belege/`.
+- [x] T026 [K] [US2] Nur bei Abweichungen: je Abweichung entscheiden, ANGLE über Metal versuchen oder
   neue Referenzbilder abnehmen (FR-002, FR-008); nur wenn T022 mit `opengl3_angle` auf OpenGL
   zurückfällt: über `export_angle = 1` entscheiden (FR-006). Claude legt jede Abweichung mit Bild vor.
-- [ ] T026a [C] Nur wenn T026 `src/project.godot` oder `src/export_presets.cfg` ändert: der Agent
+  Entfällt 2026-10-29: keine Abweichung, ANGLE läuft (Parallels mit `opengl3_angle`).
+- [x] T026a [C] Nur wenn T026 `src/project.godot` oder `src/export_presets.cfg` ändert: der Agent
   setzt es um und schreibt die Lernnotiz, danach Phasenprüfung mit `/dcl-phasenpruefung` und dem
-  Architektur-Prüfer, vor Klaus' Abnahme (Verfassung VI; Analyse D1). Sonst entfällt sie.
-- [ ] T027 [K] [US1] Phase 4 abnehmen: Belege, Bildschirmfotos, Ergebnis der Prüflisten; die Bitte um
+  Architektur-Prüfer, vor Klaus' Abnahme (Verfassung VI; Analyse D1). Sonst entfällt sie. Entfällt 2026-10-29, weil T026 entfällt.
+- [x] T027 [K] [US1] Phase 4 abnehmen: Belege, Bildschirmfotos, Ergebnis der Prüflisten; die Bitte um
   Abnahme enthält den Startweg der App laut quickstart.md, „Selbsttest auf dem Mac“ (Analyse I3).
 
 **Checkpoint**: US1 und US2 sind belegt.
