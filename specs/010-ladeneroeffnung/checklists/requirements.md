@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,9 +31,8 @@
 
 ## Notes
 
-- Drei Marker offen, alle zur Klärung mit Klaus: FR-006 (Anzahl und Charakter der Läden), FR-020
-  (Startkapital und Mieten in DM, nach Recherche), FR-027 (läuft die Spieluhr). Dazu zwei Punkte
-  ohne Marker für `/speckit-clarify`: FR-018 (gleiche Ladennamen) und FR-031 (Spielstände ohne
-  Laden), außerdem der Zeitpunkt der Grafiken (Annahmen).
+- Die drei Marker aus `/speckit-specify` (FR-006 Läden, FR-020 Geld, FR-027 Spieluhr) und vier
+  Fragen aus `/speckit-clarify` (FR-018 gleiche Namen, FR-031 alte Spielstände, Grafiken,
+  Schauplatz) sind mit Klaus am 2026-10-29 geklärt und eingearbeitet.
 - Dateinamen wie `spiel_N.json` und die Ablaufnamen des Selbsttests stehen nur als Bezug auf schon
   Gebautes in der Spec, nicht als Vorgabe für die Umsetzung.

@@ -52,6 +52,26 @@ Fragen aus `/speckit-clarify`, einzeln an Klaus:
   Spieldatum und „zuletzt gespielt“ unterscheiden sie, die Rückfrage beim Löschen nennt Grad und
   Spieldatum mit. Verworfen: ablehnen wie ein Gewerbeamt (spielweltlich schief), automatischer
   Zusatz „(2)“ (ändert sich beim Löschen).
+- Q: Was passiert mit Spielständen von vor diesem Feature, ohne Laden? → A: Sie lassen sich
+  nicht mehr laden, ohne eigenen Grund und ohne Sonderweg: Der Laden ist ein Pflichtteil des
+  Spielstands, und ein Spielstand ohne ihn gilt wie jeder unvollständige als beschädigt (Klaus:
+  „Wir sind noch in der Entwicklung. Ich möchte keinen Code drin haben, der Sonderlocken für alten
+  Käse hat.“). Rücksicht auf alte Spielstände wird erst wichtig, wenn es eine Version gibt, die
+  herausgegeben wird. Verworfen: eigener Grund „noch ohne Laden“, Ladenwahl nachholen, weiter
+  ohne Laden.
+- Q: Wann entstehen die Bilder, und gibt es bis dahin Platzhalter? → A: Gebaut wird mit
+  Platzhaltern; die Bilder (bei dieser Frage neun: Stadtplan, vier Läden von außen, vier leere
+  Läden von innen; mit der nächsten Antwort zehn und die Figur des Maklers) entstehen mit
+  `dcl-grafik` in einer eigenen Phase am Ende des Features, vor Selbsttest und Gesamtabnahme
+  (Klaus, nach Empfehlung). Die Papiere werden gezeichnet, nicht generiert.
+  Verworfen: Bilder zuerst (der Bau wartet auf die Auswahl), Bilder erst in einem späteren
+  Feature (die Gesamtabnahme sähe nicht aus wie das Spiel).
+- Q: Wo spielt die Ladenwahl? → A: Im Büro des Maklers, als Adventure-Szene: Stadtplan an der
+  Wand, die Papiere auf dem Schreibtisch, der Makler dahinter; der Spieler klickt auf Gegenstände
+  (Klaus, gegen die Empfehlung, den Stadtplan bildfüllend mit darübergelegten Papieren zu zeigen).
+  Damit kommen ein zehntes Bild (das Büro) und die Figur des Maklers dazu, und es ist die erste
+  Szene im Adventure-Stil. Verworfen: Stadtplan mit Papieren (weniger Stimmung), alles auf dem
+  Communicator (zu klein für Foto und Kleingedrucktes).
 
 ## Überblick
 
@@ -186,21 +206,22 @@ gesunken, wie Monatserste vergangen sind, und bleibt nach Speichern und Fortsetz
 
 ### User Story 5 - Spielstände von vorher (Priority: P3)
 
-Spielstände, die vor diesem Feature angelegt wurden, haben keinen Laden. Sie bleiben in der Liste
-und werden sinnvoll behandelt, statt das Spiel abstürzen zu lassen oder zu verschwinden.
+Spielstände, die vor diesem Feature angelegt wurden, haben keinen Laden. Sie lassen sich nicht
+mehr fortsetzen und stehen in der Liste wie jeder andere unvollständige Spielstand.
 
-**Why this priority**: Es gibt sie bisher nur auf Klaus' Rechner und im Selbsttest. Wichtig ist,
-dass nichts kaputtgeht; wie genau sie weiterlaufen, ist zweitrangig.
+**Why this priority**: Es gibt sie nur auf Klaus' Rechner und im Selbsttest, das Spiel ist noch in
+der Entwicklung. Wichtig ist nur, dass nichts abstürzt.
 
 **Independent Test**: Einen Spielstand im bisherigen Format ohne Laden in den Ordner legen und das
-Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festgelegt.
+Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich löschen.
 
 **Acceptance Scenarios**:
 
 1. **Given** ein Spielstand ohne Laden liegt im Ordner, **When** das Hauptmenü erscheint, **Then**
-   stürzt nichts ab, und der Spielstand steht in der Liste unter seinem bisherigen Namen.
-2. **Given** ein solcher Spielstand, **When** der Spieler ihn wählt, **Then** geschieht, was
-   FR-031 festlegt.
+   stürzt nichts ab, und der Spielstand steht als nicht fortsetzbar in der Liste, mit demselben
+   Grund wie jeder Spielstand, dem ein Teil fehlt.
+2. **Given** ein solcher Spielstand, **When** der Spieler ihn im Löschmodus wählt, **Then** lässt
+   er sich löschen wie jeder andere.
 
 ---
 
@@ -239,7 +260,14 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 **Ablauf**
 
 - **FR-001**: Nach der Wahl des Grads MUST der Spieler durch diese Schritte geführt werden, in
-  dieser Reihenfolge: Stadtplan, Exposé, Mietvertrag, Gewerbeanmeldung, Spielbildschirm.
+  dieser Reihenfolge: Stadtplan, Exposé, Mietvertrag, Gewerbeanmeldung, Spielbildschirm. Die
+  ersten vier spielen im Büro des Maklers, einer Szene im Adventure-Stil: Der Stadtplan hängt an
+  der Wand, Exposés, Mietvertrag und Formular liegen auf dem Schreibtisch, der Makler sitzt
+  dahinter. Ein Klick auf einen Gegenstand holt ihn heran, etwa den Stadtplan oder ein Exposé.
+- **FR-001a**: Anklickbare Dinge im Büro MUST sich beim Überfahren mit der Maus zu erkennen geben,
+  etwa durch Cursorwechsel und eine kurze Beschriftung („Stadtplan“), und sich auch mit der
+  Tastatur der Reihe nach anwählen lassen. Der Makler spricht in diesem Feature nicht; ein
+  Dialog mit ihm gehört zu 09-02.
 - **FR-002**: Jeder Schritt vor der Abgabe der Gewerbeanmeldung MUST sich zurücknehmen lassen,
   mit Esc und mit einem sichtbaren „Zurück“, je einen Schritt; vom Stadtplan zurück in die
   Gradwahl.
@@ -273,7 +301,8 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 **Stadtplan**
 
 - **FR-009**: Der Stadtplan MUST die ganze Stadt als ein Bild zeigen, mit den Vierteln und je
-  einer Markierung pro Laden.
+  einer Markierung pro Laden. Er hängt an der Wand des Büros und wird zum Lesen herangeholt;
+  ein Klick auf eine Markierung öffnet das Exposé dieses Ladens.
 - **FR-010**: Eine Markierung MUST zeigen, ob der Laden bezahlbar ist; ein zu teurer ist grau.
   Hover über einer Markierung zeigt Viertel und Monatsmiete.
 
@@ -367,9 +396,12 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
   fortgesetztes Spiel bucht dieselben Mieten an denselben Tagen ab wie eines ohne Pause.
 - **FR-030**: Ein Laden im Spielstand MUST seine Werte bei der Anmeldung festhalten: Ändert Klaus
   später Mieten oder Texte, gilt das erst ab dem nächsten neuen Spiel, wie beim Katalog.
-- **FR-031**: Spielstände ohne Laden, angelegt vor diesem Feature, MUST in der Liste bleiben;
-  nie stürzt dabei etwas ab, und nie wird ein solcher Spielstand ungefragt gelöscht oder
-  überschrieben. Was beim Fortsetzen geschieht, klärt `/speckit-clarify`.
+- **FR-031**: Der Laden MUST ein Pflichtteil des Spielstands sein. Ein Spielstand ohne ihn,
+  etwa einer von vor diesem Feature, gilt wie jeder unvollständige als beschädigt: nicht
+  fortsetzbar, löschbar, mit dem bisherigen Grund für einen fehlenden Teil. Es gibt keinen eigenen
+  Grund, keine Umwandlung und keinen Sonderweg für alte Spielstände (Klaus, 2026-10-29). Nie
+  stürzt dabei etwas ab, und nie wird ein solcher Spielstand ungefragt gelöscht oder
+  überschrieben.
 
 **Unverändert**
 
@@ -428,14 +460,20 @@ Hauptmenü öffnen: Er steht in der Liste und verhält sich wie in FR-031 festge
 - **Keine Gebühr für die Gewerbeanmeldung** im Konto: Die Recherche fand für 1985 keinen Betrag,
   die Gemeinden setzten ihn selbst fest, wohl im niedrigen zweistelligen DM-Bereich; das lohnt
   keine eigene Buchung.
-- **Schauplatz:** Stadtplan, Exposé, Mietvertrag und Gewerbeanmeldung sind eigene Bilder bzw.
-  Papiere außerhalb des Communicators; der Titelbildschirm mit Communicator bleibt bis zur
-  Gradwahl unverändert. Wie die Papiere aussehen, regelt der Style-Guide, der dafür ergänzt
-  wird, falls nötig (Verfassung IV).
+- **Schauplatz:** Die Ladenwahl ist eine eigene Szene, das Büro des Maklers, außerhalb des
+  Communicators; der Titelbildschirm mit Communicator bleibt bis zur Gradwahl unverändert. Wie
+  Szene, Figur und Papiere aussehen und wie sich anklickbare Dinge zeigen, regelt der
+  Style-Guide, der dafür vor dem Bau ergänzt wird, falls nötig (Verfassung IV). Dass die
+  Gewerbeanmeldung im Büro des Maklers ausgefüllt wird statt auf dem Amt, ist eine Vereinfachung
+  (Festlegung von Claude): Der Makler hat das Formular vom Gewerbeamt schon bereitliegen.
 - **Texteingabe ist neu:** Bisher gibt es im Spiel kein Feld zum Eintippen. Die Gewerbeanmeldung
   braucht eines; im Plan wird geklärt, wie es im Stil des Spiels aussieht.
-- **Grafiken:** Stadtplan, Fotos der Läden von außen und Bilder von innen entstehen mit dem Skill
-  `dcl-grafik`; wann und ob mit Platzhaltern begonnen wird, klärt `/speckit-clarify`.
+- **Grafiken:** Zehn Bilder (Büro des Maklers, Stadtplan, vier Läden von außen, vier leere
+  Läden von innen) und die Figur des Maklers
+  entstehen mit dem Skill `dcl-grafik` in einer eigenen Phase am Ende des Features. Bis dahin
+  stehen Platzhalter in Bildgröße mit Beschriftung, etwa „FOTO FUSSGÄNGERZONE“. Die Lage der
+  Läden auf dem Stadtplan steht bei den Daten der Läden (FR-008) und wird mit dem echten Plan
+  angepasst. Exposé, Mietvertrag und Gewerbeanmeldung werden gezeichnet, nicht generiert.
 - **Selbsttest:** Der Ablauf `neues_spiel` des Selbsttests führt heute von der Gradwahl direkt ins
   Spiel und muss um die neuen Schritte ergänzt werden (`ki_dev.md`, Punkt 11).
 - **Tests spulen vor:** Wie in Feature 004 belegen automatische Tests die Mieten über viele
