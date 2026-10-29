@@ -247,7 +247,8 @@ die Gesamtabnahme von Feature 006 ohne Startbefehl). Die Bitte enthält, in dies
   Bei API-Fragen sehen Claude, der Godot-Agent und der Architektur-Prüfer dort nach statt aus dem
   Gedächtnis; fehlt der Ordner, läuft zuerst das Skript, in jedem Worktree einmal. Geladen wird je
   Rechner und Godot-Version nur einmal (Cache `~/.cache/der-computerladen/`); eine neue Version
-  lädt neu, das braucht Klaus' Erlaubnis mit Quelle und Größe.
+  lädt neu, das braucht Klaus' Erlaubnis mit Quelle und Größe. Seit 2026-10-29 ist das die erste
+  Aufgabe in jedem `tasks.md`, aus der Aufgaben-Vorlage (Klaus).
 - Claude darf Prozesse selbst mit `kill` beenden, etwa ein hängendes Godot oder eine offene
   Werkstatt nach einem Test (Klaus, 2026-10-27, im Spike zum Communicator). Die Erlaubnis steht als
   `Bash(kill *)` in Klaus' `~/.claude/settings.json`.

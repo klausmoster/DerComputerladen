@@ -49,6 +49,9 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Project initialization and basic structure
 
+- [ ] TXXX [C] Godot-Doku im Arbeitsordner bereitlegen, immer die erste Aufgabe: Fehlt
+  `godot_referenz/`, `tools/godot_referenz/erzeuge.sh --texte --handbuch` laufen lassen
+  (`docs/ki_workflow/ki_dev.md`, „Werkzeuge und Pfade“)
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
@@ -173,6 +176,10 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
+- [ ] TXXX [C] Bestandsprüfung mit dem Architektur-Prüfer über ganz `src/`, nur wenn mit diesem
+  Feature eine neue Schicht beginnt, etwa Wirtschaft oder Adventure, oder seine Nummer auf 3 oder 8
+  endet (jedes fünfte Feature nach 008: 013, 018, …); vor der Lückensuche
+  (`docs/ki_workflow/ki_pruefung.md`)
 - [ ] TXXX [C] Phasenprüfung dieser Phase mit `/dcl-phasenpruefung`, nur wenn sie Sichtbares, Texte
   oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor der Gesamtabnahme
   (`docs/ki_workflow/ki_pruefung.md`)

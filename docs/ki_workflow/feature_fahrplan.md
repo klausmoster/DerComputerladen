@@ -33,7 +33,7 @@ flowchart TD
         C4 -->|"keine offenen Befunde"| C5
         C5 --> C6["Claude committet"]
     end
-    LS["D1 · Lückensuche mit converge"]
+    LS["D1 · Lückensuche mit converge,<br/>vorher wenn fällig die Bestandsprüfung"]
     subgraph D["D · Abschluss"]
         direction LR
         D2["Selbsttest: Abläufe<br/>anpassen, bauen,<br/>Mac, Vergleich"] --> D3(["Gesamtabnahme<br/>durch Klaus"]) --> D4["Spielbeschreibung<br/>abgleichen,<br/>Klaus gibt frei"] --> D5["Tagebuch mit Token<br/>und Kosten,<br/>Klaus nimmt ab"] --> D6(["Merge auf Klaus' Wort,<br/>Klaus pusht"])
@@ -55,7 +55,7 @@ Prüfer. Alles andere macht Claude.
 |---|---|---|---|---|---|
 | A1 | „Wir arbeiten jetzt an Feature xy“, meist ein Eintrag aus `docs/features/Feature_Ideas.md` | Klaus | Auftrag | sagt es | `CLAUDE.md`, „Featureweise arbeiten“ |
 | A2 | Eine eigene Sitzung für das Feature, im selben Ordner, auf seinem Branch; sie trägt das Feature bis zum Merge | Claude | Sitzung „[NNN] Featurename / Beschreibung“ | – | `ki_dev.md`, Punkt 7 |
-| A3 | Godot-Doku im Arbeitsordner bereitlegen: Fehlt `godot_referenz/`, `tools/godot_referenz/erzeuge.sh --texte --handbuch` laufen lassen. Claude, Agent und Prüfer schlagen die API dort nach statt aus dem Gedächtnis | Claude | Klassenreferenz und Handbuch der installierten Godot | nur bei neuer Godot-Version: Erlaubnis zum Laden | `ki_dev.md`, „Werkzeuge und Pfade“ |
+| A3 | Godot-Doku im Arbeitsordner bereitlegen: Fehlt `godot_referenz/`, `tools/godot_referenz/erzeuge.sh --texte --handbuch` laufen lassen. Claude, Agent und Prüfer schlagen die API dort nach statt aus dem Gedächtnis | Claude | Klassenreferenz und Handbuch der installierten Godot | nur bei neuer Godot-Version: Erlaubnis zum Laden | `ki_dev.md`, „Werkzeuge und Pfade“; erste Aufgabe in `tasks.md` |
 
 ## B · Beschreiben mit Spec Kit
 
@@ -65,7 +65,7 @@ Alle sechs Schritte laufen immer, auch die optionalen. Gebaut wird hier noch nic
 |---|---|---|---|---|---|
 | B1 | `/speckit-specify`: was das Feature tut und woran man erkennt, dass es fertig ist, ohne Godot-Details | Claude | Branch `feature/NNN-kurzname`, `specs/NNN-kurzname/spec.md` | beantwortet Fragen, je als Auswahl mit Empfehlung | Verfassung III; `ki_dev.md`, Punkt 1 und 2 |
 | B2 | `/speckit-clarify`: bis zu fünf gezielte Fragen | Claude | Antworten in der Spec | entscheidet jede Frage | `ki_dev.md`, „Zusammenarbeit“ |
-| B3 | `/speckit-plan`: technischer Vertrag, Recherche in der Godot-Referenz | Claude | `plan.md` mit „Prüfer je Phase“ und, wenn nötig, „Ausnahmen vom Leitfaden“; `research.md`, `data-model.md`, `contracts/`, `quickstart.md` | gibt Ausnahmen vom Leitfaden mit dem Plan frei | Verfassung VI; `ki_pruefung.md`, „Anbindung an Spec Kit“ |
+| B3 | `/speckit-plan`: technischer Vertrag, Recherche in der Godot-Referenz | Claude | `plan.md` mit „Prüfer je Phase“ und „Ausnahmen vom Leitfaden“, beide aus der Plan-Vorlage; `research.md`, `data-model.md`, `contracts/`, `quickstart.md` | gibt Ausnahmen vom Leitfaden mit dem Plan frei | Verfassung VI; `ki_pruefung.md`, „Anbindung an Spec Kit“ |
 | B4 | `/speckit-checklist`; dazu lesen Text- und Stil-Prüfer Wortlaute und Zustände aus Spec und Vertrag, der Architektur-Prüfer Plan und Vertrag | Claude, Prüfer | Checkliste unter `checklists/`; Befunde, nachgeprüft | gibt die Vorschläge frei; Befunde ändern den Vertrag nur mit seinem OK | `ki_dev.md`, Punkt 8; Skill `dcl-phasenpruefung`, „Vorab“ |
 | B5 | `/speckit-tasks`: Aufgaben je Phase mit Besitzer `[K]`, `[A]`, `[C]` | Claude | `tasks.md`, mit den festen Aufgaben aus der Vorlage: Phasenprüfung je Phase, Selbsttest, Spielbeschreibung | – | Vorlage unter `.specify/templates/overrides/` |
 | B6 | `/speckit-analyze`: Spec, Plan und Aufgaben gegeneinander und gegen die Verfassung | Claude | Bericht mit Befunden, eingearbeitet | gibt die Befunde frei, meist nach Empfehlung | `ki_dev.md`, Punkt 2 |
@@ -87,6 +87,7 @@ Eine Phase nach der anderen, nie alles in einem Zug (`/speckit-implement` wird n
 
 | Nr. | Schritt | Wer | Ergebnis | Klaus | Regel |
 |---|---|---|---|---|---|
+| D0 | Bestandsprüfung: der Architektur-Prüfer über ganz `src/`, nur wenn mit dem Feature eine neue Schicht beginnt oder seine Nummer auf 3 oder 8 endet (013, 018, …) | Claude, Architektur-Prüfer | Bericht; Befunde und Lücken in `docs/offene-punkte.md` | entscheidet, was behoben wird | `ki_pruefung.md`, „Wer prüft was“ |
 | D1 | `/speckit-converge`: Spec, Plan, Verträge und Aufgaben gegen den Code; die Prüfer einmal über das ganze Feature; jede neue Seite, jeder Weg, Text und jede Eingabe braucht einen Schritt im Selbsttest | Claude, Prüfer | Lücken als neue Aufgaben in `tasks.md` | gibt die Lücken-Phase frei; sie läuft wie C | `ki_dev.md`, Punkt 6; `ki_pruefung.md`, „Anbindung an Spec Kit“ |
 | D2 | Selbsttest: Abläufe unter `src/tools/selbsttest/ablaeufe/` anpassen, wenn das Feature Seiten, Wege, Texte oder Eingaben ändert; dann bauen mit `tools/build/baue_alles.sh`, auf dem Mac laufen lassen, mit `tools/selbsttest/vergleich.py` vergleichen | Agent, Claude | Ergebnis des Selbsttests | startet ihn auf Windows und Linux, wenn das Feature Fenster, Eingabe, Grafik, Dateien oder Export ändert, sonst spätestens jedes dritte Feature; neue Referenzbilder nur nach seiner Abnahme | `ki_dev.md`, Punkt 11 |
 | D3 | Gesamtabnahme nach dem ganzen Quickstart, mit Startweg und Ergebnis des Selbsttests | Klaus | Abnahme des Features | nimmt ab | `ki_dev.md`, Punkt 5 und 11 |
@@ -106,19 +107,13 @@ Eine Phase nach der anderen, nie alles in einem Zug (`/speckit-implement` wird n
   fehlt dort etwas, entscheidet Klaus, dann wird gebaut (Verfassung IV und VI).
 - **Neue Regeln** zur Arbeitsweise kommen erst nach Klaus' OK hinein (Pflege, `README.md`).
 
-## Noch nicht geregelt
+## Entschieden am 2026-10-29
 
-Fragen für Klaus, je mit Empfehlung und Aufwand. Entschieden wird einzeln.
-
-1. **Wann die Bestandsprüfung wieder läuft.** Der Architektur-Prüfer kennt Phase, Plan und Bestand;
-   die Bestandsprüfung lief bisher nur in Feature 008. Empfehlung: wenn eine neue Schicht beginnt,
-   etwa Wirtschaft oder Adventure, und sonst jedes fünfte Feature, als eigene Aufgabe vor der
-   Lückensuche. Aufwand: klein, eine Zeile in `ki_pruefung.md` und in der Vorlage.
-2. **Eine eigene Plan-Vorlage.** „Prüfer je Phase“ und „Ausnahmen vom Leitfaden“ verlangt die
-   Verfassung, aber keine Vorlage bringt sie mit; die Analyse von 008 fand das als Befund C6.
-   Empfehlung: `plan-template.md` unter `overrides/`, wie bei den Aufgaben. Aufwand: klein.
-3. **Godot-Referenz beim Start.** Schritt A3 steht bisher nur unter „Werkzeuge und Pfade“.
-   Empfehlung: als feste erste Aufgabe in die Aufgaben-Vorlage. Aufwand: klein.
-4. **Ein Skill, der den Stand zeigt.** Etwa `/dcl-fahrplan`: liest `tasks.md` und sagt „du bist bei
-   C4 von Phase 3, als Nächstes kommt deine Abnahme“. Empfehlung: erst, wenn dieser Fahrplan
-   freigegeben ist und sich in einem Feature bewährt hat. Aufwand: mittel.
+Die vier Fragen aus dem Konzept hat Klaus nach Empfehlung entschieden:
+1. **Bestandsprüfung:** wenn eine neue Schicht beginnt und jedes fünfte Feature nach 008, also 013,
+   018, …; als Aufgabe vor der Lückensuche (Schritt D0).
+2. **Plan-Vorlage:** `.specify/templates/overrides/plan-template.md` bringt „Prüfer je Phase“ und
+   „Ausnahmen vom Leitfaden“ mit (Schritt B3).
+3. **Godot-Doku:** die erste Aufgabe in jedem `tasks.md` (Schritt A3).
+4. **Skill `/dcl-fahrplan`:** später, wenn sich dieser Fahrplan in einem Feature bewährt hat; steht
+   in `docs/Ideensammlung.md`.

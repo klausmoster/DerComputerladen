@@ -73,7 +73,7 @@ Was Claude Code dafür bietet, laut seiner Doku (Stand 2026-10-22:
 | Tests | bei jedem Lauf | alles Messbare, etwa Farben aus der Palette, Abstände aus dem Raster, kein „Sie“ | Werte aus dem Style-Guide, im Code |
 | Claude | nach jeder Phase | Code, Tests zweimal, Startprobe, Bilder, feste Größen | Spec, Vertrag, `ki_dev.md` |
 | Prüfer | am Ende einer Phase mit Sichtbarem oder Texten | was ein Urteil braucht, etwa ob der Ton zu „Das Amt“ passt | Style-Guide mit dem Abschnitt „Sprache“, später die game_bible |
-| Architektur-Prüfer | bei der Checkliste über Plan und Vertrag; am Ende jeder Phase mit Code | Aufbau: wer wen kennt, wo Logik, Zustand und Daten liegen | Architektur-Leitfaden |
+| Architektur-Prüfer | bei der Checkliste über Plan und Vertrag; am Ende jeder Phase mit Code; über den ganzen Bestand, wenn eine neue Schicht beginnt und jedes fünfte Feature nach 008, also 013, 018, … (Klaus, 2026-10-29) | Aufbau: wer wen kennt, wo Logik, Zustand und Daten liegen | Architektur-Leitfaden |
 | Klaus | bei der Abnahme | alles; er entscheidet, wo ein Maßstab eine Lücke hat | Spec und sein Urteil |
 
 Ob eine Regel ein Test prüft oder ein Prüfer, entscheidet sich so:
@@ -212,6 +212,8 @@ Spec Kit bleibt, wie es ist. Die Prüfer kommen an fünf Stellen dazu:
   Phasenprüfung ist eine [C]-Aufgabe.
 - Spec Kit steht auf 1.2.3 (2026-10-27). Seine eigenen Vorlagen unter `.specify/templates/`
   bleiben unverändert. Eigene Vorlagen liegen unter `.specify/templates/overrides/`: Die
+  Plan-Vorlage bringt die Abschnitte „Prüfer je Phase“ und „Ausnahmen vom Leitfaden“ mit (Klaus,
+  2026-10-29; Anlass: Befund C6 der Analyse von 008). Die
   Aufgaben-Vorlage dort bringt die Aufgabe „Spielbeschreibung prüfen“ mit (`ki_dev.md`, Punkt 9)
   und ans Ende jeder Phase die Aufgabe „Phasenprüfung“ (Klaus, 2026-10-27); `/speckit-tasks` lässt
   sie weg, wo eine Phase nichts Sichtbares, keine Texte und keinen Code ändert. Den Abschnitt „Prüfer je Phase“

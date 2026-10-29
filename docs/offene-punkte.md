@@ -1026,6 +1026,10 @@ Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder 
 
 ## Erledigt
 
+- **Fahrplan eines Features** (Klaus, 2026-10-29): `docs/ki_workflow/feature_fahrplan.md` als
+  Konzept abgenommen; die vier offenen Fragen nach Empfehlung entschieden: Bestandsprüfung bei
+  neuer Schicht und jedes fünfte Feature, eigene Plan-Vorlage unter `overrides/`, Godot-Doku als
+  erste Aufgabe, Skill `/dcl-fahrplan` später (Ideensammlung).
 - **Godot-Referenz mit Texten und Handbuch** (T039b, T039d; Klaus, 2026-10-29): geladen nach
   Klaus' Erlaubnis; `tools/godot_referenz/erzeuge.sh --texte --handbuch`.
 - **Lücken aus Feature 008, alle von Klaus entschieden und eingearbeitet** (2026-10-28):
