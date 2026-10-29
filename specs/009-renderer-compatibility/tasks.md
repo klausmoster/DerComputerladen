@@ -102,43 +102,43 @@ contracts/renderer.md).
 **Independent Test**: Tests zweimal grün mit derselben Zahl; Probestart auf dem Mac zeigt „OpenGL API
 4.1 Metal … - Compatibility“ (quickstart.md, „Probestart auf dem Mac“).
 
-- [ ] T010 [A] [US1] `src/project.godot` nach contracts/renderer.md: `rendering/renderer/rendering_method
+- [x] T010 [A] [US1] `src/project.godot` nach contracts/renderer.md: `rendering/renderer/rendering_method
   = "gl_compatibility"`, `config/features` mit `"GL Compatibility"` statt `"Forward Plus"`;
   `rendering_device/driver.windows` und `rendering_device/fallback_to_opengl3` streichen; für
   `gl_compatibility/` nichts eintragen. Startgrund, Hintergrundfarbe, Texturfilter, Einrasten,
   Viewport und Skalierung bleiben unverändert (FR-004, CHK016). Per Hand in der Datei, nicht über
   den Editor, der beim Umschalten weitere Schlüssel schreiben kann; nur die Schlüssel aus dem Vertrag;
   danach `--import`; Ergebnis als Diff (Analyse U1).
-- [ ] T011 [A] [US1] `src/test/test_projekt_einstellungen.gd` nach R4: die drei Tests zu Forward+
+- [x] T011 [A] [US1] `src/test/test_projekt_einstellungen.gd` nach R4: die drei Tests zu Forward+
   entfallen; neu: Renderer ist `gl_compatibility`; kein Schlüssel unter `rendering_device/` im Text der
   Datei; `fallback_to_angle`, `fallback_to_gles`, `fallback_to_native` sind true und nicht
   eingetragen; `gl_compatibility/driver.macos` ist `opengl3` und nicht eingetragen. Kopf des Skripts
   nennt Feature 009 und R4.
-- [ ] T012 [A] [US2] Die Konstante `GRAFIK_API` zieht von `src/tools/selbsttest/selbsttest_system.gd`
+- [x] T012 [A] [US2] Die Konstante `GRAFIK_API` zieht von `src/tools/selbsttest/selbsttest_system.gd`
   nach `src/tools/selbsttest/selbsttest_texte.gd` (`SelbsttestTexte`), mit den neuen Einträgen
   `opengl3_angle` → „ANGLE“ und `opengl3_es` → „OpenGL ES“; `SelbsttestSystem` liest sie dort (R3,
   CHK012). Benutzt wird die Konstante heute nur in `selbsttest_system.gd`, Zeilen 46 und 85 (Analyse
   C1). Ein Test prüft die beiden neuen Namen und dass ein unbekannter Schlüssel unverändert
   durchgeht (`src/test/test_selbsttest_system.gd`).
-- [ ] T013 [A] [P] [US2] Beispieldaten auf `gl_compatibility` und OpenGL umstellen, Format unverändert
+- [x] T013 [A] [P] [US2] Beispieldaten auf `gl_compatibility` und OpenGL umstellen, Format unverändert
   (R3, CHK010): `src/test/fixtures/selbsttest/kopieren_erwartet.txt`, `protokoll_erwartet.txt`,
   `kopieren_nicht_beschreibbar.txt`; `src/test/test_selbsttest_protokoll.gd` (Zeilen 261, 327, 328);
   `src/test/test_selbsttest_ergebnis.gd` (Zeilen 27, 90, 277).
-- [ ] T014 [A] Lernnotizen zu T010 bis T013 in `specs/009-renderer-compatibility/lernnotizen.md`: was
+- [x] T014 [A] Lernnotizen zu T010 bis T013 in `specs/009-renderer-compatibility/lernnotizen.md`: was
   `rendering_method` und die Treiber-Overrides tun, warum Vorgaben nicht eingetragen werden, warum
   `get_current_rendering_method()` den Stand nach dem Rückfall liefert, warum die Namen in die
   Textklasse ziehen.
-- [ ] T015 [C] [P] [US1] Im Quelltext von Godot 4.7.2 nachsehen, was Godot ohne OpenGL 3.3 (und unter
+- [x] T015 [C] [P] [US1] Im Quelltext von Godot 4.7.2 nachsehen, was Godot ohne OpenGL 3.3 (und unter
   Windows ohne Direct3D 11) meldet (`platform/windows/display_server_windows.cpp`,
   `platform/linuxbsd/x11/display_server_x11.cpp`); Ergebnis in research.md, R8, und spec.md, „Edge
   Cases“ (CHK005).
-- [ ] T016 [C] Phase 3 prüfen: `--import`, Tests zweimal, Startprobe headless, Probestart mit Fenster
+- [x] T016 [C] Phase 3 prüfen: `--import`, Tests zweimal, Startprobe headless, Probestart mit Fenster
   mit beiden Treibern laut quickstart.md (Zeile „Compatibility“, bei ANGLE „ANGLE Metal Renderer“),
   Diff von `project.godot` gegen den Vertrag, Code an den kritischen Stellen.
-- [ ] T017 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, Prüfer laut plan.md: Architektur
+- [x] T017 [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, Prüfer laut plan.md: Architektur
   (`project.godot`, `selbsttest_system.gd`, `selbsttest_texte.gd`) und Text (Anzeigenamen „ANGLE“,
   „OpenGL ES“); vor Klaus' Abnahme (`docs/ki_workflow/ki_pruefung.md`).
-- [ ] T018 [K] [US1] Phase 3 abnehmen: Diff, Lernnotizen, Testergebnis, Ausgabe des Probestarts; die
+- [x] T018 [K] [US1] Phase 3 abnehmen: Diff, Lernnotizen, Testergebnis, Ausgabe des Probestarts; die
   Bitte um Abnahme enthält den Startbefehl laut quickstart.md, „Probestart auf dem Mac“ (Analyse I3).
 
 **Checkpoint**: Das Spiel läuft auf dem Mac mit Compatibility; Läufe auf allen Systemen können

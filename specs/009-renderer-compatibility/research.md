@@ -163,10 +163,22 @@ Klaus' Beschluss ohnehin vorliegt.
 
 ## R8 Ohne OpenGL 3.3 und Direct3D 11
 
-**Stand (2026-10-29, Checkliste CHK005): Vermutung.** Für Forward+ ist belegt, dass Godot „Unable to
-initialize video driver“ zeigt und endet (Feature 007, R13). Für Compatibility steht das weder in
-der Klassenreferenz noch im Handbuch; das Handbuch nennt nur die Mindestanforderung „full OpenGL 3.3
-support“ (`about/system_requirements.rst`). In Phase 3 sieht Claude im Quelltext von Godot 4.7.2 nach
-(`platform/windows/display_server_windows.cpp`, `platform/linuxbsd/x11/display_server_x11.cpp`), ob
-und mit welchem Text Godot meldet. Das Ergebnis kommt hierher und in die Spec unter „Edge Cases“.
-Eine eigene Meldung des Spiels bleibt außerhalb dieses Features.
+**Stand (2026-10-29, Checkliste CHK005; T015): laut Quelltext von Godot 4.7.2 belegt.** Gelesen in
+`platform/windows/display_server_windows.cpp` und `platform/linuxbsd/x11/display_server_x11.cpp`,
+Tag `4.7.2-stable`:
+
+- **Windows:** Godot prüft die OpenGL-Version (`>= 30003`, also 3.3). Ist sie zu alt oder steht das
+  Gerät in `force_angle_on_devices`, wechselt es mit der Warnung „Your video card drivers seem not to
+  support the required OpenGL 3.3 version, switching to ANGLE.“ auf ANGLE (`fallback_to_angle`).
+  Scheitert ANGLE, geht es mit `fallback_to_native` zurück auf natives OpenGL. Geht beides nicht,
+  setzt es `ERR_UNAVAILABLE`, und `create_func` zeigt das Fenster „Unable to initialize video driver“
+  mit „Your video card drivers seem not to support the required OpenGL 3.3 / Direct3D 11 version.“
+  und dem Rat, den Treiber zu erneuern oder neu zu starten.
+- **Linux/X11:** Scheitert OpenGL 3.3, wechselt Godot mit Warnung auf OpenGL ES 3.0
+  (`fallback_to_gles`). Scheitert auch das, zeigt es „Unable to initialize OpenGL ES video driver“
+  mit „Your video card drivers seem not to support the required OpenGL ES 3.0 version.“ und endet.
+- **macOS:** nicht gelesen; Apples OpenGL ist auf jedem unterstützten Mac da.
+
+Folge: Wie bei Forward+ in Feature 007 zeigt Godot seine eigene Meldung und endet; eine eigene
+Meldung des Spiels bleibt außerhalb dieses Features. Gelesen wurde über eine Zusammenfassung der
+Quelldatei, nicht Zeile für Zeile; die Meldungstexte sind wörtlich daraus.

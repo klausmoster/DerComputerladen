@@ -28,6 +28,15 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   - Style-Guide, „Werkzeuge“, „Texte“: Ob Anzeigenamen der Grafikschnittstellen der Kurzform der
     Engine folgen („D3D12“) oder ausgeschrieben werden („Direct3D 12“); bisher gilt „D3D12 bleibt als
     Messwert“ (Feature 007, Abschluss) (Text-Prüfer). Empfehlung: Kurzform, wie im Protokoll.
+- **Lücken aus der Phasenprüfung Phase 3** (Text-Prüfer), Sprache, „Texte für Entwickler“:
+  - Steht nach einem Pfad am Ende einer Testmeldung ein Punkt, etwa „Nichts unter
+    rendering_device/.“? Für Bildschirm und Protokoll der Werkzeuge entfällt er. Empfehlung: in
+    Testmeldungen ebenso entfallen lassen, bei der nächsten Ergänzung des Style-Guides.
+  - Gilt `pfad:zeile:` vorn und die Regelnummer in Klammern auch für Meldungen in GUT-Asserts? GUT
+    nennt den Ort selbst. Empfehlung: nein, nur für Befundmeldungen wie die Architekturprüfung.
+- **Eigene Entscheidung von Claude in Phase 3:** In den Beispieldaten der Tests steht als API-Version
+  „4.1 Metal - 91.7“ statt „4.0“, der Wert, den Apples OpenGL auf dem M1 meldet; das Beispiel über
+  `SelbsttestTexte.systemzeile()` endet auf „OpenGL“.
 - **Eigene Entscheidungen von Claude im Plan** (`specs/009-renderer-compatibility/research.md`):
   Vorgaben für Compatibility nicht eintragen (R1); `export_angle = 0` bleibt, weil ANGLE in den
   Vorlagen fest eingebaut ist (R2); Anzeigenamen „ANGLE“ und „OpenGL ES“ (R3); neue Tests der

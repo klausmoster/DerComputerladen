@@ -38,6 +38,18 @@ const UHR_NICHT_BEDIENBAR := "Die Uhr lässt sich im Spielbildschirm noch nicht 
 ## Schlusspunkt, so steht sie im Text für „Kopieren“; auf dem Bildschirm mit Punkt, siehe
 ## kein_protokoll().
 const KEIN_PROTOKOLL := "Kein Protokoll: In %s lässt sich nicht schreiben"
+## Namen der Grafikschnittstellen nach dem Treiber, wie Godot ihn meldet, für system.grafik_api
+## (Feature 007, data-model.md; Feature 009, contracts/renderer.md, R3). ANGLE und OpenGL ES sind
+## die Rückfälle von Compatibility unter Windows und Linux; Metal, Vulkan und D3D12 gibt es nur bei
+## einem Start mit --rendering-method forward_plus.
+const GRAFIK_API := {
+	"opengl3": "OpenGL",
+	"opengl3_angle": "ANGLE",
+	"opengl3_es": "OpenGL ES",
+	"metal": "Metal",
+	"vulkan": "Vulkan",
+	"d3d12": "D3D12",
+}
 
 # --- Fenster und Abläufe -------------------------------------------------------------------------
 
@@ -245,6 +257,12 @@ static func ablauf_name(kennung: String) -> String:
 	return ABLAUF_NAMEN.get(kennung, kennung)
 
 
+## Der Name der Grafikschnittstelle nach dem Treiber aus
+## RenderingServer.get_current_rendering_driver_name(); der Treiber selbst, wenn er unbekannt ist.
+static func grafik_api_name(treiber: String) -> String:
+	return GRAFIK_API.get(treiber, treiber)
+
+
 ## Die Summe, auf dem Bildschirm und hinter „ergebnis:“ im Protokoll (CHK033): „Alles in Ordnung:
 ## 45 von 45 Schritten.“ oder „43 von 45 Schritten in Ordnung, 1 Fehler, 1 nicht gelaufen.“ Der
 ## erste Teil steht immer, Fehler und nicht gelaufen entfallen bei 0.
@@ -267,7 +285,7 @@ static func ueberschrift(start: Dictionary) -> String:
 		start["year"], start["hour"], start["minute"]]
 
 
-## „macOS 26.0.0 · Apple M3 Pro · Metal“ aus den Systemdaten; was fehlt, heißt „unbekannt“.
+## „macOS 26.0.0 · Apple M3 Pro · OpenGL“ aus den Systemdaten; was fehlt, heißt „unbekannt“.
 static func systemzeile(system: Dictionary) -> String:
 	var teile: Array[String] = []
 	for schluessel: String in ["system.os", "system.os_version", "system.gpu", "system.grafik_api"]:

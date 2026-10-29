@@ -24,7 +24,7 @@ const SYSTEM := {
 	"system.os": "macOS",
 	"system.os_version": "26.0.0",
 	"system.gpu": "Apple M3 Pro",
-	"system.grafik_api": "Metal",
+	"system.grafik_api": "OpenGL",
 }
 ## Die Varianten, die die Kopie zum Theme der Werkstatt hinzufügt, mit ihrem Grundtyp.
 const EIGENE_VARIANTEN := {
@@ -87,7 +87,7 @@ func test_alles_in_ordnung_ohne_liste() -> void:
 
 	# Assert: Überschrift, Systemzeile, Summe, Pfad; Bereichstitel und Liste entfallen (CHK021).
 	assert_eq(_label(&"Ueberschrift").text, "Selbsttest vom 28.10.2026, 14:03 Uhr")
-	assert_eq(_label(&"Systemzeile").text, "macOS 26.0.0 · Apple M3 Pro · Metal")
+	assert_eq(_label(&"Systemzeile").text, "macOS 26.0.0 · Apple M3 Pro · OpenGL")
 	assert_eq(_label(&"Summe").text, "Alles in Ordnung: 2 von 2 Schritten.")
 	assert_false(_label(&"Bereichstitel").is_visible_in_tree())
 	assert_false(_knoten(&"Liste").is_visible_in_tree())
@@ -274,7 +274,7 @@ func test_nicht_beschreibbar_meldung_an_stelle_von_summe_liste_und_pfad() -> voi
 
 	# Assert (CHK020)
 	assert_true(_label(&"Ueberschrift").is_visible_in_tree())
-	assert_eq(_label(&"Systemzeile").text, "macOS 26.0.0 · Apple M3 Pro · Metal")
+	assert_eq(_label(&"Systemzeile").text, "macOS 26.0.0 · Apple M3 Pro · OpenGL")
 	for name: StringName in [&"Summe", &"Bereichstitel", &"Liste", &"Pfad"]:
 		assert_false(_knoten(name).is_visible_in_tree(), "%s entfällt." % name)
 	assert_true(_label(&"Meldung").is_visible_in_tree())

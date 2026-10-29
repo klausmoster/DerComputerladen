@@ -346,6 +346,11 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 008, Planprobe am Plan von 006 (2026-10-28) | Architektur | 3 | 2 (Zustände der Seite und des Titels als Schalter, AR-11) | 1 (Stellschrauben als Konstanten, nach Klaus' Entscheidung zur Lücke L1 kein Verstoß gegen AR-04) | 6 | 2 |
 | Feature 008, Phase 5 Behebung, 32 Dateien (2026-10-29) | Architektur | 1 | 1 (`TimelineView._reason` als Kopie von `FieldHelpers.reason`, AR-02) | 0 | 5 | 1 |
 | Feature 008, Phase 5 Nachlauf über T036e, 4 Dateien (2026-10-29) | Architektur | 0 | – | – | 0 | – |
+| Feature 009, Vorab bei der Checkliste, Spec und Vertrag (2026-10-29) | Stil | 4 | 4 (einer zugleich vom Text-Prüfer: Kantenglättung) | 0 | 3 | 3 |
+| Feature 009, Vorab bei der Checkliste, Spec und Vertrag (2026-10-29) | Text | 3 | 3 | 0 | 3, davon 1 eingetragen (Schreibweise D3D12); Ort des Satzes in CHK018, Glühen/HDR in CHK014 gelöst | 3 |
+| Feature 009, Vorab bei der Checkliste, Plan und Vertrag (2026-10-29) | Architektur | 1 | 1 (dazu 2 unter „Unsicher“, bestätigt: CHK010, CHK011) | 0 | 1 | 1 |
+| Feature 009, Phase 3, `project.godot` und 2 Dateien des Selbsttests (2026-10-29) | Architektur | 0 | – | – | 0 (die bekannte Lücke L1 nicht neu gemeldet); unter „Unsicher“ ein Hinweis auf eine alte CLAUDE.md, verworfen: der Prüfer las die vor Phase 2 geladene Fassung | – |
+| Feature 009, Phase 3, 16 Texte in Textklasse und Tests (2026-10-29) | Text | 0 | – | – | 2 (Punkt nach einem Pfad in Testmeldungen; Regelnummer in Assert-Meldungen) | – |
 
 „Nur er fand“ heißt: Claudes eigene Prüfung hatte es nicht gefunden. Bei den Probeläufen an
 Feature 001 war das Feature schon abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.

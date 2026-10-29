@@ -134,8 +134,8 @@ Dazu von Hand: Der Style-Guide hat den Satz zu HDR, Kantenglättung und Glühen 
 
 ## Wenn ein Rechner gar nicht startet
 
-Fehlen OpenGL 3.3 und unter Windows auch Direct3D 11, beendet sich Godot; ob mit eigener Meldung,
-klärt research.md, R8. Das Spiel schreibt dann nichts. Eine eigene Meldung des Spiels gehört nicht zu diesem Feature.
+Fehlen OpenGL 3.3 und unter Windows auch Direct3D 11, zeigt Godot „Unable to initialize video
+driver“ und beendet sich (research.md, R8). Das Spiel schreibt dann nichts. Eine eigene Meldung des Spiels gehört nicht zu diesem Feature.
 
 ## Aufräumen
 

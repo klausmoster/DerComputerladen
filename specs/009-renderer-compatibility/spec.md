@@ -161,9 +161,9 @@ Geschichte (ältere Specs, alte Regel mit Datum) oder geändert.
 
 ### Edge Cases
 
-- **Ein Rechner hat weder OpenGL 3.3 noch Direct3D 11:** Godot beendet sich, vermutlich mit seiner
-  eigenen Fehlermeldung wie bei fehlendem Forward+; belegt ist das für Compatibility nicht, der Plan
-  sieht im Quelltext von 4.7.2 nach (research.md, R8). Eine eigene Meldung des Spiels gehört
+- **Ein Rechner hat weder OpenGL 3.3 noch Direct3D 11:** Godot zeigt seine eigene Meldung „Unable
+  to initialize video driver“ und beendet sich, unter Linux nach dem Versuch mit OpenGL ES (laut
+  Quelltext von 4.7.2, research.md, R8). Eine eigene Meldung des Spiels gehört
   nicht zu diesem Feature.
 - **Windows mit schlechtem OpenGL-Treiber:** Godot soll von selbst auf ANGLE über Direct3D 11
   ausweichen. Das klappt nur, wenn ANGLE im Windows-Export enthalten ist; das ist ungeprüft (FR-006).
