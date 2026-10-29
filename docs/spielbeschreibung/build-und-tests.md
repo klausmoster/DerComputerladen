@@ -105,12 +105,17 @@ wirkt dort aber nicht.
 
 `tools/godot_referenz/erzeuge.sh`, vom Repo-Root, schreibt die Klassenreferenz der installierten
 Godot mit `--doctool` nach `godot_referenz/klassen/<Klasse>.xml`, etwa `Node.xml` oder
-`RegEx.xml`, und die Version nach `godot_referenz/version.txt`. Die Dateien haben nur Signaturen:
-Erbfolge, Methoden mit Parametern, Eigenschaften, Signale, Konstanten und Enums, keine
-Beschreibungen. Passt die Godot nicht zur Version in `src/project.godot`, bricht das Skript ab
-(Exit 2). Der Ordner steht in `.gitignore` und ist nicht im Repo; in jedem Worktree läuft das
-Skript einmal. Bei API-Fragen sehen Claude, der Godot-Agent und der Architektur-Prüfer dort nach
-statt aus dem Gedächtnis; für das Verhalten bleibt die Doku zu Godot 4.7.
+`RegEx.xml`, und die Versionen nach `godot_referenz/version.txt`. Ohne Schalter haben die Dateien
+nur Signaturen: Erbfolge, Methoden mit Parametern, Eigenschaften, Signale, Konstanten und Enums.
+Mit `--texte` holt das Skript die Beschreibungen aus dem Quellcode von Godot, Tag
+`<Version>-stable`, und `--doctool` mischt sie hinein; mit `--handbuch` kommt das Handbuch aus
+`godot-docs`, Zweig `4.7`, als `.rst` nach `godot_referenz/handbuch/`, ohne `classes/`. Beide
+laden als Teil-Klon ohne Geschichte in den Cache `~/.cache/der-computerladen/`, je Rechner und
+Version einmal; ein neuer Worktree kopiert nur. Üblich ist `tools/godot_referenz/erzeuge.sh --texte --handbuch`.
+Passt die Godot nicht zur Version in `src/project.godot`, bricht das Skript ab (Exit 2). Der Ordner
+steht in `.gitignore` und ist nicht im Repo; in jedem Worktree läuft das Skript einmal. Bei
+API-Fragen sehen Claude, der Godot-Agent und der Architektur-Prüfer dort nach statt aus dem
+Gedächtnis.
 
 ## Tests
 

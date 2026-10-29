@@ -314,16 +314,21 @@ T040 fest.
   `/godot_referenz/` in `.gitignore`; Aufwand: klein). Prüfen: zweimal laufen lassen, gleiche
   Dateien; `Node.xml`, `RegEx.xml` und `@GDScript.xml` vorhanden; `git status` zeigt den Ordner
   nicht. Entschieden: erzeugen, nicht committen (Klaus, 2026-10-29).
-- [ ] T039b [C] Optional, nur mit Klaus' Erlaubnis: das Handbuch `godot-docs`, Zweig 4.7 (rst), als
+- [x] T039b [C] Optional, nur mit Klaus' Erlaubnis: das Handbuch `godot-docs`, Zweig 4.7 (rst), als
   flacher Klon nach `godot_referenz/handbuch/` (ebenfalls nicht im Repo). Vor dem Download Quelle
   (`https://github.com/godotengine/godot-docs`, Zweig 4.7) und Größe nennen; das Skript aus T039a
   bekommt dafür einen eigenen Schalter, kein Download ohne ihn.
-- [ ] T039d [C] Optional, nur mit Klaus' Erlaubnis: die Beschreibungstexte der Klassenreferenz. Das
+- [x] T039d [C] Optional, nur mit Klaus' Erlaubnis: die Beschreibungstexte der Klassenreferenz. Das
   installierte Godot liefert mit `--doctool` nur Signaturen (gemessen in T039a); die Texte stehen
   in `doc/classes/`, `modules/*/doc_classes/` und `platform/*/doc_classes/` des Quellcodes,
   `https://github.com/godotengine/godot`, Tag `4.7.2-stable`. Als Teil-Klon nur dieser Ordner;
   `--doctool` mischt die Texte dann in die Signaturen. Vor dem Laden Quelle und genaue Größe nennen
   (Klaus, 2026-10-29: erst Signaturen, Texte später).
+  Erledigt mit T039b (Klaus, 2026-10-29: beides laden, rund 15 MB): Schalter `--texte` und
+  `--handbuch`; 1078 Klassen mit Beschreibungen, 517 Seiten des Handbuchs, Klone im Cache
+  `~/.cache/der-computerladen/`, je Rechner und Version einmal geladen. Beim ersten Lauf schloss
+  das Muster `classes/` des Handbuchs nicht aus, geladen wurden rund 33 MB statt 15; Muster
+  korrigiert, die Seiten unter `classes/` sind wieder entfernt.
 - [x] T039c [C] Verweise auf die Referenz: je ein Satz in `.claude/agents/godot-entwickler.md`,
   `.claude/agents/architektur-pruefer.md` und `docs/ki_workflow/ki_dev.md`: wo sie liegt, dass bei
   API-Fragen dort nachgesehen wird statt aus dem Gedächtnis, und dass bei fehlendem Ordner zuerst

@@ -411,3 +411,24 @@ Geschrieben von Claude.
 - **Flach statt verschachtelt.** Godot verteilt die Dateien auf `doc/classes/` und rund 30 Ordner
   unter `modules/` und `platform/`. Wer `RegEx` sucht, müsste wissen, dass es ein Modul ist. Die
   Namen sind eindeutig, also legt das Skript alle in `klassen/` zusammen.
+
+### T039b und T039d Texte und Handbuch, einmal je Rechner
+
+Geschrieben von Claude.
+
+- **Ein Teil-Klon lädt nur, was gebraucht wird.** `git fetch --depth 1 --filter=blob:none` holt
+  einen einzigen Stand ohne Geschichte und zunächst ohne Dateiinhalte; `git sparse-checkout` mit
+  Mustern wie `/doc/classes/*.xml` legt fest, welche Dateien ausgecheckt werden, und erst deren
+  Inhalte kommen über das Netz. Aus dem Godot-Quellcode mit vielen hundert MB werden so 9,4 MB.
+- **Der Tag passt zur installierten Godot.** `Godot --version` endet auf `ed1daf0bf`, und der Tag
+  `4.7.2-stable` zeigt auf genau diesen Commit. Das Skript bildet den Tag aus der Version, also
+  passen Texte und Signaturen immer zusammen.
+- **`--doctool` mischt.** Liegt der Klon im Zielordner, liest `--doctool` dessen Texte, gleicht sie
+  mit der Engine ab und schreibt sie zurück. Zwei Klassen mehr als ohne Texte (`CSharpScript`,
+  `TextServerFallback`) stammen aus dem Quellcode und gehören zu Teilen, die diese Godot nicht
+  enthält.
+- **Ein Muster, das nicht ausschloss.** `!/classes/` schloss im Handbuch den Ordner nicht aus, weil
+  `*.rst` die Dateien darin schon einzeln einschloss; erst `!/classes/**` trifft die Dateien selbst.
+  Geladen waren da schon rund 33 MB statt 15; die Seiten sind wieder entfernt, und Klaus weiß davon.
+- **Cache statt Download je Worktree.** Jedes Feature hat einen eigenen Worktree. Die Klone liegen
+  deshalb in `~/.cache/der-computerladen/`, je Version ein Ordner; ein Worktree kopiert von dort.

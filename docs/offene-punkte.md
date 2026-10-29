@@ -614,9 +614,6 @@ wenn Klaus es will.
 
 ### Feature 008, nach dem Abschluss (2026-10-29)
 
-- **Beschreibungstexte der Godot-Referenz (T039d) und Handbuch `godot-docs` (T039b):** offen, nur
-  mit Klaus' Erlaubnis zum Download; Quelle und Größe nennt Claude vorher. Bis dahin hat
-  `godot_referenz/klassen/` nur Signaturen.
 - **SC-005, SC-006, SC-007 von Feature 008:** werden im ersten Feature nach 008 mit Code belegt:
   Bestandsberichte bleiben bei null neuen Abweichungen, `plan.md` und `tasks.md` nennen den
   Architektur-Prüfer von selbst, und nach den Code-Phasen entscheidet Klaus anhand der Zählung in
@@ -1029,6 +1026,8 @@ Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder 
 
 ## Erledigt
 
+- **Godot-Referenz mit Texten und Handbuch** (T039b, T039d; Klaus, 2026-10-29): geladen nach
+  Klaus' Erlaubnis; `tools/godot_referenz/erzeuge.sh --texte --handbuch`.
 - **Lücken aus Feature 008, alle von Klaus entschieden und eingearbeitet** (2026-10-28):
   die fünf Lücken im Style-Guide (Abschnitt „Texte für Entwickler“) und die acht Lücken im
   Leitfaden aus Fehler- und Planprobe; Wortlaut der Entscheidungen in der Git-Geschichte dieser

@@ -21,7 +21,7 @@ Lies `docs/architektur-leitfaden.md` ganz, bevor du urteilst.
 - Widerspricht die Godot-Doku einer Regel, gilt die Regel.
 - Ob es eine Klasse, Methode, Eigenschaft oder ein Signal in Godot 4.7 gibt, siehst du in
   `godot_referenz/klassen/<Klasse>.xml` im Repo-Root nach, nicht aus dem Gedächtnis. Fehlt der
-  Ordner, nennst du das unter „Unsicher“; Claude erzeugt ihn mit `tools/godot_referenz/erzeuge.sh`.
+  Ordner, nennst du das unter „Unsicher“; Claude erzeugt ihn mit `tools/godot_referenz/erzeuge.sh --texte --handbuch`.
 
 ## Was du bekommst
 

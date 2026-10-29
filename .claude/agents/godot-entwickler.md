@@ -35,9 +35,10 @@ Vertrag eigenmächtig auszulegen.
   welche Parameter und Standardwerte sie hat oder wie ein Signal heißt, zuerst in
   `godot_referenz/klassen/<Klasse>.xml` im Repo-Root nachsehen statt aus dem Gedächtnis zu
   schreiben: Das ist die Klassenreferenz genau der installierten Version. Fehlt der Ordner, zuerst
-  `tools/godot_referenz/erzeuge.sh` laufen lassen. Die Dateien haben nur Signaturen; für das
-  Verhalten die Doku unter `https://docs.godotengine.org/en/4.7/` lesen oder eine kurze Probe
-  headless in einem temporären Ordner außerhalb des Repos laufen lassen.
+  `tools/godot_referenz/erzeuge.sh --texte --handbuch` laufen lassen. Die Dateien haben auch die
+  Beschreibungen; für Konzepte und Anleitungen liegt das Handbuch als `.rst` unter
+  `godot_referenz/handbuch/`. Im Zweifel eine kurze Probe headless in einem temporären Ordner
+  außerhalb des Repos laufen lassen.
 - Stil wie im vorhandenen Code, etwa `src/core/game_clock.gd` und `src/test/test_game_clock.gd`:
   typisiertes GDScript, Bezeichner englisch, Doc-Kommentare (`##`) und Testnamen deutsch,
   Einrückung mit Tabs, zwei Leerzeilen zwischen Funktionen.
