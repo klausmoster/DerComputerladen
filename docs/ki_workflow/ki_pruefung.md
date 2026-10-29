@@ -1,8 +1,8 @@
-# Prüfen mit KI – Blaupause
+# Prüfen mit KI – Erfahrungen
 
-Wie bei „Der Computerladen“ geprüft wird, bevor Klaus abnimmt: von Tests, von Claude und von
-Prüf-Agents, die nur lesen. Wie [ki_dev.md](ki_dev.md) wächst die Datei mit dem Projekt: Regeln
-stehen mit Grund da, Erfahrungen mit ihrem Anlass, Entscheidungen mit Datum und wer sie traf. Pflege
+Wie bei „Der Computerladen“ geprüft wird, bevor Klaus abnimmt: welche Prüfer es gibt, ihre
+Maßstäbe, die Tests, die Zählung und was die Probeläufe gezeigt haben. Die allgemeinen Regeln zum
+Prüfen stehen in der [Blaupause](blaupause.md), Abschnitt 6; hier steht, was nur hier gilt. Pflege
 und Abgrenzung stehen im [Einstieg](README.md).
 
 **Stand:** eingeführt. Begonnen am 2026-10-22, Pilot in Feature 004 am 2026-10-26; beide Prüfer
@@ -15,26 +15,11 @@ Git-Geschichte behält sie (`docs/konzept-pruef-agents.md`, `docs/konzept-ki-wor
 
 ## Grundsätze
 
-1. **Einfach anfangen, erst erweitern, wenn es nachweislich hilft.** Warum: Das ist der Kern von
-   Anthropics Artikel „Building effective agents“. Mehrere Agents sind teuer: Nach Anthropics
-   Bericht über ihr Recherche-System mit mehreren Agents brauchen solche Systeme rund 15-mal so viele
-   Tokens wie ein Chat, und Programmieren lässt sich schlechter aufteilen als Recherche.
-2. **Nach Maßstab spezialisieren, nicht nach Rolle.** Ein Prüfer lohnt sich, wenn er etwas Eigenes
-   mitbringt: einen schriftlichen Maßstab wie den Style-Guide und einen frischen Blick, unabhängig
-   von dem, der gebaut hat. Warum: Ein „Senior-Reviewer“ ohne eigenen Maßstab urteilt nach
-   Geschmack.
-3. **Prüfer prüfen, der Godot-Agent baut.** Prüfer lesen nur und melden jeden Befund mit Ort, Regel
-   und Beleg. Der Godot-Agent repariert, und Claude prüft jeden Befund nach, bevor Klaus ihn sieht.
-   Warum: Wer baut, prüft nicht selbst, und auch Prüfer liegen mal daneben.
-4. **Messbares prüft ein Test.** Ob ein Bild nur Farben der Palette nutzt, ob irgendwo „Sie“ steht
-   oder ein Text zu lang ist, erkennt ein Skript zuverlässiger und billiger, bei jedem Lauf.
-   KI-Prüfer urteilen nur, wo es ein Urteil braucht: Ton, Humor, Stimmigkeit, Treue zur Epoche.
-5. **Feste Zeitpunkte statt Dauerprüfung:** am Ende jeder Phase, die Sichtbares, Texte oder Code
-   ändert, alle Prüfer gleichzeitig, ein gemeinsamer Bericht. Warum: So kostet die Prüfung wenig und liegt
-   genau vor Klaus' Abnahme.
-6. **Nachmessen.** Findet ein Prüfer über mehrere Phasen nichts, was die anderen übersehen, fliegt
-   er raus. Findet eine Prüfung zweimal etwas, wird sie fest eingebaut (Pflege im
-   [Einstieg](README.md)).
+Blaupause 1 und 6. Quelle für „Einfach anfangen, erst erweitern, wenn es nachweislich hilft“ ist
+Anthropics Artikel „Building effective agents“; nach Anthropics Bericht über ihr Recherche-System
+brauchen Systeme mit mehreren Agents rund 15-mal so viele Tokens wie ein Chat, und Programmieren
+lässt sich schlechter aufteilen als Recherche. KI-Prüfer urteilen hier, wo es ein Urteil braucht:
+Ton, Humor, Stimmigkeit, Treue zur Epoche.
 
 ## Bausteine
 
@@ -45,8 +30,7 @@ Git-Geschichte behält sie (`docs/konzept-pruef-agents.md`, `docs/konzept-ki-wor
 | Hook (`.claude/settings.json`) | Befehl, den Claude Code bei einem Ereignis immer ausführt, auch wenn niemand daran denkt | vorerst keiner; vorgemerkt: Tests, sobald der Godot-Agent fertig ist (Schritt 8) |
 | Tests und Skripte | Code | alles Messbare |
 
-Faustregel: Wer unabhängig urteilen soll, wird ein Subagent. Ein Ablauf, der immer gleich laufen
-soll, wird ein Skill. Was jedes Mal passieren muss, wird ein Hook oder ein Test.
+Faustregel: Blaupause 6, „Bausteine“.
 
 Was Claude Code dafür bietet, laut seiner Doku (Stand 2026-10-22:
 [Subagents](https://code.claude.com/docs/en/sub-agents), [Hooks](https://code.claude.com/docs/en/hooks),
@@ -76,17 +60,7 @@ Was Claude Code dafür bietet, laut seiner Doku (Stand 2026-10-22:
 | Architektur-Prüfer | bei der Checkliste über Plan und Vertrag; am Ende jeder Phase mit Code; über den ganzen Bestand, wenn eine neue Schicht beginnt und jedes fünfte Feature nach 008, also 013, 018, … (Klaus, 2026-10-29) | Aufbau: wer wen kennt, wo Logik, Zustand und Daten liegen | Architektur-Leitfaden |
 | Klaus | bei der Abnahme | alles; er entscheidet, wo ein Maßstab eine Lücke hat | Spec und sein Urteil |
 
-Ob eine Regel ein Test prüft oder ein Prüfer, entscheidet sich so:
-
-```mermaid
-flowchart TD
-    R["Eine Regel aus einem Maßstab"] --> M{"Lässt sie sich<br/>messen?"}
-    M -->|"ja"| T["Test<br/>läuft bei jedem Lauf"]
-    M -->|"nein"| Q{"Steht der Maßstab<br/>schriftlich fest?"}
-    Q -->|"ja"| P["Prüfer<br/>bei der Phasenprüfung"]
-    Q -->|"nein"| L["Lücke: Klaus entscheidet,<br/>dann kommt die Regel in den Maßstab"]
-```
-
+Ob eine Regel ein Test prüft oder ein Prüfer, entscheidet das Schaubild in der Blaupause, Abschnitt 6.
 Messbar ist etwa „nur Farben der Palette“ oder „kein Sie“. Ein Urteil braucht etwa die Frage, ob
 eine Meldung so klingt wie in „Das Amt“.
 
@@ -99,24 +73,16 @@ eine Meldung so klingt wie in „Das Amt“.
 | Architektur | Architektur-Leitfaden | Baustein ruft den, der ihn einsetzt; neues Autoload ohne Grund; Logik in einer Szene, die in einen Kern gehört | Kerne ohne Node und ohne globalen Zufall, genau diese Autoloads, kein Weg nach oben, Spiel kennt Werkzeuge nicht | Feature 008 |
 | Fakten | game_bible und Quellen | Pentium im Katalog schon 1991, obwohl er 1993 kam; Ereignis zu Windows 95 im Jahr 1994 | Daten im Ereigniskatalog stimmen mit der game_bible überein | später, wenn Katalog und game_bible wachsen |
 
-Jeder Prüfer ist ein Subagent in `.claude/agents/`, etwa `stil-pruefer.md`:
-- **Nur lesen:** `tools: Read, Grep, Glob`. So kann der Prüfer nichts kaputt machen.
-- **Befund:** Ort (Datei und Node oder Bildausschnitt), Regel (Abschnitt im Maßstab), Beleg (was er
-  sieht und was die Regel verlangt) und Schwere (kritisch, hoch, mittel, niedrig).
-- **Lücke statt Fehler:** Regelt der Maßstab etwas nicht, meldet der Prüfer eine Lücke im Maßstab,
-  keinen Fehler.
-- **Keine Befunde:** Dann schreibt er das und welche Abschnitte er geprüft hat.
-- **Steht ein Prüfer nicht bereit**, nimmt Claude einen allgemeinen Agent, der zuerst die Datei des
-  Prüfers liest (`ki_dev.md`, „Aufträge an den Agent“).
+Jeder Prüfer ist ein Subagent in `.claude/agents/`, etwa `stil-pruefer.md`, gebaut wie das Gerüst
+in der Blaupause, Anhang D: nur lesen, Befund mit Ort, Regel, Beleg und Schwere, Lücke statt Fehler.
 
 Nicht vorgesehen:
 - bis 2026-10-28: ein eigener Code-Prüfer, denn Code prüft Claude, und `/code-review` gibt es
   schon. Seit Feature 008 gibt es den Architektur-Prüfer, weil er einen eigenen schriftlichen
-  Maßstab hat, den Leitfaden (Grundsatz 2). Fehler im Code suchen weiter Claude und `/code-review`;
+  Maßstab hat, den Leitfaden (Blaupause 6, „Nach Maßstab spezialisieren“). Fehler im Code suchen weiter Claude und `/code-review`;
   der Architektur-Prüfer beurteilt nur den Aufbau (Klaus, 2026-10-28);
-- Prüfer, die selbst reparieren;
 - zwei Prüfer für dieselbe Frage, etwa einer für UX und einer für Stil, die beide das Layout
-  beurteilen.
+  beurteilen (Blaupause 6).
 
 ## Maßstäbe
 
@@ -165,16 +131,9 @@ sequenceDiagram
     C->>K: Bitte um Abnahme mit Bericht, Lücken im Maßstab als Frage
 ```
 
-1. Der Godot-Agent baut die Phase. Danach laufen Tests und Startprobe, zweimal.
-2. Claude schlägt in `plan.md` unter „Prüfer je Phase“ nach, welche Prüfer für die Phase gelten.
-   Ändert die Phase Skripte, Szenen oder Resources unter `src/` außer Tests, gehört der
-   Architektur-Prüfer dazu.
-3. Claude startet die Prüfer gleichzeitig, jeden mit seinem Maßstab, dem Diff und den
-   Bildschirmfotos aus dem echten Fenster.
-4. Claude prüft jeden Befund nach: bestätigt oder verworfen, mit Grund.
-5. Bestätigte Befunde gehen an den Godot-Agent. Danach prüfen die betroffenen Prüfer noch einmal.
-6. Lücken im Maßstab, etwa eine Frage, die der Style-Guide nicht regelt, gehen an Klaus.
-7. Das Ergebnis steht in der Bitte um Abnahme unter „was geprüft ist“.
+Die Schritte stehen in der Blaupause, Abschnitt 6, „Phasenprüfung“. Hier gehört der
+Architektur-Prüfer dazu, sobald die Phase Skripte, Szenen oder Resources unter `src/` außer Tests
+ändert. Bildschirmfotos kommen aus dem echten Fenster.
 
 Der Skill `dcl-phasenpruefung` hält diesen Ablauf fest (Schritt 6). Klaus kann ihn auch selbst mit
 `/dcl-phasenpruefung` aufrufen.
@@ -210,17 +169,12 @@ Spec Kit bleibt, wie es ist. Die Prüfer kommen an fünf Stellen dazu:
 
 - Eine neue Rolle in `tasks.md` gibt es nicht. Die Prüfer arbeiten Claude zu, und die
   Phasenprüfung ist eine [C]-Aufgabe.
-- Spec Kit steht auf 1.2.3 (2026-10-27). Seine eigenen Vorlagen unter `.specify/templates/`
-  bleiben unverändert. Eigene Vorlagen liegen unter `.specify/templates/overrides/`: Die
-  Plan-Vorlage bringt die Abschnitte „Prüfer je Phase“ und „Ausnahmen vom Leitfaden“ mit (Klaus,
-  2026-10-29; Anlass: Befund C6 der Analyse von 008). Die
-  Aufgaben-Vorlage dort bringt die Aufgabe „Spielbeschreibung prüfen“ mit (`ki_dev.md`, Punkt 9)
-  und ans Ende jeder Phase die Aufgabe „Phasenprüfung“ (Klaus, 2026-10-27); `/speckit-tasks` lässt
-  sie weg, wo eine Phase nichts Sichtbares, keine Texte und keinen Code ändert. Den Abschnitt „Prüfer je Phase“
-  schreibt Claude nach dieser Datei in den Plan. Die Regel steht in der Verfassung, Grundsatz VI,
-  die alle fünf Schritte lesen (seit 2026-10-27). Ein Update von Spec Kit lässt `overrides/` stehen; geprüft wird das
-  trotzdem (`ki_dev.md`, „Werkzeuge und Pfade“). Bis 2026-10-27 stand hier, die Vorlagen von Spec Kit 1.2.0 blieben
-  unangetastet, weil ein Update sie überschreiben kann.
+- Die eigenen Vorlagen unter `.specify/templates/overrides/` (Blaupause 5, Anhang C): Die
+  Plan-Vorlage bringt „Prüfer je Phase“ und „Ausnahmen vom Leitfaden“ mit (Klaus, 2026-10-29;
+  Anlass: Befund C6 der Analyse von 008), die Aufgaben-Vorlage die Phasenprüfung am Ende jeder Phase
+  (Klaus, 2026-10-27) und „Spielbeschreibung prüfen“ (`ki_dev.md`, Punkt 9). Die Regel steht in
+  der Verfassung, Grundsatz VI, die alle fünf Schritte lesen (seit 2026-10-27). Updates von Spec
+  Kit: `ki_dev.md`, „Werkzeuge und Pfade“.
 
 Beispiel, ein gedachtes Feature „Ladenansicht“ als erster echter Spielbildschirm. In `plan.md`:
 
@@ -389,22 +343,7 @@ oder Code ändern. Sitzt der Ablauf, lässt er sich als gespeicherter Workflow f
 
 ## Stand der Einführung
 
-```mermaid
-flowchart LR
-    S1["1 Umzug"] --> S2["2 Dokumente"]
-    S2 --> S3["3 Stil-Prüfer<br/>mit Probelauf"]
-    S2 --> S4["4 Abschnitt Sprache"] --> S5["5 Text-Prüfer<br/>mit Probelauf"]
-    S3 --> S6["6 Skill<br/>Phasenprüfung"]
-    S5 --> S6
-    S4 --> S7["7 Tests"] --> S8["8 Hook,<br/>wenn gewollt"]
-    S6 --> S9["9 Pilot"]
-    S8 --> S9
-    S9 --> E{"bewährt?"}
-    E -->|"ja"| S10["10 Regel in<br/>der Verfassung"]
-    E -->|"nein"| N["nachschärfen<br/>oder streichen"]
-```
-
-Jeder Schritt endet mit Klaus' Abnahme und einem Commit.
+Eingeführt in zehn Schritten, jeder mit Klaus' Abnahme und einem Commit:
 
 | Nr. | Schritt | Wer | Stand |
 |---|---|---|---|

@@ -77,10 +77,10 @@ Eine Phase nach der anderen, nie alles in einem Zug (`/speckit-implement` wird n
 | Nr. | Schritt | Wer | Ergebnis | Klaus | Regel |
 |---|---|---|---|---|---|
 | C1 | Die Phase freigeben, etwa „Starte Phase 4: T031 bis T039 mit dem Agent“ | Klaus | Auftrag | gibt frei | `ki_dev.md`, Punkt 3 |
-| C2 | Auftrag an den Godot-Agent: Aufgabennummern, was zuerst zu lesen ist, Rahmen, feste Größen, Prüfbefehle, Form des Berichts; große Phasen in zwei Teilen, erst Kern, dann Oberfläche | Claude, Agent | Code, Szenen, Tests; Lernnotiz in `lernnotizen.md`; Bericht | – | `ki_dev.md`, „Aufträge an den Agent“, Punkt 4 |
+| C2 | Auftrag an den Godot-Agent: Aufgabennummern, was zuerst zu lesen ist, Rahmen, feste Größen, Prüfbefehle, Form des Berichts; große Phasen in zwei Teilen, erst Kern, dann Oberfläche | Claude, Agent | Code, Szenen, Tests; Lernnotiz in `lernnotizen.md`; Bericht | – | Blaupause 8; `ki_dev.md`, „Aufträge an den Agent“ |
 | C3 | Claude prüft: Tests zweimal, Startprobe, feste Größen, Bilder, Fenster in Klaus' Fenstergröße, Code an den kritischen Stellen; Auslegungen des Agents in die Spec | Claude | geprüfter Stand | echte Entscheidungen werden ihm vorgelegt | `ki_dev.md`, „Prüfen, bevor Klaus es sieht“ |
 | C4 | Phasenprüfung, wenn die Phase Sichtbares, Texte oder Code ändert: Prüfer laut „Prüfer je Phase“ gleichzeitig, Claude prüft jeden Befund nach; bestätigte repariert der Agent, danach Nachprüfung | Claude, Prüfer, Agent | Bericht „was geprüft ist“; Zeilen unter „Nachmessen“; Lücken in `docs/offene-punkte.md` | entscheidet Widersprüche zum Vertrag und Lücken im Maßstab | Verfassung VI; Skill `dcl-phasenpruefung` |
-| C5 | Bitte um Abnahme: Startbefehl als `bash`-Block, was gebaut ist, was geprüft ist mit Zahlen, Auslegungen mit Beispiel, Prüfliste | Claude | Bitte um Abnahme | nimmt ab, die `[K]`-Aufgabe der Phase | `ki_dev.md`, „Abnahme durch Klaus“, Punkt 5 |
+| C5 | Bitte um Abnahme: Startbefehl als `bash`-Block, was gebaut ist, was geprüft ist mit Zahlen, Auslegungen mit Beispiel, Prüfliste | Claude | Bitte um Abnahme | nimmt ab, die `[K]`-Aufgabe der Phase | Blaupause 9; `ki_dev.md`, „Abnahme durch Klaus“ |
 | C6 | Ein Commit je abgenommener Phase, danach nur Hash und Stand | Claude | Commit | pusht, wann er will | `ki_dev.md`, „Git“ |
 
 ## D · Abschluss
