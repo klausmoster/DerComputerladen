@@ -284,8 +284,31 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
 
 ## Phase 6: Abschluss
 
-**Purpose**: Lückensuche, Gesamtabnahme, Doku, Spielbeschreibung, Tagebuch.
+**Purpose**: Godot-Referenz, Lückensuche, Gesamtabnahme, Doku, Spielbeschreibung, Tagebuch.
 
+Lokale Godot-Referenz (Klaus, 2026-10-29, nachträglich aufgenommen): eine API-Referenz in genau der
+installierten Version statt eines fremden Dienstes wie Context7. Sie kommt vor T040, damit
+Lückensuche und Architektur-Prüfer schon in ihr nachsehen. Die Buchstaben halten die Nummern ab
+T040 fest.
+
+- [ ] T039a [C] Erzeugen-Skript `tools/godot_referenz/erzeuge.sh`: ruft `Godot --doctool <ordner>`
+  der installierten Godot auf (derzeit 4.7.2) und schreibt die Klassenreferenz als XML nach
+  `godot_referenz/klassen/` im Repo-Root; schreibt `Godot --version` daneben in `version.txt`;
+  bricht ab, wenn die Version nicht die in `src/project.godot` ist. Vorher Klaus die Entscheidung
+  vorlegen, ob die XML-Dateien ins Repo kommen (Empfehlung: bei Bedarf erzeugen, nicht committen,
+  `/godot_referenz/` in `.gitignore`; Aufwand: klein). Prüfen: zweimal laufen lassen, gleiche
+  Dateien; `Node.xml`, `RegEx.xml` und `@GDScript.xml` vorhanden; `git status` zeigt den Ordner
+  nicht.
+- [ ] T039b [C] Optional, nur mit Klaus' Erlaubnis: das Handbuch `godot-docs`, Zweig 4.7 (rst), als
+  flacher Klon nach `godot_referenz/handbuch/` (ebenfalls nicht im Repo). Vor dem Download Quelle
+  (`https://github.com/godotengine/godot-docs`, Zweig 4.7) und Größe nennen; das Skript aus T039a
+  bekommt dafür einen eigenen Schalter, kein Download ohne ihn.
+- [ ] T039c [C] Verweise auf die Referenz: je ein Satz in `.claude/agents/godot-entwickler.md`,
+  `.claude/agents/architektur-pruefer.md` und `docs/ki_workflow/ki_dev.md`: wo sie liegt, dass bei
+  API-Fragen dort nachgesehen wird statt aus dem Gedächtnis, und dass bei fehlendem Ordner zuerst
+  `tools/godot_referenz/erzeuge.sh` läuft. Den Eintrag für `tools/godot_referenz/` in der Tabelle
+  „Aufbau“ von `CLAUDE.md` legt Claude Klaus als Vorschlag vor, geändert wird sie nur auf seine
+  Entscheidung.
 - [ ] T040 [C] Lückensuche mit `/speckit-converge` über das ganze Feature (`ki_dev.md`, „Ablauf je
   Feature“), dazu der Architektur-Prüfer einmal über alles, was 008 an Code geändert hat. Lücken
   werden eine eigene Phase mit Klaus' Freigabe.
@@ -327,7 +350,7 @@ Grundsatz II):
 - **Phase 3** (Bestand): nach Phase 2; fragt vorher nach 007 (T022).
 - **Phase 4** (Tests): nach Phase 3, weil die Listen aus dem Bericht kommen (R7).
 - **Phase 5** (Behebung): nach Phase 4 und erst, wenn 007 gemergt und `main` im Branch ist (T035).
-- **Phase 6** (Abschluss): nach Phase 5; T044 vor dem Merge. Der Merge erst nach 007 und nur auf
+- **Phase 6** (Abschluss): nach Phase 5; die Godot-Referenz (T039a bis T039c) vor T040, T044 vor dem Merge. Der Merge erst nach 007 und nur auf
   Klaus' Wort.
 
 ### User Story Dependencies
