@@ -115,3 +115,17 @@ price.
   improvements would never reach us.
 - **Evidence:** `8eedd1e`, [tasks-template.md](../../.specify/templates/overrides/tasks-template.md),
   [constitution.md](../../.specify/memory/constitution.md).
+
+### 2026-10-29 · The workflow notes keep only what is ours `[Workflow]`
+
+- **Decision:** The two workflow documents of this project, one for building and one for reviewing,
+  no longer repeat the blueprint. Each section points to its part of the blueprint and keeps only
+  what holds here: the values of this project and the occasion each rule came from. Section names
+  and the numbered points stay, because the route map, skills and game description refer to them.
+  The long count of reviewer runs stays as well, since my decision on the architecture reviewer
+  rests on it.
+- **Alternatives:** keeping both documents in full next to the blueprint.
+- **Why:** Two full versions of the same rules would drift apart, and the next change would have to
+  be made twice.
+- **Evidence:** `f86cd1e`, [ki_dev.md](../ki_workflow/ki_dev.md),
+  [ki_pruefung.md](../ki_workflow/ki_pruefung.md).
