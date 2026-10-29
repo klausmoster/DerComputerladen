@@ -11,10 +11,10 @@ Projekts. Klaus wählt das Bild aus und gibt es frei. Claude fragt nicht, ob Kla
 und schreibt keine Anleitung zum Selbermachen (Klaus, 2026-10-27; `docs/ki_workflow/ki_dev.md`,
 Grafik).
 
-Vorher lesen: im Style-Guide (https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX) den
-Leonardo-Workflow (Modelle, Stilblock, Formate, Nachbearbeitung, Prompt-Bibliothek) und den
-Baustein, zu dem das Bild gehört; `tools/raster/README.md`; den letzten passenden Eintrag in
-`docs/art/leonardo/prompt-log.md` als Beispiel für die Rasterfassung.
+Vorher lesen: im Style-Guide den Leonardo-Workflow (`docs/style-guide/leonardo-workflow.md`:
+Modelle, Stilblock, Formate, Nachbearbeitung, Prompt-Bibliothek) und den Baustein, zu dem das
+Bild gehört (`docs/style-guide/bausteine/`); `tools/raster/README.md`; den letzten passenden
+Eintrag in `docs/art/leonardo/prompt-log.md` als Beispiel für die Rasterfassung.
 
 ## 1. Prompt
 
@@ -25,8 +25,8 @@ Baustein, zu dem das Bild gehört; `tools/raster/README.md`; den letzten passend
    Was die Oberfläche später darüber malt (etwa ein LCD), als leere Fläche mit genauem
    Seitenverhältnis verlangen.
 3. Den Prompt **vor** dem Erzeugen in die Prompt-Bibliothek des Style-Guides schreiben (Abschnitt
-   „Prompts“, mit Modell, Format, Zweck und Vorbild) und den Style-Guide veröffentlichen
-   (Grundsatz IV der Verfassung).
+   „Prompts“ in `docs/style-guide/leonardo-workflow.md`, mit Modell, Format, Zweck und Vorbild;
+   Grundsatz IV der Verfassung). Committet wird er mit dem Bild.
 
 ## 2. Erzeugen in Leonardo
 

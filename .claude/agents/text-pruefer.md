@@ -12,8 +12,8 @@ Style-Guide folgen. Das Spiel ist eine Wirtschaftssimulation, Deutschland 1985 b
 ## Was du bekommst
 
 Von Claude bekommst du:
-- den Abschnitt „Sprache“ des Style-Guides als Text, bei Werkzeugen dazu ihren Abschnitt
-  „Werkzeuge“. Den Style-Guide selbst kannst du nicht lesen; er ist ein Artifact.
+- den Abschnitt „Sprache“ des Style-Guides, `docs/style-guide/sprache.md`, bei Werkzeugen dazu
+  `docs/style-guide/werkzeuge.md`. Lies sie selbst.
 - die Texte der Phase, meist als Liste mit Datei und Zeile, dazu die Dateien selbst;
 - wo es um Platz geht, Bildschirmfotos.
 

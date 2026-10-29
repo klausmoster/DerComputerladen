@@ -267,9 +267,11 @@ die Gesamtabnahme von Feature 006 ohne Startbefehl). Die Bitte enthält, in dies
 
 ## Grafik
 
-- Grafik läuft über Artifacts, nicht über Dateien im Repo (seit 2026-10-19):
-  - Style-Guide, verbindlich: https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX, mit Leitbild,
-    Tokens, Bausteinen, dem Abschnitt „Werkzeuge“ und dem Leonardo-Workflow samt
+- Alles, womit die KI für die Grafik arbeitet, liegt im Repo, als Markdown und in Obsidian
+  lesbar, nicht in Claude Design oder Artifacts (Klaus, 2026-10-29; vom 2026-10-19 an lag der
+  Style-Guide als Artifact vor):
+  - Style-Guide, verbindlich: `docs/style-guide/`, mit Leitbild, Tokens, Bausteinen, den
+    Abschnitten „Sprache“, „Ton“ und „Werkzeuge“ und dem Leonardo-Workflow samt
     Prompt-Bibliothek.
   - Claude Design „Computerladen Titelscreen & Cover“:
     https://claude.ai/artifact/RHKxpTb6JfWFQdNnPYEWHH, noch mit den alten Platzhalter-Skizzen

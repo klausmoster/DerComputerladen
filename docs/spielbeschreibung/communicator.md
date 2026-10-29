@@ -14,7 +14,7 @@
 - **Herkunft:** `specs/005-communicator/` (`contracts/communicator.md`, `research.md` R1 bis R11,
   `data-model.md`); Gehäusetasten aus `specs/006-easter-egg-space-invaders/`
   (`contracts/gehaeusetasten.md`, `research.md` R1 bis R4); Baustein Communicator im
-  [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX)
+  [Style-Guide](../style-guide/bausteine/communicator.md)
 - **Stand:** Feature 006, 2026-10-28
 - **Nachbarn:** der Titel als erster Nutzer in [titel-und-hauptmenue.md](titel-und-hauptmenue.md),
   das versteckte Spiel als Seite in [easter-egg.md](easter-egg.md), der Klick in [ton.md](ton.md),

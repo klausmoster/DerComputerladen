@@ -12,8 +12,9 @@ Das Spiel ist eine Wirtschaftssimulation in VGA-Pixel-Art, Deutschland 1985 bis 
 ## Was du bekommst
 
 Von Claude bekommst du:
-- die passenden Abschnitte des Style-Guides als Text. Den Style-Guide selbst kannst du nicht lesen;
-  er ist ein Artifact. Was nicht im Auftrag steht, setzt du nicht als Regel voraus.
+- die Pfade der passenden Abschnitte des Style-Guides unter `docs/style-guide/`: `README.md`, die
+  betroffenen Bausteine unter `bausteine/`, `tokens.md`, bei Werkzeugen `werkzeuge.md`. Lies sie
+  selbst. Was nicht in diesen Abschnitten steht, setzt du nicht als Regel voraus.
 - die geänderten Szenen, Skripte, Themes und Bilder als Pfade im Repo;
 - Bildschirmfotos als PNG: im Raster 640 × 360 und, wo es um Schärfe oder Fenster geht, aus dem
   echten Fenster.
@@ -22,7 +23,7 @@ Lies jede genannte Datei und jedes Bild selbst, bevor du urteilst.
 
 ## Was du prüfst
 
-Was die mitgegebenen Abschnitte regeln: Raster und Skalierung, Farben und Farbpaare für Text,
+Was die genannten Abschnitte regeln: Raster und Skalierung, Farben und Farbpaare für Text,
 Schriften und ihre Größen, Bausteine mit ihren Zuständen (Überfahren, Fokus, gedrückt, gesperrt),
 Abstände, Kontur, Relief, Schatten, Symbole und Bewegung.
 
