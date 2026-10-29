@@ -238,13 +238,13 @@ oder in älteren Specs.
 - [x] T038 [C] Selbsttest zur Gesamtabnahme: liegt mit Phase 4 vor; hat sich nach Phase 4 Code
   geändert, auf dem Mac neu bauen, laufen lassen und vergleichen. Ergebnis in der Bitte um
   Gesamtabnahme; neue Referenzbilder nur nach Klaus' Abnahme.
-- [ ] T039 [K] Gesamtabnahme nach dem ganzen quickstart.md, mit Startweg und Ergebnis des Selbsttests.
+- [x] T039 [K] Gesamtabnahme nach dem ganzen quickstart.md, mit Startweg und Ergebnis des Selbsttests.
 - [x] T040 [C] Spielbeschreibung prüfen (immer die letzte Aufgabe des Features, nach der
   Gesamtabnahme und vor dem Merge; `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“): Claude
   gleicht `docs/spielbeschreibung/` mit dem Code ab und legt Klaus eine Liste vor, welche Dateien
   veralten und welche neu angelegt werden sollten, mit Grund. Abweichungen zwischen Spec und Code
   gehören dazu. Geändert wird erst nach Klaus' OK.
-- [ ] T041 [C] Tagebuch: je echter Entscheidung ein Eintrag auf Englisch in einer eigenen Datei des
+- [x] T041 [C] Tagebuch: je echter Entscheidung ein Eintrag auf Englisch in einer eigenen Datei des
   Features unter `docs/tagebuch/`, oben die Zeile aus
   `python3 -I tools/tagebuch/token_bilanz.py feature/009-renderer-compatibility` (`ki_dev.md`,
   Punkt 10); Klaus nimmt ab.
