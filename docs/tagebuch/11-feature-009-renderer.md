@@ -100,3 +100,18 @@ price.
   that knowledge can show whether one file is enough.
 - **Evidence:** `133c2ad`, [blaupause.md](../ki_workflow/blaupause.md) ("Änderungen"),
   [offene-punkte.md](../offene-punkte.md).
+
+### 2026-10-29 · Tests and owners hold even against Spec Kit `[Workflow]`
+
+- **Decision:** Our task template no longer calls tests optional, puts the owner `[K]`, `[A]` or
+  `[C]` right after the task number, commits once per accepted phase instead of after each task, and
+  drops "deploy/demo" and parallel teams. Constitution 3.1.0 makes tests mandatory for everything
+  measurable and fixes the owner format, both explicitly also where a Spec Kit skill says otherwise.
+  After every Spec Kit update Claude now compares its new templates with the originals our copies
+  came from, recorded with checksums in the project profile.
+- **Alternatives:** leaving it to Claude to correct each generated task list by hand, as until now.
+- **Why:** The blueprint tests showed that our own template still carried Spec Kit's defaults, which
+  contradict how we work, and that a template of our own replaces Spec Kit's completely, so its
+  improvements would never reach us.
+- **Evidence:** `8eedd1e`, [tasks-template.md](../../.specify/templates/overrides/tasks-template.md),
+  [constitution.md](../../.specify/memory/constitution.md).
