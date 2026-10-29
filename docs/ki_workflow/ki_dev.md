@@ -255,9 +255,15 @@ die Gesamtabnahme von Feature 006 ohne Startbefehl). Die Bitte enthält, in dies
   `Bash(kill *)` in Klaus' `~/.claude/settings.json`.
 - **Spec Kit aktualisieren** (Klaus, 2026-10-27): Eigene Vorlagen liegen unter
   `.specify/templates/overrides/`. Spec Kit sucht dort zuerst und spielt bei einem Update nur seine
-  eigenen Vorlagen ein. Nach jedem Update prüft Claude mit `git diff`, dass `overrides/` und die
-  Verfassung unverändert sind, bevor committet wird. Anlass: Klaus' Frage, ob ein Update die
-  Aufgaben „Phasenprüfung“ und „Spielbeschreibung prüfen“ löschen kann.
+  eigenen Vorlagen ein. Nach jedem Update, bevor committet wird:
+  1. Claude prüft mit `git diff`, dass `overrides/` und die Verfassung unverändert sind. Anlass:
+     Klaus' Frage, ob ein Update die Aufgaben „Phasenprüfung“ und „Spielbeschreibung prüfen“ löschen
+     kann.
+  2. Claude vergleicht die neuen Vorlagen von Spec Kit mit den Ausgangsfassungen im
+     [Steckbrief](projekt.md), „Eigene Vorlagen“, zieht Verbesserungen in die eigenen Kopien nach
+     und trägt die neuen Prüfsummen ein. Warum: Eine eigene Vorlage ersetzt die von Spec Kit ganz;
+     ohne diesen Schritt kommt keine Verbesserung von Spec Kit je bei uns an. Anlass: die Proben der
+     Blaupause (Klaus, 2026-10-29).
 - Projekt-Root ist `src/`, also immer `--path src`. Startbefehle vom Repo-Ordner aus:
   - Spiel: `/Applications/Godot.app/Contents/MacOS/Godot --path src`
   - Werkstatt:

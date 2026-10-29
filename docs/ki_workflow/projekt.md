@@ -89,8 +89,9 @@ Bis auf die Ergänzungen stimmen die eigenen Vorlagen mit denen von Spec Kit 1.2
 | `plan-template.md` | `7e637502d41eccf0ca672496636365691fdca62ef37b27ec07fcb412dbfa90d4` |
 | `tasks-template.md` | `fc29a233f6f5a27ca31f1aa46b596af6500c627441c6e62b2bc4a1d721525842` |
 
-Die Aufgaben-Vorlage enthält noch die Stellen, die Tests optional nennen, „Commit after each task“
-und „Deploy/demo“; siehe `docs/offene-punkte.md`.
+Die Aufgaben-Vorlage ist seit 2026-10-29 nach Anhang C der Blaupause bereinigt: Tests sind
+Pflicht, der Besitzer steht nach der Nummer, ein Commit je abgenommener Phase, kein „Deploy/demo“
+und keine parallelen Teams.
 
 ## Abweichungen von der Blaupause
 
