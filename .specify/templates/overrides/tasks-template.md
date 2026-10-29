@@ -9,12 +9,15 @@ description: "Task list template for feature implementation"
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Tests sind Pflicht für alles Messbare, auch wenn die Spec sie nicht ausdrücklich verlangt
+und der Skill `speckit-tasks` sie optional nennt (Verfassung, Grundsatz VI).
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-## Format: `[ID] [P?] [Story] Description`
+## Format: `[ID] [Besitzer] [P?] [Story] Description`
 
+- **[Besitzer]**: `[K]` Klaus, `[A]` Godot-Agent, `[C]` Claude; steht direkt nach der Nummer, auch
+  wenn der Skill `speckit-tasks` ein Format ohne Besitzer nennt (Verfassung, Grundsatz III)
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
@@ -42,6 +45,10 @@ description: "Task list template for feature implementation"
   - Delivered as an MVP increment
 
   DO NOT keep these sample tasks in the generated tasks.md file.
+
+  Ausnahme: Die deutschen Aufgaben mit `[C]` oder `[A]` in dieser Vorlage (Godot-Doku,
+  Phasenprüfung, Bestandsprüfung, Selbsttest, Spielbeschreibung) sind keine Beispiele. Sie kommen
+  in jede tasks.md, mit echter Nummer.
   ============================================================================
 -->
 
@@ -52,9 +59,9 @@ description: "Task list template for feature implementation"
 - [ ] TXXX [C] Godot-Doku im Arbeitsordner bereitlegen, immer die erste Aufgabe: Fehlt
   `godot_referenz/`, `tools/godot_referenz/erzeuge.sh --texte --handbuch` laufen lassen
   (`docs/ki_workflow/ki_dev.md`, „Werkzeuge und Pfade“)
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T001 [A] Create project structure per implementation plan
+- [ ] T002 [A] Initialize [language] project with [framework] dependencies
+- [ ] T003 [A] [P] Configure linting and formatting tools
 
 ---
 
@@ -66,12 +73,12 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+- [ ] T004 [A] Setup database schema and migrations framework
+- [ ] T005 [A] [P] Implement authentication/authorization framework
+- [ ] T006 [A] [P] Setup API routing and middleware structure
+- [ ] T007 [A] Create base models/entities that all stories depend on
+- [ ] T008 [A] Configure error handling and logging infrastructure
+- [ ] T009 [A] Setup environment configuration management
 
 - [ ] TXXX [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares,
   Texte oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
@@ -87,21 +94,21 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 ⚠️
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T010 [A] [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T011 [A] [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T012 [A] [P] [US1] Create [Entity1] model in src/models/[entity1].py
+- [ ] T013 [A] [P] [US1] Create [Entity2] model in src/models/[entity2].py
+- [ ] T014 [A] [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
+- [ ] T015 [A] [US1] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T016 [A] [US1] Add validation and error handling
+- [ ] T017 [A] [US1] Add logging for user story 1 operations
 
 - [ ] TXXX [C] Phasenprüfung Phase 3 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares,
   Texte oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
@@ -117,17 +124,17 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 ⚠️
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T018 [A] [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T019 [A] [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T021 [US2] Implement [Service] in src/services/[service].py
-- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T020 [A] [P] [US2] Create [Entity] model in src/models/[entity].py
+- [ ] T021 [A] [US2] Implement [Service] in src/services/[service].py
+- [ ] T022 [A] [US2] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T023 [A] [US2] Integrate with User Story 1 components (if needed)
 
 - [ ] TXXX [C] Phasenprüfung Phase 4 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares,
   Texte oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
@@ -143,16 +150,16 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 3 ⚠️
 
-- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T024 [A] [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T025 [A] [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T027 [US3] Implement [Service] in src/services/[service].py
-- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T026 [A] [P] [US3] Create [Entity] model in src/models/[entity].py
+- [ ] T027 [A] [US3] Implement [Service] in src/services/[service].py
+- [ ] T028 [A] [US3] Implement [endpoint/feature] in src/[location]/[file].py
 
 - [ ] TXXX [C] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`, nur wenn die Phase Sichtbares,
   Texte oder Code ändert, mit den Prüfern aus `plan.md`, „Prüfer je Phase“; vor Klaus' Abnahme
@@ -170,12 +177,12 @@ Examples of foundational tasks (adjust based on your project):
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] TXXX [P] Documentation updates in docs/
-- [ ] TXXX Code cleanup and refactoring
-- [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
-- [ ] TXXX Security hardening
-- [ ] TXXX Run quickstart.md validation
+- [ ] TXXX [A] [P] Documentation updates in docs/
+- [ ] TXXX [A] Code cleanup and refactoring
+- [ ] TXXX [A] Performance optimization across all stories
+- [ ] TXXX [A] [P] Additional unit tests in tests/unit/
+- [ ] TXXX [A] Security hardening
+- [ ] TXXX [A] Run quickstart.md validation
 - [ ] TXXX [C] Bestandsprüfung mit dem Architektur-Prüfer über ganz `src/`, nur wenn mit diesem
   Feature eine neue Schicht beginnt, etwa Wirtschaft oder Adventure, oder seine Nummer auf 3 oder 8
   endet (jedes fünfte Feature nach 008: 013, 018, …); vor der Lückensuche
@@ -204,8 +211,7 @@ Examples of foundational tasks (adjust based on your project):
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
 - **User Stories (Phase 3+)**: All depend on Foundational phase completion
-  - User stories can then proceed in parallel (if staffed)
-  - Or sequentially in priority order (P1 → P2 → P3)
+  - Nacheinander in Prioritätsreihenfolge (P1 → P2 → P3), jede Phase einzeln von Klaus freigegeben
 - **Polish (Final Phase)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
@@ -216,7 +222,7 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Within Each User Story
 
-- Tests (if included) MUST be written and FAIL before implementation
+- Tests MUST be written and FAIL before implementation
 - Models before services
 - Services before endpoints
 - Core implementation before integration
@@ -226,17 +232,15 @@ Examples of foundational tasks (adjust based on your project):
 
 - All Setup tasks marked [P] can run in parallel
 - All Foundational tasks marked [P] can run in parallel (within Phase 2)
-- Once Foundational phase completes, all user stories can start in parallel (if team capacity allows)
 - All tests for a user story marked [P] can run in parallel
 - Models within a story marked [P] can run in parallel
-- Different user stories can be worked on in parallel by different team members
 
 ---
 
 ## Parallel Example: User Story 1
 
 ```bash
-# Launch all tests for User Story 1 together (if tests requested):
+# Launch all tests for User Story 1 together:
 Task: "Contract test for [endpoint] in tests/contract/test_[name].py"
 Task: "Integration test for [user journey] in tests/integration/test_[name].py"
 
@@ -255,26 +259,15 @@ Task: "Create [Entity2] model in src/models/[entity2].py"
 2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
 3. Complete Phase 3: User Story 1
 4. **STOP and VALIDATE**: Test User Story 1 independently
-5. Deploy/demo if ready
+5. Abnahme durch Klaus, dann Commit der Phase
 
 ### Incremental Delivery
 
 1. Complete Setup + Foundational → Foundation ready
-2. Add User Story 1 → Test independently → Deploy/Demo (MVP!)
-3. Add User Story 2 → Test independently → Deploy/Demo
-4. Add User Story 3 → Test independently → Deploy/Demo
+2. Add User Story 1 → Test independently → Abnahme, Commit (MVP!)
+3. Add User Story 2 → Test independently → Abnahme, Commit
+4. Add User Story 3 → Test independently → Abnahme, Commit
 5. Each story adds value without breaking previous stories
-
-### Parallel Team Strategy
-
-With multiple developers:
-
-1. Team completes Setup + Foundational together
-2. Once Foundational is done:
-   - Developer A: User Story 1
-   - Developer B: User Story 2
-   - Developer C: User Story 3
-3. Stories complete and integrate independently
 
 ---
 
@@ -284,6 +277,6 @@ With multiple developers:
 - [Story] label maps task to specific user story for traceability
 - Each user story should be independently completable and testable
 - Verify tests fail before implementing
-- Commit after each task or logical group
+- Claude committet einmal je von Klaus abgenommener Phase, nie je Aufgabe
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence

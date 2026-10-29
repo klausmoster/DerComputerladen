@@ -12,24 +12,6 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
-### Blaupause, Proben mit einem leeren Projekt (2026-10-29)
-
-Zwei Proben der Blaupause (`docs/ki_workflow/blaupause.md`) fanden Widersprüche, die auch hier
-gelten:
-- **Aufgaben-Vorlage gegen die Arbeitsweise:** `.specify/templates/overrides/tasks-template.md`
-  nennt Tests an fünf Stellen optional („Tests are OPTIONAL“, „only if tests requested“, „if
-  requested“), sagt „Commit after each task or logical group“ und empfiehlt „Deploy/demo“ und
-  parallele Teams. Der Skill `speckit-tasks` nennt Tests ebenfalls optional und kennt `[K]`, `[A]`,
-  `[C]` nicht. Bisher fangen das Verfassung VI und Claudes Prüfung auf. Empfehlung: die Vorlage
-  nach Anhang C der Blaupause bereinigen und in der Verfassung festhalten, dass Testpflicht und
-  Besitzerformat auch gegen den Skill gelten. Aufwand: klein, eine Sitzung mit Vorlage und
-  Verfassungsänderung (Klaus' Beschluss).
-- **Updates von Spec Kit kommen in den eigenen Vorlagen nicht an:** Eine eigene Vorlage ersetzt die
-  von Spec Kit ganz. Die Prüfung nach einem Update (`ki_dev.md`, „Werkzeuge und Pfade“) prüft nur,
-  dass `overrides/` unverändert ist, nicht, was Spec Kit an seinen Vorlagen verbessert hat.
-  Empfehlung: nach jedem Update die neuen Vorlagen mit den Ausgangsfassungen im Steckbrief
-  vergleichen und nachziehen. Aufwand: klein, eine Zeile in `ki_dev.md`.
-
 ### Feature 009, Plan und Checkliste (2026-10-29)
 
 - **Lücken im Maßstab** aus der Vorab-Prüfung (`specs/009-renderer-compatibility/checklists/review.md`),
@@ -1077,6 +1059,12 @@ Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder 
 
 ## Erledigt
 
+- **Aufgaben-Vorlage und Updates von Spec Kit** (Blaupause, Proben, Klaus, 2026-10-29):
+  `.specify/templates/overrides/tasks-template.md` nach Anhang C der Blaupause bereinigt (Tests
+  Pflicht, Besitzer nach der Nummer, ein Commit je abgenommener Phase, kein „Deploy/demo“, keine
+  parallelen Teams, feste Aufgaben als keine Beispiele gekennzeichnet); Verfassung 3.1.0, Grundsätze
+  III und VI, auch gegen die Skills von Spec Kit; `ki_dev.md`, „Spec Kit aktualisieren“, um den
+  Vergleich mit den Ausgangsfassungen im Steckbrief ergänzt.
 - **Renderer** (Feature 009, Klaus, 2026-10-29): Compatibility auf allen drei Systemen statt
   Forward+ (`docs/entscheidungen/renderer.md`, `specs/009-renderer-compatibility/`). Damit erledigt
   aus Feature 007: der Punkt „Renderer“, die Abweichung von FR-017 (Direct3D 12 startete nur halb,

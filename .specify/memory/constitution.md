@@ -60,6 +60,8 @@ Entscheidung und lernt über Lernnotizen, Review und die `[K]`-Aufgaben, die er 
 - Jedes Feature hat eine feste Nummer, die Spec Kit vergibt (`001`, `002`, …). Branch und Ordner
   heißen danach, etwa `feature/001-hauptmenue` und `specs/001-hauptmenue/`. Branches und Commits
   verweisen auf die Nummer, deshalb wird sie nie geändert.
+- In `tasks.md` steht der Besitzer `[K]`, `[A]` oder `[C]` direkt nach der Aufgabennummer, auch wo
+  ein Skill von Spec Kit ein Format ohne Besitzer nennt.
 - Zu welchem System (01–11 aus `docs/features/Features.md`) ein Feature gehört, steht in seiner
   Spezifikation. Die älteren Feature-Docs in `docs/features/archiv/` behalten ihre IDs `SS-NN`.
 - Entscheidungen werden mit verworfener Alternative und Grund festgehalten. Bekannte Lücken
@@ -114,7 +116,8 @@ Regenerieren der Tabellen nicht verloren gehen.
   Architektur-Prüfer Plan und Vertrag, bevor gebaut wird.
 - Ein Plan, der vom Leitfaden abweicht, nennt die Abweichung unter „Ausnahmen vom Leitfaden“; Klaus
   gibt sie mit dem Plan frei.
-- Was sich messen lässt, prüfen Tests, nicht Prüfer.
+- Was sich messen lässt, prüfen Tests, nicht Prüfer. Tests sind Pflicht für alles Messbare, auch
+  wenn die Spec sie nicht verlangt und ein Skill von Spec Kit sie optional nennt.
 
 Begründung: Ein Prüfer mit eigenem Maßstab sieht, was der übersieht, der gebaut und geplant hat.
 Im Pilot (Feature 004) waren alle 13 bestätigten Befunde neu für Claude, keiner war falsch. Für den
@@ -164,4 +167,4 @@ und nicht nach Geschmack (Feature 008).
   ein Grundsatz wegfällt oder neu definiert wird; MINOR, wenn ein Grundsatz oder Abschnitt
   hinzukommt oder deutlich erweitert wird; PATCH für Klarstellungen und Wortlaut.
 
-**Version**: 3.0.1 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-29
+**Version**: 3.1.0 | **Beschlossen**: 2026-10-19 | **Zuletzt geändert**: 2026-10-29
