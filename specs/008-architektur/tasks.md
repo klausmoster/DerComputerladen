@@ -306,18 +306,24 @@ installierten Version statt eines fremden Dienstes wie Context7. Sie kommt vor T
 Lückensuche und Architektur-Prüfer schon in ihr nachsehen. Die Buchstaben halten die Nummern ab
 T040 fest.
 
-- [ ] T039a [C] Erzeugen-Skript `tools/godot_referenz/erzeuge.sh`: ruft `Godot --doctool <ordner>`
+- [x] T039a [C] Erzeugen-Skript `tools/godot_referenz/erzeuge.sh`: ruft `Godot --doctool <ordner>`
   der installierten Godot auf (derzeit 4.7.2) und schreibt die Klassenreferenz als XML nach
   `godot_referenz/klassen/` im Repo-Root; schreibt `Godot --version` daneben in `version.txt`;
   bricht ab, wenn die Version nicht die in `src/project.godot` ist. Vorher Klaus die Entscheidung
   vorlegen, ob die XML-Dateien ins Repo kommen (Empfehlung: bei Bedarf erzeugen, nicht committen,
   `/godot_referenz/` in `.gitignore`; Aufwand: klein). Prüfen: zweimal laufen lassen, gleiche
   Dateien; `Node.xml`, `RegEx.xml` und `@GDScript.xml` vorhanden; `git status` zeigt den Ordner
-  nicht.
+  nicht. Entschieden: erzeugen, nicht committen (Klaus, 2026-10-29).
 - [ ] T039b [C] Optional, nur mit Klaus' Erlaubnis: das Handbuch `godot-docs`, Zweig 4.7 (rst), als
   flacher Klon nach `godot_referenz/handbuch/` (ebenfalls nicht im Repo). Vor dem Download Quelle
   (`https://github.com/godotengine/godot-docs`, Zweig 4.7) und Größe nennen; das Skript aus T039a
   bekommt dafür einen eigenen Schalter, kein Download ohne ihn.
+- [ ] T039d [C] Optional, nur mit Klaus' Erlaubnis: die Beschreibungstexte der Klassenreferenz. Das
+  installierte Godot liefert mit `--doctool` nur Signaturen (gemessen in T039a); die Texte stehen
+  in `doc/classes/`, `modules/*/doc_classes/` und `platform/*/doc_classes/` des Quellcodes,
+  `https://github.com/godotengine/godot`, Tag `4.7.2-stable`. Als Teil-Klon nur dieser Ordner;
+  `--doctool` mischt die Texte dann in die Signaturen. Vor dem Laden Quelle und genaue Größe nennen
+  (Klaus, 2026-10-29: erst Signaturen, Texte später).
 - [ ] T039c [C] Verweise auf die Referenz: je ein Satz in `.claude/agents/godot-entwickler.md`,
   `.claude/agents/architektur-pruefer.md` und `docs/ki_workflow/ki_dev.md`: wo sie liegt, dass bei
   API-Fragen dort nachgesehen wird statt aus dem Gedächtnis, und dass bei fehlendem Ordner zuerst

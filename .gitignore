@@ -12,3 +12,7 @@ docs/game_bible/.obsidian/workspace.json
 
 # Python-Zwischendateien der Werkzeuge unter tools/
 __pycache__/
+
+# Klassenreferenz der installierten Godot, erzeugt mit tools/godot_referenz/erzeuge.sh (Feature 008,
+# T039a) — jederzeit neu erzeugbar.
+/godot_referenz/
