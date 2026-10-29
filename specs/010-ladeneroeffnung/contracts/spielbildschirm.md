@@ -45,8 +45,8 @@ GameScreen (Control, 640 × 360)
   7.0]` Tage je Sekunde, Vorgabe der erste; die Tasten fürs Tempo legt der Style-Guide fest, nicht
   1 bis 6 (dort liegen die Symbolknöpfe).
 - Datum und Kontostand ändern sich im selben Bild wie `day_passed` bzw. `account_changed`.
-- Negativer Kontostand: Minus, „SOLL“, `kassenrot`, wie der Style-Guide es für negative Beträge
-  festlegt (FR-025).
+- Negativer Kontostand: Minus und „SOLL“, die Farbe bleibt die der Anzeige (Style-Guide, Baustein
+  Anzeige; FR-025).
 - Am 31.12.1999 hält die Uhr an (`GameClock.reached_end`); der Knopf der Uhr ist dann nicht
   verfügbar, sein Tooltip sagt warum.
 - „Zum Hauptmenü“ wie bisher; `leave()` hält die Uhr an. Hinweis: „Speichert {Ladenname} und führt

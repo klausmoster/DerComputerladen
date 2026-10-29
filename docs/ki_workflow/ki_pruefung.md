@@ -353,6 +353,9 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 009, Phase 3, 16 Texte in Textklasse und Tests (2026-10-29) | Text | 0 | – | – | 2 (Punkt nach einem Pfad in Testmeldungen; Regelnummer in Assert-Meldungen) | – |
 | Feature 009, Lückensuche über das ganze Feature, 3 Dateien unter `src/` (2026-10-29) | Architektur | 0 | – | – | 1 neu (L2, Engine-Einstellungen), L1 bestätigt | – |
 | Feature 009, Lückensuche, 31 Texte mit der Zeile im Style-Guide (2026-10-29) | Text | 0 | – | – | 2 (Verweise auf Repo-Dokumente, Linux oder X11) | – |
+| Feature 010, Vorab bei der Checkliste, Spec und Vertrag (2026-10-29) | Text | 5 | 5 (einer zugleich vom Stil-Prüfer: Hinweis zu „Anmelden“ zu lang) | 0 | 9, als Fragen an Phase 4 übernommen (CHK037) | 4 |
+| Feature 010, Vorab bei der Checkliste, Spec und Vertrag (2026-10-29) | Stil | 13 | 13 | 0 | 5 neue, dazu die 5 Fragen aus R14 bestätigt | 11 |
+| Feature 010, Vorab bei der Checkliste, Plan und Vertrag (2026-10-29) | Architektur | 4 | 4 (dazu 6 unter „Unsicher“, bestätigt: CHK042 bis CHK047) | 0 | 4 | 4 |
 
 „Nur er fand“ heißt: Claudes eigene Prüfung hatte es nicht gefunden. Bei den Probeläufen an
 Feature 001 war das Feature schon abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.

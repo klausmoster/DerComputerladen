@@ -58,7 +58,7 @@ Regeln kopieren.
 
 **Entscheidung:** Alle Beträge sind ganze Zahlen in Pfennig (AR-16, gilt ab diesem Feature).
 `Money` (`src/core/shop/money.gd`) formatiert sie nach Style-Guide: „25.680,00 DM“, negativ
-„−4.320,00 DM SOLL“. Die Stellschrauben stehen als Konstanten in `ShopRules`
+mit Minus und „SOLL“ wie im Baustein Anzeige. Die Stellschrauben stehen als Konstanten in `ShopRules`
 (`src/core/shop/shop_rules.gd`): Startkapital je Grad (Leicht 10.000.000, Mittel 6.000.000,
 Schwer 3.000.000 Pfennig), Kaution `DEPOSIT_MONTHS = 3`, Kapitalnachweis `PROOF_MONTHS = 6`
 zusätzlich zur Kaution, Mietbeginn 01.01.1985, erster Monat mietfrei.

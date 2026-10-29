@@ -64,8 +64,8 @@ Spiel starten:
 10. **Alter Spielstand:** Ein Spielstand von vor 010 steht als beschädigt in der Liste und lässt
     sich löschen.
 11. **Fenster schließen im Büro:** Im Büro Cmd+Q: Die App endet, kein neuer Spielstand.
-12. **Minus:** Im Spielbildschirm laufen lassen, bis der Kontostand unter null fällt: Minus, „SOLL“,
-    `kassenrot`.
+12. **Minus:** Im Spielbildschirm laufen lassen, bis der Kontostand unter null fällt: Minus und „SOLL“ in der
+    Leuchtanzeige.
 
 ## Aufräumen
 

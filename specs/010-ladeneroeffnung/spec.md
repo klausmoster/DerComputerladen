@@ -402,7 +402,7 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
 - **FR-024**: Der Kontostand MUST auf den Pfennig genau geführt und wie im Style-Guide angezeigt
   werden, etwa „25.680,00 DM“.
 - **FR-025**: Fällt der Kontostand unter null, MUST er weiter geführt und wie im Style-Guide für
-  negative Beträge angezeigt werden (Minus, „SOLL“, `kassenrot`); weitere Folgen hat das in diesem
+  negative Beträge in der Leuchtanzeige angezeigt werden (Minus und „SOLL“); weitere Folgen hat das in diesem
   Feature nicht. Pleite, Kredit und Spielende gehören
   zu 03-06 Finanzen (Festlegung von Claude, siehe Annahmen).
 

@@ -12,6 +12,14 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 
 ## Offen
 
+### Feature 010, Checkliste (2026-10-29)
+
+- **Lücken im Leitfaden** aus der Vorab-Prüfung (`specs/010-ladeneroeffnung/checklists/review.md`,
+  Abschnitt „Lücken im Leitfaden“), je mit Empfehlung dort: Ladenwahl als Eingriff oder Pflichtteil
+  (AR-08/AR-09), vom Spieler gesteuerte Wege und lineare Abläufe (AR-19 gegen AR-11), feste Sätze
+  als Dialog (AR-20), alte Spielstände vor der ersten Herausgabe (AR-13).
+- **Lücken im Style-Guide:** gesammelt in CHK037; sie werden in Phase 4 von Feature 010 gefüllt.
+
 ### Feature 009, Plan und Checkliste (2026-10-29)
 
 - **Lücken im Maßstab** aus der Vorab-Prüfung (`specs/009-renderer-compatibility/checklists/review.md`),
