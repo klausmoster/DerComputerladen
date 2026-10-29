@@ -1,6 +1,6 @@
 # Prompt-Log Leonardo
 
-Freigegebene Bilder aus Leonardo.ai, mit allem, was man zum Nachbauen braucht. Regeln und Stilblock stehen im [Style-Guide](../../style-guide/leonardo-workflow.md), Abschnitt Leonardo-Workflow.
+Freigegebene Bilder aus Leonardo.ai, mit allem, was man zum Nachbauen braucht. Regeln und Stilblock stehen im [Style-Guide](../../style-guide/leonardo-workflow.md), Abschnitt Leonardo-Workflow. Nach Inhalt geordnet, mit festen Prompt-Bausteinen zum Wiederverwenden, stehen die Bilder im [Bildkatalog](../bildkatalog.md).
 
 Gemeinsame Einstellungen, wenn nicht anders angegeben: Modell Lucid Origin, Prompt Enhance aus, Style None, Generation Mode Fast, größte Bildgröße. Der Seed gilt für den ganzen Durchgang; „Bild“ ist die Nummer der Datei in diesem Durchgang.
 
