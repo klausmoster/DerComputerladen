@@ -21,13 +21,16 @@
 Nur Desktop: Windows, macOS, Linux mit Maus und Tastatur. Hover, Tooltips, Rechtsklick,
 Mauszeiger und Drag&Drop sind erwünscht. Keine Touch-Eingabe, keine Mobil- oder Web-Rücksichten.
 
-**Renderer Forward+, ohne Ausweichen auf OpenGL** (R13): `rendering_device/fallback_to_opengl3 =
-false` in `project.godot`. Ausweichen zwischen Vulkan und Direct3D 12 bleibt erlaubt (Vorgabe true,
-nicht eingetragen), beides ist Forward+; unter Windows ist Direct3D 12 gesetzt
-(`rendering_device/driver.windows`). Folge: Kann ein Rechner unter Windows oder Linux weder Vulkan noch
-Direct3D 12, zeigt Godot „Unable to initialize video driver“ und endet, statt mit Compatibility zu
-starten. Startet Direct3D 12 nur halb, kommt keine Meldung (siehe [selbsttest.md](selbsttest.md),
-„Grenzen“). `test_projekt_einstellungen.gd` prüft die Einstellungen.
+**Renderer Compatibility auf allen drei Systemen** (Feature 009, Verfassung 3.0.0, Grundsatz I):
+`rendering/renderer/rendering_method = "gl_compatibility"` in `project.godot`; Treiber und Rückfälle
+stehen auf Godots Vorgabe und sind nicht eingetragen. Gezeichnet wird mit OpenGL 3.3: unter macOS
+Apples OpenGL (auf Apple Silicon über Metal), unter Windows natives OpenGL, ohne brauchbares OpenGL
+ANGLE über Direct3D 11 (fest in den Export eingebaut), unter Linux OpenGL über Mesa oder NVIDIA,
+unter X11 notfalls OpenGL ES 3.0. Fehlt auch das, zeigt Godot „Unable to initialize video driver“
+und endet. Mittel, die es nur in Forward+ gibt (HDR, Kantenglättung des Bildes in 2D, Compute),
+nutzt das Spiel nicht. `test_projekt_einstellungen.gd` prüft die Einstellungen. Bis 2026-10-29
+lief das Spiel mit Forward+ (Feature 007, R13); Anlass des Wechsels war ein Windows-Rechner in Boot
+Camp, auf dem Forward+ ohne Meldung nicht startete (`docs/entscheidungen/renderer.md`).
 
 ## Raster und Skalierung
 

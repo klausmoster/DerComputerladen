@@ -67,17 +67,13 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
   - Linux-Symbol in kleinen Größen aus dem gerasterten Monitor, wie die ICO.
   - Rangfolge der Texte in `werkzeug-titel`: Seitenüberschrift und Summe gleich groß wie
     Bereichstitel.
-  - Windows-Lauf mit Vulkan oder Direct3D 12 (Windows bisher nur mit Compatibility belegt).
-  - Linux und Windows mit Version 2 des Selbsttests (45 Schritte) laufen lassen; belegt sind dort
-    bisher 37 Schritte.
   - `vergleich.py` legt Belege fest unter `specs/007-build-export-selbsttest/belege/` ab; für spätere
     Features einen Ordner je Feature wählbar machen.
 
 ### Feature 007, Phase 6 (2026-10-28)
 
 - **Klaus:** Export-Templates 4.7.2 im Editor installiert; Windows-Symbol in 16 aus jedem zweiten
-  Bildpixel (Style-Guide Version 62). Direct3D-12-Dateien (Agility SDK) bringen die Templates nicht
-  mit; ob Windows trotzdem Direct3D 12 nutzt, zeigt `system.grafik_api` im Protokoll.
+  Bildpixel (Style-Guide Version 62)..
 - **Lücken aus der Phasenprüfung (Stil, ICO), von Klaus mit Empfehlung abgenommen (T049):**
   - 48 mit ×2 füllt 93 % des Quadrats statt 70 % wie die anderen Größen. Empfehlung: so lassen, ×1
     wäre mit 47 % zu klein; im Style-Guide als bewusste Ausnahme vermerken.
@@ -89,12 +85,6 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 - **Läufe auf anderen Rechnern (T047, T048):** Linux (AMD R7 200, RADV, Vulkan 1.3) 37 von 37,
   35 Fotos gleich den Mac-Referenzen. Windows auf MacBook Pro 2015 mit Boot Camp (AMD R9 M370X):
   Forward+ startet nicht, ohne Meldung; mit erzwungenem OpenGL 37 von 37 und 35 Fotos gleich.
-  Ein Windows-Lauf mit Vulkan oder Direct3D 12 steht aus (Beleg mit `hinweis.md`).
-- **Abweichung von FR-017, von Klaus mit Empfehlung abgenommen (T049):** Startet Direct3D 12 nur halb, zeigt Godot
-  keine Meldung. Empfehlung: so lassen und in quickstart.md erklären (erledigt); eine eigene Prüfung
-  beim Start wäre ein eigenes Feature.
-- **Renderer:** Ob das Spiel bei Forward+ bleibt oder auf Compatibility wechselt, klärt eine eigene
-  Sitzung („Renderer klären: Forward+ oder Compatibility“); bis dahin gilt CLAUDE.md.
 - **Agent:** `werkstatt.gd` und `selbsttest_ergebnis.gd` schalten `GameWindow` jetzt mit
   `set_process_input(false)` ab; `invaders_page.gd` fragt das Vollbild-Kürzel mit `exact_match` ab.
 
@@ -1057,6 +1047,12 @@ Alle in `specs/008-architektur/research.md`; Klaus kann sie bei Checkliste oder 
 
 ## Erledigt
 
+- **Renderer** (Feature 009, Klaus, 2026-10-29): Compatibility auf allen drei Systemen statt
+  Forward+ (`docs/entscheidungen/renderer.md`, `specs/009-renderer-compatibility/`). Damit erledigt
+  aus Feature 007: der Punkt „Renderer“, die Abweichung von FR-017 (Direct3D 12 startete nur halb,
+  ohne Meldung), die Frage nach den Direct3D-12-Dateien (Agility SDK) und die Folgepunkte
+  „Windows-Lauf mit Vulkan oder Direct3D 12“ und „Linux und Windows mit 45 Schritten“: belegt sind
+  jetzt Mac, Boot Camp, Linux und Parallels mit 45 von 45 Schritten.
 - **Fahrplan eines Features** (Klaus, 2026-10-29): `docs/ki_workflow/feature_fahrplan.md` als
   Konzept abgenommen; die vier offenen Fragen nach Empfehlung entschieden: Bestandsprüfung bei
   neuer Schicht und jedes fünfte Feature, eigene Plan-Vorlage unter `overrides/`, Godot-Doku als

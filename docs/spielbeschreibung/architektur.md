@@ -148,7 +148,8 @@ der begründeten Ausnahmen. Hier die Kurzfassung mit den Nummern:
   fremden Quellen.
 - **Ein Look (Style-Guide).** Der Style-Guide ist die einzige Quelle für Farben, Raster, Schriften
   und Sprache. Texte duzen den Spieler.
-- **Nur Desktop (Verfassung, Grundsatz I).** Maus und Tastatur, Forward+.
+- **Nur Desktop (Verfassung, Grundsatz I).** Maus und Tastatur, Renderer Compatibility (bis
+  2026-10-29 Forward+).
 
 **Kern, Hülle und Helfer der Hülle.** Der Kern rechnet und hält den Zustand; er kennt weder
 Szenenbaum noch Autoloads noch den globalen Zufall. Die Hülle, eine Szene oder ein Autoload, reicht

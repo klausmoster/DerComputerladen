@@ -495,6 +495,9 @@ nichts und haben deshalb keine Notiz.
 
 ### T043: Renderer, Vollbild-Kürzel und Presets für Windows und Linux
 
+**Bis 2026-10-29.** Der Abschnitt „Renderer-Ausweichen“ beschreibt Forward+; seit Feature 009 läuft
+das Spiel mit Compatibility (`specs/009-renderer-compatibility/lernnotizen.md`).
+
 - **Renderer-Ausweichen.** Forward+ zeichnet über Godots `RenderingDevice`: unter macOS mit Metal,
   unter Windows mit Direct3D 12 (`rendering_device/driver.windows="d3d12"` in `project.godot`) oder
   Vulkan, unter Linux mit Vulkan. Scheitert der Treiber, darf Godot innerhalb von Forward+ wechseln:

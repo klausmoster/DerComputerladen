@@ -9,7 +9,7 @@ Repo-Root aus. Die Namen der Presets und Pfade stehen in [contracts/export.md](c
 - Godot 4.7.2 unter `/Applications/Godot.app/Contents/MacOS/Godot` mit den Export-Templates 4.7.2.
 - Python 3 für den Vergleich.
 - Für Teil 2 ein Windows-Rechner (x86_64) und ein Linux-Rechner (x86_64), beide mit einer
-  Grafikkarte, die Direct3D 12 oder Vulkan kann. Eine virtuelle Maschine ohne Vulkan zeigt nur Godots
+  Grafikkarte, die Direct3D 12 oder Vulkan kann (bis 2026-10-29; seit Feature 009 läuft das Spiel mit Compatibility, siehe `specs/009-renderer-compatibility/`). Eine virtuelle Maschine ohne Vulkan zeigt nur Godots
   Fehlermeldung (Spec, FR-017).
 
 ## Automatisch
@@ -105,7 +105,8 @@ Mit `--nur macos` baut das Skript nur ein System. Dann auf dem anderen Rechner:
 4. Von Hand, kurzer Blick: Symbol der .exe im Explorer, im Fenster und in der Taskleiste; im Spiel
    (nicht im Selbsttest) Vollbild mit F11 und mit Alt+Enter hin und zurück; danach steht das Fenster
    wieder in seiner Größe. Alt+Enter löst dabei im Menü nichts aus.
-5. Fehlt Vulkan oder Direct3D 12, erscheint Godots eigene Meldung „Unable to initialize video
+5. Bis 2026-10-29; seit Feature 009 läuft das Spiel mit Compatibility, siehe
+   `specs/009-renderer-compatibility/`. Fehlt Vulkan oder Direct3D 12, erscheint Godots eigene Meldung „Unable to initialize video
    driver“, und die App beendet sich (FR-017). Auf OpenGL weicht das Spiel bewusst nicht aus (R13).
    Startet Direct3D 12 nur halb, etwa auf Stufe 11_0 mit alten Treibern, kommt keine Meldung: Das
    Fenster schließt sich still oder hängt. So war es auf einem MacBook Pro 2015 mit Boot Camp und AMD

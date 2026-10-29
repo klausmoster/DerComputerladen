@@ -207,20 +207,20 @@ alte Regel bleibt als Geschichte lesbar (FR-010 bis FR-013, SC-005; R6).
 **Independent Test**: Die Suche aus quickstart.md, „Regeln und Doku“, findet „Forward+“ nur mit Datum
 oder in älteren Specs.
 
-- [ ] T028 [C] [P] [US3] Feature 007 mit Vermerk „bis 2026-10-29“ und Verweis auf Feature 009, alter
+- [x] T028 [C] [P] [US3] Feature 007 mit Vermerk „bis 2026-10-29“ und Verweis auf Feature 009, alter
   Text lesbar (FR-010): `specs/007-build-export-selbsttest/spec.md` (FR-017, Klärung „Was passiert
   ohne Forward+?“, Begriff „Renderer“), `research.md` (R13), `quickstart.md` (Schritt 5 unter
   „Windows und Linux“, „Voraussetzungen“), `lernnotizen.md` (T043).
-- [ ] T029 [C] [P] [US3] `docs/spielbeschreibung/`: `darstellung.md`, `architektur.md`,
+- [x] T029 [C] [P] [US3] `docs/spielbeschreibung/`: `darstellung.md`, `architektur.md`,
   `build-und-tests.md`, `selbsttest.md` („Grenzen“, „Belegte Läufe“) auf den neuen Renderer und die
   Belege aus Phase 4 (FR-011).
-- [ ] T030 [C] [P] [US3] `docs/offene-punkte.md`: „Renderer“, „Abweichung von FR-017“ und die Frage
+- [x] T030 [C] [P] [US3] `docs/offene-punkte.md`: „Renderer“, „Abweichung von FR-017“ und die Frage
   nach den Direct3D-12-Dateien nach „Erledigt“, mit Verweis auf Feature 009 (FR-012).
-- [ ] T031 [C] [P] [US3] `docs/entscheidungen/renderer.md`: ein Vermerk unter „Stand“, dass die
+- [x] T031 [C] [P] [US3] `docs/entscheidungen/renderer.md`: ein Vermerk unter „Stand“, dass die
   Entscheidung in Feature 009 umgesetzt ist; sonst unverändert (FR-013).
-- [ ] T032 [C] [US3] Suche nach „Forward+“ laut quickstart.md (SC-005); jede Fundstelle einordnen.
-- [ ] T033 [C] Phasenprüfung Phase 5: entfällt laut plan.md, „Prüfer je Phase“ (nur Doku).
-- [ ] T034 [K] [US3] Phase 5 abnehmen: Diff der Doku.
+- [x] T032 [C] [US3] Suche nach „Forward+“ laut quickstart.md (SC-005); jede Fundstelle einordnen.
+- [x] T033 [C] Phasenprüfung Phase 5: entfällt laut plan.md, „Prüfer je Phase“ (nur Doku).
+- [x] T034 [K] [US3] Phase 5 abnehmen: Diff der Doku.
 
 ---
 

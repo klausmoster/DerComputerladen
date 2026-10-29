@@ -269,18 +269,18 @@ einem Feature dazu oder ändert sich, bekommt er dort einen Schritt.
 
 ## Grenzen
 
-- **Belegte Läufe** (Belege unter `specs/007-build-export-selbsttest/belege/`): macOS mit Forward+
-  und Metal, 45 von 45; Linux mit Forward+ und Vulkan sowie Windows, beide noch mit 37 Schritten
-  vor dem Ablauf `liste`. Alle vergleichbaren Fotos waren gleich den Referenzbildern.
-- **Windows bisher nur mit Compatibility und OpenGL belegt.** Der einzige Windows-Rechner kann kein
-  Vulkan, Direct3D 12 nur auf Stufe 11_0; der Lauf wurde von Hand mit
-  `--rendering-method gl_compatibility --rendering-driver opengl3` gestartet. Er belegt Eingaben,
-  Menüs, Spielstände, Fenster und Zusammenfassung, nicht die Darstellung mit Forward+. Ein Lauf mit
-  Direct3D 12 oder Vulkan steht aus.
-- **Keine Meldung, wenn Direct3D 12 nur halb startet.** Fehlen Vulkan und Direct3D 12 ganz, zeigt
-  Godot „Unable to initialize video driver“ und endet. Startet Direct3D 12 nur halb, etwa auf
-  Stufe 11_0 mit alten Treibern, kommt keine Meldung: Das Fenster schließt sich still oder hängt.
-  Klären lässt es sich mit einem Start aus der PowerShell mit
-  `--rendering-driver vulkan` (Befehle im `quickstart.md` von 007).
+- **Belegte Läufe mit Compatibility** (Feature 009, Belege unter
+  `specs/009-renderer-compatibility/belege/`), alle 45 von 45, je 43 Fotos gleich den
+  Referenzbildern und 2 nicht vergleichbar (das laufende Space Invaders): macOS (M1, OpenGL 4.1 über
+  Metal), Windows in Boot Camp (AMD R9 M370X, OpenGL 3.3, Treiber von 2017), Linux (AMD R7 200,
+  OpenGL 4.6 über Mesa), Windows in Parallels (OpenGL 3.3, und mit `--rendering-driver
+  opengl3_angle` ANGLE über Direct3D 11). Die Läufe mit Forward+ aus Feature 007 liegen unter
+  `specs/007-build-export-selbsttest/belege/`.
+- **Die Fotos zeigen das Bild in 640 × 360**, nicht die Vergrößerung ins Fenster, die schwarzen
+  Ränder und den Startgrund. Die prüft ein Blick ins echte Fenster (Prüfliste im `quickstart.md`
+  von 009).
+- **Ohne OpenGL 3.3** (und unter Windows ohne Direct3D 11 für ANGLE) zeigt Godot „Unable to
+  initialize video driver“ und endet; das Protokoll entsteht dann nicht. Bis 2026-10-29, mit
+  Forward+, endete das Spiel auf Rechnern, deren Direct3D 12 nur halb startete, ohne Meldung.
 - Die Apps haben keine Developer-ID und keine Beglaubigung (macOS nur ad hoc signiert, Windows
   ohne Signatur): SmartScreen und macOS fragen beim ersten Start nach.
