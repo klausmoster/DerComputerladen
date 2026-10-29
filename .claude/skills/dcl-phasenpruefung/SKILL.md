@@ -7,8 +7,9 @@ argument-hint: "[Feature und Phase, etwa 004 Phase 4, oder: Probelauf <Bereich>]
 # Phasenprüfung
 
 Die Phasenprüfung ist der Schritt zwischen dem Bau einer Phase und Klaus' Abnahme. Warum es sie
-gibt und wie sie entstanden ist, steht in `docs/ki_workflow/ki_pruefung.md`; lies dort vorher
-„Grundsätze“, „Erfahrungen“ und „Nachmessen“.
+gibt und wie sie allgemein abläuft, steht in `docs/ki_workflow/blaupause.md`, Abschnitt 6; wie sie
+hier entstanden ist, in `docs/ki_workflow/ki_pruefung.md`. Lies vorher Abschnitt 6 der Blaupause
+und in `ki_pruefung.md` „Die Prüfer“, „Erfahrungen“ und „Nachmessen“.
 
 Prüfer lesen nur und melden. Repariert wird nur, was Claude bestätigt hat, vom Godot-Agent und in
 der freigegebenen Phase. Ein Probelauf an einem fertigen Feature repariert nichts.
