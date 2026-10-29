@@ -656,6 +656,18 @@ wenn Klaus es will.
 
 ## Eigene Entscheidungen von Claude
 
+### Feature 010, Spec und Plan (2026-10-29)
+
+Aus `specs/010-ladeneroeffnung/`; Klaus kann jede bei der Checkliste oder einer Abnahme ändern.
+- Spec: Januar 1985 mietfrei, erste Miete am 01.02.1985; Konto im Minus ohne Folgen bis 03-06;
+  Gewerbeanmeldung im Büro des Maklers statt auf dem Amt; Spielbildschirm erscheint angehalten.
+- Plan (`research.md`): Ablauf über `GameSession.begin_opening()` statt Anlegen bei der Gradwahl
+  (R1); Kern `ShopOpening` (R2); Startkapital und Monatszahlen als Konstanten in `ShopRules` statt
+  in Katalog oder game_bible (R3); Konto `ShopAccount` mit „Miete gebucht bis“ (R4); Formatversion
+  bleibt 1 (R5, nach Klaus' Satz zu Sonderlocken); Name bis 24 Zeichen mit fester Zeichenliste
+  (R7); Bausteine Hotspot, Sprechblase, Papierblatt (R8); Tempi 1, 2, 7 Tage je Sekunde (R10);
+  Platzhalter als PNG-Dateien (R11); Fabrik für Spielstände, behebt B4 aus 11-09 (R12).
+
 ### Arbeitsweise (2026-10-21)
 
 - **Lokales Gedächtnis aufgelöst:** Was dort stand, ist nach `docs/ki_dev.md` und hierher

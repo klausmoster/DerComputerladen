@@ -147,3 +147,5 @@ clarify zu Feature 010).
   in `features/Feature_Ideas.md`; 03-06 Finanzen.
 - Offen: Kündigungsfrist und Kosten des Umzugs; ob die Kaution zurückkommt; ob Stammkunden
   mitziehen; ob die anderen Läden inzwischen vermietet sein können.
+- Der Makler aus Feature 010 kommt dafür wieder; deshalb bekommt er dort schon Steckbrief, Bild
+  und feste Sätze (Klaus, 2026-10-29).

@@ -73,6 +73,27 @@ Fragen aus `/speckit-clarify`, einzeln an Klaus:
   Szene im Adventure-Stil. Verworfen: Stadtplan mit Papieren (weniger Stimmung), alles auf dem
   Communicator (zu klein für Foto und Kleingedrucktes).
 
+### Plan 2026-10-29
+
+Fragen aus `/speckit-plan`, einzeln an Klaus:
+
+- Q: Wo stehen die Daten der Läden? → A: In der game_bible, mit einer neuen Vorlage für Läden; ein
+  Importer schreibt daraus die Daten ins Spiel (Klaus, nach Empfehlung; Architektur-Leitfaden
+  AR-04: Mieten sind Spielinhalt). Verworfen: von Hand im Inspector, eine JSON-Datei wie der
+  Ereigniskatalog (beides Ausnahmen von AR-04).
+- Q: Ist 010 das erste Feature der Schichten Adventure und Wirtschaft? → A: Ja, beide (Klaus, nach
+  Empfehlung). Ab hier gelten AR-16 bis AR-20: Geld in Pfennig, feste Reihenfolge, Bausteine ohne
+  Inhalt, lineare Abläufe, Dialoge als Daten; vor der Lückensuche läuft die Bestandsprüfung.
+  Verworfen: nur Adventure (das Konto müsste später auf Pfennig umgestellt werden), keine.
+- Q: Wie viel vom Makler kommt schon in 010? → A: Er bekommt einen Steckbrief und ein Bild und
+  sagt feste Sätze in einer Sprechblase, je Schritt und auf Klick, ohne Antworten (Klaus, nach
+  Empfehlung). Klaus dazu: Der Makler „kann ja später auch wieder eine Rolle spielen“, wenn der
+  Laden umzieht; deshalb wird er gleich ganz gestaltet. Verworfen: stumm; ein echter Dialog
+  (zöge 09-02 vor).
+- Wunsch von Klaus während des Plans (2026-10-29): „in der Doku eine Übersicht der Charaktere …
+  Inkl. der ganzen Beschreibung. Name, Alter, Optik (die dann auch wieder als Referenzbild genommen
+  wird) … Stuff für die KI und für die Doku.“ Umgesetzt als FR-001c.
+
 ## Überblick
 
 Bisher führt die Gradwahl direkt in einen leeren Spielbildschirm mit dem Knopf „Zum Hauptmenü“.
@@ -84,7 +105,7 @@ Beispiel: Klaus wählt „Schwer“. Auf dem Stadtplan von Wesselbach (Name vorl
 Läden markiert. Der Laden in der Fußgängerzone ist grau; sein Exposé sagt: „Der Vermieter
 verlangt einen Kapitalnachweis über 43.200 DM. Sie haben 30.000 DM.“ Er nimmt den Laden im
 Stadtteilzentrum, unterschreibt den Mietvertrag, meldet „Computer Klaus“ an und steht am
-01.01.1985 im leeren Laden. Oben steht „Computer Klaus · 01.01.1985 · Konto 25.680 DM“ (30.000 DM
+01.01.1985 im leeren Laden. Unten in der Leiste stehen das Datum 01.01.1985 und der Kontostand 25.680,00 DM (30.000 DM
 Startkapital minus 4.320 DM Kaution). Im Hauptmenü heißt sein Spielstand jetzt „Computer Klaus“,
 die Datei bleibt `spiel_7.json`. (Name der Stadt und Wortlaute sind vorläufig.)
 
@@ -266,8 +287,17 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   dahinter. Ein Klick auf einen Gegenstand holt ihn heran, etwa den Stadtplan oder ein Exposé.
 - **FR-001a**: Anklickbare Dinge im Büro MUST sich beim Überfahren mit der Maus zu erkennen geben,
   etwa durch Cursorwechsel und eine kurze Beschriftung („Stadtplan“), und sich auch mit der
-  Tastatur der Reihe nach anwählen lassen. Der Makler spricht in diesem Feature nicht; ein
-  Dialog mit ihm gehört zu 09-02.
+  Tastatur der Reihe nach anwählen lassen.
+- **FR-001b**: Der Makler MUST eine eigene Figur mit Steckbrief sein (Name, Alter, Aussehen, Art zu
+  reden), den Klaus freigibt; er soll in späteren Features wiederkommen, etwa beim Umzug. Er
+  sagt in einer Sprechblase feste Sätze: einen beim Betreten des Büros, je einen zu jedem Exposé,
+  beim Mietvertrag, bei der Gewerbeanmeldung und beim Abschied, dazu einen weiteren, wenn der
+  Spieler ihn anklickt. Antworten gibt es nicht; ein Dialog gehört zu 09-02. Die Sätze stehen als
+  Daten, nicht im Code.
+- **FR-001c**: Jede Figur des Spiels MUST eine Beschreibung in der game_bible haben: Name, Rolle,
+  Alter, Optik, Art zu reden, wo sie vorkommt und ihr Referenzbild, das für jedes neue Bild der
+  Figur als Vorlage dient. Eine Übersicht listet alle Figuren. In diesem Feature: der
+  Ladenbesitzer und der Makler.
 - **FR-002**: Jeder Schritt vor der Abgabe der Gewerbeanmeldung MUST sich zurücknehmen lassen,
   mit Esc und mit einem sichtbaren „Zurück“, je einen Schritt; vom Stadtplan zurück in die
   Gradwahl.
@@ -295,8 +325,9 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   Kleingedrucktes, ein Foto von außen und ein Bild von innen, leer.
 - **FR-007**: Laufkundschaft und Sichtbarkeit MUST gespeichert und im Exposé in Worten
   angedeutet werden; sie haben in diesem Feature keine Wirkung auf das Spiel.
-- **FR-008**: Die Daten der Läden MUST an einer Stelle gepflegt werden, nicht verstreut im Code,
-  so dass Klaus Mieten und Texte ändern kann, ohne Logik anzufassen.
+- **FR-008**: Die Daten der Stadt und der Läden MUST in der game_bible gepflegt werden, je Laden
+  eine Notiz nach einer eigenen Vorlage, Preise als Range wie dort üblich. Ein Importer bringt sie
+  ins Spiel; Klaus ändert Mieten und Texte in der game_bible, ohne Code anzufassen.
 
 **Stadtplan**
 
@@ -368,10 +399,11 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
   01.02.1985, weil der Januar laut Kleingedrucktem für den Ausbau mietfrei ist (Festlegung von
   Claude, siehe Annahmen). Jede Abbuchung geschieht genau einmal, auch über Speichern und
   Fortsetzen hinweg.
-- **FR-024**: Der Kontostand MUST in ganzen DM geführt und mit Tausenderpunkt und „DM“ angezeigt
-  werden, etwa „25.680 DM“.
-- **FR-025**: Fällt der Kontostand unter null, MUST er weiter geführt und auffällig angezeigt
-  werden; weitere Folgen hat das in diesem Feature nicht. Pleite, Kredit und Spielende gehören
+- **FR-024**: Der Kontostand MUST auf den Pfennig genau geführt und wie im Style-Guide angezeigt
+  werden, etwa „25.680,00 DM“.
+- **FR-025**: Fällt der Kontostand unter null, MUST er weiter geführt und wie im Style-Guide für
+  negative Beträge angezeigt werden (Minus, „SOLL“, `kassenrot`); weitere Folgen hat das in diesem
+  Feature nicht. Pleite, Kredit und Spielende gehören
   zu 03-06 Finanzen (Festlegung von Claude, siehe Annahmen).
 
 **Spielbildschirm**
@@ -469,11 +501,10 @@ Hauptmenü öffnen: Er steht als beschädigt in der Liste und lässt sich lösch
 - **Texteingabe ist neu:** Bisher gibt es im Spiel kein Feld zum Eintippen. Die Gewerbeanmeldung
   braucht eines; im Plan wird geklärt, wie es im Stil des Spiels aussieht.
 - **Grafiken:** Zehn Bilder (Büro des Maklers, Stadtplan, vier Läden von außen, vier leere
-  Läden von innen) und die Figur des Maklers
-  entstehen mit dem Skill `dcl-grafik` in einer eigenen Phase am Ende des Features. Bis dahin
-  stehen Platzhalter in Bildgröße mit Beschriftung, etwa „FOTO FUSSGÄNGERZONE“. Die Lage der
-  Läden auf dem Stadtplan steht bei den Daten der Läden (FR-008) und wird mit dem echten Plan
-  angepasst. Exposé, Mietvertrag und Gewerbeanmeldung werden gezeichnet, nicht generiert.
+  Läden von innen) und die Figur des Maklers entstehen mit dem Skill `dcl-grafik` in einer eigenen
+  Phase am Ende des Features. Bis dahin stehen Platzhalter in Bildgröße mit Beschriftung, etwa
+  „FOTO FUSSGÄNGERZONE“. Die Lage der Läden auf dem Stadtplan gehört zum Stadtplan und wird mit
+  dem echten Plan angepasst. Exposé, Mietvertrag und Gewerbeanmeldung werden gezeichnet, nicht generiert.
 - **Selbsttest:** Der Ablauf `neues_spiel` des Selbsttests führt heute von der Gradwahl direkt ins
   Spiel und muss um die neuen Schritte ergänzt werden (`ki_dev.md`, Punkt 11).
 - **Tests spulen vor:** Wie in Feature 004 belegen automatische Tests die Mieten über viele

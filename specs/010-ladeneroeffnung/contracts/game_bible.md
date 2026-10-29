@@ -1,0 +1,107 @@
+# Vertrag: Stadt, Läden und Figuren in der game_bible, Importer
+
+Wie Stadt, Läden und Figuren in der game_bible stehen und wie der Importer daraus Daten fürs Spiel
+macht. Entscheidungen in [research.md](../research.md) (R6, R9, R16, R17), Felder im Spiel in
+[data-model.md](../data-model.md). Es gelten die Datenkonventionen der game_bible aus `CLAUDE.md`:
+strukturierte Daten nur im Frontmatter, Skalare als `kategorie_feld`, Preise als Range mit `von`
+und `bis` in DM, Freitext nur unter `## +…`, `Templates/TEMPLATE_*.md` als alleinige Autorität.
+
+## Dateien
+
+```text
+docs/game_bible/
+├── Templates/
+│   ├── TEMPLATE_Laden.md     # neu
+│   ├── TEMPLATE_Stadt.md     # neu
+│   └── TEMPLATE_Figur.md     # neu
+├── Stadt/<Name>.md           # neu, eine Notiz
+├── Läden/                    # neu, vier Notizen
+├── Läden.md                  # neu: Übersicht, erzeugt von regenerate_tables.py
+├── Figuren/
+│   ├── Ladenbesitzer.md      # neu
+│   └── Makler.md             # neu
+└── Figuren.md                # neu: Übersicht aller Figuren (FR-001c)
+tools/bible/
+├── importiere.py             # neu: game_bible → src/data/
+└── test_importiere.py        # neu: Beispielnotizen → erwartete .tres, bytegleich
+```
+
+## TEMPLATE_Laden.md (Frontmatter)
+
+```yaml
+grunddaten_titel: ""            # „Ladenlokal Fußgängerzone“
+grunddaten_reihenfolge: 0
+grunddaten_anschrift: ""
+grunddaten_viertel: ""          # innenstadt | wohngebiet | gewerbegebiet
+flaeche_qm: 0
+lage_laufkundschaft: ""         # niedrig | mittel | hoch
+lage_sichtbarkeit: ""
+lage_parkplaetze: ""
+preise_miete:
+- datum: "1985-01"
+  von: 0
+  bis: 0
+text_beschreibung: ""
+text_kleingedrucktes: ""
+quelle_miete: ""                # Verweis auf recherche-geld.md oder eine Quelle
+```
+
+Darunter nur geschützte Abschnitte `## +Hintergrund` und `## +Notizen`.
+
+## TEMPLATE_Figur.md (Frontmatter)
+
+```yaml
+grunddaten_name: ""             # „Herr Brandt“
+grunddaten_rolle: ""            # „Makler“
+grunddaten_alter: 0
+grunddaten_vorkommen: []        # Features und Orte, etwa „010 Büro des Maklers“
+optik_gesicht: ""
+optik_haar: ""
+optik_kleidung: ""
+optik_haltung: ""
+optik_farben: ""                # Farben aus der Hauptpalette
+art_sprechweise: ""             # siezt, trocken, Lieblingswörter
+art_charakter: ""
+bild_referenz: ""               # Pfad zum freigegebenen Figurenblatt, etwa docs/art/figuren/makler.png
+bild_prompt_log: ""             # Eintrag in docs/art/leonardo/prompt-log.md
+bild_szene: ""                  # Bild im Spiel, res://assets/images/buero/makler.png
+saetze:
+- anlass: ""
+  text: ""
+```
+
+Darunter `## +Hintergrund` für alles, was eine Figur lebendig macht und die KI beim Schreiben
+neuer Sätze braucht. `Figuren.md` listet alle Figuren mit Name, Rolle, Alter, Vorkommen und
+Referenzbild; `dcl-grafik` nimmt `bild_referenz` als Bildreferenz für jedes neue Bild der Figur.
+
+## TEMPLATE_Stadt.md (Frontmatter)
+
+```yaml
+grunddaten_name: ""
+grunddaten_einwohner: 0
+grunddaten_land: ""             # Bundesland, erfunden ist erlaubt
+viertel: []                     # [innenstadt, wohngebiet, gewerbegebiet]
+```
+
+## Importer `tools/bible/importiere.py`
+
+- Aufruf ohne Argumente vom Repo-Root: `python3 -I tools/bible/importiere.py`; liest
+  `docs/game_bible/Stadt/`, `Läden/`, `Figuren/`, schreibt `src/data/stadt.tres`,
+  `src/data/laeden/<id>.tres`, `src/data/figuren/<id>.tres`.
+- `--pruefen`: schreibt nichts, meldet nur Fehler und ob eine Datei sich ändern würde (für Tests und
+  vor dem Commit).
+- Fehler mit Datei und Feld, Abbruch ohne zu schreiben: fehlendes Pflichtfeld, unbekanntes Viertel
+  oder unbekannte Stufe, kein Eintrag `preise_miete` mit `datum: "1985-01"`, `von` ≠ `bis`, Fläche
+  oder Miete nicht größer 0, doppelte Reihenfolge, fehlender Anlass des Maklers (data-model.md).
+- IDs aus dem Dateinamen: klein, Umlaute als ae, oe, ue, ss, Leerzeichen als `_`.
+- Ausgabe kanonisch: gleiche Notizen, gleiche Dateien, Byte für Byte; Kopfkommentar „Erzeugt von
+  tools/bible/importiere.py aus docs/game_bible/…; nicht von Hand ändern.“
+- Beträge in Pfennig (DM · 100). Die Bildpfade folgen der ID (data-model.md).
+- Ein Werkzeug außerhalb von `src/`: Der Kopf nennt die Klassen in Godot, deren Format es ein zweites
+  Mal kennt (`ShopOffer`, `CityData`, `FigureData`; Leitfaden, „Werkzeuge“).
+
+## Feste Größen
+
+- `python3 -I tools/bible/importiere.py --pruefen` meldet nach dem Import keine Änderung.
+- `test_daten_laeden.gd` liest die erzeugten Dateien und prüft die Tabelle in data-model.md
+  („bezahlbar je Grad“).
