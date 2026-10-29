@@ -290,7 +290,7 @@ dazwischen prüft Claude. Die Buchstaben halten die Nummern ab T037 fest.
 - [x] T038 [C] [US5] Phasenprüfung Phase 5 mit `/dcl-phasenpruefung`: Architektur-Prüfer über das
   Geänderte, Maßstab Leitfaden und Bestandsbericht; Stil nur, wenn sich wider Erwarten Sichtbares
   ändert; danach Nachprüfung des Betroffenen.
-- [ ] T039 [K] [US5] Abnahme Phase 5 von Hand: den eigenen Spielstand von vor der Phase fortsetzen, ein neues
+- [x] T039 [K] [US5] Abnahme Phase 5 von Hand: den eigenen Spielstand von vor der Phase fortsetzen, ein neues
   Spiel beginnen, die drei grauen Knöpfe drücken, die Werkstatt öffnen und einen Lauf simulieren.
 
 **Checkpoint**: Der Bestand folgt dem Leitfaden, bis auf begründete Ausnahmen und vorgemerkte Features.
