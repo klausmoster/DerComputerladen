@@ -104,6 +104,7 @@ deren `README.md`.
 | `tools/godot_referenz/` | `erzeuge.sh --texte --handbuch` schreibt die Klassenreferenz der installierten Godot mit Beschreibungen nach `godot_referenz/klassen/` und das Handbuch nach `godot_referenz/handbuch/` (nicht im Repo); bei API-Fragen dort nachsehen statt aus dem Gedächtnis |
 | `tools/ton/` | `make_sounds.py` erzeugt die Töne; die Kanäle stehen in `src/default_bus_layout.tres` |
 | `tools/tagebuch/` | `token_bilanz.py`: Token und geschätzte Kosten je Branch aus den Protokollen von Claude Code |
+| `Start.md`, `.obsidian/` | Startseite und Einstellungen des Obsidian-Vaults im Repo-Root; `docs/game_bible/` hat zusätzlich einen eigenen Vault |
 | `docs/style-guide/` | Style-Guide, verbindlich: Leitbild, Tokens, Bausteine, Sprache, Ton, Werkzeuge, Leonardo-Workflow mit Prompt-Bibliothek; Vorschauen unter `vorschau/` |
 | `docs/art/bildkatalog.md` | Bildkatalog nach Inhalt (Figuren, Orte, Geräte, Logo/Cover) mit festen Prompt-Bausteinen; verweist aufs Prompt-Log |
 | `docs/art/` | Hauptpalette, Leonardo-Originale, Ebenen des App-Symbols (`app_icon/`) |

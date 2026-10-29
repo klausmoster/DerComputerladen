@@ -1,10 +1,12 @@
 # macOS
 .DS_Store
 
-# Obsidian: geteilte Vault-Einstellungen bleiben versioniert (app.json,
-# appearance.json, core-plugins.json, graph.json) — nur der persönliche
+# Obsidian (Vault im Repo-Root und Vault der game_bible): geteilte Vault-Einstellungen bleiben
+# versioniert (app.json, appearance.json, core-plugins.json, graph.json) — nur der persönliche
 # Fenster-/Tab-Zustand nicht.
 docs/game_bible/.obsidian/workspace.json
+/.obsidian/workspace.json
+/.obsidian/workspace-mobile.json
 
 # Export-Ziel der Godot-Builds (z. B. build/macos/Der Computerladen.app) —
 # jederzeit neu erzeugbar, siehe specs/001-hauptmenue/quickstart.md.
