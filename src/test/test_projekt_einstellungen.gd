@@ -18,6 +18,15 @@ func test_renderer_ist_compatibility() -> void:
 	assert_eq(ProjectSettings.get_setting("rendering/renderer/rendering_method"), "gl_compatibility")
 
 
+func test_features_nennen_compatibility_statt_forward_plus() -> void:
+	# Act
+	var features: PackedStringArray = ProjectSettings.get_setting("application/config/features")
+
+	# Assert: Der Editor merkt sich hier den Renderer, mit dem das Projekt läuft.
+	assert_true(features.has("GL Compatibility"), "Features nennen GL Compatibility.")
+	assert_false(features.has("Forward Plus"), "Features nennen Forward Plus nicht mehr.")
+
+
 func test_keine_einstellung_fuer_forward_plus_eingetragen() -> void:
 	# Act
 	var text := FileAccess.get_file_as_string(PROJEKT_DATEI)

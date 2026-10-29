@@ -76,3 +76,12 @@ nichts und haben deshalb keine Notiz.
   jetzt `gl_compatibility` und OpenGL, damit niemand beim Lesen meint, das Spiel liefe noch mit
   Metal. Geändert sind nur die beiden Werte; Schlüssel, Reihenfolge und Form bleiben, sonst
   prüften die Tests etwas anderes als vorher.
+
+### T043 Was in `application/config/features` steht
+
+- `config/features` in `project.godot` schreibt der Editor selbst: die Godot-Version und den
+  Renderer, mit dem das Projekt angelegt oder zuletzt umgestellt wurde (hier `"4.7"` und
+  `"GL Compatibility"`). Gerendert wird nach `rendering/renderer/rendering_method`, nicht danach.
+- Der Test prüft es trotzdem, weil der Projektmanager die Liste liest: Stünde dort
+  noch „Forward Plus“, wäre die Umstellung nur halb gemacht, und der Projektmanager zeigte
+  einen anderen Renderer an als den, mit dem das Spiel läuft (`contracts/renderer.md`).

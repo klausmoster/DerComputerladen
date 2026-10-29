@@ -112,13 +112,14 @@ auf 3 oder 8.
 specs/009-renderer-compatibility/
 ├── spec.md
 ├── plan.md              # diese Datei
-├── research.md          # R1 bis R7
+├── research.md          # R1 bis R8
 ├── data-model.md        # nur geänderte Werte im Protokoll
 ├── quickstart.md        # Tests, Probestart, drei Läufe, Suche nach Forward+
 ├── contracts/
 │   └── renderer.md      # Einstellungen, Presets, Anzeigenamen, erwartete Protokollwerte
 ├── checklists/
-│   └── requirements.md
+│   ├── requirements.md
+│   └── review.md        # Checkliste mit Vorab-Prüfung, CHK001 bis CHK018
 ├── belege/              # Phase 4: Läufe je System
 ├── lernnotizen.md       # ab Phase 3
 └── tasks.md             # /speckit-tasks

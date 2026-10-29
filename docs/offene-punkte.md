@@ -23,11 +23,23 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
     Phasenbilder in Palettenfarben oder Effekte; ob ein `modulate` über 1,0 erlaubt ist
     (Stil-Prüfer). Empfehlung: Phasenbilder in Palettenfarben, kein `modulate` über 1,0.
   - Style-Guide, „Bildaufbau“, „Startgrund“: Ob die Ränder auch während des Startgrunds schwarz sind
-    oder dort `anzeige-grund` gilt (Stil-Prüfer). Empfehlung: festhalten, was Godot tut, sobald der
-    Mac-Lauf es zeigt.
+    oder dort `anzeige-grund` gilt (Stil-Prüfer). Empfehlung: festhalten, was Godot tut. Ein Foto
+    davon gibt es nicht; Klaus hat den Startgrund ohne Foto abgenommen (2026-10-29, T046), nach der
+    Prüfliste auf Windows und Linux: dunkler Start ohne Logo von Godot.
   - Style-Guide, „Werkzeuge“, „Texte“: Ob Anzeigenamen der Grafikschnittstellen der Kurzform der
     Engine folgen („D3D12“) oder ausgeschrieben werden („Direct3D 12“); bisher gilt „D3D12 bleibt als
     Messwert“ (Feature 007, Abschluss) (Text-Prüfer). Empfehlung: Kurzform, wie im Protokoll.
+- **Lücken aus der Lückensuche (T047)**:
+  - Leitfaden: Er regelt nicht, ob bildwirksame Engine-Einstellungen wie der Renderer Stellschrauben
+    nach AR-04 sind und wo ihre einzige Quelle liegt (Architektur-Prüfer, L2). Empfehlung: in
+    „Geltung“ oder AR-04 festhalten, dass `project.godot` die einzige Stelle für Engine-Einstellungen
+    ist und Vorgaben der Engine nicht eingetragen werden (wie Feature 009, R1).
+  - Style-Guide: Er verweist bisher nur nach innen („Abschnitt Farben“); wie er ein Dokument im Repo
+    nennt, etwa „(Verfassung, Grundsatz I)“, regelt er nicht (Text-Prüfer). Empfehlung: Name ohne
+    Pfad, wie jetzt.
+  - Style-Guide, „Texte für Entwickler“: ob ein System mit seinem Namen („Linux“) oder seiner Schicht
+    („X11“) heißt (Text-Prüfer). Empfehlung: der Name des Systems, die Schicht nur, wo sie die Sache
+    ist, etwa bei `fallback_to_gles`.
 - **Lücken aus der Phasenprüfung Phase 3** (Text-Prüfer), Sprache, „Texte für Entwickler“:
   - Steht nach einem Pfad am Ende einer Testmeldung ein Punkt, etwa „Nichts unter
     rendering_device/.“? Für Bildschirm und Protokoll der Werkzeuge entfällt er. Empfehlung: in
@@ -73,7 +85,7 @@ dann dort, wo sie hingehört, etwa in Spec, Verfassung oder `research.md`.
 ### Feature 007, Phase 6 (2026-10-28)
 
 - **Klaus:** Export-Templates 4.7.2 im Editor installiert; Windows-Symbol in 16 aus jedem zweiten
-  Bildpixel (Style-Guide Version 62)..
+  Bildpixel (Style-Guide Version 62).
 - **Lücken aus der Phasenprüfung (Stil, ICO), von Klaus mit Empfehlung abgenommen (T049):**
   - 48 mit ×2 füllt 93 % des Quadrats statt 70 % wie die anderen Größen. Empfehlung: so lassen, ×1
     wäre mit 47 % zu klein; im Style-Guide als bewusste Ausnahme vermerken.

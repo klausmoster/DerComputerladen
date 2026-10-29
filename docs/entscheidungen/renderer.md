@@ -2,7 +2,7 @@
 
 - **Stand:** 2026-10-28, Vorschlag von Claude, **von Klaus entschieden** (siehe „Entscheidung“ am
   Ende). Umgesetzt ist noch nichts; bis das eigene Feature fertig ist, gilt CLAUDE.md: Der Renderer
-  bleibt Forward+.
+  bleibt Forward+ (Stand 2026-10-28).
 - **Umgesetzt:** in Feature 009 „Renderer Compatibility“ (`specs/009-renderer-compatibility/`),
   2026-10-29; seitdem gelten CLAUDE.md und Verfassung 3.0.0 mit Compatibility. Der Text darunter
   bleibt als Stand der Entscheidung.

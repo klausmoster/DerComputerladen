@@ -58,6 +58,9 @@ Transformationen und Ecken, Viewport 640 × 360 mit ganzzahliger Skalierung, Hin
   damit. Beleg ist ein Start des Selbsttests in Boot Camp mit `--rendering-driver opengl3_angle`
   (quickstart, Schritt „Windows“). Scheitert er, legt Claude Klaus vor, `export_angle = 1` zu setzen
   (FR-006).
+- **Belegt (2026-10-29):** statt in Boot Camp in Parallels, mit dem Build aus Feature 009 und
+  `--rendering-driver opengl3_angle`: Das Protokoll nennt „ANGLE“ über Direct3D 11, 45 von 45
+  (`belege/windows_parallels_2026-10-29_12-24-26`). `export_angle = 0` bleibt.
 
 ## R3 Das Protokoll liest, was läuft
 

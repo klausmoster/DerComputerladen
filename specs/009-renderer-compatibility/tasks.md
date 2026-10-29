@@ -173,7 +173,8 @@ auf dem Mac; Klaus' Prüfliste für Windows und Linux abgehakt.
   ersten Bild hat kein Foto erwischt; die Einstellung dazu ist unverändert.
 - [x] T022 [K] [US1] Boot-Camp-Rechner nach quickstart.md, „Windows auf dem Boot-Camp-Rechner“:
   Spiel per Doppelklick, Selbsttest per Doppelklick, einmal mit `--rendering-driver opengl3_angle`,
-  Prüfliste fürs echte Fenster; Zips und kopierten Text an Claude.
+  Prüfliste fürs echte Fenster; Zips und kopierten Text an Claude. Gelaufen 2026-10-29 ohne den
+  Lauf mit `opengl3_angle`; ANGLE ist über Parallels belegt (T024, Lückensuche G1).
 - [x] T023 [K] [P] [US2] Linux-Rechner nach quickstart.md, „Linux“: Selbsttest per Doppelklick,
   Prüfliste fürs echte Fenster; Zip und kopierten Text an Claude.
 - [x] T024 [K] [P] [US1] Kann: derselbe Lauf unter Windows in Parallels (Klärung vom 2026-10-29).
@@ -228,13 +229,13 @@ oder in älteren Specs.
 
 **Purpose**: Lückensuche, Gesamtabnahme, Spielbeschreibung, Tagebuch, Merge.
 
-- [ ] T035 [C] Bestandsprüfung mit dem Architektur-Prüfer über ganz `src/`: entfällt, denn 009 beginnt
+- [x] T035 [C] Bestandsprüfung mit dem Architektur-Prüfer über ganz `src/`: entfällt, denn 009 beginnt
   keine neue Schicht und endet nicht auf 3 oder 8 (`docs/ki_workflow/ki_pruefung.md`).
-- [ ] T036 [C] Lückensuche mit `/speckit-converge` über das ganze Feature; Prüfer einmal über das
+- [x] T036 [C] Lückensuche mit `/speckit-converge` über das ganze Feature; Prüfer einmal über das
   Feature; Lücken werden eine neue Phase mit Klaus' Freigabe (`ki_dev.md`, Punkt 6).
-- [ ] T037 [A] Selbsttest-Abläufe anpassen: entfällt, denn das Feature ändert keine Seiten, Wege, Texte
+- [x] T037 [A] Selbsttest-Abläufe anpassen: entfällt, denn das Feature ändert keine Seiten, Wege, Texte
   der Abläufe oder Eingaben (`ki_dev.md`, Punkt 11).
-- [ ] T038 [C] Selbsttest zur Gesamtabnahme: liegt mit Phase 4 vor; hat sich nach Phase 4 Code
+- [x] T038 [C] Selbsttest zur Gesamtabnahme: liegt mit Phase 4 vor; hat sich nach Phase 4 Code
   geändert, auf dem Mac neu bauen, laufen lassen und vergleichen. Ergebnis in der Bitte um
   Gesamtabnahme; neue Referenzbilder nur nach Klaus' Abnahme.
 - [ ] T039 [K] Gesamtabnahme nach dem ganzen quickstart.md, mit Startweg und Ergebnis des Selbsttests.
@@ -317,3 +318,34 @@ bevor Phase 5 die Doku auf den Stand bringt.
 - `export_presets.cfg` bleibt unverändert, außer Klaus entscheidet in T026 über `export_angle`; vor
   jedem Commit ansehen.
 - Fotos aus dem echten Fenster kommen nicht ins Repo; Referenzbilder ändern sich nur nach T026.
+
+---
+
+## Phase 6: Convergence (Lückensuche, 2026-10-29)
+
+**Purpose**: Lücken aus `/speckit-converge` (T036), von Claude nachgeprüft: ein unabhängiger Abgleich
+gegen den Code (G1 bis G13), Architektur-Prüfer und Text-Prüfer über das ganze Feature (je 0
+Befunde, zusammen 4 Lücken im Maßstab). Code, Einstellungen, Tests und Regeln decken FR-001 bis
+FR-005, FR-009 und FR-012 vollständig ab; die Lücken liegen in Belegen und Doku.
+
+- [x] T043 [A] Test in `src/test/test_projekt_einstellungen.gd`: `application/config/features`
+  enthält „GL Compatibility“, nicht „Forward Plus“, wie `contracts/renderer.md` verlangt (G4).
+- [x] T044 [C] Belege: `hinweis.md` für Boot Camp und Linux mit Klaus' Angaben (Spiel per
+  Doppelklick mit Titel, Prüfliste fürs echte Fenster; G2); in `windows_parallels_…_12-16-53/hinweis.md`
+  die Herkunft richtigstellen (gebaut 12:15 aus dem gemeinsamen Ordner auf `main`, also Forward+ mit
+  Startoption) und „natives OpenGL reicht nicht“ auf diesen Lauf einschränken (G9); in research.md, R2,
+  und bei T022 festhalten, dass ANGLE über den Parallels-Lauf belegt ist statt über Boot Camp (G1).
+- [x] T045 [C] Doku angleichen: plan.md (R1 bis R8, `checklists/review.md` im Baum), spec.md Status
+  (G5); `ki_dev.md`, Punkt 11, mit „(mit Forward+)“ (G6); quickstart.md: `vergleich.py --beleg` legt
+  nach 007 ab, Belege für 009 von Hand (G10); Doppelpunkt in `offene-punkte.md` (G12); in 007
+  `contracts/export.md` und `data-model.md` je ein Vermerk „bis 2026-10-29“ (G8); in
+  `docs/spielbeschreibung/selbsttest.md` den Ort der Anzeigenamen nennen (Architektur-Prüfer). Die
+  Zeilen „Stand“ der Spielbeschreibung (G7) fasst T040 an, die Stufe in `Features.md` (G13) T042.
+- [x] T046 [K] Zwei Entscheidungen: Startgrund vor dem ersten Bild ohne Foto abnehmen oder
+  nachholen (G3); ob die Zeile „Stand“ in `docs/entscheidungen/renderer.md` ein „(Stand
+  2026-10-28)“ bekommt, damit sie dem Vermerk darunter nicht widerspricht (G11, FR-013). Klaus,
+  2026-10-29, nach Empfehlung: Startgrund ohne Foto abgenommen; „(Stand 2026-10-28)“ gesetzt.
+- [x] T047 [C] Lücken im Maßstab nach `docs/offene-punkte.md`: Engine-Einstellungen und Vorgaben im
+  Leitfaden (Architektur L2); Verweise des Style-Guides auf Repo-Dokumente; Linux oder X11 als Name
+  in Texten für Entwickler (Text-Prüfer). L1 steht dort schon.
+- [x] T048 [K] Phase 6 abnehmen.

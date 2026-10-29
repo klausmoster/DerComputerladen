@@ -60,6 +60,10 @@ Quickstart von 007 beschrieben:
 python3 -I tools/selbsttest/vergleich.py "<Ordner des Laufs>" --beleg
 ```
 
+`--beleg` legt fest unter `specs/007-build-export-selbsttest/belege/` ab. Für dieses Feature ohne
+`--beleg` vergleichen und `protokoll.txt` und `vergleich.md` von Hand nach
+`specs/009-renderer-compatibility/belege/<system>_<lauf-id>/` kopieren (offener Punkt aus 007).
+
 Erwartet:
 - alle Schritte in Ordnung;
 - im Protokoll `system.renderer: gl_compatibility` und `system.grafik_api: OpenGL` (SC-004);

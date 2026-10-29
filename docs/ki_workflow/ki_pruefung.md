@@ -351,6 +351,8 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 009, Vorab bei der Checkliste, Plan und Vertrag (2026-10-29) | Architektur | 1 | 1 (dazu 2 unter „Unsicher“, bestätigt: CHK010, CHK011) | 0 | 1 | 1 |
 | Feature 009, Phase 3, `project.godot` und 2 Dateien des Selbsttests (2026-10-29) | Architektur | 0 | – | – | 0 (die bekannte Lücke L1 nicht neu gemeldet); unter „Unsicher“ ein Hinweis auf eine alte CLAUDE.md, verworfen: der Prüfer las die vor Phase 2 geladene Fassung | – |
 | Feature 009, Phase 3, 16 Texte in Textklasse und Tests (2026-10-29) | Text | 0 | – | – | 2 (Punkt nach einem Pfad in Testmeldungen; Regelnummer in Assert-Meldungen) | – |
+| Feature 009, Lückensuche über das ganze Feature, 3 Dateien unter `src/` (2026-10-29) | Architektur | 0 | – | – | 1 neu (L2, Engine-Einstellungen), L1 bestätigt | – |
+| Feature 009, Lückensuche, 31 Texte mit der Zeile im Style-Guide (2026-10-29) | Text | 0 | – | – | 2 (Verweise auf Repo-Dokumente, Linux oder X11) | – |
 
 „Nur er fand“ heißt: Claudes eigene Prüfung hatte es nicht gefunden. Bei den Probeläufen an
 Feature 001 war das Feature schon abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.

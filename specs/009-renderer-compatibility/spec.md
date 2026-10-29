@@ -6,7 +6,7 @@
 
 **Created**: 2026-10-29
 
-**Status**: Draft
+**Status**: Umgesetzt, im Abschluss (2026-10-29)
 
 **Input**: User description: "Feature 009 ‚Renderer Compatibility': Wechsel des Renderers von
 Forward+ auf Compatibility auf Windows, macOS und Linux. Grundlage: docs/entscheidungen/renderer.md

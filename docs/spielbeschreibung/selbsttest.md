@@ -59,7 +59,10 @@ trägt beide Zeilen auch in `project.binary`, ohne Tag wirken sie dort nicht. We
 Die Startszene (`selbsttest_start.gd`) richtet ein und tritt ab:
 1. Ablage für den Lauf anlegen. Lässt sich dort nicht schreiben, gleich zur Zusammenfassung mit
    Meldung und Pfad; kein Ablauf läuft.
-2. Logger anmelden (`OS.add_logger()`), Systemdaten erheben, sobald das Fenster seine Größe hat.
+2. Logger anmelden (`OS.add_logger()`), Systemdaten erheben, sobald das Fenster seine Größe hat. Renderer und
+   Grafikschnittstelle liest `SelbsttestSystem` so, wie sie nach jedem Rückfall laufen; die
+   Anzeigenamen der Schnittstellen („OpenGL“, „ANGLE“, „OpenGL ES“ …) stehen in
+   `SelbsttestTexte.GRAFIK_API` (Feature 009).
 3. Feste Werte, damit die Fotos auf jedem Rechner gleich sind (R7): Spielstände nach
    `user://selbsttest/spielstaende/`, Uhrzeit fest auf 26.10.2026, 20:40 UTC (`FESTE_ZEIT`), Seed
    4711 für `GameSession.rng` und Godots globalen Würfel, `SaveGame.time_zone_bias` auf UTC+1.
