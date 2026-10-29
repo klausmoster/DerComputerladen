@@ -34,8 +34,10 @@ Platzhalter.
 
 **Primary Dependencies**: keine neuen in Godot. Bordmittel: `Resource`, `ResourceLoader`,
 `LineEdit`, `Control` (Fokus, Mauszeiger, Tooltip), `TextureRect`, `SceneTree.change_scene_to_file()`.
-Python mit `yaml` wie `regenerate_tables.py`, `Pillow` wie `tools/raster/`. Tests mit GUT 9.7.1,
-der Importer mit `unittest`.
+Python 3 nur mit der Standardbibliothek, wie `tools/raster/` (PNG über `pngio.py`); der Importer
+liest das Frontmatter mit einem kleinen eigenen Leser für die Teilmenge der Vorlagen, weil PyYAML
+hier nicht installiert ist und nicht nachgeladen wird (Klaus, 2026-10-29, Phase 2). Tests mit
+GUT 9.7.1, der Importer mit `unittest`.
 
 **Storage**: Spielstände wie bisher als JSON unter `user://spielstaende/`, erweitert um `shop` und
 `account`. Spielinhalt in der game_bible, erzeugt nach `src/data/*.tres`.

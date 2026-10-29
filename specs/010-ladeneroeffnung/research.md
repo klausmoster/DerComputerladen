@@ -130,7 +130,11 @@ einen Importer, nie von Hand (Klaus, 2026-10-29). Der Importer ist der erste Sch
 
 **Verworfen:** `.tres` von Hand, eine JSON-Datei wie der Katalog (beides Ausnahmen von AR-04, von
 Klaus verworfen). Den Importer in GDScript als Editor-Plugin: Die game_bible liegt außerhalb von
-`src/`, und `regenerate_tables.py` liest das Frontmatter schon mit Python.
+`src/`, und `regenerate_tables.py` liest das Frontmatter schon mit Python. Der Importer braucht
+dabei nur die Standardbibliothek: Er liest die Teilmenge von YAML, die die drei Vorlagen nutzen
+(Skalare in Anführungszeichen oder als Zahl, Listen von Skalaren, Listen von flachen Objekten), und
+lehnt alles andere mit Datei und Zeile ab. PyYAML ist hier nicht installiert, und Klaus wollte es
+am 2026-10-29 nicht nachladen lassen (Phase 2, Festlegung von Claude daraus).
 
 ## R7 Ladenname: Regeln in einem Kern, Feld aus `LineEdit`
 
@@ -282,7 +286,12 @@ Ergänzt nach der Checkliste (CHK012, CHK030 bis CHK037, Klaus, 2026-10-29):
 14. **Anzeige**: Größe von `anzeige-ziffern`, fehlendes Token `zeile-klein`; Datum blinkt bei
     laufender Uhr nicht, der Kontostand bei jeder Buchung.
 15. **Leertaste** gehört auf dem Spielbildschirm der Uhr; Knöpfe lösen dort nicht mit ihr aus.
-16. **Ton der Papiere der Spielwelt** (Exposé, Mietvertrag, Formular) im Abschnitt „Sprache“.
+16. **Ton der Papiere der Spielwelt** (Exposé, Mietvertrag, Formular) im Abschnitt „Sprache“: ob
+    der Witz dort erlaubt ist wie in Meldungen und bei Figuren, wie lang ein Satz in Sprechblase
+    und Exposé sein darf, und ob eine Figur Dinge anders nennen darf als die Bedienung, etwa
+    „Objekt“ statt „Laden“ (Text-Prüfer zu T005); ob Ziffern im gesprochenen Satz ausgeschrieben
+    werden („Eins-a-Lage“ gegenüber „1a-Lage“) und ob die Regeln zu Zahlen und Geld auch für Doku-
+    und Übersichtsseiten der game_bible gelten (Text-Prüfer, Phasenprüfung Phase 2).
     Der Teil zum Minus ist vorgezogen und entschieden (T002a, T002b; Klaus, 2026-10-29): der
     Bindestrich „-“, in jeder Schrift gleich, etwa „-4.320,00 DM SOLL“. Geprüft in Godot 4.7.2: Ark
     Pixel 10 und 12 haben kein „−“ (U+2212), nur Doto; „-“ und „–“ haben alle drei. Verworfen: „−“

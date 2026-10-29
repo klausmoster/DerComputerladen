@@ -46,7 +46,7 @@ text_kleingedrucktes: ""
 quelle_miete: ""                # Verweis auf recherche-geld.md oder eine Quelle
 ```
 
-Darunter nur geschützte Abschnitte `## +Hintergrund` und `## +Notizen`.
+Darunter nur geschützte Abschnitte `## + Hintergrund` und `## + Notizen`.
 
 ## TEMPLATE_Figur.md (Frontmatter)
 
@@ -65,7 +65,7 @@ saetze:
   text: ""
 ```
 
-Darunter `## +Hintergrund` für alles, was eine Figur lebendig macht und die KI beim Schreiben
+Darunter `## + Hintergrund` für alles, was eine Figur lebendig macht und die KI beim Schreiben
 neuer Sätze braucht. `Figuren.md` listet alle Figuren mit Name, Rolle, Alter, Optik in einem
 Satz, Vorkommen und Verweis auf den Bildkatalog.
 

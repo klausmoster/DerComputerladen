@@ -356,6 +356,8 @@ entscheidet Klaus, ob ein Prüfer bleibt, nachgeschärft oder gestrichen wird.
 | Feature 010, Vorab bei der Checkliste, Spec und Vertrag (2026-10-29) | Text | 5 | 5 (einer zugleich vom Stil-Prüfer: Hinweis zu „Anmelden“ zu lang) | 0 | 9, als Fragen an Phase 4 übernommen (CHK037) | 4 |
 | Feature 010, Vorab bei der Checkliste, Spec und Vertrag (2026-10-29) | Stil | 13 | 13 | 0 | 5 neue, dazu die 5 Fragen aus R14 bestätigt | 11 |
 | Feature 010, Vorab bei der Checkliste, Plan und Vertrag (2026-10-29) | Architektur | 4 | 4 (dazu 6 unter „Unsicher“, bestätigt: CHK042 bis CHK047) | 0 | 4 | 4 |
+| Feature 010, T005, Vorschläge für Exposés und Makler, 36 Texte (2026-10-29) | Text | 2 | 2 | 0 | 3, als Teil von Frage 16 in R14 übernommen | 2 |
+| Feature 010, Phase 2, game_bible: 9 Notizen, 3 Vorlagen, 22 Spieltexte (2026-10-29) | Text | 4 | 4, davon 1 belassen (Siezt in der Sprechweise folgt aus Klaus' Freigabe) | 0 | 2, als Teil von Frage 16 in R14 übernommen | 4 |
 
 „Nur er fand“ heißt: Claudes eigene Prüfung hatte es nicht gefunden. Bei den Probeläufen an
 Feature 001 war das Feature schon abgenommen. Die Befunde und Lücken stehen in `docs/offene-punkte.md`.

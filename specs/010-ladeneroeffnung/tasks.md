@@ -79,30 +79,32 @@ gewählten Namen und Texten (FR-001b, FR-001c, FR-005, FR-006, FR-008, FR-012; R
 **Independent Test**: Jede neue Notiz hat genau die Felder ihrer Vorlage; `regenerate_tables.py`
 läuft ohne Fehler; `Figuren.md` und `Läden.md` listen alle Einträge.
 
-- [ ] T004 [C] Vorlagen nach contracts/game_bible.md anlegen: `docs/game_bible/Templates/TEMPLATE_Laden.md`,
+- [x] T004 [C] Vorlagen nach contracts/game_bible.md anlegen: `docs/game_bible/Templates/TEMPLATE_Laden.md`,
   `TEMPLATE_Stadt.md`, `TEMPLATE_Figur.md`, je mit den Feldern aus dem Vertrag und den geschützten
   Abschnitten `## +Hintergrund`, `## +Notizen`.
-- [ ] T005 [C] Vorschläge schreiben, als eine Datei `specs/010-ladeneroeffnung/vorschlaege-inhalt.md`:
+- [x] T005 [C] Vorschläge schreiben, als eine Datei `specs/010-ladeneroeffnung/vorschlaege-inhalt.md`:
   je drei Namen für die Stadt (fiktiv, westdeutsch, kein Treffer bei echten Orten über 10.000
   Einwohnern, geprüft per Websuche), Straßen und Hausnummern der vier Läden, Titel, Beschreibung und
   Kleingedrucktes je Laden (FR-012: fester Text, Vor- und Nachteile, keine Ereignisse), zwei
   Steckbriefe für den Makler (Name, Alter, Optik, Sprechweise, Charakter) mit je allen Sätzen zu den
   Anlässen aus data-model.md, „Anlässe des Maklers“. Der Text-Prüfer liest die Datei gegen
   „Sprache“, Claude prüft die Befunde nach.
-- [ ] T006 [K] Aus T005 wählen und freigeben: Stadt, Straßen, Texte der Läden, Makler mit Sätzen.
+- [x] T006 [K] Aus T005 wählen und freigeben: Stadt, Straßen, Texte der Läden, Makler mit Sätzen.
   Änderungen sagt Klaus direkt dazu.
-- [ ] T007 [C] Notizen nach T006 anlegen: `docs/game_bible/Stadt/<Name>.md`, vier unter
+- [x] T007 [C] Notizen nach T006 anlegen: `docs/game_bible/Stadt/<Name>.md`, vier unter
   `docs/game_bible/Läden/` mit Beträgen aus spec.md, FR-020 (`preise_miete` mit `datum: "1985-01"`,
   `von` = `bis`; `quelle_miete` auf recherche-geld.md), `docs/game_bible/Figuren/Makler.md`.
-- [ ] T008 [C] `docs/game_bible/Figuren/Ladenbesitzer.md` aus dem Style-Guide
+- [x] T008 [C] `docs/game_bible/Figuren/Ladenbesitzer.md` aus dem Style-Guide
   (`docs/style-guide/README.md`, „Szenen und Figuren“) anlegen; `bild_katalog` verweist auf F-01 im
   Bildkatalog (CHK020, R16).
-- [ ] T009 [C] Übersichten: `docs/game_bible/Figuren.md` (Name, Rolle, Alter, Optik in einem Satz,
+- [x] T009 [C] Übersichten: `docs/game_bible/Figuren.md` (Name, Rolle, Alter, Optik in einem Satz,
   Vorkommen, Verweis auf den Bildkatalog; FR-001c) und `docs/game_bible/Läden.md`; dann
-  `python3 -I docs/game_bible/regenerate_tables.py docs/game_bible` für die Tabellen.
-- [ ] T010 [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, Prüfer Text, über die neuen Notizen;
+  `python3 -I docs/game_bible/regenerate_tables.py docs/game_bible` für die Tabellen. Geändert am
+  2026-10-29: PyYAML fehlt, Klaus wollte es nicht nachladen lassen; die erzeugten Tabellen holt er
+  später selbst nach, das Frontmatter ist vollständig.
+- [x] T010 [C] Phasenprüfung Phase 2 mit `/dcl-phasenpruefung`, Prüfer Text, über die neuen Notizen;
   vor Klaus' Abnahme (`docs/ki_workflow/ki_pruefung.md`).
-- [ ] T011 [K] Phase 2 abnehmen: Notizen und Übersichten in Obsidian ansehen.
+- [x] T011 [K] Phase 2 abnehmen: Notizen und Übersichten in Obsidian ansehen.
 
 ---
 
