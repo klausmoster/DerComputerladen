@@ -10,8 +10,9 @@
 - **Herkunft:** `specs/001-hauptmenue/` (Vertrag `contracts/titelbildschirm.md`, `research.md`),
   `specs/005-communicator/` (`lcd`, Theme für die Anzeige, `research.md` R1 bis R3),
   `specs/006-easter-egg-space-invaders/` (Spiel auf der Anzeige, `research.md` R7),
-  `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R13 bis R15)
-- **Stand:** Feature 007, 2026-10-28
+  `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R13 bis R15),
+  `specs/009-renderer-compatibility/` (`contracts/renderer.md`, `research.md` R1, R2)
+- **Stand:** Feature 009, 2026-10-29
 - **Maßstab:** der [Style-Guide](https://claude.ai/artifact/Hc5aS78T3fAzufkKnjrKRX). Er ist die
   einzige Quelle für Farben, Raster, Schriften und Bausteine. Was man sieht, kommt zuerst dort
   hinein, dann in den Code.

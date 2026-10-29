@@ -8,9 +8,10 @@
 - **Herkunft:** `specs/001-hauptmenue/` (Export, GUT), `specs/002-zeitleisten-werkstatt/`
   (Fixtures, Grundlinien), `specs/006-easter-egg-space-invaders/` (Töne, Probeszene),
   `specs/007-build-export-selbsttest/` (`contracts/export.md`, `research.md` R14, R26),
-  `specs/008-architektur/` (`contracts/architektur-tests.md`, `research.md` R6; T039a), Regeln in
+  `specs/008-architektur/` (`contracts/architektur-tests.md`, `research.md` R6; T039a),
+  `specs/009-renderer-compatibility/` (`research.md` R2 ANGLE in der Vorlage, R4 Tests), Regeln in
   `docs/ki_workflow/ki_dev.md`, „Tests“
-- **Stand:** Feature 008, 2026-10-29
+- **Stand:** Feature 009, 2026-10-29
 
 ## Starten
 

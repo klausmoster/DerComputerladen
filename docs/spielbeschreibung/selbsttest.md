@@ -19,8 +19,9 @@
 - **Herkunft:** `specs/007-build-export-selbsttest/` (`contracts/selbsttest-app.md`,
   `ablaeufe.md`, `protokoll.md`, `vergleich.md`, `export.md`; `research.md` R1 bis R27;
   `quickstart.md`); Regel in `docs/ki_workflow/ki_dev.md`, „Ablauf je Feature“, Punkt 11;
-  umgebaut nach dem Architektur-Leitfaden in `specs/008-architektur/` (T036a, T036e)
-- **Stand:** Feature 008, 2026-10-29
+  umgebaut nach dem Architektur-Leitfaden in `specs/008-architektur/` (T036a, T036e);
+  `specs/009-renderer-compatibility/` (`research.md` R3 Anzeigenamen, Belege auf vier Systemen)
+- **Stand:** Feature 009, 2026-10-29
 - **Nachbarn:** Presets und Bau in [build-und-tests.md](build-und-tests.md), Fenster und Vollbild in
   [darstellung.md](darstellung.md), was die Abläufe durchspielen in
   [titel-und-hauptmenue.md](titel-und-hauptmenue.md) und [easter-egg.md](easter-egg.md)
