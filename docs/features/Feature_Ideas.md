@@ -57,8 +57,9 @@ Das größte unbearbeitete System. Hier hängen die meisten Timeline-Effekte in 
 
 | ID | Idee | Braucht |
 |---|---|---|
-| 05-01 | Standortwahl zu Spielbeginn — Miete, Fläche, Laufkundschaft, Sichtbarkeit | 03-04 |
+| 05-01 | **Vorgemerkt als Feature 010 „Ladeneröffnung“** (Klaus, 2026-10-29). Festgelegt: eine fiktive westdeutsche Mittelstadt (rund 150.000 Einwohner, Innenstadt, Wohngebiet, Gewerbegebiet) mit drei bis vier Läden. Ablauf nach der Gradwahl: Stadtplan mit den Läden, je Laden ein Exposé des Maklers als Blatt Papier (Foto, Miete, Fläche, Lage, Kleingedrucktes), Mietvertrag unterschreiben, Gewerbeanmeldung mit dem Ladennamen, dann das Spiel. Der Ladenname wird der angezeigte Name des Spielstands, die Datei behält ihre Nummer. Das Startkapital hängt vom Grad ab; die Kaution (drei Monatsmieten) geht davon ab, ein Laden, den sie übersteigt, bleibt grau und das Exposé sagt warum. Ein schmales Konto mit Kontostand und Miete am Monatsersten. Der Spielbildschirm zeigt den leeren Laden als Bild, dazu Ladenname, Datum und Kontostand. Laufkundschaft und Sichtbarkeit werden nur gespeichert, wirken erst mit 03-04. Hinweise im Exposé sind fester Text; der Ortsbezug folgt in 05-03. Ursprünglich: Standortwahl zu Spielbeginn — Miete, Fläche, Laufkundschaft, Sichtbarkeit | — |
 | 05-02 | Ladenausbau — Fläche, Werkstatt, Schaufenster, Lager erweitern | 05-01 |
+| 05-03 | **Ortsbezug von Ereignissen — vorgemerkt als Feature nach 010** (Klaus, 2026-10-29). Ein Ereignis im Katalog kann für einen Laden oder ein Viertel gelten, etwa „Neubaugebiet Nord“ mit 40 % Chance nur für den Laden in der Weststadt. Das Exposé liest die Chance aus dem Katalog und deutet sie im Kleingedruckten nur vage an („Gerüchte über Erschließungspläne“), so dass der Hinweis stimmt, aber leicht zu überlesen ist. Braucht Änderungen an Katalog, Werkstatt und Fahrplan. Aufwand mittel bis groß | 05-01 |
 
 ## 06 Marketingsystem
 
