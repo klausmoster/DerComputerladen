@@ -31,6 +31,7 @@ dort steht, wird hier nur verwiesen, nicht abgeschrieben.
 | Spec Kit | 1.2.3; `branch_prefix: "feature"` |
 | Projekt-Root | `src/`, deshalb immer `--path src` |
 | Spiel | `/Applications/Godot.app/Contents/MacOS/Godot --path src` |
+| Werkstatt | `/Applications/Godot.app/Contents/MacOS/Godot --path src res://tools/werkstatt/werkstatt.tscn` |
 | Tests | `/Applications/Godot.app/Contents/MacOS/Godot --headless --path src -s res://addons/gut/gut_cmdln.gd`, Zeitlimit im Auftrag an den Agent |
 | Startprobe | headless mit `-d`: Exit 0 und keine Ausgabe |
 | Build | `tools/build/baue_alles.sh` |

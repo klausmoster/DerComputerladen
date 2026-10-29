@@ -36,8 +36,8 @@ Die Prüfer arbeiten Claude zu, wenn eine Phase Sichtbares, Texte oder Code änd
 | [blaupause.md](blaupause.md) | Konzept: die Arbeitsweise ohne Projektbezug, mit Gerüsten und Anleitung zum Einrichten; für ein neues Projekt genügt diese Datei |
 | [projekt.md](projekt.md) | Konzept: Projektsteckbrief, die Werte dieses Projekts zu den Feldern der Blaupause und die Abweichungen |
 | [feature_fahrplan.md](feature_fahrplan.md) | Konzept: alle Schritte eines Features der Reihe nach, mit wer, was und wo Klaus gefragt wird |
-| [ki_dev.md](ki_dev.md) | Entwickeln mit KI: Rollen, Ablauf je Feature, Git, Aufträge an den Agent, Prüfen und Abnahme, Tests, Dokumentation, Zusammenarbeit, Werkzeuge, Grafik |
-| [ki_pruefung.md](ki_pruefung.md) | Prüfen mit KI: Grundsätze, Prüfer und ihre Maßstäbe, Ablauf einer Phasenprüfung, Tests, Stand der Einführung |
+| [ki_dev.md](ki_dev.md) | Entwickeln mit KI, Erfahrungen: wie die Regeln der Blaupause hier ausgeprägt sind, mit Anlass; Werkzeuge und Pfade, Grafik |
+| [ki_pruefung.md](ki_pruefung.md) | Prüfen mit KI, Erfahrungen: die Prüfer hier und ihre Maßstäbe, Anbindung an Spec Kit, Tests, Zählung, Stand der Einführung, Erfahrungen |
 | `CLAUDE.md` | die verbindliche Arbeitsanweisung für Claude Code in diesem Projekt |
 | `.specify/memory/constitution.md` | die Verfassung: verbindliche Grundsätze für die Spec-Kit-Abläufe |
 | `docs/architektur-leitfaden.md` | wie das Spiel gebaut wird: Godot-Prinzipien, Muster, Schichten; Maßstab des Architektur-Prüfers |
